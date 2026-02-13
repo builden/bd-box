@@ -1,0 +1,129 @@
+---
+title: 调色板生成
+description: 使用 Ant Design、Tailwind CSS 和 OKLCH 算法生成调色板
+---
+
+# 调色板生成
+
+bd-color 支持三种调色板生成算法，满足不同设计系统的需求。
+
+## Ant Design 算法
+
+生成 Ant Design 风格的 10 色阶调色板，主色位于 index 5：
+
+```typescript
+import { generateAntDesign, generate } from '@builden/bd-color';
+
+// 从颜色生成调色板
+const palette = generateAntDesign('#1677FF');
+// ["#e6f4ff", "#b4d8ff", "#82baff", "#4f9bff", "#1d7dff", "#1677ff", "#0050e6", "#003aac", "#002373", "#000c39"]
+
+// 暗色主题
+const darkPalette = generateAntDesign('#1677FF', { theme: 'dark' });
+```
+
+### 色阶用途
+
+| 色阶 | 用途 |
+|------|------|
+| 1 | 极浅背景 |
+| 3 | 浅色背景 |
+| 5 | 主色 (primary) |
+| 7 | hover 状态 |
+| 9 | active 状态 |
+
+## Tailwind CSS 算法
+
+生成 Tailwind CSS 风格的 11 色阶 (50-950)，主色位于 500：
+
+```typescript
+import { generateTailwind } from '@builden/bd-color';
+
+const palette = generateTailwind('#3b82f6');
+// ["#eff6ff", "#dbeafe", "#bfdbfe", "#93c5fd", "#60a5fa", "#3b82f6", "#2563eb", "#1d4ed8", "#1e40af", "#1e3a8a", "#172554"]
+```
+
+### 色阶对应
+
+| 色阶 | Tailwind |
+|------|----------|
+| 50 | 50 |
+| 100 | 100 |
+| ... | ... |
+| 500 | 500 (主色) |
+| ... | ... |
+| 950 | 950 |
+
+## OKLCH 平滑渐变
+
+使用 OKLCH 色彩空间生成平滑渐变色阶：
+
+```typescript
+import { generateOklch } from '@builden/bd-color';
+
+// 默认 10 级渐变，从亮到暗
+const palette = generateOklch('#3b82f6');
+// 从亮度 0.95 渐变到 0.1
+
+// 自定义配置
+const customPalette = generateOklch('#3b82f6', {
+  steps: 5,              // 5 个色阶
+  startL: 0.98,          // 起始亮度
+  endL: 0.15,            // 结束亮度
+  interpolation: 'ease-in-out',  // 缓动函数
+});
+```
+
+## 统一入口
+
+使用 `generate` 函数统一调用：
+
+```typescript
+import { generate } from '@builden/bd-color';
+
+// 默认使用 ant-design 算法
+generate('#1677FF');
+
+// 指定算法
+generate('#1677FF', { algorithm: 'ant-design' });
+generate('#1677FF', { algorithm: 'tailwind' });
+generate('#1677FF', { algorithm: 'oklch' });
+```
+
+## 选项参数
+
+### GenerateOptions
+
+```typescript
+interface GenerateOptions {
+  algorithm?: 'ant-design' | 'tailwind' | 'oklch';
+  theme?: 'light' | 'dark';
+}
+```
+
+### AntDesignOptions
+
+```typescript
+interface AntDesignOptions {
+  theme?: 'light' | 'dark';
+}
+```
+
+### TailwindOptions
+
+```typescript
+interface TailwindOptions {
+  // 目前无额外选项
+}
+```
+
+### OklchOptions
+
+```typescript
+interface OklchOptions {
+  steps?: number;           // 色阶数量，默认 10
+  startL?: number;          // 起始亮度 (0-1)，默认 0.95
+  endL?: number;            // 结束亮度 (0-1)，默认 0.1
+  interpolation?: string;   // 缓动函数
+}
+```

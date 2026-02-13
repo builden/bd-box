@@ -5,6 +5,10 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "bun test"
+    "test": "bun test",
+    "docs:dev": "mint dev"
+  },
+  "devDependencies": {
+    "mint": "^4.2.345"
   }
 }

@@ -1,0 +1,122 @@
+---
+title: Color 类
+description: 颜色创建、格式转换和颜色操作
+---
+
+# Color 类
+
+`Color` 类提供了完整的颜色处理能力，支持多种颜色格式的创建、转换和操作。
+
+## 创建颜色
+
+支持多种方式创建颜色：
+
+```typescript
+import { Color } from '@builden/bd-color';
+
+// 从 Hex 字符串创建
+const color1 = new Color('#ff5500');
+const color2 = new Color('#f50');      // 3位简写
+const color3 = new Color('#ff550080');  // 8位带透明度
+
+// 从 RGB/HSL/HSV 对象创建
+const color4 = new Color({ r: 255, g: 85, b: 0 });
+const color5 = new Color({ h: 24, s: 100, l: 50 });
+const color6 = new Color({ h: 24, s: 100, v: 100 });
+
+// 从 OKLCH/OKLAB 创建 (现代色彩空间)
+const color7 = new Color({ l: 0.6, c: 0.15, h: 24 });
+const color8 = new Color({ l: 0.6, a: 0.1, b: 0.15 });
+
+// 从 CSS 字符串创建
+const color9 = new Color('rgb(255, 85, 0)');
+const color10 = new Color('hsl(24, 100%, 50%)');
+const color11 = new Color('rgba(255, 85, 0, 0.5)');
+
+// 从颜色名称创建
+const color12 = new Color('red');
+const color13 = new Color('blue');
+```
+
+## 格式转换
+
+```typescript
+const color = new Color('#ff5500');
+
+// 转换为 Hex 字符串
+color.toHexString();        // "#ff5500"
+
+// 转换为 RGB 对象
+color.toRgb();              // { r: 255, g: 85, b: 0, a: 1 }
+
+// 转换为 RGB 字符串
+color.toRgbString();        // "rgb(255,85,0)"
+color.toRgbString();         // 带透明度: "rgba(255,85,0,0.5)"
+
+// 转换为 HSL
+color.toHsl();              // { h: 24, s: 100, l: 50, a: 1 }
+
+// 转换为 HSL 字符串
+color.toHslString();        // "hsl(24,100%,50%)"
+
+// 转换为 HSV
+color.toHsv();              // { h: 24, s: 100, v: 100, a: 1 }
+
+// 转换为 OKLAB (现代感知均匀色彩空间)
+color.toOklab();            // { l: 0.6, a: 0.1, b: 0.15, alpha: 1 }
+
+// 转换为 OKLCH (极坐标形式)
+color.toOklch();            // { l: 0.6, c: 0.15, h: 24, a: 1 }
+```
+
+## 颜色操作
+
+```typescript
+const color = new Color('#ff5500');
+
+// 调整亮度
+color.lighten(10);   // 变亮 10%
+color.darken(10);   // 变暗 10%
+
+// 调整饱和度
+color.saturate(10);    // 增加饱和度 10%
+color.desaturate(10);  // 减少饱和度 10%
+
+// 混合颜色
+color.mix('#000000', 50);  // 与黑色混合 50%
+color.mix('#ffffff', 30);  // 与白色混合 30%
+
+// 调色 (Tint = 混合白色, Shade = 混合黑色)
+color.tint(20);   // 添加 20% 白色
+color.shade(20);  // 添加 20% 黑色
+
+// 灰度转换
+color.grayscale();  // 转换为灰度颜色
+
+// 计算对比度 (WCAG 标准)
+color.contrast('#000000');  // 与黑色对比度
+color.contrast('blue');     // 与蓝色对比度
+
+// 克隆颜色
+color.clone();
+```
+
+## 状态判断
+
+```typescript
+const color = new Color('#ff5500');
+
+// 判断颜色明暗
+color.isDark();    // 是否为深色
+color.isLight();   // 是否为浅色
+
+// 判断颜色是否相等
+const color2 = new Color('#ff5500');
+color.equals(color2);  // true
+
+// 获取亮度值 (0-255)
+color.getBrightness();
+
+// 获取相对亮度 (用于计算对比度)
+color.getLuminance();
+```

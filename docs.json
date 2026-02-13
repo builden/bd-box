@@ -1,0 +1,54 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "bd-box",
+  "theme": "mint",
+  "logo": {
+    "light": "/docs/logo/light.svg",
+    "dark": "/docs/logo/dark.svg",
+    "href": "/"
+  },
+  "favicon": "/docs/logo/favicon.svg",
+  "colors": {
+    "primary": "#1677ff",
+    "light": "#73b3f7",
+    "dark": "#003aac"
+  },
+  "navigation": {
+    "groups": [
+      {
+        "group": "bd-color",
+        "pages": [
+          "/docs/bd-color/introduction",
+          "/docs/bd-color/color-class",
+          "/docs/bd-color/palette-generation",
+          "/docs/bd-color/presets"
+        ]
+      }
+    ]
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "GitHub",
+        "href": "https://github.com/builden/bd-box"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "bd-color",
+      "href": "/docs/bd-color/introduction"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/builden/bd-box"
+    }
+  },
+  "anchors": [
+    {
+      "name": "Packages",
+      "icon": "package",
+      "url": "/bd-color"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+---
+title: 简介
+description: 一个 TypeScript 编写的颜色处理工具包
+---
+
+# bd-color
+
+一个 TypeScript 编写的颜色处理工具包，支持多种颜色格式转换、调色板生成和预设颜色。
+
+## 安装
+
+```bash
+npm install @builden/bd-color
+# 或
+bun add @builden/bd-color
+```
+
+## 核心功能
+
+- **Color 类** - 颜色创建、格式转换、颜色操作
+- **调色板生成** - Ant Design / Tailwind CSS / OKLCH 三种算法
+- **预设颜色** - Ant Design + Tailwind CSS 预设调色板
+
+## 快速开始
+
+```typescript
+import { Color, generate } from '@builden/bd-color';
+
+// 创建颜色
+const color = new Color('#ff5500');
+
+// 格式转换
+color.toHexString();        // "#ff5500"
+color.toRgbString();        // "rgb(255,85,0)"
+color.toHslString();        // "hsl(24,100%,50%)"
+
+// 生成调色板
+const palette = generate('#1677FF');
+```

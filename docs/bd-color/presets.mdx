@@ -1,0 +1,143 @@
+---
+title: 预设颜色
+description: Ant Design 和 Tailwind CSS 预设调色板
+---
+
+# 预设颜色
+
+bd-color 提供了丰富的预设调色板，方便快速获取常用设计系统的颜色。
+
+## Ant Design 预设
+
+提供 13 种 Ant Design 主色及完整调色板：
+
+```typescript
+import {
+  antDesignPrimaryColors,
+  antDesignPalettes,
+  antDesignDarkPalettes,
+} from '@builden/bd-color';
+
+// 获取主色对照表
+Object.keys(antDesignPrimaryColors);
+// ["red", "volcano", "orange", "gold", "yellow", "lime", "green", "cyan", "blue", "geekblue", "purple", "magenta", "grey"]
+
+// 获取蓝色调色板
+const blue = antDesignPalettes.blue;
+blue.primary;        // "#1677ff"
+blue[1];             // "#b4d8ff"
+blue[5];             // "#1677ff" (主色)
+blue[9];             // "#000c39"
+
+// 暗色主题
+const blueDark = antDesignDarkPalettes.blue;
+```
+
+### 颜色列表
+
+| 主色 | 主色值 |
+|------|--------|
+| red | #ff4d4f |
+| volcano | #ff7a45 |
+| orange | #ffa940 |
+| gold | #ffc53d |
+| yellow | #fadb14 |
+| lime | #a0d911 |
+| green | #52c41a |
+| cyan | #13c2c2 |
+| blue | #1677ff |
+| geekblue | #2f54eb |
+| purple | #722ed1 |
+| magenta | #eb2f96 |
+| grey | #8c8c8c |
+
+## Tailwind CSS 预设
+
+提供 Tailwind CSS 风格预设：
+
+```typescript
+import {
+  tailwindPrimaryColors,
+  tailwindPalettes,
+} from '@builden/bd-color';
+
+// 获取主色对照表
+Object.keys(tailwindPrimaryColors);
+// ["slate", "gray", "zinc", "neutral", "stone", "red", "orange", "amber", "yellow", "lime", "green", "emerald", "teal", "cyan", "sky", "blue", "indigo", "violet", "purple", "fuchsia", "pink", "rose"]
+
+// 获取调色板
+const blue = tailwindPalettes.blue;
+blue[500];   // "#3b82f6"
+blue[100];   // "#dbeafe"
+blue[900];   // "#1e3a8a"
+
+const slate = tailwindPalettes.slate;
+slate[500];  // "#64748b"
+```
+
+## 使用示例
+
+### React 组件中使用
+
+```tsx
+import { generateTailwind, tailwindPalettes } from '@builden/bd-color';
+
+function Button({ children, variant = 'primary' }) {
+  const blue = tailwindPalettes.blue;
+  const colors = generateTailwind(blue[500]);
+  
+  return (
+    <button
+      style={{
+        backgroundColor: colors[500],
+        color: '#ffffff',
+        padding: '8px 16px',
+        borderRadius: '6px',
+        border: 'none',
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+```
+
+### 生成主题色阶
+
+```tsx
+import { generate } from '@builden/bd-color';
+
+// 生成 Ant Design 风格色阶用于 UI 主题
+const themeColors = generate('#1677FF', {
+  algorithm: 'ant-design',
+  theme: 'light',
+});
+
+// 生成的色阶可用于:
+// themeColors[1] - 极浅背景
+// themeColors[3] - 浅色背景
+// themeColors[5] - 主色 (primary)
+// themeColors[7] -  hover 状态
+// themeColors[9] -  active 状态
+```
+
+## TypeScript 类型
+
+```typescript
+import type {
+  ColorInput,
+  RGB,
+  HSL,
+  HSV,
+  OKLCH,
+  OKLAB,
+  ColorInterface,
+  GenerateOptions,
+  AntDesignOptions,
+  TailwindOptions,
+  OklchOptions,
+  Palette,
+  PresetColor,
+  Presets,
+} from '@builden/bd-color';
+```
