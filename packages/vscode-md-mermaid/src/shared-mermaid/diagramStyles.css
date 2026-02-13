@@ -23,7 +23,7 @@
 }
 
 .mermaid-controls {
-  display: flex;
+  display: none;
   gap: 0.5em;
   position: absolute;
   top: auto;
@@ -33,13 +33,13 @@
   z-index: 10;
 }
 
-.mermaid-container {
-  position: relative;
-  display: inline-block;
-  width: 100%;
+.mermaid:hover .mermaid-controls,
+.mermaid:focus-within .mermaid-controls,
+.fullscreen .mermaid-controls {
+  display: flex;
 }
 
-.mermaid-container .mermaid-controls button {
+.mermaid .mermaid-controls button {
   background: var(--vscode-button-background, #0e639c);
   border: none;
   color: var(--vscode-button-foreground, #ffffff);
@@ -49,16 +49,8 @@
   font-size: 12px;
 }
 
-.mermaid-container .mermaid-controls button:hover {
+.mermaid .mermaid-controls button:hover {
   background: var(--vscode-button-hoverBackground, #1177bb);
-}
-
-.mermaid-container[data-show-controls="never"] .mermaid-controls {
-  display: none;
-}
-
-.mermaid-container:not([data-show-controls="always"]):not(:hover):not(:focus-within) .mermaid-controls {
-  display: none;
 }
 
 .mermaid-resize-handle {
