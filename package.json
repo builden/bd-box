@@ -1,0 +1,10 @@
+{
+  "name": "bd-box",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "bun test"
+  }
+}
