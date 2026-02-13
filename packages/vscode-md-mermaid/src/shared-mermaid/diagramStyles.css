@@ -1,0 +1,74 @@
+.mermaid {
+  display: flex;
+  justify-content: center;
+  margin: 1em 0;
+  text-align: center;
+}
+
+.mermaid > svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.mermaid-error {
+  background-color: var(--vscode-editor-background, #1e1e1e);
+  border: 1px solid var(--vscode-errorForeground, #f14c4c);
+  color: var(--vscode-errorForeground, #f14c4c);
+  padding: 1em;
+  border-radius: 4px;
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: var(--vscode-editor-font-size, 14px);
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+.mermaid-controls {
+  display: flex;
+  gap: 0.5em;
+  position: absolute;
+  top: 0.5em;
+  right: 0.5em;
+  z-index: 10;
+}
+
+.mermaid-container {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.mermaid-container .mermaid-controls button {
+  background: var(--vscode-button-background, #0e639c);
+  border: none;
+  color: var(--vscode-button-foreground, #ffffff);
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 2px;
+  font-size: 12px;
+}
+
+.mermaid-container .mermaid-controls button:hover {
+  background: var(--vscode-button-hoverBackground, #1177bb);
+}
+
+.mermaid-container[data-show-controls="never"] .mermaid-controls {
+  display: none;
+}
+
+.mermaid-container:not([data-show-controls="always"]):not(:hover):not(:focus-within) .mermaid-controls {
+  display: none;
+}
+
+.mermaid-resize-handle {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  cursor: ns-resize;
+  background: transparent;
+}
+
+.mermaid-resize-handle:hover {
+  background: var(--vscode-editorCursor-foreground, #aeafad);
+}

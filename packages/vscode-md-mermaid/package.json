@@ -1,0 +1,152 @@
+{
+  "name": "vscode-md-mermaid",
+  "version": "1.0.8",
+  "displayName": "Markdown Preview Mermaid Support",
+  "description": "Adds Mermaid diagram and flowchart support to VS Code's builtin markdown preview",
+  "keywords": [
+    "mermaid",
+    "markdown",
+    "flowchart",
+    "diagram",
+    "diagrams",
+    "chart",
+    "preview"
+  ],
+  "publisher": "builden",
+  "license": "MIT",
+  "repository": {
+    "url": "https://github.com/builden/vscode-md-mermaid.git"
+  },
+  "bugs": {
+    "url": "https://github.com/builden/vscode-md-mermaid/issues"
+  },
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "activationEvents": [],
+  "main": "./dist/index.js",
+  "browser": "./dist/web/index.js",
+  "categories": [
+    "Other"
+  ],
+  "contributes": {
+    "markdown.previewScripts": [
+      "./dist/preview/index.bundle.js"
+    ],
+    "markdown.markdownItPlugins": true,
+    "configuration": {
+      "title": "Markdown Preview Mermaid Support",
+      "properties": {
+        "markdown-mermaid.lightModeTheme": {
+          "order": 0,
+          "type": "string",
+          "enum": [
+            "base",
+            "forest",
+            "dark",
+            "default",
+            "neutral"
+          ],
+          "default": "default",
+          "description": "Default Mermaid theme for light mode."
+        },
+        "markdown-mermaid.darkModeTheme": {
+          "order": 1,
+          "type": "string",
+          "enum": [
+            "base",
+            "forest",
+            "dark",
+            "default",
+            "neutral"
+          ],
+          "default": "dark",
+          "description": "Default Mermaid theme for dark mode."
+        },
+        "markdown-mermaid.languages": {
+          "order": 2,
+          "type": "array",
+          "default": [
+            "mermaid"
+          ],
+          "description": "Default languages in markdown."
+        },
+        "markdown-mermaid.maxTextSize": {
+          "order": 3,
+          "type": "number",
+          "default": 50000,
+          "description": "The maximum allowed size of the users text diagram."
+        },
+        "markdown-mermaid.mouseNavigation.enabled": {
+          "type": "string",
+          "description": "Controls when mouse-based navigation (panning and zooming) is enabled on mermaid diagrams.",
+          "enum": [
+            "always",
+            "alt",
+            "never"
+          ],
+          "default": "alt",
+          "markdownEnumDescriptions": [
+            "Always enable mouse navigation on mermaid diagrams",
+            "Only enable mouse navigation when holding down `alt` (`option` on mac). Gestures such as pinch-to-zoom will still work without `alt`.",
+            "Disable mouse navigation"
+          ]
+        },
+        "markdown-mermaid.controls.show": {
+          "type": "string",
+          "description": "Enables/disables showing UI controls on mermaid diagrams.",
+          "enum": [
+            "never",
+            "onHoverOrFocus",
+            "always"
+          ],
+          "enumDescriptions": [
+            "Never show controls",
+            "Show zoom controls when hovering over or focusing on a diagram",
+            "Always show zoom controls"
+          ],
+          "default": "onHoverOrFocus"
+        },
+        "markdown-mermaid.resizable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Allow diagrams to be resized vertically by dragging the bottom edge."
+        },
+        "markdown-mermaid.maxHeight": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Maximum height for diagrams. Can be a number (pixels) or a CSS value like `80vh` or `400px`. Leave empty to try to automatically size diagrams based on their content."
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "@iconify-json/logos": "^1.2.0",
+    "@iconify-json/mdi": "^1.2.0",
+    "@mermaid-js/mermaid-zenuml": "^0.2.2"
+  },
+  "devDependencies": {
+    "@mermaid-js/layout-elk": "^0.2.0",
+    "@mermaid-js/layout-tidy-tree": "^0.2.0",
+    "@types/markdown-it": "^14.1.0",
+    "@types/node": "^25.0.10",
+    "@types/vscode": "^1.72.0",
+    "esbuild": "^0.25.0",
+    "mermaid": "^11.12.2",
+    "npm-run-all": "^4.1.5",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "scripts": {
+    "version:patch": "node -e \"const pkg=require('./package.json'); const v=pkg.version.split('.'); v[2]=parseInt(v[2])+1; pkg.version=v.join('.'); require('fs').writeFileSync('./package.json', JSON.stringify(pkg,null,2)+'\\n'); console.log('Version updated to '+pkg.version)\"",
+    "build-webview": "tsx ./build/esbuild-webview.ts",
+    "watch-webview": "tsx ./build/esbuild-webview.ts --watch",
+    "compile-ext": "tsx ./build/esbuild-extension.ts",
+    "watch-ext": "tsx ./build/esbuild-extension.ts --watch",
+    "package-ext": "tsx ./build/esbuild-extension.ts --production",
+    "prepublish": "npm-run-all package-ext build-webview",
+    "build": "npm-run-all compile-ext build-webview",
+    "watch": "npm-run-all --parallel watch-ext watch-webview",
+    "release": "bun run version:patch && bun run build && mkdir -p dist/vsix && vsce package --no-dependencies -o dist/vsix && code --install-extension dist/vsix/vscode-md-mermaid-*.vsix --force"
+  }
+}
