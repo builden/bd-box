@@ -157,7 +157,7 @@ export class DiagramManager {
       const dx = (e.clientX - startX) / view.zoom;
       const dy = (e.clientY - startY) / view.zoom;
 
-      this.setPosition(id, svg, startViewX - dx, startViewY - dy);
+      this.setPosition(id, svg, startViewX + dx, startViewY + dy);
     };
 
     const onMouseUp = () => {
