@@ -26,8 +26,10 @@
   display: flex;
   gap: 0.5em;
   position: absolute;
-  top: 0.5em;
+  top: auto;
+  bottom: 0.5em;
   right: 0.5em;
+  left: auto;
   z-index: 10;
 }
 
@@ -71,4 +73,28 @@
 
 .mermaid-resize-handle:hover {
   background: var(--vscode-editorCursor-foreground, #aeafad);
+}
+
+/* Fullscreen styles */
+.mermaid.fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 99999 !important;
+  background: var(--vscode-editor-background, #1e1e1e) !important;
+  overflow: auto !important;
+}
+
+.mermaid.fullscreen svg {
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+.mermaid.fullscreen .mermaid-controls {
+  top: 0.5em !important;
+  right: 2.5em;
+  bottom: auto !important;
+  z-index: 100000 !important;
 }

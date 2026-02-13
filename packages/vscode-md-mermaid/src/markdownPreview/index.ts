@@ -7,6 +7,12 @@ import mermaid, { MermaidConfig } from 'mermaid';
 import { loadExtensionConfig, registerMermaidAddons, renderMermaidBlocksInElement } from '../shared-mermaid';
 import { DiagramManager } from '../shared-mermaid/diagramManager';
 import type { IDisposable } from '../shared-mermaid/disposable';
+import cssContent from '../shared-mermaid/diagramStyles.css';
+
+// Inject CSS into the page
+const style = document.createElement('style');
+style.textContent = cssContent;
+document.head.appendChild(style);
 
 let currentAbortController: AbortController | undefined;
 let currentDisposables: IDisposable[] = [];

@@ -72,9 +72,15 @@ export class DiagramManager {
     resetBtn.title = 'Reset view';
     resetBtn.textContent = 'Reset';
 
+    const fullscreenBtn = document.createElement('button');
+    fullscreenBtn.id = `${id}-fullscreen`;
+    fullscreenBtn.title = 'Fullscreen';
+    fullscreenBtn.textContent = '⛶';
+
     controls.appendChild(zoomInBtn);
     controls.appendChild(zoomOutBtn);
     controls.appendChild(resetBtn);
+    controls.appendChild(fullscreenBtn);
 
     container.style.position = 'relative';
     container.setAttribute('data-show-controls', this.config.showControls);
@@ -95,6 +101,22 @@ export class DiagramManager {
     resetBtn.addEventListener('click', () => {
       this.resetView(id, svg);
     });
+
+    // Simulated fullscreen functionality - use CSS class
+    let isFullscreen = false;
+
+    const toggleFullscreen = () => {
+      isFullscreen = !isFullscreen;
+      if (isFullscreen) {
+        container.classList.add('fullscreen');
+        fullscreenBtn.textContent = '✕';
+      } else {
+        container.classList.remove('fullscreen');
+        fullscreenBtn.textContent = '⛶';
+      }
+    };
+
+    fullscreenBtn.addEventListener('click', toggleFullscreen);
   }
 
   private setupResize(id: string, container: HTMLElement) {
