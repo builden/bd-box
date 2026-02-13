@@ -9,6 +9,7 @@
     "docs:dev": "mint dev"
   },
   "devDependencies": {
+    "@types/bun": "^1.3.9",
     "mint": "^4.2.345"
   }
 }
