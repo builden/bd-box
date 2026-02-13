@@ -3,39 +3,34 @@
 # bun
 bun.lockb
 .bun/
-bun.lockb
 
 # dependencies
-/node_modules
-/.pnp
+node_modules/
+.pnp
 .pnp.js
 
+# build output
+dist/
+build/
+.next/
+out/
+
 # testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
+coverage/
 
 # misc
 .DS_Store
 *.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+*.log
 
 # local env files
-.env*.local
 .env
+.env*.local
 
-# vercel
-.vercel
+# IDE
+.idea/
+.vscode/
+*.swp
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
