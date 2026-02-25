@@ -26,7 +26,7 @@ describe('ant-design 预设颜色', () => {
 
   it('主色应该在 index 5', () => {
     Object.entries(antDesignPalettes).forEach(([name, palette]) => {
-      expect(palette[5]).toBe(palette.primary);
+      expect(palette[5]).toBe(palette.primary!);
     });
   });
 
@@ -85,20 +85,20 @@ describe('tailwind 预设颜色', () => {
 
   it('主色应该在 index 5 (500)', () => {
     Object.values(tailwindPalettes).forEach(palette => {
-      expect(palette[5]).toBe(palette.primary);
+      expect(palette[5]).toBe(palette.primary!);
     });
   });
 
   it('blue 预设应该正确', () => {
     const blue = tailwindPalettes.blue;
-    expect(blue.primary).toBeDefined();
-    expect(blue[5]).toBe(blue.primary);
+    expect(blue.primary!).toBeDefined();
+    expect(blue[5]).toBe(blue.primary!);
   });
 
   it('red 预设应该正确', () => {
     const red = tailwindPalettes.red;
-    expect(red.primary).toBeDefined();
-    expect(red[5]).toBe(red.primary);
+    expect(red.primary!).toBeDefined();
+    expect(red[5]).toBe(red.primary!);
   });
 });
 
@@ -124,8 +124,8 @@ describe('算法对比', () => {
 
   it('两者主色位置相同都在 index 5', () => {
     // ant-design 主色在 index 5
-    expect(antDesignPalettes.red[5]).toBe(antDesignPalettes.red.primary);
+    expect(antDesignPalettes.red[5]).toBe(antDesignPalettes.red.primary!);
     // tailwind 主色在 index 5 (对应 500)
-    expect(tailwindPalettes.red[5]).toBe(tailwindPalettes.red.primary);
+    expect(tailwindPalettes.red[5]).toBe(tailwindPalettes.red.primary!);
   });
 });

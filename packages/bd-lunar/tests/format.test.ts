@@ -72,6 +72,12 @@ describe('format 工具', () => {
       const result = replaceLunarTokens('YYYY年LM月LD日 LH', replacers)
       expect(result).toBe('YYYY年五月十五日 未时')
     })
+
+    it('should handle leap month LM token', () => {
+      const replacers: LunarReplacers = { LM: '闰二', LD: '十五', LH: '午时' }
+      const result = replaceLunarTokens('LM月LD日', replacers)
+      expect(result).toBe('闰二月十五日')
+    })
   })
 
   describe('parseLunarTokens', () => {

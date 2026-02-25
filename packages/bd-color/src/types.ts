@@ -37,7 +37,7 @@ export interface OKLAB {
   alpha?: number; // 0-1
 }
 
-export type ColorInput = string | RGB | HSL | HSV | OKLCH | OKLAB | Color | undefined;
+export type ColorInput = string | RGB | HSL | HSV | OKLCH | OKLAB | ColorInterface | undefined;
 
 // ========================
 // Color 类接口
@@ -61,20 +61,20 @@ export interface ColorInterface {
   toString(): string;
   
   // 颜色操作
-  clone(): Color;
-  lighten(amount: number): Color;
-  darken(amount: number): Color;
-  saturate(amount: number): Color;
-  desaturate(amount: number): Color;
-  mix(color: ColorInput, amount: number): Color;
-  tint(amount: number): Color;
-  shade(amount: number): Color;
-  grayscale(): Color;
+  clone(): ColorInterface;
+  lighten(amount: number): ColorInterface;
+  darken(amount: number): ColorInterface;
+  saturate(amount: number): ColorInterface;
+  desaturate(amount: number): ColorInterface;
+  mix(color: ColorInput, amount: number): ColorInterface;
+  tint(amount: number): ColorInterface;
+  shade(amount: number): ColorInterface;
+  grayscale(): ColorInterface;
   
   // 状态判断
   isDark(): boolean;
   isLight(): boolean;
-  equals(other: Color): boolean;
+  equals(other: ColorInput): boolean;
   
   // 便捷方法
   getLuminance(): number;
