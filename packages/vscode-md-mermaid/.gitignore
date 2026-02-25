@@ -1,0 +1,5 @@
+# VSCode extension specific
+dist/vsix/*.vsix
+
+# coverage (already in root .gitignore but added for clarity)
+coverage/

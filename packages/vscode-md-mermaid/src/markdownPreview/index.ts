@@ -3,8 +3,8 @@
  *
  * This runs in the markdown preview's webview.
  */
-import mermaid, { MermaidConfig } from 'mermaid';
-import { loadExtensionConfig, registerMermaidAddons, renderMermaidBlocksInElement } from '../shared-mermaid';
+import mermaid from 'mermaid';
+import { loadExtensionConfig, loadMermaidConfig, registerMermaidAddons, renderMermaidBlocksInElement } from '../shared-mermaid';
 import { DiagramManager } from '../shared-mermaid/diagramManager';
 import type { IDisposable } from '../shared-mermaid/disposable';
 import cssContent from '../shared-mermaid/diagramStyles.css';
@@ -32,15 +32,7 @@ async function init() {
   const extConfig = loadExtensionConfig();
   diagramManager.updateConfig(extConfig);
 
-  const config: MermaidConfig = {
-    startOnLoad: false,
-    maxTextSize: extConfig.maxTextSize,
-    theme: (document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
-      ? extConfig.darkModeTheme
-      : extConfig.lightModeTheme) as MermaidConfig['theme'],
-  };
-
-  mermaid.initialize(config);
+  mermaid.initialize(loadMermaidConfig());
   await registerMermaidAddons();
 
   const activeIds = new Set<string>();
