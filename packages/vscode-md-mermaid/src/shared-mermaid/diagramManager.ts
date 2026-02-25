@@ -145,6 +145,7 @@ export class DiagramManager {
     let startViewY = 0;
 
     const shouldUseAlt = this.config.clickDrag === ClickDragMode.Alt;
+    const isFullscreen = () => container.classList.contains('fullscreen');
 
     const onMouseDown = (e: MouseEvent) => {
       if (shouldUseAlt && !e.altKey) return;
@@ -180,8 +181,15 @@ export class DiagramManager {
     };
 
     // Wheel zoom - zoom centered on mouse position
+    // Always require Alt key, but prevent page scrolling in fullscreen mode
     svg.addEventListener('wheel', (e) => {
-      if (!e.altKey) return;
+      if (!e.altKey) {
+        // Still prevent scrolling in fullscreen mode
+        if (isFullscreen()) {
+          e.preventDefault();
+        }
+        return;
+      }
 
       e.preventDefault();
 
