@@ -1,12 +1,20 @@
 import type { MermaidExtensionConfig } from './config';
 import type { IDisposable } from './disposable';
 import { ClickDragMode, ShowControlsMode } from './config';
+import type { ViewState, ViewStates } from './types/view';
+import { clampZoom, getViewMode, parseTransform, formatTransform, createDefaultViewStates } from './utils/transform';
+import { ZOOM_FACTOR, WHEEL_ZOOM_IN, WHEEL_ZOOM_OUT } from './constants/zoom';
+
+// Re-export for testing
+export { clampZoom, getViewMode, parseTransform, formatTransform };
+export type { ViewState } from './types/view';
+
+// === Main Class ===
 
 export class DiagramManager {
   private readonly config: MermaidExtensionConfig;
   private readonly svgElementMap = new Map<string, SVGSVGElement>();
-  // Store both normal and fullscreen view states for each diagram
-  private readonly viewMap = new Map<string, { normal: { x: number; y: number; zoom: number }; fullscreen: { x: number; y: number; zoom: number } }>();
+  private readonly viewMap = new Map<string, ViewStates>();
   private readonly resizeHandleMap = new Map<string, HTMLDivElement>();
 
   constructor(config: MermaidExtensionConfig) {
@@ -81,12 +89,12 @@ export class DiagramManager {
 
     zoomInBtn.addEventListener('click', () => {
       const view = this.getView(id, svg);
-      this.setZoom(id, svg, view.zoom * 1.2);
+      this.setZoom(id, svg, view.zoom * ZOOM_FACTOR);
     });
 
     zoomOutBtn.addEventListener('click', () => {
       const view = this.getView(id, svg);
-      this.setZoom(id, svg, view.zoom / 1.2);
+      this.setZoom(id, svg, view.zoom / ZOOM_FACTOR);
     });
 
     resetBtn.addEventListener('click', () => {
@@ -206,8 +214,8 @@ export class DiagramManager {
       const view = this.getView(id, svg);
 
       // Calculate new zoom level
-      const delta = e.deltaY > 0 ? 0.9 : 1.1;
-      const newZoom = Math.max(0.1, Math.min(10, view.zoom * delta));
+      const delta = e.deltaY > 0 ? WHEEL_ZOOM_OUT : WHEEL_ZOOM_IN;
+      const newZoom = clampZoom(view.zoom * delta);
 
       // Calculate the point under mouse in the current view
       const pointX = (svgPoint.x - view.x) / view.zoom;
@@ -229,43 +237,24 @@ export class DiagramManager {
     document.addEventListener('mouseup', onMouseUp);
   }
 
-  private getView(id: string, svg: SVGSVGElement): { x: number; y: number; zoom: number } {
-    const container = svg.closest('.mermaid');
-    const isFullscreen = container?.classList.contains('fullscreen');
-    const mode = isFullscreen ? 'fullscreen' : 'normal';
+  private getView(id: string, svg: SVGSVGElement): ViewState {
+    const mode = getViewMode(svg);
 
     if (!this.viewMap.has(id)) {
-      // Initialize both normal and fullscreen states
-      const normalView = { x: 0, y: 0, zoom: 1 };
-      const fullscreenView = { x: 0, y: 0, zoom: 1 };
-
       // Try to read existing transform from SVG (for initial state)
-      const transform = svg.style.transform;
-      if (transform) {
-        const translateMatch = transform.match(/translate\(([^,]+)px,\s*([^)]+)px\)/);
-        const scaleMatch = transform.match(/scale\(([^)]+)\)/);
-
-        if (translateMatch) {
-          normalView.x = parseFloat(translateMatch[1]);
-          normalView.y = parseFloat(translateMatch[2]);
-          fullscreenView.x = normalView.x;
-          fullscreenView.y = normalView.y;
-        }
-        if (scaleMatch) {
-          normalView.zoom = parseFloat(scaleMatch[1]);
-          fullscreenView.zoom = normalView.zoom;
-        }
-      }
-
-      this.viewMap.set(id, { normal: normalView, fullscreen: fullscreenView });
+      const initialView = parseTransform(svg.style.transform);
+      const viewStates = createDefaultViewStates();
+      viewStates.normal = { ...initialView };
+      viewStates.fullscreen = { ...initialView };
+      this.viewMap.set(id, viewStates);
     }
+
     return this.viewMap.get(id)![mode];
   }
 
   private setZoom(id: string, svg: SVGSVGElement, zoom: number) {
-    zoom = Math.max(0.1, Math.min(10, zoom));
     const view = this.getView(id, svg);
-    view.zoom = zoom;
+    view.zoom = clampZoom(zoom);
     this.applyTransform(id, svg);
   }
 
@@ -277,9 +266,7 @@ export class DiagramManager {
   }
 
   private resetView(id: string, svg: SVGSVGElement) {
-    const container = svg.closest('.mermaid');
-    const isFullscreen = container?.classList.contains('fullscreen');
-    const mode = isFullscreen ? 'fullscreen' : 'normal';
+    const mode = getViewMode(svg);
 
     // Reset only the current mode's state
     const viewStates = this.viewMap.get(id);
@@ -294,8 +281,7 @@ export class DiagramManager {
 
   private applyTransform(id: string, svg: SVGSVGElement) {
     const view = this.getView(id, svg);
-    // Use CSS transform on SVG element - this doesn't affect getScreenCTM()
-    svg.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`;
+    svg.style.transform = formatTransform(view);
     svg.style.transformOrigin = '0 0';
   }
 
