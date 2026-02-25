@@ -14,15 +14,11 @@ const sharedOptions: BuildOptions = {
   sourcemap: true,
 };
 
-async function build(options: BuildOptions) {
-  await esbuild.build(options);
-}
-
 async function main() {
   const isWatch = process.argv.includes('--watch');
   const isProduction = process.argv.includes('--production');
 
-  const nodeExtensionOptions: BuildOptions = {
+  const nodeOptions: BuildOptions = {
     ...sharedOptions,
     entryPoints: [path.join(srcDir, 'vscode-extension', 'index.ts')],
     outfile: path.join(distDir, 'index.js'),
@@ -32,7 +28,7 @@ async function main() {
     sourcemap: isProduction ? false : true,
   };
 
-  const webExtensionOptions: BuildOptions = {
+  const webOptions: BuildOptions = {
     ...sharedOptions,
     entryPoints: [path.join(srcDir, 'vscode-extension', 'index.ts')],
     outfile: path.join(distDir, 'web', 'index.js'),
@@ -43,12 +39,14 @@ async function main() {
   };
 
   if (isWatch) {
-    const nodeCtx = await esbuild.context(nodeExtensionOptions);
-    const webCtx = await esbuild.context(webExtensionOptions);
+    const [nodeCtx, webCtx] = await Promise.all([
+      esbuild.context(nodeOptions),
+      esbuild.context(webOptions),
+    ]);
     await Promise.all([nodeCtx.watch(), webCtx.watch()]);
     console.log('Watching for changes...');
   } else {
-    await Promise.all([build(nodeExtensionOptions), build(webExtensionOptions)]);
+    await Promise.all([esbuild.build(nodeOptions), esbuild.build(webOptions)]);
   }
 }
 
