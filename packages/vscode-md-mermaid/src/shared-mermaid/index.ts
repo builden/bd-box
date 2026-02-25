@@ -82,7 +82,7 @@ export async function renderMermaidBlocksInElement(
 
   // We need to generate all the container ids sync, but then do the actual rendering async
   const renderPromises: Array<Promise<void>> = [];
-  for (const mermaidContainer of root.querySelectorAll('.mermaid') as NodeListOf<HTMLElement>) {
+  for (const mermaidContainer of root.querySelectorAll('.mermaid')) {
     const result = renderMermaidElement(mermaidContainer, usedIds, (container, content) => {
       writeOut(container, content, result!.contentHash);
     }, signal);

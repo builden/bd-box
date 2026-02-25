@@ -13,7 +13,7 @@ interface DiagramState {
 const savedStates = new Map<string, DiagramState>();
 
 export class DiagramManager {
-  private config: MermaidExtensionConfig;
+  private readonly config: MermaidExtensionConfig;
   private readonly svgElementMap = new Map<string, SVGSVGElement>();
   private readonly viewMap = new Map<string, { x: number; y: number; zoom: number }>();
   private readonly resizeHandleMap = new Map<string, HTMLDivElement>();

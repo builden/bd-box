@@ -1,11 +1,5 @@
 import type MarkdownIt from 'markdown-it';
 
-// 使用 any 来避免复杂的 markdown-it 类型问题
-/* eslint-disable @typescript-eslint/no-explicit-any */
-type StateBlock = any;
-type Token = any;
-/* eslint-enable @typescript-eslint/no-explicit-any */
-
 const mermaidLanguageId = 'mermaid';
 const containerTokenName = 'mermaidContainer';
 
@@ -25,7 +19,7 @@ export function extendMarkdownItWithMermaid(md: MarkdownIt, config: { languageId
   // Code forked from markdown-it-container
   // Fork was done as we want to get the raw text inside container instead of treating it as markdown
   md.use((md: MarkdownIt) => {
-    function container(state: StateBlock, startLine: number, endLine: number, silent: boolean) {
+    function container(state: MarkdownIt.StateBlock, startLine: number, endLine: number, silent: boolean) {
       let pos: number;
       let auto_closed = false;
       let start = state.bMarks[startLine] + state.tShift[startLine];
@@ -38,99 +32,129 @@ export function extendMarkdownItWithMermaid(md: MarkdownIt, config: { languageId
         return false;
       }
 
-      // Cut off trailing white-spaces
+      // Check out the rest of the marker string
       //
-      for (pos = start + marker_len; pos < max; pos++) {
-        const ch = state.src.charCodeAt(pos);
-        if (ch !== 0x20) {
+      for (pos = start + 1; pos <= max; pos++) {
+        if (marker_str[(pos - start) % marker_len] !== state.src[pos]) {
           break;
         }
       }
 
-      const marker = state.src.slice(start, pos);
+      const marker_count = Math.floor((pos - start) / marker_len);
+      if (marker_count < min_markers) {
+        return false;
+      }
+      pos -= (pos - start) % marker_len;
+
+      const markup = state.src.slice(start, pos);
       const params = state.src.slice(pos, max);
+      if (params.trim().split(' ')[0].toLowerCase() !== mermaidLanguageId) { return false; }
 
       // Since start is found, we can report success here in validation mode
       //
-      if (silent) {
-        return true;
-      }
+      if (silent) { return true; }
 
-      // Search for the end of the container
+      // Search for the end of the block
       //
       let nextLine = startLine;
 
-      for (; ; ) {
+      for (; ;) {
         nextLine++;
         if (nextLine >= endLine) {
-          // unclosed container
+          // unclosed block should be autoclosed by end of document.
+          // also block seems to be autoclosed by end of parent
           break;
         }
 
-        if (state.sCount[nextLine] < state.blkIndent) {
-          // closed
-          break;
-        }
-
-        pos = state.bMarks[nextLine] + state.tShift[nextLine];
+        start = state.bMarks[nextLine] + state.tShift[nextLine];
         max = state.eMarks[nextLine];
 
-        if (state.src.charCodeAt(pos) !== marker_char) {
+        if (start < max && state.sCount[nextLine] < state.blkIndent) {
+          // non-empty line with negative indent should stop the list:
+          // - ```
+          // test
+          break;
+        }
+
+        if (marker_char !== state.src.charCodeAt(start)) { continue; }
+
+        if (state.sCount[nextLine] - state.blkIndent >= 4) {
+          // closing fence should be indented less than 4 spaces
           continue;
         }
 
-        for (pos = pos + marker_len; pos < max; pos++) {
-          const ch = state.src.charCodeAt(pos);
-          if (ch !== 0x20) {
+        for (pos = start + 1; pos <= max; pos++) {
+          if (marker_str[(pos - start) % marker_len] !== state.src[pos]) {
             break;
           }
         }
 
-        if (state.src.slice(pos, max) !== marker) {
-          continue;
-        }
+        // closing code fence must be at least as long as the opening one
+        if (Math.floor((pos - start) / marker_len) < marker_count) { continue; }
 
-        // found closing marker
-        for (pos = pos + marker_len; pos < max; pos++) {
-          const ch = state.src.charCodeAt(pos);
-          if (ch !== 0x20) {
-            break;
-          }
-        }
+        // make sure tail has spaces only
+        pos -= (pos - start) % marker_len;
+        pos = state.skipSpaces(pos);
 
+        if (pos < max) { continue; }
+
+        // found!
         auto_closed = true;
         break;
       }
 
-      const oldLineMax = state.lineMax;
-      state.lineMax = nextLine - startLine;
+      const old_parent = state.parentType;
+      const old_line_max = state.lineMax;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      state.parentType = 'container' as any;
 
-      const token = state.push(containerTokenName, 'Fence', 0);
-      token.info = params;
-      token.map = [startLine, nextLine];
-      token.content = state.getLines(startLine + 1, nextLine, state.blkIndent, false);
+      // this will prevent lazy continuations from ever going past our end marker
+      state.lineMax = nextLine;
 
+      const containerToken = state.push(containerTokenName, 'div', 1);
+      containerToken.markup = markup;
+      containerToken.block = true;
+      containerToken.info = params;
+      containerToken.map = [startLine, nextLine];
+      containerToken.content = state.getLines(startLine + 1, nextLine, state.blkIndent, true);
+
+      // Advanced paste token end
+      state.parentType = old_parent;
+      state.lineMax = old_line_max;
       state.line = nextLine + (auto_closed ? 1 : 0);
-
-      state.lineMax = oldLineMax;
 
       return true;
     }
 
-    md.block.ruler.before('code', container as any, {
+    md.block.ruler.before('fence', containerTokenName, container, {
       alt: ['paragraph', 'reference', 'blockquote', 'list']
-    } as any);
-
-    md.renderer.rules[containerTokenName] = (tokens: Token[], idx: number) => {
+    });
+    md.renderer.rules[containerTokenName] = (tokens: MarkdownIt.Token[], idx: number) => {
       const token = tokens[idx];
       const src = token.content;
-
-      const id = `mermaid-${idx}`;
-
-      return `<div class="mermaid-container" data-mermaid-diagram-id="${id}" data-language="${mermaidLanguageId}"><pre class="mermaid">${src}</pre></div>`;
+      return ` <pre class="mermaid">${preProcess(src)}</pre> `;
     };
   });
 
-  // Return actual params of nan闭合 HTML 容器.
+  const highlight = md.options.highlight;
+  md.options.highlight = (code: string, lang: string, attrs: string) => {
+    const reg = new RegExp('\\b(' + config.languageIds().map(escapeRegExp).join('|') + ')\\b', 'i');
+    if (lang && reg.test(lang)) {
+      return ` <pre class="mermaid">${preProcess(code)}</pre> `;
+    }
+    return highlight?.(code, lang, attrs) ?? code;
+  };
   return md;
+}
+
+function preProcess(source: string): string {
+  return source
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/\n+$/, '')
+    .trimStart();
+}
+
+function escapeRegExp(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
