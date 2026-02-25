@@ -46,6 +46,32 @@ export const antDesignColorMeta: Record<string, PresetColor> = {
 };
 
 // ========================
+// 飞书高亮背景色
+// ========================
+export const feishuHighlightColors: Record<string, { soft: string; solid: string }> = {
+  gray: { soft: 'rgba(222, 224, 227, 0.8)', solid: '#bbbfc4' },
+  red: { soft: '#fbbfbc', solid: '#f76964' },
+  orange: { soft: 'rgba(254, 212, 164, 0.8)', solid: '#ffa53d' },
+  yellow: { soft: 'rgba(255, 246, 122, 0.8)', solid: '#ffe928' },
+  green: { soft: 'rgba(183, 237, 177, 0.8)', solid: '#62d256' },
+  blue: { soft: 'rgba(186, 206, 253, 0.7)', solid: 'rgba(78, 131, 253, 0.55)' },
+  purple: { soft: 'rgba(205, 178, 250, 0.7)', solid: 'rgba(147, 90, 246, 0.55)' },
+};
+
+// ========================
+// 飞书文字颜色
+// ========================
+export const feishuTextColors: Record<string, string> = {
+  gray: '#8f959e',
+  red: '#d83931',
+  orange: '#de7802',
+  yellow: '#dc9b04',
+  green: '#2ea121',
+  blue: '#245bdb',
+  purple: '#6425d0',
+};
+
+// ========================
 // Tailwind CSS 主色对照表
 // ========================
 

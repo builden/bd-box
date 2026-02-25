@@ -20,6 +20,9 @@ export {
   tailwindPalettes,
   // 颜色元数据
   antDesignColorMeta,
+  // 飞书颜色
+  feishuHighlightColors,
+  feishuTextColors,
 } from './presets';
 
 // 类型导出
