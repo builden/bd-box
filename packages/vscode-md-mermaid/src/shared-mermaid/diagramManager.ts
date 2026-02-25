@@ -179,14 +179,37 @@ export class DiagramManager {
       }
     };
 
-    // Wheel zoom
+    // Wheel zoom - zoom centered on mouse position
     svg.addEventListener('wheel', (e) => {
       if (!e.altKey) return;
 
       e.preventDefault();
+
+      // Use SVG coordinate transformation to correctly handle CSS scaling in fullscreen mode
+      const point = svg.createSVGPoint();
+      point.x = e.clientX;
+      point.y = e.clientY;
+      const svgPoint = point.matrixTransform(svg.getScreenCTM()!.inverse());
+
       const view = this.getView(id, svg);
+
+      // Calculate new zoom level
       const delta = e.deltaY > 0 ? 0.9 : 1.1;
-      this.setZoom(id, svg, view.zoom * delta);
+      const newZoom = Math.max(0.1, Math.min(10, view.zoom * delta));
+
+      // Calculate the point under mouse in the current view
+      const pointX = (svgPoint.x - view.x) / view.zoom;
+      const pointY = (svgPoint.y - view.y) / view.zoom;
+
+      // Calculate new position to keep the same point under mouse after zoom
+      const newX = svgPoint.x - pointX * newZoom;
+      const newY = svgPoint.y - pointY * newZoom;
+
+      // Update view with new zoom and position
+      view.zoom = newZoom;
+      view.x = newX;
+      view.y = newY;
+      this.applyTransform(id, svg);
     }, { passive: false });
 
     svg.addEventListener('mousedown', onMouseDown);
