@@ -41,6 +41,5 @@ ${render.apply(md.renderer, args)}`;
 function escapeHtmlAttribute(str: string): string {
   return str
     .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/ /g, '&gt;');
+    .replace(/"/g, '&quot;');
 }

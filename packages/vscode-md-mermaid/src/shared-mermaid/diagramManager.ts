@@ -2,16 +2,6 @@ import type { MermaidExtensionConfig } from './config';
 import type { IDisposable } from './disposable';
 import { ClickDragMode, ShowControlsMode } from './config';
 
-interface DiagramState {
-  view?: {
-    x: number;
-    y: number;
-    zoom: number;
-  };
-}
-
-const savedStates = new Map<string, DiagramState>();
-
 export class DiagramManager {
   private readonly config: MermaidExtensionConfig;
   private readonly svgElementMap = new Map<string, SVGSVGElement>();
@@ -258,11 +248,7 @@ export class DiagramManager {
     }
   }
 
-  retainStates(activeIds: Set<string>) {
-    for (const id of savedStates.keys()) {
-      if (!activeIds.has(id)) {
-        savedStates.delete(id);
-      }
-    }
+  retainStates(_activeIds: Set<string>) {
+    // Reserved for future state persistence feature
   }
 }

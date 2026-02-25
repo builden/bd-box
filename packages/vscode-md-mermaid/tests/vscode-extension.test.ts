@@ -4,25 +4,24 @@ import { describe, it, expect } from 'vitest';
 function escapeHtmlAttribute(str: string): string {
   return str
     .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/ /g, '&gt;');
+    .replace(/"/g, '&quot;');
 }
 
 describe('escapeHtmlAttribute', () => {
-  it('should escape spaces', () => {
-    expect(escapeHtmlAttribute('a b')).toBe('a&gt;b');
+  it('should not escape spaces', () => {
+    expect(escapeHtmlAttribute('a b')).toBe('a b');
   });
 
-  it('should escape ampersands before spaces', () => {
-    expect(escapeHtmlAttribute('a & b')).toBe('a&gt;&amp;&gt;b');
+  it('should escape ampersands', () => {
+    expect(escapeHtmlAttribute('a & b')).toBe('a &amp; b');
   });
 
-  it('should escape double quotes before spaces', () => {
-    expect(escapeHtmlAttribute('a "b"')).toBe('a&gt;&quot;b&quot;');
+  it('should escape double quotes', () => {
+    expect(escapeHtmlAttribute('a "b"')).toBe('a &quot;b&quot;');
   });
 
   it('should handle multiple special characters', () => {
-    expect(escapeHtmlAttribute('a & "b" c')).toBe('a&gt;&amp;&gt;&quot;b&quot;&gt;c');
+    expect(escapeHtmlAttribute('a & "b" c')).toBe('a &amp; &quot;b&quot; c');
   });
 
   it('should handle empty string', () => {
