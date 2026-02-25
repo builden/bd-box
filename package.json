@@ -5,7 +5,10 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "bun test",
+    "test": "echo 'Run tests in individual packages'",
+    "test:color": "cd packages/bd-color && bun test",
+    "test:lunar": "cd packages/bd-lunar && bun test",
+    "test:mermaid": "cd packages/vscode-md-mermaid && bun run test",
     "docs:dev": "mint dev"
   },
   "devDependencies": {
