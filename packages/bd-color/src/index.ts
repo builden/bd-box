@@ -18,6 +18,8 @@ export {
   antDesignPalettes,
   antDesignDarkPalettes,
   tailwindPalettes,
+  // 颜色元数据
+  antDesignColorMeta,
 } from './presets';
 
 // 类型导出

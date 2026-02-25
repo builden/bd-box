@@ -3,7 +3,7 @@
 // ========================
 
 import { generateAntDesign, generateTailwind } from './generate';
-import { Palette, Presets } from './types';
+import { Palette, Presets, PresetColor } from './types';
 
 // ========================
 // ant-design 主色对照表
@@ -23,6 +23,26 @@ export const antDesignPrimaryColors: Record<string, string> = {
   purple: '#722ED1',
   magenta: '#EB2F96',
   grey: '#666666',
+};
+
+// ========================
+// AntDesign 颜色中文元数据
+// ========================
+
+export const antDesignColorMeta: Record<string, PresetColor> = {
+  red: { name: 'red', nameZh: '薄暮', description: '斗志、奔放', primary: '#F5222D' },
+  volcano: { name: 'volcano', nameZh: '火山', description: '醒目、澎湃', primary: '#FA541C' },
+  orange: { name: 'orange', nameZh: '日暮', description: '温暖、欢快', primary: '#FA8C16' },
+  gold: { name: 'gold', nameZh: '金盏花', description: '活力、积极', primary: '#FAAD14' },
+  yellow: { name: 'yellow', nameZh: '日出', description: '出生、阳光', primary: '#FADB14' },
+  lime: { name: 'lime', nameZh: '青柠', description: '自然、生机', primary: '#A0D911' },
+  green: { name: 'green', nameZh: '极光绿', description: '健康、创新', primary: '#52C41A' },
+  cyan: { name: 'cyan', nameZh: '明青', description: '希望、坚强', primary: '#13C2C2' },
+  blue: { name: 'blue', nameZh: '拂晓蓝', description: '包容、科技、普惠', primary: '#1677FF' },
+  geekblue: { name: 'geekblue', nameZh: '极客蓝', description: '探索、钻研', primary: '#2F54EB' },
+  purple: { name: 'purple', nameZh: '酱紫', description: '优雅、浪漫', primary: '#722ED1' },
+  magenta: { name: 'magenta', nameZh: '法式洋红', description: '明快、感性', primary: '#EB2F96' },
+  grey: { name: 'grey', nameZh: '中性灰', description: '沉稳、柔和', primary: '#666666' },
 };
 
 // ========================

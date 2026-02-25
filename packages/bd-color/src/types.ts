@@ -130,6 +130,8 @@ export interface Palette extends Array<string> {
 export interface PresetColor {
   name: string;
   primary: string;
+  nameZh?: string;
+  description?: string;
 }
 
 export interface Presets {
