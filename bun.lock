@@ -33,7 +33,7 @@
     },
     "packages/vscode-md-mermaid": {
       "name": "vscode-md-mermaid",
-      "version": "1.0.25",
+      "version": "1.0.38",
       "dependencies": {
         "@iconify-json/logos": "^1.2.0",
         "@iconify-json/mdi": "^1.2.0",
