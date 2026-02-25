@@ -5,7 +5,8 @@ import { ClickDragMode, ShowControlsMode } from './config';
 export class DiagramManager {
   private readonly config: MermaidExtensionConfig;
   private readonly svgElementMap = new Map<string, SVGSVGElement>();
-  private readonly viewMap = new Map<string, { x: number; y: number; zoom: number }>();
+  // Store both normal and fullscreen view states for each diagram
+  private readonly viewMap = new Map<string, { normal: { x: number; y: number; zoom: number }; fullscreen: { x: number; y: number; zoom: number } }>();
   private readonly resizeHandleMap = new Map<string, HTMLDivElement>();
 
   constructor(config: MermaidExtensionConfig) {
@@ -104,6 +105,8 @@ export class DiagramManager {
         container.classList.remove('fullscreen');
         fullscreenBtn.textContent = '⛶';
       }
+      // Apply the view state for the new mode
+      this.applyTransform(id, svg);
     };
 
     fullscreenBtn.addEventListener('click', toggleFullscreen);
@@ -166,9 +169,10 @@ export class DiagramManager {
     const onMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
 
-      const view = this.getView(id, svg);
-      const dx = (e.clientX - startX) / view.zoom;
-      const dy = (e.clientY - startY) / view.zoom;
+      // Direct mouse movement without zoom adjustment
+      // The CSS transform will naturally scale the movement
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
 
       this.setPosition(id, svg, startViewX + dx, startViewY + dy);
     };
@@ -226,27 +230,36 @@ export class DiagramManager {
   }
 
   private getView(id: string, svg: SVGSVGElement): { x: number; y: number; zoom: number } {
-    if (!this.viewMap.has(id)) {
-      const g = svg.querySelector('g');
-      const transform = g?.getAttribute('transform');
-      const view = { x: 0, y: 0, zoom: 1 };
+    const container = svg.closest('.mermaid');
+    const isFullscreen = container?.classList.contains('fullscreen');
+    const mode = isFullscreen ? 'fullscreen' : 'normal';
 
+    if (!this.viewMap.has(id)) {
+      // Initialize both normal and fullscreen states
+      const normalView = { x: 0, y: 0, zoom: 1 };
+      const fullscreenView = { x: 0, y: 0, zoom: 1 };
+
+      // Try to read existing transform from SVG (for initial state)
+      const transform = svg.style.transform;
       if (transform) {
-        const translateMatch = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+        const translateMatch = transform.match(/translate\(([^,]+)px,\s*([^)]+)px\)/);
         const scaleMatch = transform.match(/scale\(([^)]+)\)/);
 
         if (translateMatch) {
-          view.x = parseFloat(translateMatch[1]);
-          view.y = parseFloat(translateMatch[2]);
+          normalView.x = parseFloat(translateMatch[1]);
+          normalView.y = parseFloat(translateMatch[2]);
+          fullscreenView.x = normalView.x;
+          fullscreenView.y = normalView.y;
         }
         if (scaleMatch) {
-          view.zoom = parseFloat(scaleMatch[1]);
+          normalView.zoom = parseFloat(scaleMatch[1]);
+          fullscreenView.zoom = normalView.zoom;
         }
       }
 
-      this.viewMap.set(id, view);
+      this.viewMap.set(id, { normal: normalView, fullscreen: fullscreenView });
     }
-    return this.viewMap.get(id)!;
+    return this.viewMap.get(id)![mode];
   }
 
   private setZoom(id: string, svg: SVGSVGElement, zoom: number) {
@@ -264,19 +277,26 @@ export class DiagramManager {
   }
 
   private resetView(id: string, svg: SVGSVGElement) {
-    this.viewMap.delete(id);
-    const g = svg.querySelector('g');
-    if (g) {
-      g.setAttribute('transform', '');
+    const container = svg.closest('.mermaid');
+    const isFullscreen = container?.classList.contains('fullscreen');
+    const mode = isFullscreen ? 'fullscreen' : 'normal';
+
+    // Reset only the current mode's state
+    const viewStates = this.viewMap.get(id);
+    if (viewStates) {
+      viewStates[mode] = { x: 0, y: 0, zoom: 1 };
     }
+
+    // Reset CSS transform on SVG element
+    svg.style.transform = '';
+    svg.style.transformOrigin = '';
   }
 
   private applyTransform(id: string, svg: SVGSVGElement) {
     const view = this.getView(id, svg);
-    const g = svg.querySelector('g');
-    if (g) {
-      g.setAttribute('transform', `translate(${view.x}, ${view.y}) scale(${view.zoom})`);
-    }
+    // Use CSS transform on SVG element - this doesn't affect getScreenCTM()
+    svg.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`;
+    svg.style.transformOrigin = '0 0';
   }
 
   retainStates(_activeIds: Set<string>) {
