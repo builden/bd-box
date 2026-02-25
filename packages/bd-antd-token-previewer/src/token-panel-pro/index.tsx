@@ -1,5 +1,5 @@
 import { Anchor } from 'antd';
-import type { Theme } from 'antd-token-previewer';
+import type { Theme } from 'bd-antd-token-previewer';
 import { clsx } from 'clsx';
 import type { FC } from 'react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';

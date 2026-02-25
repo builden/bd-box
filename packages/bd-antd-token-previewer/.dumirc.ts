@@ -1,12 +1,16 @@
 // more config: https://d.umijs.org/config
 import { defineConfig } from 'dumi';
+import path from 'path';
 
 const isProdSite =
   // 不是预览模式 同时是生产环境
   process.env.PREVIEW !== '1' && process.env.NODE_ENV === 'production';
-const sitePrefix = isProdSite ? '/antd-token-previewer' : '';
+const sitePrefix = isProdSite ? '/bd-antd-token-previewer' : '';
 
 export default defineConfig({
+  alias: {
+    'bd-antd-token-previewer': path.resolve(__dirname, './src'),
+  },
   themeConfig: {
     name: 'Theme Editor',
     sideBar: {},
@@ -21,7 +25,7 @@ export default defineConfig({
   outputPath: '.doc',
   ssr: process.env.NODE_ENV === 'production' ? {} : false,
   exportStatic: {},
-  base: isProdSite ? '/antd-token-previewer/' : '/',
-  publicPath: isProdSite ? '/antd-token-previewer/' : '/',
+  base: isProdSite ? '/bd-antd-token-previewer/' : '/',
+  publicPath: isProdSite ? '/bd-antd-token-previewer/' : '/',
   hash: true,
 });

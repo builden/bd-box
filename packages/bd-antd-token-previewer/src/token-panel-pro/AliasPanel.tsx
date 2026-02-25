@@ -5,7 +5,7 @@ import {
   ShrinkOutlined,
 } from '@ant-design/icons';
 import { Button, Collapse, Empty, Tooltip } from 'antd';
-import type { MutableTheme } from 'antd-token-previewer';
+import type { MutableTheme } from 'bd-antd-token-previewer';
 import { clsx } from 'clsx';
 import useMergedState from '@rc-component/util/lib/hooks/useMergedState';
 import type { FC } from 'react';

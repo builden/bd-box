@@ -1,5 +1,5 @@
 import React from 'react';
-import { Success } from 'antd-token-previewer';
+import { Success } from 'bd-antd-token-previewer';
 
 const Demo = () => {
   return (

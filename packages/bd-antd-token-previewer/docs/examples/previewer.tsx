@@ -1,5 +1,5 @@
 import { ConfigProvider } from 'antd';
-import { Previewer } from 'antd-token-previewer';
+import { Previewer } from 'bd-antd-token-previewer';
 import React from 'react';
 
 const Demo = () => {

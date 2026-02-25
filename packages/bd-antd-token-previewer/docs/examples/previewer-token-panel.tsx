@@ -1,7 +1,7 @@
 import React from 'react';
 import { Space } from 'antd';
-import type { TokenPreviewProps } from 'antd-token-previewer';
-import { TokenPanel } from 'antd-token-previewer';
+import type { TokenPreviewProps } from 'bd-antd-token-previewer';
+import { TokenPanel } from 'bd-antd-token-previewer';
 
 export default () => {
   const tokens = [

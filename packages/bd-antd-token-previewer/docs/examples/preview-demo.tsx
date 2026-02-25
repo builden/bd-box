@@ -1,5 +1,5 @@
 import { theme } from 'antd';
-import { PreviewDemo } from 'antd-token-previewer';
+import { PreviewDemo } from 'bd-antd-token-previewer';
 import React from 'react';
 
 const Demo = () => {

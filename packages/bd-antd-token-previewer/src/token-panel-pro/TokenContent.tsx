@@ -9,7 +9,7 @@ import {
   theme as antdTheme,
   Tooltip,
 } from 'antd';
-import type { MutableTheme } from 'antd-token-previewer';
+import type { MutableTheme } from 'bd-antd-token-previewer';
 import type { ThemeConfig } from 'antd/es/config-provider/context';
 import seed from 'antd/es/theme/themes/seed';
 import tokenMeta from 'antd/lib/version/token-meta.json';

@@ -22,12 +22,12 @@
   "devDependencies": {
     "@rc-component/father-plugin": "^1.1.0",
     "@testing-library/react": "^16.3.0",
-    "@types/jest": "^30.0.0",
     "@types/node": "^24.7.2",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.1",
     "@types/tinycolor2": "^1.4.6",
     "@umijs/fabric": "^3.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
     "antd": "6.0.0-alpha.3",
     "coveralls": "^3.1.1",
     "cross-env": "^10.1.0",
@@ -36,7 +36,7 @@
     "father": "^4.6.6",
     "gh-pages": "^5.0.0",
     "husky": "^9.1.7",
-    "jest": "^30.2.0",
+    "jsdom": "^26.0.0",
     "lint-staged": "^13.3.0",
     "np": "^7.7.0",
     "prettier": "^2.8.8",
@@ -45,7 +45,7 @@
     "react-dom": "^19.2.0",
     "react-test-renderer": "^19.2.0",
     "typescript": "^5.9.3",
-    "umi-test": "^1.9.7"
+    "vitest": "^3.0.0"
   },
   "files": [
     "es",
@@ -77,7 +77,7 @@
   },
   "scripts": {
     "compile": "father build",
-    "coverage": "umi-test --coverage",
+    "coverage": "vitest --coverage",
     "docs:build": "dumi build",
     "docs:deploy": "npm run docs:build && npm run gh-pages",
     "docs:preview": "PREVIEW=1 dumi build",
@@ -86,7 +86,9 @@
     "prepare": "husky || true",
     "prepublishOnly": "npm run compile && np --yolo --no-publish && npm run docs:deploy",
     "start": "dumi dev",
-    "test": "umi-test"
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run"
   },
   "sideEffects": [
     "*.css"

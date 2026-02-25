@@ -1,12 +1,12 @@
 import { Button, ConfigProvider, message, theme as antdTheme } from 'antd';
-import type { Theme } from 'antd-token-previewer';
+import type { Theme } from 'bd-antd-token-previewer';
 import {
   enUS,
   parsePlainConfig,
   parseThemeConfig,
   ThemeEditor,
   zhCN,
-} from 'antd-token-previewer';
+} from 'bd-antd-token-previewer';
 // import 'antd/es/style/reset.css';
 import antdZhCN from 'antd/locale/zh_CN';
 import React, { useEffect } from 'react';
