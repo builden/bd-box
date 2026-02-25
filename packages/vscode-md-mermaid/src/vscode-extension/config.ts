@@ -1,20 +1,11 @@
 import type MarkdownIt from 'markdown-it';
 import * as vscode from 'vscode';
-import { ClickDragMode, ShowControlsMode } from '../shared-mermaid/config';
+import { ClickDragMode, ShowControlsMode, defaultMermaidTheme, validMermaidThemes } from '../shared-mermaid/config';
 
 export const configSection = 'markdown-mermaid';
 
-const defaultMermaidTheme = 'default';
-const validMermaidThemes = [
-  'base',
-  'forest',
-  'dark',
-  'default',
-  'neutral',
-];
-
 function sanitizeMermaidTheme(theme: string | undefined) {
-  return typeof theme === 'string' && validMermaidThemes.includes(theme) ? theme : defaultMermaidTheme;
+  return typeof theme === 'string' && validMermaidThemes.includes(theme as typeof validMermaidThemes[number]) ? theme : defaultMermaidTheme;
 }
 
 export function injectMermaidConfig(md: MarkdownIt) {

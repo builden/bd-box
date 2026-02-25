@@ -19,3 +19,16 @@ export const enum ClickDragMode {
   Alt = 'alt',
   Never = 'never'
 }
+
+// Shared theme configuration
+export const defaultMermaidTheme = 'default';
+
+export const validMermaidThemes = [
+  'base',
+  'forest',
+  'dark',
+  'default',
+  'neutral',
+] as const;
+
+export type ValidMermaidTheme = typeof validMermaidThemes[number];
