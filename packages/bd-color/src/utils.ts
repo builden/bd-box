@@ -2,8 +2,6 @@
 // 工具函数
 // ========================
 
-const round = Math.round;
-
 /** 限制数值在范围内 */
 export function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));

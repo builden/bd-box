@@ -3,13 +3,12 @@
 // ========================
 
 import { ColorInput, RGB, HSL, HSV, OKLCH, OKLAB } from './types';
-import { clamp, limitRange, limitAlpha, normalizeHue } from './utils';
+import { clamp, limitRange, limitAlpha } from './utils';
 import {
   rgbToHsl, hslToRgb,
   rgbToHsv, hsvToRgb,
   rgbToOklab, oklabToRgb,
-  rgbToOklch, oklchToRgb,
-  oklabToOklch, oklchToOklab,
+  oklchToRgb,
 } from './color-spaces';
 
 // 预设颜色映射

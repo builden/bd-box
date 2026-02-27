@@ -478,7 +478,7 @@ const MapTokenCollapseContent: FC<MapTokenCollapseContentProps> = ({
   const locale = useLocale();
 
   const getMapTokenColor = (token: string) =>
-    !!(theme.config.token as any)?.[token] ? HIGHLIGHT_COLOR : '';
+    (theme.config.token as any)?.[token] ? HIGHLIGHT_COLOR : '';
 
   return (
     <>
@@ -782,7 +782,7 @@ const TokenContent: FC<ColorTokenContentProps> = ({
                                             className="token-panel-pro-token-list-seed-block-name-cn"
                                             style={{
                                               marginRight: 4,
-                                              color: !!(
+                                              color: (
                                                 theme.config.token as any
                                               )?.[seedToken]
                                                 ? HIGHLIGHT_COLOR
@@ -807,7 +807,7 @@ const TokenContent: FC<ColorTokenContentProps> = ({
                                               : 'token-panel-pro-token-list-seed-block-name-cn'
                                           }
                                           style={{
-                                            color: !!(
+                                            color: (
                                               theme.config.token as any
                                             )?.[seedToken]
                                               ? HIGHLIGHT_COLOR

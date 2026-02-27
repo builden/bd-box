@@ -198,7 +198,7 @@ const Index: FC<ComponentPanelProps> = ({
 
   const relatedComponents = useMemo(() => {
     return selectedTokens ? getRelatedComponents(selectedTokens) : [];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [selectedTokens]);
 
   useEffect(() => {

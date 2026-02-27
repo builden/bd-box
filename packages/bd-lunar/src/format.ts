@@ -1,6 +1,5 @@
-import { LUNAR_TOKENS, type LunarReplacers, type LunarToken } from './types'
+import { type LunarReplacers, type LunarToken } from './types'
 
-const { MONTH, DAY, HOUR } = LUNAR_TOKENS
 const TOKEN_REGEX = /\[([^\]]+)]|LM|LD|LH/g
 const HAS_TOKEN_REGEX = /LM|LD|LH/
 

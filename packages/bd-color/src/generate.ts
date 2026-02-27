@@ -3,7 +3,7 @@
 // ========================
 
 import { Color } from './color';
-import { ColorInput, ColorGenerateOptions, Palette } from './types';
+import { ColorInput, ColorGenerateOptions } from './types';
 import { clamp, lerp, easeInOut } from './utils';
 
 // ========================
@@ -163,7 +163,7 @@ function getChromaShift(l: number, baseL: number, baseC: number): number {
  * 生成 11 个色阶 (50-950)，主色在 500
  * 基于 OKLCH 颜色空间，保持色相一致性
  */
-export function generateTailwind(color: ColorInput, baseStep: number = 500): string[] {
+export function generateTailwind(color: ColorInput, _baseStep: number = 500): string[] {
   const baseColor = new Color(color);
   const oklch = baseColor.toOklch();
   
@@ -219,8 +219,7 @@ export function generateOklch(
 
   const baseColor = new Color(color);
   const oklch = baseColor.toOklch();
-  
-  const baseL = oklch.l;
+
   const baseC = oklch.c;
   const baseH = oklch.h;
   

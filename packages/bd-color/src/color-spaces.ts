@@ -3,7 +3,7 @@
 // ========================
 
 import { RGB, HSL, HSV, OKLCH, OKLAB } from './types';
-import { clamp, roundTo } from './utils';
+import { clamp } from './utils';
 
 // ========================
 // RGB <-> HSL

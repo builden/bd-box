@@ -25,7 +25,7 @@ const ColorPicker: FC<ColorPickerProps> = (props) => {
       antdToken.lime,
       '#000',
     ];
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+     
   }, []);
 
   return (

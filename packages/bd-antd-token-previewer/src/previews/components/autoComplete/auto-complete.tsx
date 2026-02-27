@@ -16,7 +16,7 @@ const Complete: React.FC = () => {
     );
   };
   const onSelect = (data: string) => {
-    // eslint-disable-next-line no-console
+     
     console.log('onSelect', data);
   };
   const onChange = (data: string) => {

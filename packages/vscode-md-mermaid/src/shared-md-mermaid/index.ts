@@ -105,7 +105,7 @@ export function extendMarkdownItWithMermaid(md: MarkdownIt, config: { languageId
 
       const old_parent = state.parentType;
       const old_line_max = state.lineMax;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       state.parentType = 'container' as any;
 
       // this will prevent lazy continuations from ever going past our end marker

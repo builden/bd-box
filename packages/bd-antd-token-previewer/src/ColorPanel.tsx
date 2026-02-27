@@ -260,7 +260,7 @@ const ColorPanel: FC<ColorPanelProps> = ({ color, onChange, alpha, style }) => {
       token.lime,
       '#000',
     ];
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+     
   }, []);
 
   const handleColorModeChange = (value: ColorMode) => {

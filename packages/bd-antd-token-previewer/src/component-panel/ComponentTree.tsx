@@ -87,7 +87,7 @@ const ComponentTree: FC<ComponentTreeProps> = ({
 
   const relatedComponents = useMemo(() => {
     return selectedTokens ? getRelatedComponents(selectedTokens) : [];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [selectedTokens]);
 
   useEffect(() => {

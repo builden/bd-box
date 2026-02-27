@@ -36,7 +36,7 @@ interface TokenItemProps {
 const AdditionInfo = ({
   info,
   visible,
-  tokenName,
+  tokenName: _tokenName,
   style,
   dark,
   ...rest

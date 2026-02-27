@@ -79,7 +79,7 @@ export default function IconSwitch({
   leftIcon,
   rightIcon,
   leftChecked,
-  transparent,
+  transparent: _transparent,
   onChange,
   ...props
 }: IconSwitchProps) {
