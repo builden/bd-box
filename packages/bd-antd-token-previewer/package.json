@@ -86,7 +86,7 @@
     "prepare": "husky || true",
     "prepublishOnly": "npm run compile && np --yolo --no-publish && npm run docs:deploy",
     "start": "dumi dev",
-    "test": "bun test --timeout=30000",
+    "test": "bun test",
     "test:run": "bun test"
   },
   "sideEffects": [

@@ -56,7 +56,7 @@ describe('ComponentPanel', () => {
         container.querySelector('.component-demos')?.children || [],
       ).filter((el: any) => el.style.display !== 'none').length,
     ).toBe(componentLength);
-  });
+  }, 30000);
 
   it('search should work', () => {
     const { container } = render(<Panel />);
@@ -70,5 +70,5 @@ describe('ComponentPanel', () => {
         ?.querySelector('.ant-tree-list')
         ?.querySelectorAll('.ant-tree-treenode').length,
     ).toBe(2);
-  });
+  }, 30000);
 });
