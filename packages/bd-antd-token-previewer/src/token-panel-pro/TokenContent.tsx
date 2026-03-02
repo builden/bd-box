@@ -843,7 +843,6 @@ const TokenContent: FC<ColorTokenContentProps> = ({
                       (!group.seedToken?.includes('colorInfo') ||
                         !infoFollowPrimary) && (
                         <Collapse
-                          bordered={false}
                           expandIcon={({ isActive }) => (
                             <CaretRightOutlined rotate={isActive ? 90 : 0} />
                           )}

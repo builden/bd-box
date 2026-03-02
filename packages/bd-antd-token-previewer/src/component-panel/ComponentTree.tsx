@@ -176,7 +176,7 @@ const ComponentTree: FC<ComponentTreeProps> = ({
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         prefix={<SearchOutlined />}
-        bordered={false}
+        variant="borderless"
         className="component-tree-search"
       />
       <div ref={treeRef} style={{ overflow: 'auto', flex: 1 }}>

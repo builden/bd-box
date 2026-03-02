@@ -156,7 +156,7 @@ const TokenInput: FC<TokenInputProps> = ({
   if (typeof valueRef.current === 'string' && isColor(valueRef.current)) {
     inputNode = (
       <Input
-        bordered={false}
+        variant="borderless"
         addonAfter={addonAfter}
         value={String(tokenValue)}
         disabled={readonly}
@@ -200,7 +200,7 @@ const TokenInput: FC<TokenInputProps> = ({
     inputNode = (
       <InputNumber
         addonAfter={addonAfter}
-        bordered={false}
+        variant="borderless"
         value={tokenValue}
         disabled={readonly}
         onChange={(newValue) => {
@@ -212,7 +212,7 @@ const TokenInput: FC<TokenInputProps> = ({
     inputNode = (
       <Input
         addonAfter={addonAfter}
-        bordered={false}
+        variant="borderless"
         value={String(tokenValue)}
         disabled={readonly}
         onChange={(e) => {
