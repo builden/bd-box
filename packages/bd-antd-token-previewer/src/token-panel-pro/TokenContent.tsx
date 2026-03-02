@@ -17,7 +17,7 @@ import tokenMeta from 'antd/lib/version/token-meta.json';
 import type { MutableTheme } from 'bd-antd-token-previewer';
 import { clsx } from 'clsx';
 import type { FC } from 'react';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import ColorPicker from '../ColorPicker';
 import { useAdvanced } from '../context';
 import useDebouncy from '../hooks/useDebouncy';
@@ -345,24 +345,31 @@ const SeedTokenPreview: FC<React.PropsWithChildren<SeedTokenProps>> = (
   const [tokenValue, setTokenValue] = useState(
     getSeedValue(theme.config, tokenName),
   );
-  const onThemeChange = (newValue: number | string) => {
-    theme.onThemeChange?.(
-      {
-        ...theme.config,
-        token: {
-          ...theme.config.token,
-          [tokenName]: newValue,
+  const onThemeChange = useCallback(
+    (newValue: number | string) => {
+      theme.onThemeChange?.(
+        {
+          ...theme.config,
+          token: {
+            ...theme.config.token,
+            [tokenName]: newValue,
+          },
         },
-      },
-      ['token', tokenName],
-    );
-  };
+        ['token', tokenName],
+      );
+    },
+    [theme, tokenName],
+  );
+
   const debouncedOnChange = useDebouncy(onThemeChange, 200);
 
-  const handleChange = (value: any) => {
-    setTokenValue(value);
-    debouncedOnChange(value);
-  };
+  const handleChange = useCallback(
+    (value: any) => {
+      setTokenValue(value);
+      debouncedOnChange(value);
+    },
+    [debouncedOnChange],
+  );
 
   useEffect(() => {
     setTokenValue(getSeedValue(theme.config, tokenName));
@@ -479,8 +486,16 @@ const MapTokenCollapseContent: FC<MapTokenCollapseContentProps> = ({
 }) => {
   const locale = useLocale();
 
-  const getMapTokenColor = (token: string) =>
-    (theme.config.token as any)?.[token] ? HIGHLIGHT_COLOR : '';
+  const designToken = useMemo(
+    () => getDesignToken(theme.config),
+    [theme.config],
+  );
+
+  const getMapTokenColor = useCallback(
+    (token: string) =>
+      (theme.config.token as any)?.[token] ? HIGHLIGHT_COLOR : '',
+    [theme.config.token],
+  );
 
   return (
     <>
@@ -521,10 +536,10 @@ const MapTokenCollapseContent: FC<MapTokenCollapseContentProps> = ({
             <ResetTokenButton theme={theme} tokenName={mapToken} />
           </div>
           <span
-            title={(getDesignToken(theme.config) as any)[mapToken]}
+            title={(designToken as any)[mapToken]}
             className="token-panel-pro-token-collapse-map-collapse-count"
           >
-            {(getDesignToken(theme.config) as any)[mapToken]}
+            {(designToken as any)[mapToken]}
           </span>
           <SeedTokenPreview theme={theme} tokenName={mapToken}>
             <div className="token-panel-pro-token-collapse-map-collapse-preview">
@@ -571,18 +586,23 @@ const MapTokenCollapse: FC<MapTokenCollapseProps> = ({
     return grouped;
   }, [group, groupFn]);
 
+  const expandIcon = useCallback(
+    ({ isActive }: { isActive?: boolean }) => (
+      <CaretRightOutlined
+        rotate={isActive ? 450 : 360}
+        style={{ fontSize: 12 }}
+      />
+    ),
+    [],
+  );
+
   if (groupFn) {
     return (
       <Collapse
         className="token-panel-pro-grouped-map-collapse"
         defaultActiveKey={Object.keys(groupedTokens)}
         expandIconPlacement="end"
-        expandIcon={({ isActive }) => (
-          <CaretRightOutlined
-            rotate={isActive ? 450 : 360}
-            style={{ fontSize: 12 }}
-          />
-        )}
+        expandIcon={expandIcon}
       >
         {(group.mapTokenGroups ?? Object.keys(groupedTokens)).map((key) => (
           <Panel key={key} header={(locale as any)[key] ?? ''}>
@@ -605,12 +625,7 @@ const MapTokenCollapse: FC<MapTokenCollapseProps> = ({
         className="token-panel-pro-grouped-map-collapse"
         defaultActiveKey={group.groups.map((item) => item.key)}
         expandIconPlacement="end"
-        expandIcon={({ isActive }) => (
-          <CaretRightOutlined
-            rotate={isActive ? 450 : 360}
-            style={{ fontSize: 12 }}
-          />
-        )}
+        expandIcon={expandIcon}
       >
         {group.groups.map((item) => (
           <Panel key={item.key} header={item.name}>
@@ -681,6 +696,17 @@ const TokenContent: FC<ColorTokenContentProps> = ({
   const advanced = useAdvanced();
   const { token } = antdTheme.useToken();
 
+  const configProviderTheme = useMemo(
+    () => ({
+      components: {
+        Collapse: {
+          colorBorder: token.colorSplit,
+        },
+      },
+    }),
+    [token.colorSplit],
+  );
+
   return (
     <div className={clsx(hashId, 'token-panel-pro-color')} id={id}>
       <div className="token-panel-pro-color-seeds">
@@ -708,19 +734,15 @@ const TokenContent: FC<ColorTokenContentProps> = ({
             />
           )}
         </div>
-        <ConfigProvider
-          theme={{
-            components: {
-              Collapse: {
-                colorBorder: token.colorSplit,
-              },
-            },
-          }}
-        >
+        <ConfigProvider theme={configProviderTheme}>
           <div className="token-panel-pro-token-list">
             {category.groups.map((group) => {
               const groupDesc =
                 locale._lang === 'zh-CN' ? group.desc : group.descEn;
+              const groupToken = theme.config.token as any;
+              const hasMapToken = group.mapToken?.some(
+                (t) => !!groupToken?.[t],
+              );
               return (
                 (!!group.seedToken || advanced) && (
                   <div className="token-panel-pro-token-item" key={group.key}>
@@ -784,9 +806,7 @@ const TokenContent: FC<ColorTokenContentProps> = ({
                                             className="token-panel-pro-token-list-seed-block-name-cn"
                                             style={{
                                               marginRight: 4,
-                                              color: (
-                                                theme.config.token as any
-                                              )?.[seedToken]
+                                              color: groupToken?.[seedToken]
                                                 ? HIGHLIGHT_COLOR
                                                 : '',
                                             }}
@@ -809,9 +829,7 @@ const TokenContent: FC<ColorTokenContentProps> = ({
                                               : 'token-panel-pro-token-list-seed-block-name-cn'
                                           }
                                           style={{
-                                            color: (
-                                              theme.config.token as any
-                                            )?.[seedToken]
+                                            color: groupToken?.[seedToken]
                                               ? HIGHLIGHT_COLOR
                                               : '',
                                           }}
@@ -863,11 +881,7 @@ const TokenContent: FC<ColorTokenContentProps> = ({
                               >
                                 <span
                                   style={{
-                                    color: group.mapToken?.some(
-                                      (t) => !!(theme.config.token as any)?.[t],
-                                    )
-                                      ? HIGHLIGHT_COLOR
-                                      : '',
+                                    color: hasMapToken ? HIGHLIGHT_COLOR : '',
                                   }}
                                 >
                                   {locale._lang === 'zh-CN'
