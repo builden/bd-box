@@ -4,7 +4,7 @@
 
 import { Color } from "./color";
 import { ColorInput, ColorGenerateOptions, AntDesignOptions, TailwindOptions, OklchOptions } from "./types";
-import { clamp, lerp, easeInOut } from "./utils";
+import { clamp, lerp, easeInOut, roundTo, normalizeHue } from "./utils";
 
 // ========================
 // ant-design-colors 算法 (HSV)
@@ -38,8 +38,7 @@ function getHue(hsv: { h: number; s: number; v: number }, i: number, light?: boo
   } else {
     hue = light ? Math.round(hsv.h) + hueStep * i : Math.round(hsv.h) - hueStep * i;
   }
-  if (hue < 0) hue += 360;
-  else if (hue >= 360) hue -= 360;
+  hue = normalizeHue(hue);
   return hue;
 }
 
@@ -59,7 +58,7 @@ function getSaturation(hsv: { h: number; s: number; v: number }, i: number, ligh
   if (light && i === lightColorCount && saturation > 0.1) saturation = 0.1;
   if (saturation < 0.06) saturation = 0.06;
 
-  return Math.round(saturation * 100) / 100;
+  return roundTo(saturation, 2);
 }
 
 function getValue(hsv: { h: number; s: number; v: number }, i: number, light?: boolean): number {
@@ -70,7 +69,7 @@ function getValue(hsv: { h: number; s: number; v: number }, i: number, light?: b
     value = hsv.v - brightnessStep2 * i;
   }
   value = clamp(value, 0, 1);
-  return Math.round(value * 100) / 100;
+  return roundTo(value, 2);
 }
 
 /**

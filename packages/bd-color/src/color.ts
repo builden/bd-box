@@ -268,9 +268,8 @@ export class Color {
   toHsl(): HSL {
     if (!this._hsl) {
       this._hsl = rgbToHsl(this.r, this.g, this.b);
-      this._hsl.a = this.a;
     }
-    return this._hsl;
+    return { ...this._hsl, a: this.a };
   }
 
   toHslString(): string {
@@ -284,26 +283,23 @@ export class Color {
   toHsv(): HSV {
     if (!this._hsv) {
       this._hsv = rgbToHsv(this.r, this.g, this.b);
-      this._hsv.a = this.a;
     }
-    return this._hsv;
+    return { ...this._hsv, a: this.a };
   }
 
   toOklab(): OKLAB {
     if (!this._oklab) {
       this._oklab = rgbToOklab(this.r, this.g, this.b);
-      this._oklab.alpha = this.a;
     }
-    return this._oklab;
+    return { ...this._oklab, alpha: this.a };
   }
 
   toOklch(): OKLCH {
     if (!this._oklch) {
       const oklab = this.toOklab();
       this._oklch = oklabToOklch(oklab.l, oklab.a, oklab.b);
-      this._oklch.a = this.a;
     }
-    return this._oklch;
+    return { ...this._oklch, a: this.a };
   }
 
   toString(): string {
@@ -384,12 +380,13 @@ export class Color {
     return this.getBrightness() >= 128;
   }
 
-  equals(other: Color): boolean {
+  equals(other: ColorInput): boolean {
+    const otherColor = other instanceof Color ? other : new Color(other);
     return (
-      this.r === other.r &&
-      this.g === other.g &&
-      this.b === other.b &&
-      this.a === other.a
+      this.r === otherColor.r &&
+      this.g === otherColor.g &&
+      this.b === otherColor.b &&
+      this.a === otherColor.a
     );
   }
 

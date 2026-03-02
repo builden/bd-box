@@ -3,7 +3,7 @@
 // ========================
 
 import { generateAntDesign, generateTailwind } from './generate';
-import { Palette, Presets, PresetColor } from './types';
+import { Palette, Presets, PresetColor, GenerateAlgorithm } from './types';
 
 // ========================
 // ant-design 主色对照表
@@ -113,9 +113,10 @@ function createAntDesignPalette(color: string): Palette {
 
 /** 创建 ant-design 暗色调色板 */
 function createAntDesignDarkPalette(color: string): Palette {
-  const palette = createAntDesignPalette(color);
-  Object.assign(palette, generateAntDesign(color, { theme: 'dark' }));
-  return palette;
+  // 暗色主题用暗色数组替换亮色数组，保持 10 个元素
+  const darkPalette = generateAntDesign(color, { theme: 'dark' }) as Palette;
+  darkPalette.primary = darkPalette[5];
+  return darkPalette;
 }
 
 /** 创建 Tailwind 调色板 */
