@@ -92,5 +92,34 @@ describe('format 工具', () => {
     it('should return empty for no tokens', () => {
       expect(parseLunarTokens('YYYY-MM-DD')).toEqual([])
     })
+
+    it('should parse all three tokens', () => {
+      expect(parseLunarTokens('LM月LD日LH')).toEqual(['LM', 'LD', 'LH'])
+    })
+
+    it('should return all LM tokens including escaped', () => {
+      // parseLunarTokens 会返回所有匹配的 token，包括转义括号内的
+      expect(parseLunarTokens('[LM] LM')).toEqual(['LM', 'LM'])
+    })
+  })
+
+  describe('edge cases', () => {
+    it('should handle empty format string', () => {
+      expect(replaceLunarTokens('', {})).toBe('')
+      expect(hasLunarToken('')).toBe(false)
+      expect(parseLunarTokens('')).toEqual([])
+    })
+
+    it('should handle missing replacer keys', () => {
+      const replacers: LunarReplacers = { LM: '五' }
+      // 缺少 LD 和 LH，应该保留原始 token
+      expect(replaceLunarTokens('LM月LD日', replacers)).toBe('五月LD日')
+    })
+
+    it('should handle multiple escapes in one string', () => {
+      const replacers: LunarReplacers = { LM: '五', LD: '十五', LH: '午时' }
+      const result = replaceLunarTokens('[LM] [LD] LM', replacers)
+      expect(result).toBe('[LM] [LD] 五')
+    })
   })
 })

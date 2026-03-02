@@ -1,6 +1,7 @@
 import type { PluginFunc } from 'dayjs'
 import type { Dayjs } from 'dayjs'
 import { getLunarInfo, lunarToSolar } from './lunar'
+import { getShichen } from './shichen'
 import { hasLunarToken, replaceLunarTokens } from './format'
 import type { LunarReplacers } from './types'
 
@@ -10,7 +11,7 @@ function getReplacers(instance: Dayjs): LunarReplacers {
   return {
     LM: lunar.monthInChinese,
     LD: lunar.dayInChinese,
-    LH: lunar.timeZhi + '时',
+    LH: getShichen(instance.toDate()),
   }
 }
 

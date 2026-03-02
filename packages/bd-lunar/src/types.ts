@@ -46,11 +46,6 @@ export type LunarReplacers = {
 }
 
 /**
- * 农历占位符类型
- */
-export type LunarToken = 'LM' | 'LD' | 'LH'
-
-/**
  * 农历占位符常量
  */
 export const LUNAR_TOKENS = {
@@ -58,3 +53,8 @@ export const LUNAR_TOKENS = {
   DAY: 'LD',
   HOUR: 'LH',
 } as const
+
+/**
+ * 农历占位符类型（从常量派生）
+ */
+export type LunarToken = (typeof LUNAR_TOKENS)[keyof typeof LUNAR_TOKENS]
