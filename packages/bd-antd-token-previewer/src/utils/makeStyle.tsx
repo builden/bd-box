@@ -2,7 +2,6 @@ import type { CSSInterpolation } from '@ant-design/cssinjs';
 import { useStyleRegister } from '@ant-design/cssinjs';
 import { ConfigProvider, theme as antdTheme } from 'antd';
 import type { GlobalToken } from 'antd/es/theme/interface';
-import type { ThemeConfig } from 'antd/es/config-provider/context';
 import { useContext } from 'react';
 
 const { ConfigContext } = ConfigProvider;
@@ -25,7 +24,8 @@ const makeStyle =
 
     useStyleRegister(
       {
-        theme: theme as ThemeConfig,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        theme: theme as any,
         hashId,
         token,
         path: [path, prefixCls || ''],

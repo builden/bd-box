@@ -354,7 +354,7 @@ const ComponentTokenEditor: FC<ComponentTokenEditorProps> = ({ theme }) => {
                     'components',
                     activeComponent,
                     token,
-                  ]);
+                  ]) as string | number | undefined;
                   const value =
                     configValue ??
                     (tokenStatistic as any)[activeComponent].component[token];
@@ -385,7 +385,7 @@ const ComponentTokenEditor: FC<ComponentTokenEditorProps> = ({ theme }) => {
                   'components',
                   activeComponent,
                   token,
-                ]);
+                ]) as string | number | undefined;
                 const value =
                   configValue ?? (getDesignToken(theme.config) as any)[token];
                 return (

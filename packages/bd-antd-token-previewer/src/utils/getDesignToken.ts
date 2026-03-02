@@ -18,5 +18,5 @@ export default function getDesignToken(config: ThemeConfig = {}): GlobalToken {
     ...config.components,
     override: config.token ?? {},
   };
-  return formatToken(mergedMapToken);
+  return formatToken(mergedMapToken as Parameters<typeof formatToken>[0]);
 }

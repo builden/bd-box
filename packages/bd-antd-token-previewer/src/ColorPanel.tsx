@@ -284,7 +284,9 @@ const ColorPanel: FC<ColorPanelProps> = ({ color, onChange, alpha, style }) => {
           style={{ height: 160 }}
           color={new TinyColor(color).toRgb()}
           onChange={(value) => {
-            onChange(getColorStr(value, colorMode));
+            onChange(
+              getColorStr(new TinyColor(value).toHex8String(), colorMode),
+            );
           }}
         />
       )}

@@ -279,11 +279,14 @@ export default ({
                         key={key}
                         dark={key === 'dark'}
                         tokenName={tokenName}
-                        info={
-                          getValueByPath(config, [...tokenPath, tokenName]) ??
-                          fallback?.(config)[tokenName] ??
-                          ''
-                        }
+                        info={String(
+                          (getValueByPath(config, [
+                            ...tokenPath,
+                            tokenName,
+                          ]) as TokenValue) ??
+                            fallback?.(config)[tokenName] ??
+                            '',
+                        )}
                         visible={!infoVisible}
                         style={{
                           zIndex: 10 - index,
@@ -323,8 +326,14 @@ export default ({
                     theme={theme}
                     onChange={(value) => handleTokenChange(theme, value)}
                     value={
-                      getValueByPath(theme.config, [...tokenPath, tokenName]) ??
-                      fallback?.(theme.config)[tokenName]
+                      ((getValueByPath(theme.config, [
+                        ...tokenPath,
+                        tokenName,
+                      ]) as TokenValue) ??
+                        fallback?.(theme.config)[tokenName]) as
+                        | string
+                        | number
+                        | undefined
                     }
                   />
                 </div>

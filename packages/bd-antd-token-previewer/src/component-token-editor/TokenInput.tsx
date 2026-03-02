@@ -11,7 +11,7 @@ export interface ComponentTokenInputProps {
   token: string;
   component: string;
   color: boolean;
-  value?: string;
+  value?: string | number;
   style?: React.CSSProperties;
   className?: string;
 }
@@ -64,7 +64,7 @@ const ComponentTokenInput: FC<PropsWithChildren<ComponentTokenInputProps>> = ({
     return (
       <ColorPicker
         placement="bottomRight"
-        value={tokenValue}
+        value={typeof tokenValue === 'string' ? tokenValue : undefined}
         onChangeComplete={(newColor) => {
           onThemeChange(newColor.toRgbString());
         }}
@@ -88,14 +88,14 @@ const ComponentTokenInput: FC<PropsWithChildren<ComponentTokenInputProps>> = ({
       <InputNumber<number>
         style={{ minWidth: 200 }}
         value={tokenValue}
-        onChange={(newValue) => handleChange(newValue ?? 0)}
+        onChange={(newValue) => handleChange(String(newValue ?? 0))}
       />
     );
   } else if (typeof tokenValue === 'boolean') {
     inputNode = (
       <Switch
         checked={tokenValue}
-        onChange={(checked) => handleChange(checked)}
+        onChange={(checked) => handleChange(String(checked))}
       />
     );
   }

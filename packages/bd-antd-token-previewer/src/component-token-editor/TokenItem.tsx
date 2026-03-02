@@ -76,8 +76,8 @@ export interface TokenItemProps {
   token: string;
   prefix?: ReactNode;
   theme: MutableTheme;
-  configValue: string | number | undefined;
-  value: string | number | undefined;
+  configValue?: string | number;
+  value?: string | number;
   component: string;
   color?: boolean;
   tooltip?: string;
@@ -145,10 +145,10 @@ const TokenItem: FC<TokenItemProps> = ({
           value={value}
           className={`${prefixCls}-operator`}
         >
-          <span className={`${prefixCls}-value`} title={value}>
+          <span className={`${prefixCls}-value`} title={String(value)}>
             {String(value)}
           </span>
-          {color && (
+          {color && typeof value === 'string' && (
             <ColorPreview
               size={16}
               color={value}

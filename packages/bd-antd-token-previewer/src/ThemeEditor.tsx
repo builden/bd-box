@@ -1,4 +1,5 @@
-import type { DerivativeFunc, GlobalToken } from '@ant-design/cssinjs';
+import type { DerivativeFunc } from '@ant-design/cssinjs';
+import type { GlobalToken } from 'antd/es/theme/interface';
 import { CaretDownOutlined } from '@ant-design/icons';
 import { Button, Dropdown, message, Segmented, Space, Tag } from 'antd';
 import { clsx } from 'clsx';

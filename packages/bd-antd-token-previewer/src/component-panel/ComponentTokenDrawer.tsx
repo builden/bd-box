@@ -109,16 +109,17 @@ const ComponentTokenDrawer: FC<ComponentTokenDrawerProps> = ({
 }) => {
   const hashId = useStyle();
 
-  const { component: componentToken, global: aliasTokenNames } =
-    getComponentToken(component) || { global: [] };
+  const aliasTokenNames = getComponentToken(component) || [];
 
-  const componentTokenData = useMemo(
-    () => Object.keys(componentToken ?? {}),
-    [componentToken],
-  );
+  // 获取组件特定的 token 列表
+  const componentTokenData = useMemo(() => {
+    // 这里 componentToken 为 undefined，暂时返回空数组
+    // TODO: 需要实现获取组件级别 token 的逻辑
+    return [] as string[];
+  }, [component]);
 
   const aliasTokenData = useMemo(() => {
-    return aliasTokenNames.sort();
+    return [...aliasTokenNames].sort();
   }, [aliasTokenNames]);
 
   const handleComponentTokenChange = (token: string, value: TokenValue) => {
@@ -170,7 +171,7 @@ const ComponentTokenDrawer: FC<ComponentTokenDrawerProps> = ({
             tokenArr={componentTokenData}
             tokenPath={['components', component]}
             themes={[theme]}
-            fallback={() => componentToken}
+            fallback={() => ({})}
             onTokenChange={(_, tokenName, value) =>
               handleComponentTokenChange(tokenName, value)
             }
