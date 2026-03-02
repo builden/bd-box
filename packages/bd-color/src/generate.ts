@@ -2,9 +2,9 @@
 // 色阶生成算法
 // ========================
 
-import { Color } from './color';
-import { ColorInput, ColorGenerateOptions } from './types';
-import { clamp, lerp, easeInOut } from './utils';
+import { Color } from "./color";
+import { ColorInput, ColorGenerateOptions, AntDesignOptions, TailwindOptions, OklchOptions } from "./types";
+import { clamp, lerp, easeInOut } from "./utils";
 
 // ========================
 // ant-design-colors 算法 (HSV)
@@ -45,7 +45,7 @@ function getHue(hsv: { h: number; s: number; v: number }, i: number, light?: boo
 
 function getSaturation(hsv: { h: number; s: number; v: number }, i: number, light?: boolean): number {
   if (hsv.h === 0 && hsv.s === 0) return hsv.s;
-  
+
   let saturation: number;
   if (light) {
     saturation = hsv.s - saturationStep * i;
@@ -54,11 +54,11 @@ function getSaturation(hsv: { h: number; s: number; v: number }, i: number, ligh
   } else {
     saturation = hsv.s + saturationStep2 * i;
   }
-  
+
   if (saturation > 1) saturation = 1;
   if (light && i === lightColorCount && saturation > 0.1) saturation = 0.1;
   if (saturation < 0.06) saturation = 0.06;
-  
+
   return Math.round(saturation * 100) / 100;
 }
 
@@ -77,7 +77,10 @@ function getValue(hsv: { h: number; s: number; v: number }, i: number, light?: b
  * ant-design-colors 色阶生成算法
  * 生成 10 个色阶，主色在 index 5
  */
-export function generateAntDesign(color: ColorInput, options: { theme?: 'light' | 'dark'; backgroundColor?: string } = {}): string[] {
+export function generateAntDesign(
+  color: ColorInput,
+  options: { theme?: "light" | "dark"; backgroundColor?: string } = {},
+): string[] {
   const patterns: Color[] = [];
   const pColor = new Color(color);
   const hsv = pColor.toHsv();
@@ -106,11 +109,9 @@ export function generateAntDesign(color: ColorInput, options: { theme?: 'light' 
   }
 
   // 暗色主题
-  if (options.theme === 'dark') {
-    const bg = new Color(options.backgroundColor || '#141414');
-    return darkColorMap.map(({ index, amount }) =>
-      bg.mix(patterns[index], amount).toHexString()
-    );
+  if (options.theme === "dark") {
+    const bg = new Color(options.backgroundColor || "#141414");
+    return darkColorMap.map(({ index, amount }) => bg.mix(patterns[index], amount).toHexString());
   }
 
   return patterns.map((c) => c.toHexString());
@@ -127,7 +128,7 @@ const tailwindLightnessMap: Record<number, number> = {
   200: 0.9,
   300: 0.8,
   400: 0.6,
-  500: 0.5,  // 主色
+  500: 0.5, // 主色
   600: 0.4,
   700: 0.3,
   800: 0.2,
@@ -166,30 +167,30 @@ function getChromaShift(l: number, baseL: number, baseC: number): number {
 export function generateTailwind(color: ColorInput, _baseStep: number = 500): string[] {
   const baseColor = new Color(color);
   const oklch = baseColor.toOklch();
-  
+
   // 保存原始的色相和饱和度
   const baseL = oklch.l;
   const baseC = oklch.c;
   const baseH = oklch.h;
-  
+
   const result: string[] = [];
-  
+
   for (const step of tailwindSteps) {
     const targetL = tailwindLightnessMap[step];
-    
+
     // 色相调整 - 根据亮度的变化微调色相
     const hueShift = getHueShift(targetL, baseL);
     const newH = baseH + hueShift;
-    
+
     // 饱和度调整 - 在极亮或极暗时降低饱和度
     const chromaShift = getChromaShift(targetL, baseL, baseC);
     const newC = Math.max(0, baseC + chromaShift);
-    
+
     // 使用目标亮度，但保持原始色相和饱和度
     const c = new Color({ l: targetL, c: newC, h: newH });
     result.push(c.toHexString());
   }
-  
+
   return result;
 }
 
@@ -207,36 +208,31 @@ export function generateOklch(
     steps?: number;
     startL?: number;
     endL?: number;
-    interpolation?: 'linear' | 'ease-in-out';
-  } = {}
+    interpolation?: "linear" | "ease-in-out";
+  } = {},
 ): string[] {
-  const {
-    steps = 10,
-    startL = 0.95,
-    endL = 0.1,
-    interpolation = 'ease-in-out',
-  } = options;
+  const { steps = 10, startL = 0.95, endL = 0.1, interpolation = "ease-in-out" } = options;
 
   const baseColor = new Color(color);
   const oklch = baseColor.toOklch();
 
   const baseC = oklch.c;
   const baseH = oklch.h;
-  
+
   const result: string[] = [];
-  
+
   for (let i = 0; i < steps; i++) {
     const t = i / (steps - 1);
-    const easedT = interpolation === 'ease-in-out' ? easeInOut(t) : t;
-    
+    const easedT = interpolation === "ease-in-out" ? easeInOut(t) : t;
+
     // 从 startL 渐变到 endL
     const newL = lerp(startL, endL, easedT);
-    
+
     // 保持原有的色相和饱和度
     const c = new Color({ l: newL, c: baseC, h: baseH });
     result.push(c.toHexString());
   }
-  
+
   return result;
 }
 
@@ -248,24 +244,24 @@ export function generateOklch(
  * 生成色阶的统一入口函数
  */
 export function generate(color: ColorInput, options: ColorGenerateOptions = {}): string[] {
-  // 默认使用 ant-design 算法
-  const algorithm = (options as any).algorithm || 'ant-design';
-  
-  if (algorithm === 'ant-design') {
-    const opts = options as any;
+  // 根据 algorithm 属性判断类型
+  const algorithm = options.algorithm || "ant-design";
+
+  if (algorithm === "ant-design") {
+    const opts = options as AntDesignOptions;
     return generateAntDesign(color, {
       theme: opts.theme,
       backgroundColor: opts.backgroundColor,
     });
   }
-  
-  if (algorithm === 'tailwind') {
-    const opts = options as any;
+
+  if (algorithm === "tailwind") {
+    const opts = options as TailwindOptions;
     return generateTailwind(color, opts.baseIndex);
   }
-  
-  if (algorithm === 'oklch') {
-    const opts = options as any;
+
+  if (algorithm === "oklch") {
+    const opts = options as OklchOptions;
     return generateOklch(color, {
       steps: opts.steps,
       startL: opts.startL,
@@ -273,8 +269,8 @@ export function generate(color: ColorInput, options: ColorGenerateOptions = {}):
       interpolation: opts.interpolation,
     });
   }
-  
-  // 默认
+
+  // 默认使用 ant-design 算法
   return generateAntDesign(color);
 }
 

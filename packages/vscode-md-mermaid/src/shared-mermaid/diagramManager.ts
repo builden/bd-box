@@ -1,18 +1,18 @@
-import type { MermaidExtensionConfig } from './config';
-import type { IDisposable } from './disposable';
-import { ClickDragMode, ShowControlsMode } from './config';
-import type { ViewState, ViewStates } from './types/view';
-import { clampZoom, getViewMode, parseTransform, formatTransform, createDefaultViewStates } from './utils/transform';
-import { ZOOM_FACTOR, WHEEL_ZOOM_IN, WHEEL_ZOOM_OUT } from './constants/zoom';
+import type { MermaidExtensionConfig } from "./config";
+import type { IDisposable } from "./disposable";
+import { ClickDragMode, ShowControlsMode } from "./config";
+import type { ViewState, ViewStates } from "./types/view";
+import { clampZoom, getViewMode, parseTransform, formatTransform, createDefaultViewStates } from "./utils/transform";
+import { ZOOM_FACTOR, WHEEL_ZOOM_IN, WHEEL_ZOOM_OUT } from "./constants/zoom";
 
 // Re-export for testing
 export { clampZoom, getViewMode, parseTransform, formatTransform };
-export type { ViewState } from './types/view';
+export type { ViewState } from "./types/view";
 
 // === Main Class ===
 
 export class DiagramManager {
-  private readonly config: MermaidExtensionConfig;
+  private config: MermaidExtensionConfig;
   private readonly svgElementMap = new Map<string, SVGSVGElement>();
   private readonly viewMap = new Map<string, ViewStates>();
   private readonly resizeHandleMap = new Map<string, HTMLDivElement>();
@@ -26,7 +26,7 @@ export class DiagramManager {
   }
 
   setup(id: string, container: HTMLElement): IDisposable {
-    this.svgElementMap.set(id, container.querySelector('svg')!);
+    this.svgElementMap.set(id, container.querySelector("svg")!);
 
     // Setup controls
     if (this.config.showControls !== ShowControlsMode.Never) {
@@ -48,56 +48,56 @@ export class DiagramManager {
         this.svgElementMap.delete(id);
         this.viewMap.delete(id);
         this.resizeHandleMap.delete(id);
-      }
+      },
     };
   }
 
   private setupControls(id: string, container: HTMLElement) {
-    const controls = document.createElement('div');
-    controls.className = 'mermaid-controls';
+    const controls = document.createElement("div");
+    controls.className = "mermaid-controls";
 
-    const zoomInBtn = document.createElement('button');
+    const zoomInBtn = document.createElement("button");
     zoomInBtn.id = `${id}-zoom-in`;
-    zoomInBtn.title = 'Zoom in';
-    zoomInBtn.textContent = '+';
+    zoomInBtn.title = "Zoom in";
+    zoomInBtn.textContent = "+";
 
-    const zoomOutBtn = document.createElement('button');
+    const zoomOutBtn = document.createElement("button");
     zoomOutBtn.id = `${id}-zoom-out`;
-    zoomOutBtn.title = 'Zoom out';
-    zoomOutBtn.textContent = '-';
+    zoomOutBtn.title = "Zoom out";
+    zoomOutBtn.textContent = "-";
 
-    const resetBtn = document.createElement('button');
+    const resetBtn = document.createElement("button");
     resetBtn.id = `${id}-reset`;
-    resetBtn.title = 'Reset view';
-    resetBtn.textContent = 'Reset';
+    resetBtn.title = "Reset view";
+    resetBtn.textContent = "Reset";
 
-    const fullscreenBtn = document.createElement('button');
+    const fullscreenBtn = document.createElement("button");
     fullscreenBtn.id = `${id}-fullscreen`;
-    fullscreenBtn.title = 'Fullscreen';
-    fullscreenBtn.textContent = '⛶';
+    fullscreenBtn.title = "Fullscreen";
+    fullscreenBtn.textContent = "⛶";
 
     controls.appendChild(zoomInBtn);
     controls.appendChild(zoomOutBtn);
     controls.appendChild(resetBtn);
     controls.appendChild(fullscreenBtn);
 
-    container.style.position = 'relative';
-    container.setAttribute('data-show-controls', this.config.showControls);
+    container.style.position = "relative";
+    container.setAttribute("data-show-controls", this.config.showControls);
     container.appendChild(controls);
 
     const svg = this.svgElementMap.get(id)!;
 
-    zoomInBtn.addEventListener('click', () => {
+    zoomInBtn.addEventListener("click", () => {
       const view = this.getView(id, svg);
       this.setZoom(id, svg, view.zoom * ZOOM_FACTOR);
     });
 
-    zoomOutBtn.addEventListener('click', () => {
+    zoomOutBtn.addEventListener("click", () => {
       const view = this.getView(id, svg);
       this.setZoom(id, svg, view.zoom / ZOOM_FACTOR);
     });
 
-    resetBtn.addEventListener('click', () => {
+    resetBtn.addEventListener("click", () => {
       this.resetView(id, svg);
     });
 
@@ -107,22 +107,22 @@ export class DiagramManager {
     const toggleFullscreen = () => {
       isFullscreen = !isFullscreen;
       if (isFullscreen) {
-        container.classList.add('fullscreen');
-        fullscreenBtn.textContent = '✕';
+        container.classList.add("fullscreen");
+        fullscreenBtn.textContent = "✕";
       } else {
-        container.classList.remove('fullscreen');
-        fullscreenBtn.textContent = '⛶';
+        container.classList.remove("fullscreen");
+        fullscreenBtn.textContent = "⛶";
       }
       // Apply the view state for the new mode
       this.applyTransform(id, svg);
     };
 
-    fullscreenBtn.addEventListener('click', toggleFullscreen);
+    fullscreenBtn.addEventListener("click", toggleFullscreen);
   }
 
   private setupResize(id: string, container: HTMLElement) {
-    const handle = document.createElement('div');
-    handle.className = 'mermaid-resize-handle';
+    const handle = document.createElement("div");
+    handle.className = "mermaid-resize-handle";
     container.appendChild(handle);
     this.resizeHandleMap.set(id, handle);
 
@@ -135,15 +135,15 @@ export class DiagramManager {
     };
 
     const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
     };
 
-    handle.addEventListener('mousedown', (e) => {
+    handle.addEventListener("mousedown", (e) => {
       startY = e.clientY;
       startHeight = container.offsetHeight;
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
     });
   }
 
@@ -156,7 +156,7 @@ export class DiagramManager {
     let startViewY = 0;
 
     const shouldUseAlt = this.config.clickDrag === ClickDragMode.Alt;
-    const isFullscreen = () => container.classList.contains('fullscreen');
+    const isFullscreen = () => container.classList.contains("fullscreen");
 
     const onMouseDown = (e: MouseEvent) => {
       if (shouldUseAlt && !e.altKey) return;
@@ -170,7 +170,7 @@ export class DiagramManager {
       startViewX = view.x;
       startViewY = view.y;
 
-      svg.style.cursor = 'grabbing';
+      svg.style.cursor = "grabbing";
       e.preventDefault();
     };
 
@@ -188,53 +188,57 @@ export class DiagramManager {
     const onMouseUp = () => {
       if (isDragging) {
         isDragging = false;
-        svg.style.cursor = '';
+        svg.style.cursor = "";
       }
     };
 
     // Wheel zoom - zoom centered on mouse position
     // Always require Alt key, but prevent page scrolling in fullscreen mode
-    svg.addEventListener('wheel', (e) => {
-      if (!e.altKey) {
-        // Still prevent scrolling in fullscreen mode
-        if (isFullscreen()) {
-          e.preventDefault();
+    svg.addEventListener(
+      "wheel",
+      (e) => {
+        if (!e.altKey) {
+          // Still prevent scrolling in fullscreen mode
+          if (isFullscreen()) {
+            e.preventDefault();
+          }
+          return;
         }
-        return;
-      }
 
-      e.preventDefault();
+        e.preventDefault();
 
-      // Use SVG coordinate transformation to correctly handle CSS scaling in fullscreen mode
-      const point = svg.createSVGPoint();
-      point.x = e.clientX;
-      point.y = e.clientY;
-      const svgPoint = point.matrixTransform(svg.getScreenCTM()!.inverse());
+        // Use SVG coordinate transformation to correctly handle CSS scaling in fullscreen mode
+        const point = svg.createSVGPoint();
+        point.x = e.clientX;
+        point.y = e.clientY;
+        const svgPoint = point.matrixTransform(svg.getScreenCTM()!.inverse());
 
-      const view = this.getView(id, svg);
+        const view = this.getView(id, svg);
 
-      // Calculate new zoom level
-      const delta = e.deltaY > 0 ? WHEEL_ZOOM_OUT : WHEEL_ZOOM_IN;
-      const newZoom = clampZoom(view.zoom * delta);
+        // Calculate new zoom level
+        const delta = e.deltaY > 0 ? WHEEL_ZOOM_OUT : WHEEL_ZOOM_IN;
+        const newZoom = clampZoom(view.zoom * delta);
 
-      // Calculate the point under mouse in the current view
-      const pointX = (svgPoint.x - view.x) / view.zoom;
-      const pointY = (svgPoint.y - view.y) / view.zoom;
+        // Calculate the point under mouse in the current view
+        const pointX = (svgPoint.x - view.x) / view.zoom;
+        const pointY = (svgPoint.y - view.y) / view.zoom;
 
-      // Calculate new position to keep the same point under mouse after zoom
-      const newX = svgPoint.x - pointX * newZoom;
-      const newY = svgPoint.y - pointY * newZoom;
+        // Calculate new position to keep the same point under mouse after zoom
+        const newX = svgPoint.x - pointX * newZoom;
+        const newY = svgPoint.y - pointY * newZoom;
 
-      // Update view with new zoom and position
-      view.zoom = newZoom;
-      view.x = newX;
-      view.y = newY;
-      this.applyTransform(id, svg);
-    }, { passive: false });
+        // Update view with new zoom and position
+        view.zoom = newZoom;
+        view.x = newX;
+        view.y = newY;
+        this.applyTransform(id, svg);
+      },
+      { passive: false },
+    );
 
-    svg.addEventListener('mousedown', onMouseDown);
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
+    svg.addEventListener("mousedown", onMouseDown);
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
   }
 
   private getView(id: string, svg: SVGSVGElement): ViewState {
@@ -275,14 +279,14 @@ export class DiagramManager {
     }
 
     // Reset CSS transform on SVG element
-    svg.style.transform = '';
-    svg.style.transformOrigin = '';
+    svg.style.transform = "";
+    svg.style.transformOrigin = "";
   }
 
   private applyTransform(id: string, svg: SVGSVGElement) {
     const view = this.getView(id, svg);
     svg.style.transform = formatTransform(view);
-    svg.style.transformOrigin = '0 0';
+    svg.style.transformOrigin = "0 0";
   }
 
   retainStates(_activeIds: Set<string>) {

@@ -1,10 +1,11 @@
-import type MarkdownIt from 'markdown-it';
+import MarkdownIt from "markdown-it";
+import { Token } from "markdown-it/index.js";
 
-const mermaidLanguageId = 'mermaid';
-const containerTokenName = 'mermaidContainer';
+const mermaidLanguageId = "mermaid";
+const containerTokenName = "mermaidContainer";
 
 const min_markers = 3;
-const marker_str = ':';
+const marker_str = ":";
 const marker_char = marker_str.charCodeAt(0);
 const marker_len = marker_str.length;
 
@@ -19,7 +20,9 @@ export function extendMarkdownItWithMermaid(md: MarkdownIt, config: { languageId
   // Code forked from markdown-it-container
   // Fork was done as we want to get the raw text inside container instead of treating it as markdown
   md.use((md: MarkdownIt) => {
-    function container(state: MarkdownIt.StateBlock, startLine: number, endLine: number, silent: boolean) {
+    // Define types based on markdown-it instance
+    type StateBlock = InstanceType<typeof md.block.State>;
+    function container(state: StateBlock, startLine: number, endLine: number, silent: boolean) {
       let pos: number;
       let auto_closed = false;
       let start = state.bMarks[startLine] + state.tShift[startLine];
@@ -48,17 +51,21 @@ export function extendMarkdownItWithMermaid(md: MarkdownIt, config: { languageId
 
       const markup = state.src.slice(start, pos);
       const params = state.src.slice(pos, max);
-      if (params.trim().split(' ')[0].toLowerCase() !== mermaidLanguageId) { return false; }
+      if (params.trim().split(" ")[0].toLowerCase() !== mermaidLanguageId) {
+        return false;
+      }
 
       // Since start is found, we can report success here in validation mode
       //
-      if (silent) { return true; }
+      if (silent) {
+        return true;
+      }
 
       // Search for the end of the block
       //
       let nextLine = startLine;
 
-      for (; ;) {
+      for (;;) {
         nextLine++;
         if (nextLine >= endLine) {
           // unclosed block should be autoclosed by end of document.
@@ -76,7 +83,9 @@ export function extendMarkdownItWithMermaid(md: MarkdownIt, config: { languageId
           break;
         }
 
-        if (marker_char !== state.src.charCodeAt(start)) { continue; }
+        if (marker_char !== state.src.charCodeAt(start)) {
+          continue;
+        }
 
         if (state.sCount[nextLine] - state.blkIndent >= 4) {
           // closing fence should be indented less than 4 spaces
@@ -90,13 +99,17 @@ export function extendMarkdownItWithMermaid(md: MarkdownIt, config: { languageId
         }
 
         // closing code fence must be at least as long as the opening one
-        if (Math.floor((pos - start) / marker_len) < marker_count) { continue; }
+        if (Math.floor((pos - start) / marker_len) < marker_count) {
+          continue;
+        }
 
         // make sure tail has spaces only
         pos -= (pos - start) % marker_len;
         pos = state.skipSpaces(pos);
 
-        if (pos < max) { continue; }
+        if (pos < max) {
+          continue;
+        }
 
         // found!
         auto_closed = true;
@@ -105,13 +118,14 @@ export function extendMarkdownItWithMermaid(md: MarkdownIt, config: { languageId
 
       const old_parent = state.parentType;
       const old_line_max = state.lineMax;
-       
-      state.parentType = 'container' as any;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      state.parentType = "container" as any;
 
       // this will prevent lazy continuations from ever going past our end marker
       state.lineMax = nextLine;
 
-      const containerToken = state.push(containerTokenName, 'div', 1);
+      const containerToken = state.push(containerTokenName, "div", 1);
       containerToken.markup = markup;
       containerToken.block = true;
       containerToken.info = params;
@@ -126,10 +140,10 @@ export function extendMarkdownItWithMermaid(md: MarkdownIt, config: { languageId
       return true;
     }
 
-    md.block.ruler.before('fence', containerTokenName, container, {
-      alt: ['paragraph', 'reference', 'blockquote', 'list']
+    md.block.ruler.before("fence", containerTokenName, container, {
+      alt: ["paragraph", "reference", "blockquote", "list"],
     });
-    md.renderer.rules[containerTokenName] = (tokens: MarkdownIt.Token[], idx: number) => {
+    md.renderer.rules[containerTokenName] = (tokens: Token[], idx: number) => {
       const token = tokens[idx];
       const src = token.content;
       return ` <pre class="mermaid">${preProcess(src)}</pre> `;
@@ -138,7 +152,7 @@ export function extendMarkdownItWithMermaid(md: MarkdownIt, config: { languageId
 
   const highlight = md.options.highlight;
   md.options.highlight = (code: string, lang: string, attrs: string) => {
-    const reg = new RegExp('\\b(' + config.languageIds().map(escapeRegExp).join('|') + ')\\b', 'i');
+    const reg = new RegExp("\\b(" + config.languageIds().map(escapeRegExp).join("|") + ")\\b", "i");
     if (lang && reg.test(lang)) {
       return ` <pre class="mermaid">${preProcess(code)}</pre> `;
     }
@@ -148,13 +162,9 @@ export function extendMarkdownItWithMermaid(md: MarkdownIt, config: { languageId
 }
 
 function preProcess(source: string): string {
-  return source
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/\n+$/, '')
-    .trimStart();
+  return source.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/\n+$/, "").trimStart();
 }
 
 function escapeRegExp(string: string): string {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

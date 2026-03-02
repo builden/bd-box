@@ -1,4 +1,5 @@
 import { TinyColor } from '@ctrl/tinycolor';
+import type { ColorFormats } from 'tinycolor2';
 import type { InputProps } from 'antd';
 import { ConfigProvider, Input, InputNumber, Select, theme } from 'antd';
 import { clsx } from 'clsx';
@@ -140,7 +141,7 @@ const HexColorInput: FC<HexColorInputProps> = ({ value, onChange, alpha }) => {
   );
 };
 
-type RgbaColor = tinycolor.ColorFormats.RGBA;
+type RgbaColor = ColorFormats.RGBA;
 
 export type RgbColorInputProps = {
   value?: RgbaColor;
@@ -260,7 +261,6 @@ const ColorPanel: FC<ColorPanelProps> = ({ color, onChange, alpha, style }) => {
       token.lime,
       '#000',
     ];
-     
   }, []);
 
   const handleColorModeChange = (value: ColorMode) => {

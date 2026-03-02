@@ -5,7 +5,8 @@ import { defineConfig } from "eslint/config";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
-const srcFiles = ["**/src/**/*.{ts,tsx,js,mjs}"];
+const jsFiles = ["**/src/**/*.{js,mjs}"];
+const tsFiles = ["**/src/**/*.{ts,tsx}"];
 const jsxFiles = ["**/src/**/*.{tsx,jsx}"];
 
 const ignorePatterns = [
@@ -26,7 +27,7 @@ export default defineConfig([
     ignores: ignorePatterns,
   },
   {
-    files: srcFiles,
+    files: jsFiles,
     plugins: { js },
     extends: ["js/recommended"],
     languageOptions: {
@@ -40,17 +41,17 @@ export default defineConfig([
     rules: {
       "no-console": "off",
       "no-undef": "off",
-      "no-unused-vars": "off",
+      "no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
     },
   },
   {
-    files: srcFiles,
+    files: tsFiles,
     plugins: { "@typescript-eslint": tseslint.plugin },
     languageOptions: {
       parser: tseslint.parser,
     },
     rules: {
-      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-explicit-any": ["error", { ignoreRestArgs: true }],
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
       "@typescript-eslint/ban-ts-comment": "off",
     },

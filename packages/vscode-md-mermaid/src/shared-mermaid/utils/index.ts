@@ -1,2 +1,1 @@
-export * from './transform';
-export * from './hash';
+export * from "./transform";

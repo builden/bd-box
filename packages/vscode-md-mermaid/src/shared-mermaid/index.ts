@@ -1,23 +1,25 @@
-import elkLayouts from '@mermaid-js/layout-elk';
-import tidyTreeLayouts from '@mermaid-js/layout-tidy-tree';
-import zenuml from '@mermaid-js/mermaid-zenuml';
-import mermaid, { MermaidConfig } from 'mermaid';
-import { iconPacks } from './iconPackConfig';
-import { ClickDragMode, ShowControlsMode } from './config';
-import type { MermaidExtensionConfig } from './config';
-import { hashString, generateContentId } from './utils';
+import elkLayouts from "@mermaid-js/layout-elk";
+import tidyTreeLayouts from "@mermaid-js/layout-tidy-tree";
+import zenuml from "@mermaid-js/mermaid-zenuml";
+import mermaid, { MermaidConfig } from "mermaid";
+import { iconPacks } from "./iconPackConfig";
+import { ClickDragMode, ShowControlsMode } from "./config";
+import type { MermaidExtensionConfig } from "./config";
+import { hashString, generateContentId } from "./utils";
 
 function renderMermaidElement(
   mermaidContainer: HTMLElement,
   usedIds: Set<string>,
   writeOut: (mermaidContainer: HTMLElement, content: string) => void,
   signal?: AbortSignal,
-): {
-  containerId: string;
-  contentHash: string;
-  p: Promise<void>;
-} | undefined {
-  const source = (mermaidContainer.textContent ?? '').trim();
+):
+  | {
+      containerId: string;
+      contentHash: string;
+      p: Promise<void>;
+    }
+  | undefined {
+  const source = (mermaidContainer.textContent ?? "").trim();
   if (!source) {
     return;
   }
@@ -28,7 +30,7 @@ function renderMermaidElement(
 
   mermaidContainer.id = containerId;
   // Clear the container - using textContent is safe here
-  mermaidContainer.textContent = '';
+  mermaidContainer.textContent = "";
 
   return {
     containerId,
@@ -38,55 +40,60 @@ function renderMermaidElement(
         // Catch any parsing errors
         await mermaid.parse(source);
         if (signal?.aborted) {
-          throw new DOMException('Aborted', 'AbortError');
+          throw new DOMException("Aborted", "AbortError");
         }
 
         // Render the diagram
         const renderResult = await mermaid.render(diagramId, source);
         if (signal?.aborted) {
-          throw new DOMException('Aborted', 'AbortError');
+          throw new DOMException("Aborted", "AbortError");
         }
 
         writeOut(mermaidContainer, renderResult.svg);
         renderResult.bindFunctions?.(mermaidContainer);
       } catch (error) {
-        if (error instanceof Error && error.name !== 'AbortError') {
-          const errorMessageNode = document.createElement('pre');
-          errorMessageNode.className = 'mermaid-error';
+        if (error instanceof Error && error.name !== "AbortError") {
+          const errorMessageNode = document.createElement("pre");
+          errorMessageNode.className = "mermaid-error";
           errorMessageNode.textContent = error.message;
           writeOut(mermaidContainer, errorMessageNode.outerHTML);
         }
 
         throw error;
       }
-    })()
+    })(),
   };
 }
 
 export async function renderMermaidBlocksInElement(
   root: HTMLElement,
   writeOut: (mermaidContainer: HTMLElement, content: string, contentHash: string) => void,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<void> {
   // Track used IDs for this render pass
   const usedIds = new Set<string>();
 
   // Delete existing mermaid outputs
-  for (const el of root.querySelectorAll('.mermaid > svg')) {
+  for (const el of root.querySelectorAll(".mermaid > svg")) {
     el.remove();
   }
-  for (const svg of root.querySelectorAll('svg')) {
-    if (svg.parentElement?.id.startsWith('dmermaid')) {
+  for (const svg of root.querySelectorAll("svg")) {
+    if (svg.parentElement?.id.startsWith("dmermaid")) {
       svg.parentElement.remove();
     }
   }
 
   // We need to generate all the container ids sync, but then do the actual rendering async
   const renderPromises: Array<Promise<void>> = [];
-  for (const mermaidContainer of root.querySelectorAll('.mermaid')) {
-    const result = renderMermaidElement(mermaidContainer, usedIds, (container, content) => {
-      writeOut(container, content, result!.contentHash);
-    }, signal);
+  for (const mermaidContainer of root.querySelectorAll<HTMLElement>(".mermaid")) {
+    const result = renderMermaidElement(
+      mermaidContainer,
+      usedIds,
+      (container, content) => {
+        writeOut(container, content, result!.contentHash);
+      },
+      signal,
+    );
     if (result) {
       renderPromises.push(result.p);
     }
@@ -103,17 +110,17 @@ export async function registerMermaidAddons() {
 }
 
 const defaultConfig: MermaidExtensionConfig = {
-  darkModeTheme: 'dark',
-  lightModeTheme: 'default',
+  darkModeTheme: "dark",
+  lightModeTheme: "default",
   maxTextSize: 50000,
   clickDrag: ClickDragMode.Alt,
   showControls: ShowControlsMode.OnHoverOrFocus,
   resizable: true,
-  maxHeight: '',
+  maxHeight: "",
 };
 
 export function loadExtensionConfig(): MermaidExtensionConfig {
-  const configSpan = document.getElementById('markdown-mermaid');
+  const configSpan = document.getElementById("markdown-mermaid");
   const configAttr = configSpan?.dataset.config;
   if (!configAttr) {
     return defaultConfig;
@@ -130,8 +137,8 @@ export function loadMermaidConfig(): MermaidConfig {
   const config = loadExtensionConfig();
   return {
     startOnLoad: false,
-    theme: (document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+    theme: (document.body.classList.contains("vscode-dark") || document.body.classList.contains("vscode-high-contrast")
       ? config.darkModeTheme
-      : config.lightModeTheme) as MermaidConfig['theme'],
+      : config.lightModeTheme) as MermaidConfig["theme"],
   };
 }
