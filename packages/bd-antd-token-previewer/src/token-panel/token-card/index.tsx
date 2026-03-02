@@ -145,6 +145,7 @@ export default (props: TokenCardProps) => {
     <div className={clsx('token-card', hashId)}>
       <Collapse
         ghost
+        destroyOnHidden
         expandIcon={({ isActive }) => (
           <CaretRightOutlined
             rotate={isActive ? 450 : 360}

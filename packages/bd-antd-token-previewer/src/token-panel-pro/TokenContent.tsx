@@ -2,24 +2,25 @@
 
 import { CaretRightOutlined, ExpandOutlined } from '@ant-design/icons';
 import {
+  theme as antdTheme,
   Collapse,
   ConfigProvider,
   Input,
   Popover,
   Segmented,
   Switch,
-  theme as antdTheme,
   Tooltip,
 } from 'antd';
-import type { MutableTheme } from 'bd-antd-token-previewer';
 import type { ThemeConfig } from 'antd/es/config-provider/context';
 import seed from 'antd/es/theme/themes/seed';
 import tokenMeta from 'antd/lib/version/token-meta.json';
+import type { MutableTheme } from 'bd-antd-token-previewer';
 import { clsx } from 'clsx';
 import type { FC } from 'react';
 import React, { useEffect, useMemo, useState } from 'react';
 import ColorPicker from '../ColorPicker';
 import { useAdvanced } from '../context';
+import useDebouncy from '../hooks/useDebouncy';
 import { CompactTheme } from '../icons';
 import type { SelectedToken } from '../interface';
 import { useLocale } from '../locale';
@@ -31,7 +32,6 @@ import { isLeftChecked, switchAlgorithm } from '../utils/themeAlgorithmUtils';
 import InputNumberPlus from './InputNumberPlus';
 import ResetTokenButton from './ResetTokenButton';
 import TokenPreview from './TokenPreview';
-import useDebouncy from '../hooks/useDebouncy';
 
 const { Panel } = Collapse;
 
@@ -845,6 +845,7 @@ const TokenContent: FC<ColorTokenContentProps> = ({
                       (!group.seedToken?.includes('colorInfo') ||
                         !infoFollowPrimary) && (
                         <Collapse
+                          destroyOnHidden
                           expandIcon={({ isActive }) => (
                             <CaretRightOutlined rotate={isActive ? 90 : 0} />
                           )}

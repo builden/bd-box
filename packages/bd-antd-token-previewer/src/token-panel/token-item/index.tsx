@@ -218,6 +218,7 @@ export default ({
       <Collapse
         collapsible="header"
         ghost
+        destroyOnHidden
         onChange={(key) => setInfoVisible(key.length > 0)}
         className={clsx('previewer-token-item-collapse', hashId)}
         expandIcon={({ isActive }) => (
