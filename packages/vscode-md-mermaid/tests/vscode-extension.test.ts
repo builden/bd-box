@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'bun:test';
 
 // Copy the escapeHtmlAttribute function for testing
 function escapeHtmlAttribute(str: string): string {

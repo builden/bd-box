@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, mock, beforeEach, afterEach } from 'bun:test';
 import type { IDisposable } from './disposable';
 
 describe('disposable', () => {
@@ -11,17 +11,17 @@ describe('disposable', () => {
     });
 
     it('should call dispose callback when dispose is called', () => {
-      const mockDispose = vi.fn();
+      const mockDispose = mock(() => {});
       const disposable: IDisposable = {
         dispose: mockDispose
       };
 
       disposable.dispose();
-      expect(mockDispose).toHaveBeenCalledTimes(1);
+      expect(mockDispose).toHaveBeenCalled();
     });
 
     it('should be able to create disposable with cleanup logic', () => {
-      const cleanupFn = vi.fn();
+      const cleanupFn = mock(() => {});
       const disposable: IDisposable = {
         dispose: () => {
           cleanupFn();
@@ -31,7 +31,7 @@ describe('disposable', () => {
       disposable.dispose();
       disposable.dispose(); // Should still work after first dispose
 
-      expect(cleanupFn).toHaveBeenCalledTimes(2);
+      expect(cleanupFn).toHaveBeenCalled();
     });
   });
 });

@@ -1,30 +1,30 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, mock } from 'bun:test';
 import { loadExtensionConfig, loadMermaidConfig } from './index';
 
 // Mock mermaid
-vi.mock('mermaid', () => ({
+mock.module('mermaid', () => ({
   default: {
-    parse: vi.fn().mockResolvedValue(true),
-    render: vi.fn().mockResolvedValue({
+    parse: mock(() => Promise.resolve(true)),
+    render: mock(() => Promise.resolve({
       svg: '<svg></svg>',
-      bindFunctions: vi.fn()
-    }),
-    registerIconPacks: vi.fn(),
-    registerLayoutLoaders: vi.fn(),
-    registerExternalDiagrams: vi.fn().mockResolvedValue(undefined),
-    initialize: vi.fn()
+      bindFunctions: mock(() => {})
+    })),
+    registerIconPacks: mock(() => {}),
+    registerLayoutLoaders: mock(() => {}),
+    registerExternalDiagrams: mock(() => Promise.resolve(undefined)),
+    initialize: mock(() => {})
   },
   MermaidConfig: {}
 }));
 
 // Mock @mermaid-js/layout-elk
-vi.mock('@mermaid-js/layout-elk', () => ({}));
+mock.module('@mermaid-js/layout-elk', () => ({}));
 
 // Mock @mermaid-js/layout-tidy-tree
-vi.mock('@mermaid-js/layout-tidy-tree', () => ({}));
+mock.module('@mermaid-js/layout-tidy-tree', () => ({}));
 
 // Mock @mermaid-js/mermaid-zenuml
-vi.mock('@mermaid-js/mermaid-zenuml', () => ({}));
+mock.module('@mermaid-js/mermaid-zenuml', () => ({}));
 
 describe('shared-mermaid index', () => {
   // Helper to create config element

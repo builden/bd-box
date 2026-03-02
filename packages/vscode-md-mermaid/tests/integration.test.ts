@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, mock } from 'bun:test';
 
 // Mock mermaid module
-vi.mock('mermaid', () => ({
+mock.module('mermaid', () => ({
   default: {
-    parse: vi.fn().mockResolvedValue(true),
-    render: vi.fn().mockImplementation(async (id, source) => {
+    parse: mock(() => Promise.resolve(true)),
+    render: mock(async (id: string, source: string) => {
       // Simple mock rendering based on diagram type
       let svg = '<svg><g></g></svg>';
       if (source.includes('graph') || source.includes('flowchart')) {
@@ -16,13 +16,13 @@ vi.mock('mermaid', () => ({
       }
       return {
         svg,
-        bindFunctions: vi.fn()
+        bindFunctions: mock(() => {})
       };
     }),
-    registerIconPacks: vi.fn(),
-    registerLayoutLoaders: vi.fn(),
-    registerExternalDiagrams: vi.fn().mockResolvedValue(undefined),
-    initialize: vi.fn()
+    registerIconPacks: mock(() => {}),
+    registerLayoutLoaders: mock(() => {}),
+    registerExternalDiagrams: mock(() => Promise.resolve(undefined)),
+    initialize: mock(() => {})
   },
   MermaidConfig: {}
 }));

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'bun:test';
 import { DiagramManager, clampZoom, parseTransform, formatTransform, getViewMode } from './diagramManager';
 import type { ViewState } from './types/view';
 import { ShowControlsMode, ClickDragMode, MermaidExtensionConfig } from './config';
