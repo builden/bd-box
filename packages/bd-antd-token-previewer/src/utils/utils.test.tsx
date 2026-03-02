@@ -1,9 +1,9 @@
 import { render } from '@testing-library/react';
 import { ConfigProvider, theme } from 'antd';
-import getDesignToken from '../src/utils/getDesignToken';
+import getDesignToken from './getDesignToken';
 import type { ThemeConfig } from 'antd/es/config-provider/context';
 import React from 'react';
-import getValueByPath from '../src/utils/getValueByPath';
+import getValueByPath from './getValueByPath';
 
 const { useToken, darkAlgorithm } = theme;
 

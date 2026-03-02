@@ -2,8 +2,8 @@ import { fireEvent, render } from '@testing-library/react';
 import { theme } from 'antd';
 import tokenStatistic from 'antd/lib/version/token.json';
 import React from 'react';
-import type { ComponentPanelProps } from '../src/component-panel';
-import ComponentPanel, { antdComponents } from '../src/component-panel';
+import type { ComponentPanelProps } from './';
+import ComponentPanel, { antdComponents } from './';
 
 const { useToken } = theme;
 
