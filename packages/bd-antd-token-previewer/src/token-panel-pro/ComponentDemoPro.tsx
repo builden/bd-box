@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ExpandOutlined, MinusOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   Button,

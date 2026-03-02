@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BuildOutlined, CarOutlined } from '@ant-design/icons';
 import {
   ConfigProvider,

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Tooltip } from 'antd';
 import type { MutableTheme } from 'bd-antd-token-previewer';
 import tokenMeta from 'antd/lib/version/token-meta.json';

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { Breadcrumb, Segmented, Switch } from 'antd';
 import { clsx } from 'clsx';
@@ -198,7 +199,6 @@ const Index: FC<ComponentPanelProps> = ({
 
   const relatedComponents = useMemo(() => {
     return selectedTokens ? getRelatedComponents(selectedTokens) : [];
-     
   }, [selectedTokens]);
 
   useEffect(() => {

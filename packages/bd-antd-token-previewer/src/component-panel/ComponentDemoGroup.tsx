@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { ConfigProvider, Tooltip } from 'antd';
 import { clsx } from 'clsx';
 import type { FC } from 'react';

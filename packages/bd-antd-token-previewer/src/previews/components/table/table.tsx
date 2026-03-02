@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Space, Table, Tag } from 'antd';
 import React from 'react';
 import type { ComponentDemo } from '../../../interface';

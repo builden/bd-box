@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { DerivativeFunc } from '@ant-design/cssinjs';
 import { theme as antTheme } from 'antd';
 import type { ThemeConfig } from 'antd/es/config-provider/context';

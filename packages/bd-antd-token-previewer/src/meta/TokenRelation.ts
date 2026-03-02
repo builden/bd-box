@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { AliasToken, MapToken, SeedToken } from 'antd/es/theme/interface';
 import defaultMap from 'antd/es/theme/themes/default';
 import seedToken from 'antd/es/theme/themes/seed';

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const mockData: any[] = [];
 for (let i = 0; i < 20; i++) {
   mockData.push({

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Card, ConfigProvider, Tag, theme } from 'antd';
 import type { FC } from 'react';
 import React, { useMemo, useState } from 'react';

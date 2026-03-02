@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Checkbox, Space } from 'antd';
 import React from 'react';
 import type { ComponentDemo } from '../../../interface';

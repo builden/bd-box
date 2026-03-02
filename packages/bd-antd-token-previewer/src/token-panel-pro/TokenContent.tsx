@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { CaretRightOutlined, ExpandOutlined } from '@ant-design/icons';
 import {
   Collapse,

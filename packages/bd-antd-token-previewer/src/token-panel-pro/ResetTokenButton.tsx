@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Typography } from 'antd';
 import type { FC } from 'react';
 import React from 'react';

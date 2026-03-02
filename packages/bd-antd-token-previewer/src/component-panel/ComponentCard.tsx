@@ -1,4 +1,4 @@
-import type { FC, PropsWithChildren } from 'react';
+import type { FC } from 'react';
 import React, { useState } from 'react';
 import type { CardProps } from 'antd';
 import { Card } from 'antd';
@@ -43,13 +43,14 @@ const useStyle = makeStyle('ComponentCard', (token) => ({
 export const getComponentDemoId = (component: string) =>
   `antd-token-previewer-${component}`;
 
-export type ComponentCardProps = PropsWithChildren<{
+export type ComponentCardProps = {
   title: CardProps['title'];
   component?: string;
   onTokenClick?: (token: TokenName) => void;
   drawer?: boolean;
   theme?: MutableTheme;
-}>;
+  children?: React.ReactNode;
+};
 
 const ComponentCard: FC<ComponentCardProps> = ({
   children,
@@ -76,7 +77,7 @@ const ComponentCard: FC<ComponentCardProps> = ({
           )
         }
       >
-        {children as any}
+        {children}
       </Card>
       {drawer && theme && (
         <ComponentTokenDrawer

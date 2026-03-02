@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Cascader } from 'antd';
 import React from 'react';
 

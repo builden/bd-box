@@ -96,8 +96,9 @@ const FilterPanel: FC<FilterPanelProps> = ({
               size="small"
               value={filterMode}
               onChange={(value) => {
-                onFilterModeChange?.(value as any);
-                setFilterMode(value as any);
+                const mode = value as FilterMode;
+                onFilterModeChange?.(mode);
+                setFilterMode(mode);
               }}
               options={[
                 { label: '过滤', value: 'filter' },

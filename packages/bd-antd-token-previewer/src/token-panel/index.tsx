@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { CheckOutlined } from '@ant-design/icons';
 import { Dropdown, Input, Menu, Switch, theme as antdTheme } from 'antd';
 import { clsx } from 'clsx';

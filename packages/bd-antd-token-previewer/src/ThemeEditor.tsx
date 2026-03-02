@@ -1,4 +1,4 @@
-import type { DerivativeFunc } from '@ant-design/cssinjs';
+import type { DerivativeFunc, GlobalToken } from '@ant-design/cssinjs';
 import { CaretDownOutlined } from '@ant-design/icons';
 import { Button, Dropdown, message, Segmented, Space, Tag } from 'antd';
 import { clsx } from 'clsx';
@@ -78,7 +78,7 @@ export type ThemeEditorProps = {
   onThemeChange?: (theme: Theme) => void;
   className?: string;
   style?: React.CSSProperties;
-  darkAlgorithm?: DerivativeFunc<any, any>;
+  darkAlgorithm?: DerivativeFunc<GlobalToken, GlobalToken>;
   locale?: Locale;
   actions?: ReactNode;
   mode?: ThemeEditorMode;
@@ -89,7 +89,7 @@ export type ThemeEditorProps = {
   children?: ReactNode;
 };
 
-function isObject(target: any) {
+function isObject(target: unknown) {
   return Object.prototype.toString.call(target) === '[object Object]';
 }
 

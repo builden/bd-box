@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { TinyColor } from '@ctrl/tinycolor';
 import type { ThemeConfig } from 'antd/es/config-provider/context';
 import type { FC } from 'react';

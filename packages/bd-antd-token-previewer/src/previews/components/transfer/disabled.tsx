@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Transfer } from 'antd';
-import type { Key} from 'react';
+import type { Key } from 'react';
 import React, { useState } from 'react';
 
 import type { ComponentDemo } from '../../../interface';

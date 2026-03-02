@@ -76,8 +76,8 @@ export interface TokenItemProps {
   token: string;
   prefix?: ReactNode;
   theme: MutableTheme;
-  configValue: any;
-  value: any;
+  configValue: string | number | undefined;
+  value: string | number | undefined;
   component: string;
   color?: boolean;
   tooltip?: string;

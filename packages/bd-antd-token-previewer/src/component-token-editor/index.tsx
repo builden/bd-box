@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import type { MenuProps } from 'antd';
 import { Anchor, ConfigProvider, Empty, Menu, Switch, Tooltip } from 'antd';
 import tokenMeta from 'antd/lib/version/token-meta.json';

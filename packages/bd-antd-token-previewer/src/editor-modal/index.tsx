@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ExportOutlined, ImportOutlined } from '@ant-design/icons';
 import type { ThemeConfig, UploadProps } from 'antd';
 import {

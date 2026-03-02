@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Input, InputNumber, Popover, Switch } from 'antd';
 import type { FC, PropsWithChildren } from 'react';
 import React, { useEffect, useState } from 'react';
 import ColorPicker from '../ColorPicker';
-import type { MutableTheme } from '../interface';
 import useDebouncy from '../hooks/useDebouncy';
+import type { MutableTheme } from '../interface';
 
 export interface ComponentTokenInputProps {
   theme: MutableTheme;
@@ -48,7 +49,7 @@ const ComponentTokenInput: FC<PropsWithChildren<ComponentTokenInputProps>> = ({
     setTokenValue(value);
   }, [value]);
 
-  const handleChange = (newValue: any) => {
+  const handleChange = (newValue: string) => {
     setTokenValue(newValue);
     debouncedOnChange(newValue);
   };

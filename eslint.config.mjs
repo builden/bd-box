@@ -61,13 +61,6 @@ export default defineConfig([
       "@typescript-eslint/no-dynamic-delete": "off",
     },
   },
-  // bd-antd-token-previewer 临时配置 - 该包有大量历史 any 类型
-  {
-    files: ["packages/bd-antd-token-previewer/**/*.{ts,tsx}"],
-    rules: {
-      "@typescript-eslint/no-explicit-any": "off",
-    },
-  },
   {
     files: jsxFiles,
     plugins: {

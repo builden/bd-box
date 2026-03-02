@@ -226,7 +226,7 @@ const colorModes = ['HEX', 'HEX8', 'RGB', 'RGBA'] as const;
 
 type ColorMode = (typeof colorModes)[number];
 
-const getColorStr = (color: any, mode: ColorMode) => {
+const getColorStr = (color: string | undefined, mode: ColorMode) => {
   switch (mode) {
     case 'HEX':
       return new TinyColor(color).toHexString();
