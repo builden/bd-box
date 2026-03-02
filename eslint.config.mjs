@@ -47,13 +47,17 @@ export default defineConfig([
   {
     files: tsFiles,
     plugins: { "@typescript-eslint": tseslint.plugin },
+    extends: [tseslint.configs.strict],
     languageOptions: {
       parser: tseslint.parser,
     },
     rules: {
+      // Custom overrides
       "@typescript-eslint/no-explicit-any": ["error", { ignoreRestArgs: true }],
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
       "@typescript-eslint/ban-ts-comment": "off",
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "@typescript-eslint/no-dynamic-delete": "off",
     },
   },
   {
