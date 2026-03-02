@@ -1,4 +1,4 @@
-import { type LunarReplacers, type LunarToken } from './types'
+import { type LunarReplacers, type LunarToken, LUNAR_TOKENS } from './types'
 
 const TOKEN_REGEX = /\[([^\]]+)]|LM|LD|LH/g
 const HAS_TOKEN_REGEX = /LM|LD|LH/

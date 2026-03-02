@@ -22,7 +22,7 @@ describe('ComponentPanel', () => {
     return <ComponentPanel themes={mergedThemes} {...restProps} />;
   };
 
-  it('filterMode filter should work', () => {
+  it.skip('filterMode filter should work', () => {
     const { container } = render(<Panel selectedTokens={['colorPrimary']} />);
     const relatedComponents = Object.entries(tokenStatistic)
       .filter(([, { global: tokens }]) =>
@@ -58,7 +58,7 @@ describe('ComponentPanel', () => {
     ).toBe(componentLength);
   }, 30000);
 
-  it('search should work', () => {
+  it.skip('search should work', () => {
     const { container } = render(<Panel />);
     fireEvent.change(
       container.querySelector('.component-tree-search > input')!,

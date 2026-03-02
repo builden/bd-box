@@ -8,7 +8,7 @@ import {
   rgbToHsl, hslToRgb,
   rgbToHsv, hsvToRgb,
   rgbToOklab, oklabToRgb,
-  oklchToRgb,
+  oklchToRgb, oklabToOklch,
 } from './color-spaces';
 
 // 预设颜色映射

@@ -135,7 +135,6 @@
     "esbuild": "^0.25.0",
     "happy-dom": "^16.7.2",
     "mermaid": "^11.12.2",
-    "npm-run-all": "^4.1.5",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
@@ -149,9 +148,9 @@
     "compile-ext": "tsx ./build/esbuild-extension.ts",
     "watch-ext": "tsx ./build/esbuild-extension.ts --watch",
     "package-ext": "tsx ./build/esbuild-extension.ts --production",
-    "prepublish": "npm-run-all package-ext build-webview",
-    "build": "npm-run-all compile-ext build-webview",
-    "watch": "npm-run-all --parallel watch-ext watch-webview",
+    "prepublish": "bun run --sequential package-ext build-webview",
+    "build": "bun run --sequential compile-ext build-webview",
+    "watch": "bun run --parallel watch-ext watch-webview",
     "release": "bun run version:patch && bun run build && mkdir -p dist/vsix && vsce package --no-dependencies -o dist/vsix && code --install-extension dist/vsix/vscode-md-mermaid-*.vsix --force"
   }
 }
