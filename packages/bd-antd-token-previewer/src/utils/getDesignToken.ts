@@ -8,9 +8,9 @@ export default function getDesignToken(config: ThemeConfig = {}): GlobalToken {
   const seedToken = { ...seed, ...config.token };
   const mapFn = config.algorithm ?? defaultMap;
   const mapToken = Array.isArray(mapFn)
-    ? mapFn.reduce<MapToken>(
+    ? mapFn.reduce<MapToken | undefined>(
         (result, fn) => fn(seedToken, result),
-        undefined as any,
+        undefined,
       )
     : mapFn(seedToken);
   const mergedMapToken = {
