@@ -238,13 +238,13 @@ export default ({
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
+                width: '200px',
               }}
               id={getTokenItemId(tokenName)}
             >
               <span
                 style={{
                   flex: 1,
-                  width: 0,
                   display: 'flex',
                   overflow: 'hidden',
                   alignItems: 'center',
