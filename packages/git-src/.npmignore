@@ -1,0 +1,41 @@
+# Source files (only publish dist)
+src/
+skills/
+
+# Test files
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+tests/
+__tests__/
+
+# Configuration
+tsconfig.json
+tsconfig*.json
+bunfig.toml
+*.toml
+
+# Development
+.env
+.env.*
+*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Node
+node_modules/
+bun.lockb
+*.lockb
+
+# OS
+.DS_Store
+Thumbs.db
