@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "bun:test";
 import { DiagramManager, clampZoom, parseTransform, formatTransform, getViewMode } from "./diagramManager";
 import type { ViewState } from "./types/view";
-import { ShowControlsMode, ClickDragMode, MermaidExtensionConfig } from "./config";
+import { ControlsVisibilityMode, ClickDragMode, MermaidExtensionConfig } from "../core/types";
 
 describe("DiagramManager", () => {
   let manager: DiagramManager;
@@ -29,7 +29,7 @@ describe("DiagramManager", () => {
       lightModeTheme: "default",
       maxTextSize: 50000,
       clickDrag: ClickDragMode.Alt,
-      showControls: ShowControlsMode.OnHoverOrFocus,
+      showControls: ControlsVisibilityMode.OnHoverOrFocus,
       resizable: true,
       maxHeight: "",
     };
@@ -46,7 +46,7 @@ describe("DiagramManager", () => {
     it("should update config", () => {
       const newConfig: MermaidExtensionConfig = {
         ...config,
-        showControls: ShowControlsMode.Always,
+        showControls: ControlsVisibilityMode.Always,
       };
 
       manager.updateConfig(newConfig);
@@ -101,7 +101,7 @@ describe("DiagramManager", () => {
     it("should not setup controls when showControls is Never", () => {
       const localConfig: MermaidExtensionConfig = {
         ...config,
-        showControls: ShowControlsMode.Never,
+        showControls: ControlsVisibilityMode.Never,
       };
       const localManager = new DiagramManager(localConfig);
       const { container } = createContainer();
@@ -115,7 +115,7 @@ describe("DiagramManager", () => {
     it("should setup controls when showControls is Always", () => {
       const localConfig: MermaidExtensionConfig = {
         ...config,
-        showControls: ShowControlsMode.Always,
+        showControls: ControlsVisibilityMode.Always,
       };
       const localManager = new DiagramManager(localConfig);
       const { container } = createContainer();

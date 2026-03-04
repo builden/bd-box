@@ -1,11 +1,13 @@
-import type MarkdownIt from 'markdown-it';
-import * as vscode from 'vscode';
-import { ClickDragMode, ShowControlsMode, defaultMermaidTheme, validMermaidThemes } from '../shared-mermaid/config';
+import type MarkdownIt from "markdown-it";
+import * as vscode from "vscode";
+import { ClickDragMode, ControlsVisibilityMode, defaultMermaidTheme, validMermaidThemes } from "../core/types";
 
-export const configSection = 'markdown-mermaid';
+export const configSection = "markdown-mermaid";
 
 function sanitizeMermaidTheme(theme: string | undefined) {
-  return typeof theme === 'string' && validMermaidThemes.includes(theme as typeof validMermaidThemes[number]) ? theme : defaultMermaidTheme;
+  return typeof theme === "string" && validMermaidThemes.includes(theme as (typeof validMermaidThemes)[number])
+    ? theme
+    : defaultMermaidTheme;
 }
 
 export function injectMermaidConfig(md: MarkdownIt) {
@@ -13,13 +15,13 @@ export function injectMermaidConfig(md: MarkdownIt) {
   md.renderer.render = function (...args) {
     const config = vscode.workspace.getConfiguration(configSection);
     const configData = {
-      darkModeTheme: sanitizeMermaidTheme(config.get('darkModeTheme')),
-      lightModeTheme: sanitizeMermaidTheme(config.get('lightModeTheme')),
-      maxTextSize: config.get('maxTextSize') as number,
-      clickDrag: config.get('mouseNavigation.enabled', ClickDragMode.Alt),
-      showControls: config.get('controls.show', ShowControlsMode.OnHoverOrFocus),
-      resizable: config.get('resizable', true),
-      maxHeight: config.get('maxHeight', ''),
+      darkModeTheme: sanitizeMermaidTheme(config.get("darkModeTheme")),
+      lightModeTheme: sanitizeMermaidTheme(config.get("lightModeTheme")),
+      maxTextSize: config.get("maxTextSize") as number,
+      clickDrag: config.get("mouseNavigation.enabled", ClickDragMode.Alt),
+      showControls: config.get("controls.show", ControlsVisibilityMode.OnHoverOrFocus),
+      resizable: config.get("resizable", true),
+      maxHeight: config.get("maxHeight", ""),
     };
 
     const escapedConfig = escapeHtmlAttribute(JSON.stringify(configData));
@@ -30,7 +32,5 @@ ${render.apply(md.renderer, args)}`;
 }
 
 function escapeHtmlAttribute(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;');
+  return str.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
 }
