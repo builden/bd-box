@@ -7,7 +7,7 @@
 import mermaid from "mermaid";
 import { loadMermaidConfig, registerMermaidAddons, renderMermaidBlocksInElement } from "../renderers/mermaid";
 import { renderDotBlocksInElement, initGraphviz } from "../shared-dot";
-import { DiagramManager } from "../shared-mermaid/diagramManager";
+import { DiagramManager } from "../core/diagramManager";
 import type { IDisposable } from "../core/disposable";
 import { loadExtensionConfig } from "../config";
 

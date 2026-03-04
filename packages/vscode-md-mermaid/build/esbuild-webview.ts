@@ -11,7 +11,7 @@ const distPreviewDir = path.join(__dirname, '..', 'dist', 'preview');
 
 // Copy CSS file to dist/preview/index.css
 function copyCssFiles() {
-  const cssFile = path.join(srcDir, 'shared-mermaid', 'diagramStyles.css');
+  const cssFile = path.join(srcDir, 'renderers', 'shared', 'diagram.css');
 
   if (fs.existsSync(cssFile)) {
     const cssContent = fs.readFileSync(cssFile, 'utf-8');
@@ -25,7 +25,7 @@ function copyCssFiles() {
 const cssTextPlugin: Plugin = {
   name: 'css-text',
   setup(build) {
-    build.onLoad({ filter: /diagramStyles\.css$/ }, async (args) => {
+    build.onLoad({ filter: /diagram\.css$/ }, async (args) => {
       const result = await esbuild.build({
         entryPoints: [args.path],
         bundle: true,

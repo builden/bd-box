@@ -47,7 +47,7 @@ describe("DOT Integration Tests", () => {
     it("should create controls and setup fullscreen for DOT container", async () => {
       // Import the modules we'll use
       const { renderDot } = await import("../src/shared-dot/dotRenderer");
-      const { DiagramManager } = await import("../src/shared-mermaid/diagramManager");
+      const { DiagramManager } = await import("../src/core/diagramManager");
 
       // Create container like webview would
       const container = document.createElement("div");
@@ -115,7 +115,7 @@ describe("DOT Integration Tests", () => {
 
     it("should setup controls with Always mode", async () => {
       const { renderDot } = await import("../src/shared-dot/dotRenderer");
-      const { DiagramManager } = await import("../src/shared-mermaid/diagramManager");
+      const { DiagramManager } = await import("../src/core/diagramManager");
 
       const container = document.createElement("div");
       container.id = "test-always";
@@ -154,7 +154,7 @@ describe("DOT Integration Tests", () => {
 
     it("should work for both mermaid and dot with same setup", async () => {
       const { renderDot } = await import("../src/shared-dot/dotRenderer");
-      const { DiagramManager } = await import("../src/shared-mermaid/diagramManager");
+      const { DiagramManager } = await import("../src/core/diagramManager");
 
       // Test DOT container
       const dotContainer = document.createElement("div");
