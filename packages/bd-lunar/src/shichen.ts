@@ -4,11 +4,18 @@ import { Solar } from 'lunar-typescript'
 export const ZHI_LIST = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'] as const
 
 /**
+ * 从 Date 获取时辰地支（不带"时"后缀）
+ */
+export function getTimeZhi(date: Date): string {
+  const solar = Solar.fromDate(date)
+  return solar.getLunar().getTimeZhi()
+}
+
+/**
  * 从 Date 获取时辰（带"时"后缀）
  */
 export function getShichen(date: Date): string {
-  const solar = Solar.fromDate(date)
-  return solar.getLunar().getTimeZhi() + '时'
+  return getTimeZhi(date) + '时'
 }
 
 /**
