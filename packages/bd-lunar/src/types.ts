@@ -41,8 +41,15 @@ export interface LunarDateInput {
  */
 export type LunarReplacers = {
   LM: string
+  Lm: string
   LD: string
+  Ld: string
   LH: string
+  Lh: string
+  LY: string
+  Ly: string
+  LGZY: string
+  LGZy: string
 }
 
 /**
@@ -50,8 +57,15 @@ export type LunarReplacers = {
  */
 export const LUNAR_TOKENS = {
   MONTH: 'LM',
+  MONTH_NO_SUFFIX: 'Lm',
   DAY: 'LD',
+  DAY_NO_SUFFIX: 'Ld',
   HOUR: 'LH',
+  HOUR_NO_SUFFIX: 'Lh',
+  YEAR: 'LY',
+  YEAR_NO_SUFFIX: 'Ly',
+  GANZHI_YEAR: 'LGZY',
+  GANZHI_YEAR_NO_SUFFIX: 'LGZy',
 } as const
 
 /**
