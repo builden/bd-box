@@ -1,6 +1,6 @@
 import { type LunarReplacers, type LunarToken, LUNAR_TOKENS } from './types'
 
-const LUNAR_TOKEN_PATTERN = 'LM|LD|LH'
+const LUNAR_TOKEN_PATTERN = 'LM|Lm|LD|Ld|LH|Lh|LY|Ly|LGZY|LGZy'
 const TOKEN_REGEX = new RegExp(`\\[([^\\]]+)]|${LUNAR_TOKEN_PATTERN}`, 'g')
 const HAS_TOKEN_REGEX = new RegExp(LUNAR_TOKEN_PATTERN)
 const PARSE_TOKEN_REGEX = new RegExp(LUNAR_TOKEN_PATTERN, 'g')
