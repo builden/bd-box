@@ -8,10 +8,18 @@ import type { LunarReplacers } from './types'
 /** 从 dayjs 实例获取农历替换值 */
 function getReplacers(instance: Dayjs): LunarReplacers {
   const lunar = getLunarInfo(instance.toDate())
+  const shichen = getShichen(instance.toDate())
   return {
     LM: lunar.monthInChinese,
+    Lm: lunar.monthInChinese.replace('月', ''),
     LD: lunar.dayInChinese,
-    LH: getShichen(instance.toDate()),
+    Ld: lunar.dayInChinese.replace('日', ''),
+    LH: shichen,
+    Lh: shichen.replace('时', ''),
+    LY: lunar.yearInChinese + '年',
+    Ly: lunar.yearInChinese,
+    LGZY: lunar.ganZhiYear + '年',
+    LGZy: lunar.ganZhiYear,
   }
 }
 
