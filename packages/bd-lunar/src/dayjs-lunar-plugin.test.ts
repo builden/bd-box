@@ -213,8 +213,8 @@ describe('dayjs-lunar-plugin', () => {
       expect(result).toBe('闰二月 十五日')
     })
 
-    it('should handle all shichen formats with getShichen', () => {
-      // 验证 LH 使用了 getShichen 函数（返回带"时"后缀）
+    it('should handle all shichen formats with timeZhi', () => {
+      // 验证 LH 使用了 lunar.timeZhi（返回带"时"后缀）
       const testCases = [
         { time: '2024-06-15 00:30:00', expected: '子时' },
         { time: '2024-06-15 02:30:00', expected: '丑时' },
