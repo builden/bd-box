@@ -2,9 +2,24 @@ import chalk from "chalk";
 import { execa } from "execa";
 import ora from "ora";
 import { readFileSync, existsSync } from "fs";
-import { join } from "path";
+import { join, dirname } from "path";
 
-const packageJson = JSON.parse(readFileSync(join(__dirname, "../../package.json"), "utf-8"));
+// Find package.json by traversing up from the entry file
+function findPackageJson(): string {
+  let dir = dirname(process.argv[1]);
+  for (let i = 0; i < 10; i++) {
+    const pkgPath = join(dir, "package.json");
+    if (existsSync(pkgPath)) {
+      return pkgPath;
+    }
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  throw new Error("package.json not found");
+}
+
+const packageJson = JSON.parse(readFileSync(findPackageJson(), "utf-8"));
 
 interface PackageManager {
   name: string;

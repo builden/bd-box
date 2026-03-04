@@ -10,10 +10,27 @@ import { updateRepo } from "./commands/update";
 import { checkOutdated } from "./commands/outdated";
 import { manageTags } from "./commands/tag";
 import { upgradeSelf } from "./commands/upgrade";
-import { readFileSync } from "fs";
-import { join } from "path";
+import { readFileSync, existsSync } from "fs";
+import { join, dirname } from "path";
 
-const packageJson = JSON.parse(readFileSync(join(__dirname, "../package.json"), "utf-8"));
+// Find package.json by traversing up from the entry file
+function findPackageJson(): string {
+  let dir = dirname(process.argv[1]);
+  // Limit traversal depth to avoid infinite loop
+  for (let i = 0; i < 10; i++) {
+    const pkgPath = join(dir, "package.json");
+    if (existsSync(pkgPath)) {
+      return pkgPath;
+    }
+    // Go up one level
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  throw new Error("package.json not found");
+}
+
+const packageJson = JSON.parse(readFileSync(findPackageJson(), "utf-8"));
 
 const program = new Command();
 
