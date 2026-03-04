@@ -1,5 +1,5 @@
 /**
- * Zoom-related constants for diagram navigation.
+ * Core constants.
  */
 
 export const MIN_ZOOM = 0.1;

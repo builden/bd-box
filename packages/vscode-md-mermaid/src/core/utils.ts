@@ -2,7 +2,7 @@
  * Core utility functions.
  */
 import type { ViewState, ViewMode, ViewStates } from "./types";
-import { MIN_ZOOM, MAX_ZOOM } from "./constants/zoom";
+import { MIN_ZOOM, MAX_ZOOM } from "./constants";
 
 // === Hash Functions ===
 
