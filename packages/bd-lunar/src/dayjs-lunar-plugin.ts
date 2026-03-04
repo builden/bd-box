@@ -10,10 +10,10 @@ function getReplacers(instance: Dayjs): LunarReplacers {
   const lunar = getLunarInfo(instance.toDate())
   const shichen = getShichen(instance.toDate())
   return {
-    LM: lunar.monthInChinese,
-    Lm: lunar.monthInChinese.replace('月', ''),
-    LD: lunar.dayInChinese,
-    Ld: lunar.dayInChinese.replace('日', ''),
+    LM: lunar.monthInChinese + '月',
+    Lm: lunar.monthInChinese,
+    LD: lunar.dayInChinese + '日',
+    Ld: lunar.dayInChinese,
     LH: shichen,
     Lh: shichen.replace('时', ''),
     LY: lunar.yearInChinese + '年',

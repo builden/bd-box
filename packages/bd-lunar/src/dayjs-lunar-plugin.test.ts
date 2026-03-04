@@ -13,31 +13,68 @@ declare module 'dayjs' {
 }
 
 describe('dayjs-lunar-plugin', () => {
-  describe('format LM (农历月)', () => {
-    it('should format normal lunar month', () => {
+  describe('format LM/Lm (农历月)', () => {
+    // LM 带"月"后缀，Lm 不带
+    it('should format normal lunar month with suffix', () => {
       const result = dayjs('2024-06-15').format('LM')
+      expect(result).toBe('五月')
+    })
+
+    it('should format lunar month without suffix', () => {
+      const result = dayjs('2024-06-15').format('Lm')
       expect(result).toBe('五')
     })
 
     it('should format lunar month with leap prefix', () => {
       // 2023年闰二月
       const result = dayjs('2023-04-05').format('LM')
-      expect(result).toBe('闰二')
+      expect(result).toBe('闰二月')
+    })
+
+    // 一月至十二月测试
+    const monthTests = [
+      { date: '2024-02-10', lm: '正月', lmNoSuffix: '正' },
+      { date: '2024-03-10', lm: '二月', lmNoSuffix: '二' },
+      { date: '2024-04-09', lm: '三月', lmNoSuffix: '三' },
+      { date: '2024-05-08', lm: '四月', lmNoSuffix: '四' },
+      { date: '2024-06-06', lm: '五月', lmNoSuffix: '五' },
+      { date: '2024-07-06', lm: '六月', lmNoSuffix: '六' },
+      { date: '2024-08-04', lm: '七月', lmNoSuffix: '七' },
+      { date: '2024-09-03', lm: '八月', lmNoSuffix: '八' },
+      { date: '2024-10-03', lm: '九月', lmNoSuffix: '九' },
+      { date: '2024-11-01', lm: '十月', lmNoSuffix: '十' },
+      { date: '2024-12-01', lm: '冬月', lmNoSuffix: '冬' },
+      { date: '2024-12-31', lm: '腊月', lmNoSuffix: '腊' },
+    ]
+
+    monthTests.forEach(({ date, lm, lmNoSuffix }) => {
+      it(`should format ${date} as LM=${lm}`, () => {
+        expect(dayjs(date).format('LM')).toBe(lm)
+      })
+      it(`should format ${date} as Lm=${lmNoSuffix}`, () => {
+        expect(dayjs(date).format('Lm')).toBe(lmNoSuffix)
+      })
     })
   })
 
-  describe('format LD (农历日)', () => {
-    it('should format lunar day 1-10', () => {
-      expect(dayjs('2024-06-10').format('LD')).toBe('初五')
-      expect(dayjs('2024-06-15').format('LD')).toBe('初十')
+  describe('format LD/Ld (农历日)', () => {
+    // LD 带"日"后缀，Ld 不带
+    it('should format lunar day 1-10 with suffix', () => {
+      expect(dayjs('2024-06-10').format('LD')).toBe('初五日')
+      expect(dayjs('2024-06-15').format('LD')).toBe('初十日')
     })
 
-    it('should format lunar day 11-20', () => {
-      expect(dayjs('2024-06-20').format('LD')).toBe('十五')
+    it('should format lunar day without suffix', () => {
+      expect(dayjs('2024-06-10').format('Ld')).toBe('初五')
+      expect(dayjs('2024-06-15').format('Ld')).toBe('初十')
     })
 
-    it('should format lunar day 21-30', () => {
-      expect(dayjs('2024-06-25').format('LD')).toBe('二十')
+    it('should format lunar day 11-20 with suffix', () => {
+      expect(dayjs('2024-06-20').format('LD')).toBe('十五日')
+    })
+
+    it('should format lunar day 21-30 with suffix', () => {
+      expect(dayjs('2024-06-25').format('LD')).toBe('二十日')
     })
   })
 
@@ -73,12 +110,54 @@ describe('dayjs-lunar-plugin', () => {
       const result = dayjs('2024-06-15 14:30:00').format('YYYY年LM月LD日 LH')
       expect(result).toBe('2024年五月初十日 未时')
     })
+
+    it('should format LM without month suffix when followed by 月', () => {
+      // 2024-06-15 是农历五月初十
+      const result = dayjs('2024-06-15').format('LM月LD日')
+      expect(result).toBe('五月初十日')
+    })
+  })
+
+  describe('format LY/Ly (农历年)', () => {
+    it('should format LY with year suffix', () => {
+      expect(dayjs('2024-06-15').format('LY')).toBe('二〇二四年')
+    })
+
+    it('should format Ly without year suffix', () => {
+      expect(dayjs('2024-06-15').format('Ly')).toBe('二〇二四')
+    })
+
+    it('should format LGZY with year suffix', () => {
+      expect(dayjs('2024-06-15').format('LGZY')).toBe('甲辰年')
+    })
+
+    it('should format LGZy without year suffix', () => {
+      expect(dayjs('2024-06-15').format('LGZy')).toBe('甲辰')
+    })
+  })
+
+  describe('format combined tokens with LY', () => {
+    it('should format YYYY with LY', () => {
+      expect(dayjs('2024-06-15').format('YYYY年LY')).toBe('2024年二〇二四年')
+    })
+
+    it('should format full lunar date with LY', () => {
+      expect(dayjs('2024-06-15').format('YYYY年LY年LM月LD日')).toBe('2024年二〇二四年五月初十日')
+    })
+
+    it('should format with mixed tokens', () => {
+      expect(dayjs('2024-06-15 14:30:00').format('YYYY年LY年LM月LD日 Lh')).toBe('2024年二〇二四年五月初十日 未')
+    })
+
+    it('should format with LGZY', () => {
+      expect(dayjs('2024-06-15').format('YYYY年LGZY年')).toBe('2024年甲辰年')
+    })
   })
 
   describe('format with escaped brackets', () => {
     it('should preserve escaped brackets', () => {
       const result = dayjs('2024-06-15').format('[LM is] LM')
-      expect(result).toBe('LM is 五')
+      expect(result).toBe('LM is 五月')
     })
   })
 
@@ -120,7 +199,7 @@ describe('dayjs-lunar-plugin', () => {
 
     it('should handle year-end dates', () => {
       // 2024年冬月初一
-      const result = dayjs('2024-12-01').format('LM月LD')
+      const result = dayjs('2024-12-01').format('LM月Ld')
       expect(result).toBe('冬月初一')
     })
 
