@@ -83,7 +83,7 @@ describe("DOT Integration Tests", () => {
       expect(disposables).toBeDefined();
 
       // Verify controls were created
-      const controls = container.querySelector(".mermaid-controls");
+      const controls = container.querySelector(".diagram-controls");
       expect(controls).not.toBeNull();
 
       // Verify all control buttons exist
@@ -138,7 +138,7 @@ describe("DOT Integration Tests", () => {
       const disposables = diagramManager.setup(container.id, container);
 
       // Controls should be created
-      const controls = container.querySelector(".mermaid-controls");
+      const controls = container.querySelector(".diagram-controls");
       expect(controls).not.toBeNull();
 
       // Buttons should exist
@@ -190,8 +190,8 @@ describe("DOT Integration Tests", () => {
       const mermaidDisposables = diagramManager.setup(mermaidContainer.id, mermaidContainer);
 
       // Both should have controls
-      expect(dotContainer.querySelector(".mermaid-controls")).not.toBeNull();
-      expect(mermaidContainer.querySelector(".mermaid-controls")).not.toBeNull();
+      expect(dotContainer.querySelector(".diagram-controls")).not.toBeNull();
+      expect(mermaidContainer.querySelector(".diagram-controls")).not.toBeNull();
 
       // Fullscreen should work for both
       const dotFullscreen = dotContainer.querySelector("#dot-test-fullscreen") as HTMLButtonElement;

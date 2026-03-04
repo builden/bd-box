@@ -3,8 +3,8 @@ import tidyTreeLayouts from "@mermaid-js/layout-tidy-tree";
 import zenuml from "@mermaid-js/mermaid-zenuml";
 import mermaid, { MermaidConfig } from "mermaid";
 import { iconPacks } from "./iconPackConfig";
-import { ClickDragMode, ShowControlsMode } from "./config";
-import type { MermaidExtensionConfig } from "./config";
+import { ClickDragMode, ControlsVisibilityMode } from "./config";
+import type { DiagramExtensionConfig } from "./config";
 import { hashString, generateContentId } from "./utils";
 
 function renderMermaidElement(
@@ -109,17 +109,17 @@ export async function registerMermaidAddons() {
   await mermaid.registerExternalDiagrams([zenuml]);
 }
 
-const defaultConfig: MermaidExtensionConfig = {
+const defaultConfig: DiagramExtensionConfig = {
   darkModeTheme: "dark",
   lightModeTheme: "default",
   maxTextSize: 50000,
   clickDrag: ClickDragMode.Alt,
-  showControls: ShowControlsMode.OnHoverOrFocus,
+  showControls: ControlsVisibilityMode.OnHoverOrFocus,
   resizable: true,
   maxHeight: "",
 };
 
-export function loadExtensionConfig(): MermaidExtensionConfig {
+export function loadExtensionConfig(): DiagramExtensionConfig {
   const configSpan = document.getElementById("markdown-mermaid");
   const configAttr = configSpan?.dataset.config;
   if (!configAttr) {

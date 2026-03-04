@@ -2,16 +2,16 @@
  * Transform utilities for SVG view state management.
  */
 
-import type { ViewState, ViewMode } from '../types/view';
-import { MIN_ZOOM, MAX_ZOOM } from '../constants/zoom';
+import type { ViewState, ViewMode } from "../types/view";
+import { MIN_ZOOM, MAX_ZOOM } from "../constants/zoom";
 
 export function clampZoom(zoom: number): number {
   return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom));
 }
 
 export function getViewMode(svg: SVGSVGElement): ViewMode {
-  const container = svg.closest('.mermaid');
-  return container?.classList.contains('fullscreen') ? 'fullscreen' : 'normal';
+  const container = svg.closest(".diagram, .mermaid, .dot");
+  return container?.classList.contains("fullscreen") ? "fullscreen" : "normal";
 }
 
 export function parseTransform(transform: string): ViewState {
@@ -40,6 +40,6 @@ export function formatTransform(view: ViewState): string {
 export function createDefaultViewStates(): { normal: ViewState; fullscreen: ViewState } {
   return {
     normal: { x: 0, y: 0, zoom: 1 },
-    fullscreen: { x: 0, y: 0, zoom: 1 }
+    fullscreen: { x: 0, y: 0, zoom: 1 },
   };
 }

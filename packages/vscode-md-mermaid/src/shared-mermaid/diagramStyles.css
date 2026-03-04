@@ -25,7 +25,8 @@
   overflow-x: auto;
 }
 
-.mermaid-controls {
+/* Diagram controls */
+.diagram-controls {
   display: none;
   gap: 0.5em;
   position: absolute;
@@ -36,17 +37,16 @@
   z-index: 10;
 }
 
-.mermaid:hover .mermaid-controls,
-.mermaid:focus-within .mermaid-controls,
-.fullscreen .mermaid-controls,
-.dot:hover .mermaid-controls,
-.dot:focus-within .mermaid-controls,
-.fullscreen .dot .mermaid-controls {
+.mermaid:hover .diagram-controls,
+.mermaid:focus-within .diagram-controls,
+.dot:hover .diagram-controls,
+.dot:focus-within .diagram-controls,
+.fullscreen .diagram-controls {
   display: flex;
 }
 
-.mermaid .mermaid-controls button,
-.dot .mermaid-controls button {
+.mermaid .diagram-controls button,
+.dot .diagram-controls button {
   background: var(--vscode-button-background, #0e639c);
   border: none;
   color: var(--vscode-button-foreground, #ffffff);
@@ -56,12 +56,13 @@
   font-size: 12px;
 }
 
-.mermaid .mermaid-controls button:hover,
-.dot .mermaid-controls button:hover {
+.mermaid .diagram-controls button:hover,
+.dot .diagram-controls button:hover {
   background: var(--vscode-button-hoverBackground, #1177bb);
 }
 
-.mermaid-resize-handle {
+/* Diagram resize handle */
+.diagram-resize-handle {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -71,7 +72,7 @@
   background: transparent;
 }
 
-.mermaid-resize-handle:hover {
+.diagram-resize-handle:hover {
   background: var(--vscode-editorCursor-foreground, #aeafad);
 }
 
@@ -101,8 +102,8 @@
   max-height: 100% !important;
 }
 
-.mermaid.fullscreen .mermaid-controls,
-.dot.fullscreen .mermaid-controls {
+.mermaid.fullscreen .diagram-controls,
+.dot.fullscreen .diagram-controls {
   top: 0.5em !important;
   right: 0.5em;
   bottom: auto !important;

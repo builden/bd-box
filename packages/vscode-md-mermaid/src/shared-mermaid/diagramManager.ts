@@ -1,6 +1,6 @@
-import type { MermaidExtensionConfig } from "./config";
+import type { DiagramExtensionConfig } from "./config";
 import type { IDisposable } from "./disposable";
-import { ClickDragMode, ShowControlsMode } from "./config";
+import { ClickDragMode, ControlsVisibilityMode } from "./config";
 import type { ViewState, ViewStates } from "./types/view";
 import { clampZoom, getViewMode, parseTransform, formatTransform, createDefaultViewStates } from "./utils/transform";
 import { ZOOM_FACTOR, WHEEL_ZOOM_IN, WHEEL_ZOOM_OUT } from "./constants/zoom";
@@ -12,16 +12,16 @@ export type { ViewState } from "./types/view";
 // === Main Class ===
 
 export class DiagramManager {
-  private config: MermaidExtensionConfig;
+  private config: DiagramExtensionConfig;
   private readonly svgElementMap = new Map<string, SVGSVGElement>();
   private readonly viewMap = new Map<string, ViewStates>();
   private readonly resizeHandleMap = new Map<string, HTMLDivElement>();
 
-  constructor(config: MermaidExtensionConfig) {
+  constructor(config: DiagramExtensionConfig) {
     this.config = config;
   }
 
-  updateConfig(config: MermaidExtensionConfig) {
+  updateConfig(config: DiagramExtensionConfig) {
     this.config = config;
   }
 
@@ -29,7 +29,7 @@ export class DiagramManager {
     this.svgElementMap.set(id, container.querySelector("svg")!);
 
     // Setup controls
-    if (this.config.showControls !== ShowControlsMode.Never) {
+    if (this.config.showControls !== ControlsVisibilityMode.Never) {
       this.setupControls(id, container);
     }
 
@@ -54,7 +54,7 @@ export class DiagramManager {
 
   private setupControls(id: string, container: HTMLElement) {
     const controls = document.createElement("div");
-    controls.className = "mermaid-controls";
+    controls.className = "diagram-controls";
 
     const zoomInBtn = document.createElement("button");
     zoomInBtn.id = `${id}-zoom-in`;
@@ -122,7 +122,7 @@ export class DiagramManager {
 
   private setupResize(id: string, container: HTMLElement) {
     const handle = document.createElement("div");
-    handle.className = "mermaid-resize-handle";
+    handle.className = "diagram-resize-handle";
     container.appendChild(handle);
     this.resizeHandleMap.set(id, handle);
 
