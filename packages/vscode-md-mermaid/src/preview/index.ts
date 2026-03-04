@@ -9,7 +9,7 @@ import { loadMermaidConfig, registerMermaidAddons, renderMermaidBlocksInElement 
 import { renderDotBlocksInElement, initGraphviz } from "../renderers/dot";
 import { DiagramManager } from "../core/diagramManager";
 import type { IDisposable } from "../core/disposable";
-import { loadExtensionConfig } from "../config";
+import { loadExtensionConfig } from "../config/loader";
 
 // Register renderers
 import { mermaidRenderer, dotRenderer } from "../renderers";

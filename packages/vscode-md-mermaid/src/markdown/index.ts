@@ -53,19 +53,9 @@ export function extendMarkdownItWithMermaid(md: MarkdownIt, config: { languageId
       const markup = state.src.slice(start, pos);
       const params = state.src.slice(pos, max);
       const lang = params.trim().split(" ")[0].toLowerCase();
-      console.log(
-        "[MD] container called, lang:",
-        lang,
-        "mermaidLanguageId:",
-        mermaidLanguageId,
-        "dotLanguageId:",
-        dotLanguageId,
-      );
       if (lang !== mermaidLanguageId && lang !== dotLanguageId) {
-        console.log("[MD] container rejected, lang not matched");
         return false;
       }
-      console.log("[MD] container accepted, lang:", lang);
 
       // Since start is found, we can report success here in validation mode
       //
@@ -167,11 +157,9 @@ export function extendMarkdownItWithMermaid(md: MarkdownIt, config: { languageId
   const highlight = md.options.highlight;
   md.options.highlight = (code: string, lang: string, attrs: string) => {
     const languageIds = config.languageIds();
-    console.log("[MD] highlight called, lang:", lang, "languageIds:", languageIds);
     const reg = new RegExp("\\b(" + languageIds.map(escapeRegExp).join("|") + ")\\b", "i");
     if (lang && reg.test(lang)) {
       const className = lang.toLowerCase() === dotLanguageId ? "dot" : "mermaid";
-      console.log("[MD] highlight matched, className:", className);
       return ` <pre class="${className}">${preProcess(code)}</pre> `;
     }
     return highlight?.(code, lang, attrs) ?? code;
