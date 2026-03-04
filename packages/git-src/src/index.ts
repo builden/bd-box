@@ -29,9 +29,11 @@ program
 program
   .command("ls")
   .description("List all repositories")
-  .action(async () => {
+  .option("-t, --tag <tag>", "Filter by tag")
+  .option("-s, --simple", "Show simple repo name instead of URL")
+  .action(async (options: { tag?: string; simple?: boolean }) => {
     try {
-      await listRepos();
+      await listRepos(options);
     } catch (error) {
       console.error("Error:", error);
       process.exit(1);
@@ -54,7 +56,8 @@ program
   .command("query [pattern]")
   .description("Search repositories (supports wildcards: *, ?)")
   .option("-t, --tag <tag>", "Filter by tag")
-  .action(async (pattern: string, options: { tag?: string }) => {
+  .option("-s, --simple", "Show simple repo name instead of URL")
+  .action(async (pattern: string, options: { tag?: string; simple?: boolean }) => {
     try {
       await searchRepos(pattern || "", options);
     } catch (error) {
@@ -93,9 +96,10 @@ program
 program
   .command("outdated [repo]")
   .description("Check if repositories have updates")
-  .action(async (repo: string | undefined) => {
+  .option("-t, --tag <tag>", "Filter by tag")
+  .action(async (repo: string | undefined, options: { tag?: string }) => {
     try {
-      await checkOutdated(repo || null);
+      await checkOutdated(repo || null, options);
     } catch (error) {
       console.error("Error:", error);
       process.exit(1);

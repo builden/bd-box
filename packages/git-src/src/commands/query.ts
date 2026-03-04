@@ -1,5 +1,5 @@
-import chalk from "chalk";
 import { Config } from "../config";
+import { renderTable } from "./table";
 
 export async function searchRepos(pattern: string, options: { tag?: string } = {}): Promise<void> {
   const config = new Config();
@@ -21,16 +21,6 @@ export async function searchRepos(pattern: string, options: { tag?: string } = {
     repos = repos.filter((r) => regex.test(r.fullName));
   }
 
-  if (repos.length === 0) {
-    console.log(chalk.yellow("No repositories found."));
-    return;
-  }
-
-  console.log(chalk.gray(`Found ${repos.length} repository(s):\n`));
-  repos.forEach((repo) => {
-    console.log(chalk.white(repo.fullName));
-    if (repo.tags.length > 0) {
-      console.log(chalk.cyan(`  Tags: ${repo.tags.join(", ")}`));
-    }
-  });
+  // Use renderTable for consistent display
+  await renderTable(repos, options);
 }

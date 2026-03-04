@@ -2,9 +2,14 @@ import chalk from "chalk";
 import { execa } from "execa";
 import { Config, Repo } from "../config";
 
-export async function checkOutdated(repoName: string | null): Promise<void> {
+export async function checkOutdated(repoName: string | null, options: { tag?: string } = {}): Promise<void> {
   const config = new Config();
-  const repos = repoName ? ([config.findRepo(repoName!)].filter(Boolean) as Repo[]) : config.getRepos();
+  let repos = repoName ? ([config.findRepo(repoName!)].filter(Boolean) as Repo[]) : config.getRepos();
+
+  // Filter by tag if specified
+  if (options.tag) {
+    repos = repos.filter((r) => r.tags.includes(options.tag!));
+  }
 
   if (repos.length === 0 && repoName) {
     console.error(chalk.red(`Repository "${repoName}" not found`));
