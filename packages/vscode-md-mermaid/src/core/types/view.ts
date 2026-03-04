@@ -8,7 +8,7 @@ export interface ViewState {
   zoom: number;
 }
 
-export type ViewMode = 'normal' | 'fullscreen';
+export type ViewMode = "normal" | "fullscreen";
 
 export interface ViewStates {
   normal: ViewState;

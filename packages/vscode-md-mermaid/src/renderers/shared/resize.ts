@@ -2,7 +2,7 @@
  * Diagram resize handle: drag to resize height.
  */
 
-import type { IDisposable } from "../../shared-mermaid/disposable";
+import type { IDisposable } from "../../core/disposable";
 
 export function setupResize(id: string, container: HTMLElement): IDisposable {
   const handle = document.createElement("div");

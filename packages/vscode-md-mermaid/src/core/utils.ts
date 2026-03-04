@@ -1,31 +1,33 @@
 /**
  * Core utility functions.
- * These supplement the existing utilities in shared-mermaid/utils
  */
 
 /**
- * Generate hash from string
+ * Generate a simple hash from a string for content-based IDs.
+ * Uses a fast non-cryptographic hash suitable for deduplication.
  */
 export function hashString(str: string): string {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
     hash = (hash << 5) - hash + char;
-    hash = hash & hash;
+    hash = hash & hash; // Convert to 32bit integer
   }
-  return Math.abs(hash).toString(36);
+  // Convert to hex and ensure positive
+  return (hash >>> 0).toString(16).padStart(8, "0");
 }
 
-/**
- * Generate unique content ID
- */
 export function generateContentId(source: string, usedIds: Set<string>): string {
-  let id = "dmermaid" + hashString(source);
+  const hash = hashString(source);
+  let id = `mermaid-${hash}`;
   let counter = 0;
+
+  // Handle collisions by appending a counter
   while (usedIds.has(id)) {
-    id = "dmermaid" + hashString(source + counter);
     counter++;
+    id = `mermaid-${hash}-${counter}`;
   }
+
   usedIds.add(id);
   return id;
 }

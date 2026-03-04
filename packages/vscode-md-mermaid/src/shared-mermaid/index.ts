@@ -5,7 +5,7 @@ import mermaid, { MermaidConfig } from "mermaid";
 import { iconPacks } from "./iconPackConfig";
 import { ClickDragMode, ControlsVisibilityMode } from "./config";
 import type { DiagramExtensionConfig } from "./config";
-import { hashString, generateContentId } from "./utils";
+import { hashString, generateContentId } from "../core/utils";
 
 function renderMermaidElement(
   mermaidContainer: HTMLElement,

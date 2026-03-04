@@ -1,13 +1,19 @@
 import type { DiagramExtensionConfig } from "./config";
-import type { IDisposable } from "./disposable";
+import type { IDisposable } from "../core/disposable";
 import { ClickDragMode, ControlsVisibilityMode } from "./config";
-import type { ViewState, ViewStates } from "./types/view";
-import { clampZoom, getViewMode, parseTransform, formatTransform, createDefaultViewStates } from "./utils/transform";
+import type { ViewState, ViewStates } from "../core/types/view";
+import {
+  clampZoom,
+  getViewMode,
+  parseTransform,
+  formatTransform,
+  createDefaultViewStates,
+} from "../core/utils/transform";
 import { setupControls, setupResize, setupNavigation } from "../renderers/shared";
 
 // Re-export for testing
 export { clampZoom, getViewMode, parseTransform, formatTransform };
-export type { ViewState } from "./types/view";
+export type { ViewState } from "../core/types/view";
 
 // === Main Class ===
 

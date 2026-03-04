@@ -1,9 +1,9 @@
 /**
  * Diagram navigation: pan and zoom with mouse.
  */
-import type { ViewState } from "../../shared-mermaid/types/view";
-import { WHEEL_ZOOM_IN, WHEEL_ZOOM_OUT } from "../../shared-mermaid/constants/zoom";
-import { clampZoom } from "../../shared-mermaid/utils/transform";
+import type { ViewState } from "../../core/types/view";
+import { WHEEL_ZOOM_IN, WHEEL_ZOOM_OUT } from "../../core/constants/zoom";
+import { clampZoom } from "../../core/utils/transform";
 
 export interface DiagramNavigationOptions {
   readonly clickDrag: "always" | "alt" | "never";

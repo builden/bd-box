@@ -1,4 +1,4 @@
-import { hashString, generateContentId } from "../shared-mermaid/utils";
+import { hashString, generateContentId } from "../core/utils";
 import { renderDot } from "./dotRenderer";
 
 function renderDotElement(
