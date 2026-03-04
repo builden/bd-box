@@ -2,7 +2,7 @@
  * Default configuration values.
  */
 import { ControlsVisibilityMode, ClickDragMode } from "../core/types";
-import type { DiagramExtensionConfig, DotExtensionConfig } from "../core/types";
+import type { DiagramExtensionConfig } from "../core/types";
 
 export const defaultConfig: DiagramExtensionConfig = {
   darkModeTheme: "dark",
@@ -12,9 +12,4 @@ export const defaultConfig: DiagramExtensionConfig = {
   showControls: ControlsVisibilityMode.OnHoverOrFocus,
   resizable: true,
   maxHeight: "",
-};
-
-export const defaultDotConfig: DotExtensionConfig = {
-  ...defaultConfig,
-  layoutEngine: "dot",
 };

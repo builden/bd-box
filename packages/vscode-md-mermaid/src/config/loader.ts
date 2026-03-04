@@ -1,13 +1,10 @@
 /**
  * Configuration loader - loads configuration from DOM.
  */
-import type { DiagramExtensionConfig, DotExtensionConfig, LayoutEngine } from "../core/types";
-import { defaultConfig, defaultDotConfig } from "./defaults";
+import type { DiagramExtensionConfig } from "../core/types";
+import { defaultConfig } from "./defaults";
 
 interface ParsedConfig {
-  dot?: {
-    layoutEngine?: LayoutEngine;
-  };
   [key: string]: unknown;
 }
 
@@ -35,13 +32,4 @@ function parseConfig(): ParsedConfig | null {
 export function loadExtensionConfig(): DiagramExtensionConfig {
   const parsed = parseConfig();
   return parsed ? { ...defaultConfig, ...parsed } : defaultConfig;
-}
-
-/**
- * 加载 DOT 特定配置
- */
-export function loadDotConfig(): DotExtensionConfig {
-  const parsed = parseConfig();
-  const layoutEngine: LayoutEngine = (parsed?.dot?.layoutEngine as LayoutEngine) || "dot";
-  return { ...defaultDotConfig, layoutEngine };
 }

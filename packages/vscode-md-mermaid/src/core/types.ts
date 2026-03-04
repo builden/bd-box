@@ -55,13 +55,6 @@ export interface DiagramExtensionConfig {
 }
 
 /**
- * Mermaid-specific configuration
- */
-export interface MermaidExtensionConfig extends DiagramExtensionConfig {
-  readonly mermaidThemes?: readonly string[];
-}
-
-/**
  * DOT-specific configuration
  */
 export interface DotExtensionConfig extends DiagramExtensionConfig {
