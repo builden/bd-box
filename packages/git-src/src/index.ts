@@ -1,8 +1,6 @@
 #!/usr/bin/env bun
 
 import { Command } from "commander";
-import { readFileSync, existsSync } from "fs";
-import { join, dirname } from "path";
 import { addRepo } from "./commands/add";
 import { listRepos } from "./commands/ls";
 import { removeRepo } from "./commands/rm";
@@ -13,28 +11,12 @@ import { checkOutdated } from "./commands/outdated";
 import { manageTags } from "./commands/tag";
 import { upgradeSelf } from "./commands/upgrade";
 import { withErrorHandling, withErrorHandling1, withErrorHandling2, withErrorHandling3 } from "./lib/error";
-
-// Find package.json by traversing up from the entry file
-function findPackageJson(): string {
-  let dir = dirname(process.argv[1] || __filename);
-  for (let i = 0; i < 10; i++) {
-    const pkgPath = join(dir, "package.json");
-    if (existsSync(pkgPath)) {
-      return pkgPath;
-    }
-    const parent = dirname(dir);
-    if (parent === dir) break;
-    dir = parent;
-  }
-  throw new Error("package.json not found");
-}
-
-const packageJson = JSON.parse(readFileSync(findPackageJson(), "utf-8"));
+import { getPackageJsonVersion } from "./lib/utils";
 
 // Create program
 const program = new Command();
 
-program.name("git-src").description("Git source code manager for AI Agents").version(packageJson.version);
+program.name("git-src").description("Git source code manager for AI Agents").version(getPackageJsonVersion());
 
 // Register commands
 program

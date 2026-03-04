@@ -1,4 +1,27 @@
 import { execa } from "execa";
+import { dirname, join } from "path";
+import { existsSync, readFileSync } from "fs";
+
+// Package.json utilities
+export function findPackageJson(): string {
+  let dir = dirname(process.argv[1] || __filename);
+  for (let i = 0; i < 10; i++) {
+    const pkgPath = join(dir, "package.json");
+    if (existsSync(pkgPath)) {
+      return pkgPath;
+    }
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  throw new Error("package.json not found");
+}
+
+export function getPackageJsonVersion(): string {
+  const pkgPath = findPackageJson();
+  const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
+  return pkg.version;
+}
 
 // Time utilities
 export function getRelativeTime(dateStr: string): string {

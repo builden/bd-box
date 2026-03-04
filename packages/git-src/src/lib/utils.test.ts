@@ -1,5 +1,7 @@
 import { describe, it, expect } from "bun:test";
-import { getRelativeTime } from "./utils";
+import { getRelativeTime, findPackageJson, getPackageJsonVersion } from "./utils";
+import { existsSync } from "fs";
+import { resolve } from "path";
 
 describe("getRelativeTime", () => {
   it("should return 'just now' for current time", () => {
@@ -35,5 +37,30 @@ describe("getRelativeTime", () => {
   it("should handle exactly 1 day", () => {
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     expect(getRelativeTime(oneDayAgo)).toBe("1d ago");
+  });
+});
+
+describe("findPackageJson", () => {
+  it("should find package.json in current directory", () => {
+    const pkgPath = findPackageJson();
+    expect(pkgPath).toContain("package.json");
+    expect(existsSync(pkgPath)).toBe(true);
+  });
+
+  it("should return absolute path", () => {
+    const pkgPath = findPackageJson();
+    expect(resolve(pkgPath)).toBe(pkgPath);
+  });
+});
+
+describe("getPackageJsonVersion", () => {
+  it("should return version string", () => {
+    const version = getPackageJsonVersion();
+    expect(version).toMatch(/^\d+\.\d+\.\d+$/);
+  });
+
+  it("should return correct version for git-src package", () => {
+    const version = getPackageJsonVersion();
+    expect(version).toBe("1.0.2");
   });
 });
