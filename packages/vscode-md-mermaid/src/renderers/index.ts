@@ -2,6 +2,9 @@
  * Unified renderer exports
  */
 
+// Core types
+export type { DiagramExtensionConfig } from "../core/types";
+
 // Mermaid renderer
 export {
   renderMermaidBlocksInElement,
@@ -10,7 +13,6 @@ export {
   registerMermaidAddons,
   mermaidRenderer,
 } from "./mermaid";
-export type { DiagramExtensionConfig } from "./mermaid/config";
 
 // DOT renderer
 export { initGraphviz, renderDotBlocksInElement, renderDot, dotRenderer } from "./dot";
