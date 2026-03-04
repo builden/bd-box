@@ -1,9 +1,9 @@
 /**
  * Diagram navigation: pan and zoom with mouse.
  */
-import type { ViewState } from "../types/view";
+import type { ViewState } from "../types";
 import { WHEEL_ZOOM_IN, WHEEL_ZOOM_OUT } from "../constants/zoom";
-import { clampZoom } from "../utils/transform";
+import { clampZoom } from "../utils";
 
 export interface DiagramNavigationOptions {
   readonly clickDrag: "always" | "alt" | "never";

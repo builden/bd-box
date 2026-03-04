@@ -1,9 +1,9 @@
 /**
  * Diagram controls: zoom buttons, reset, fullscreen.
  */
-import type { ViewState } from "../types/view";
+import type { ViewState } from "../types";
 import { ZOOM_FACTOR } from "../constants/zoom";
-import { getViewMode } from "../utils/transform";
+import { getViewMode } from "../utils";
 import type { IDisposable } from "../disposable";
 
 export interface DiagramControlsOptions {

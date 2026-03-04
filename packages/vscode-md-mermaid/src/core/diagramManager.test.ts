@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "bun:test";
 import { DiagramManager, clampZoom, parseTransform, formatTransform, getViewMode } from "./diagramManager";
-import type { ViewState } from "./types/view";
+import type { ViewState } from "./types";
 import { ControlsVisibilityMode, ClickDragMode, DiagramExtensionConfig } from "./types";
 
 describe("DiagramManager", () => {

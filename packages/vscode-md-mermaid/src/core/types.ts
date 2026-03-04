@@ -2,7 +2,22 @@
  * Core types for diagram rendering system.
  */
 
-// Controls visibility modes
+// === View State Types ===
+
+export interface ViewState {
+  x: number;
+  y: number;
+  zoom: number;
+}
+
+export type ViewMode = "normal" | "fullscreen";
+
+export interface ViewStates {
+  normal: ViewState;
+  fullscreen: ViewState;
+}
+
+// === Controls Visibility Modes ===
 export enum ControlsVisibilityMode {
   Never = "never",
   OnHoverOrFocus = "onHoverOrFocus",
