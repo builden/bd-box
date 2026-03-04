@@ -3,7 +3,7 @@ import type { IDisposable } from "./disposable";
 import { ClickDragMode, ControlsVisibilityMode } from "./types";
 import type { ViewState, ViewStates } from "./types/view";
 import { clampZoom, getViewMode, parseTransform, formatTransform, createDefaultViewStates } from "./utils/transform";
-import { setupControls, setupResize, setupNavigation } from "../renderers/shared";
+import { setupControls, setupResize, setupNavigation } from "./interaction";
 
 // Re-export for testing
 export { clampZoom, getViewMode, parseTransform, formatTransform };
