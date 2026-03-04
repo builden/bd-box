@@ -80,9 +80,11 @@ bun run build
 这是一个 VS Code 扩展，结构如下：
 
 - `src/vscode-extension/`: VS Code 扩展入口
-- `src/shared-mermaid/`: 共享的 Mermaid 渲染逻辑
-- `src/markdownPreview/`: Markdown 预览集成
-- `src/shared-md-mermaid/`: Markdown 和 Mermaid 的桥接代码
+- `src/preview/`: Webview 入口
+- `src/renderers/`: 图表渲染器 (mermaid, dot)
+- `src/core/`: 核心模块 (类型、工具、交互)
+- `src/config/`: 配置管理
+- `src/markdown/`: Markdown 解析
 - `build/`: 构建脚本 (esbuild)
 - `dist/`: 编译输出
 - `tests/`: 集成测试
