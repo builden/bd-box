@@ -2,6 +2,7 @@
  * Mermaid-specific configuration.
  */
 import type { MermaidExtensionConfig } from "../../core/types";
+export type { MermaidExtensionConfig };
 import { ClickDragMode, ControlsVisibilityMode } from "../../core/types";
 import { MermaidConfig } from "mermaid";
 import { validMermaidThemes } from "../../shared-mermaid/config";

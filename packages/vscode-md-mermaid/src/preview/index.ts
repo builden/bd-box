@@ -11,6 +11,14 @@ import { DiagramManager } from "../shared-mermaid/diagramManager";
 import type { IDisposable } from "../shared-mermaid/disposable";
 import { loadExtensionConfig } from "../config";
 
+// Register renderers
+import { mermaidRenderer, dotRenderer } from "../renderers";
+import { rendererRegistry } from "../core/renderer";
+
+// Register all renderers
+rendererRegistry.register(mermaidRenderer);
+rendererRegistry.register(dotRenderer);
+
 let currentAbortController: AbortController | undefined;
 let currentDisposables: IDisposable[] = [];
 const diagramManager = new DiagramManager(loadExtensionConfig());
