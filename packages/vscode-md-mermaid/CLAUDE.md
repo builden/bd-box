@@ -27,13 +27,14 @@ bun run release
 ```
 src/
 ├── vscode-extension/      # VS Code extension entry point
-├── preview/               # Webview entry point
-├── renderers/             # Diagram renderers (mermaid, dot)
-├── config/                # Configuration management
-├── core/                  # Core types and utilities
-├── markdown/              # Markdown parsing with mermaid/dot support
-├── shared-mermaid/        # Mermaid rendering logic & diagram manager
-└── shared-dot/            # DOT/Graphviz rendering (uses viz.js)
+├── preview/              # Webview entry point
+├── renderers/            # Diagram renderers (mermaid, dot, shared)
+│   ├── mermaid/          # Mermaid rendering
+│   ├── dot/              # DOT/Graphviz rendering
+│   └── shared/           # Shared controls, resize, navigation
+├── config/               # Configuration management
+├── core/                 # Core types, utilities, diagram manager
+└── markdown/             # Markdown parsing with mermaid/dot support
 ```
 
 ## Debugging
