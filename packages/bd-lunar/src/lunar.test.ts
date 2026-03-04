@@ -17,6 +17,26 @@ describe('lunar 工具', () => {
       expect(info.dayInChinese).toBe('初十')
     })
 
+    it('should get yearInChinese', () => {
+      const info = getLunarInfo(new Date('2024-06-15'))
+      expect(info.yearInChinese).toBe('二〇二四')
+    })
+
+    it('should get yearInGanZhi', () => {
+      const info = getLunarInfo(new Date('2024-06-15'))
+      expect(info.yearInGanZhi).toBe('甲辰')
+    })
+
+    it('should get monthInGanZhi', () => {
+      const info = getLunarInfo(new Date('2024-06-15'))
+      expect(info.monthInGanZhi).toBe('庚午')
+    })
+
+    it('should get dayInGanZhi', () => {
+      const info = getLunarInfo(new Date('2024-06-15'))
+      expect(info.dayInGanZhi).toBe('庚戌')
+    })
+
     it('should get leap month info', () => {
       // 2023年闰二月
       const info = getLunarInfo(new Date('2023-04-05'))
