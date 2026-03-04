@@ -1,11 +1,12 @@
-# VS Code Markdown Mermaid
+# VS Code Markdown Diagram
 
-在 VS Code 和 Cursor 的 Markdown 预览中渲染 Mermaid 图表的扩展插件。
+在 VS Code 和 Cursor 的 Markdown 预览中渲染 Mermaid 和 DOT 图表的扩展插件。
 
 ## 功能特性
 
-- 支持 `:::` mermaid 和 ` ```mermaid ` 代码块语法
+- 支持 `:::` 和 ` ``` ` 代码块语法
 - 支持 Mermaid v11.x 所有图表类型
+- 支持 DOT/Graphviz 图表
 - 支持主题切换（亮色/暗色模式自动适配）
 - 支持鼠标导航（平移和缩放）
 - 支持图表缩放控制按钮
@@ -13,6 +14,8 @@
 - 支持 MDI 和 Logo 图标
 
 ## 支持的图表类型
+
+### Mermaid
 
 - Flowchart (流程图)
 - Sequence Diagram (时序图)
@@ -24,18 +27,24 @@
 - Mindmap (思维导图)
 - And more...
 
+### DOT/Graphviz
+
+- 有向图 (digraph)
+- 无向图 (graph)
+- 子图 (subgraph)
+
 ## 安装
 
 ### 方式一：从 VSIX 安装包安装
 
 ```bash
 # 克隆项目后构建
-cd packages/vscode-md-mermaid
+cd packages/vscode-md-diagram
 bun install
 bun run release
 
 # 安装生成的 vsix 包
-code --install-extension vscode-md-mermaid-*.vsix
+code --install-extension vscode-md-diagram-*.vsix
 ```
 
 ### 方式二：开发模式安装
@@ -52,7 +61,7 @@ bun run watch
 
 ## 使用方法
 
-### 基本用法
+### Mermaid 图表
 
 在 Markdown 文件中使用 `mermaid` 代码块：
 
@@ -63,7 +72,20 @@ graph TD;
     B -- Yes --> C[Great!]
     B -- No --> D[Debug]
     D --> B
-`` `
+```
+````
+
+### DOT 图表
+
+在 Markdown 文件中使用 `dot` 代码块：
+
+````markdown
+```dot
+digraph {
+    A -> B
+    B -> C
+    A -> C
+}
 ```
 ````
 
@@ -75,29 +97,31 @@ graph TD;
 A --> B
 B --> C
 :::
+
+::: dot
+digraph {
+    A -> B
+}
+:::
 ```
-
-### 预览
-
-- **VS Code**: 按 `Ctrl + Shift + V` (Windows/Linux) 或 `Cmd + Shift + V` (Mac) 打开预览
-- **Cursor**: 同上
 
 ## 配置
 
 在 VS Code 设置中可以自定义以下选项：
 
-| 设置项                                     | 默认值           | 描述             |
-| ------------------------------------------ | ---------------- | ---------------- |
-| `markdown-mermaid.lightModeTheme`          | `default`        | 亮色模式主题     |
-| `markdown-mermaid.darkModeTheme`           | `dark`           | 暗色模式主题     |
-| `markdown-mermaid.languages`               | `["mermaid"]`    | 支持的语言标识   |
-| `markdown-mermaid.maxTextSize`             | `50000`          | 最大文本大小     |
-| `markdown-mermaid.mouseNavigation.enabled` | `alt`            | 鼠标导航模式     |
-| `markdown-mermaid.controls.show`           | `onHoverOrFocus` | 控制按钮显示方式 |
-| `markdown-mermaid.resizable`               | `true`           | 是否允许调整大小 |
-| `markdown-mermaid.maxHeight`               | `""`             | 最大高度限制     |
+| 设置项                                   | 默认值           | 描述               |
+| ---------------------------------------- | ---------------- | ------------------ |
+| `markdown-mermaid.lightModeTheme`       | `default`        | 亮色模式主题       |
+| `markdown-mermaid.darkModeTheme`         | `dark`           | 暗色模式主题       |
+| `markdown-mermaid.languages`             | `["mermaid", "dot"]` | 支持的语言标识 |
+| `markdown-mermaid.dot.layoutEngine`      | `dot`            | DOT 布局引擎       |
+| `markdown-mermaid.maxTextSize`           | `50000`          | 最大文本大小       |
+| `markdown-mermaid.mouseNavigation.enabled` | `alt`          | 鼠标导航模式       |
+| `markdown-mermaid.controls.show`         | `onHoverOrFocus` | 控制按钮显示方式   |
+| `markdown-mermaid.resizable`             | `true`           | 是否允许调整大小   |
+| `markdown-mermaid.maxHeight`             | `""`             | 最大高度限制       |
 
-### 主题选项
+### Mermaid 主题选项
 
 - `base`
 - `forest`
@@ -111,6 +135,15 @@ B --> C
 - `alt` - 按住 Alt 键时启用
 - `never` - 禁用
 
+### DOT 布局引擎
+
+- `dot` - 层次布局（默认）
+- `neato` - 弹簧布局
+- `fdp` - 力导向布局
+- `sfdp` - 大型图力导向布局
+- `twopi` - 放射状布局
+- `circo` - 环形布局
+
 ## 快捷键
 
 | 操作     | 快捷键                 |
@@ -120,7 +153,7 @@ B --> C
 
 ## 示例
 
-### 流程图
+### Mermaid 流程图
 
 ```mermaid
 graph TD;
@@ -133,7 +166,7 @@ graph TD;
     F -- 否 --> D
 ```
 
-### 时序图
+### Mermaid 时序图
 
 ```mermaid
 sequenceDiagram
@@ -149,21 +182,14 @@ sequenceDiagram
     前端-->>用户: 显示结果
 ```
 
-### 类图
+### DOT 有向图
 
-```mermaid
-classDiagram
-    Animal <|-- Duck
-    Animal <|-- Fish
-    Animal <|-- Zebra
-    Animal : +int age
-    Animal : +String gender
-    Animal: +isMammal()
-    class Duck{
-        +String beakColor
-        +swim()
-        +quack()
-    }
+```dot
+digraph {
+    rankdir=LR
+    User -> Frontend -> Backend -> Database
+    Backend -> User
+}
 ```
 
 ## 发布更新
