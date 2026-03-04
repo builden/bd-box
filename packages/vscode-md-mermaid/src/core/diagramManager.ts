@@ -7,7 +7,7 @@ import { setupControls, setupResize, setupNavigation } from "./interaction";
 
 // Re-export for testing
 export { clampZoom, getViewMode, parseTransform, formatTransform };
-export type { ViewState } from "../core/types/view";
+export type { ViewState } from "./types/view";
 
 // === Main Class ===
 

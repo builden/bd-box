@@ -1,5 +1,5 @@
 import { describe, it, expect, mock, beforeEach, afterEach } from "bun:test";
-import type { IDisposable } from "../core/disposable";
+import type { IDisposable } from "./disposable";
 
 describe("disposable", () => {
   describe("IDisposable interface", () => {
