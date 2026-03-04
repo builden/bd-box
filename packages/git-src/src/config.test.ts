@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "bun:test";
-import { Config, Repo, GitSrcConfig } from "./config";
+import { Config, Repo, GitSrcConfig } from "./lib/config";
 import { existsSync, unlinkSync, mkdirSync, rmdirSync } from "fs";
 import { dirname } from "path";
 

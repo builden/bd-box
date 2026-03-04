@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import { execa } from "execa";
-import { Config } from "../config";
+import { Config } from "../lib/config";
 
 export async function removeRepo(repoName: string): Promise<void> {
   const config = new Config();

@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { Config } from "../config";
+import { Config } from "../lib/config";
 
 export async function manageTags(
   repoName: string,

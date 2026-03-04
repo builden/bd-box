@@ -1,6 +1,6 @@
 import { execa } from "execa";
 import ora from "ora";
-import { Config, Repo } from "../config";
+import { Config, Repo } from "../lib/config";
 import { existsSync, mkdirSync } from "fs";
 
 export interface ParseResult {

@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { Config, Repo } from "../config";
+import { Config, Repo } from "../lib/config";
 import { execFile } from "child_process";
 import { promisify } from "util";
 import { dirname } from "path";

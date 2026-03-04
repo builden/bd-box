@@ -1,6 +1,7 @@
 # Source files (only publish dist)
 src/
 skills/
+CLAUDE.md
 
 # Test files
 *.test.ts

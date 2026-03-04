@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import { execa } from "execa";
-import { Config, Repo } from "../config";
+import { Config, Repo } from "../lib/config";
 
 export async function checkOutdated(repoName: string | null, options: { tag?: string } = {}): Promise<void> {
   const config = new Config();

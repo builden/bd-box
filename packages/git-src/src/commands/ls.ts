@@ -1,4 +1,4 @@
-import { Config } from "../config";
+import { Config } from "../lib/config";
 import { renderTable, RenderTableOptions } from "./table";
 
 export async function listRepos(options: RenderTableOptions = {}): Promise<void> {

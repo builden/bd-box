@@ -1,4 +1,4 @@
-import { Config } from "../config";
+import { Config } from "../lib/config";
 import { renderTable } from "./table";
 
 export async function searchRepos(pattern: string, options: { tag?: string } = {}): Promise<void> {

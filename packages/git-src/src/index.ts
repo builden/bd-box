@@ -12,7 +12,7 @@ import { updateRepo } from "./commands/update";
 import { checkOutdated } from "./commands/outdated";
 import { manageTags } from "./commands/tag";
 import { upgradeSelf } from "./commands/upgrade";
-import { withErrorHandling, withErrorHandling1, withErrorHandling2, withErrorHandling3 } from "./error";
+import { withErrorHandling, withErrorHandling1, withErrorHandling2, withErrorHandling3 } from "./lib/error";
 
 // Find package.json by traversing up from the entry file
 function findPackageJson(): string {
