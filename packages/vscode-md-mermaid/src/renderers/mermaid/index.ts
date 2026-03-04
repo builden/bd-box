@@ -5,12 +5,27 @@ import elkLayouts from "@mermaid-js/layout-elk";
 import tidyTreeLayouts from "@mermaid-js/layout-tidy-tree";
 import zenuml from "@mermaid-js/mermaid-zenuml";
 import mermaid from "mermaid";
+import type { MermaidConfig } from "mermaid";
 import { iconPacks } from "./iconPackConfig";
 import type { DiagramRenderer } from "../../core/types";
+import { loadExtensionConfig } from "../../config/loader";
 import { renderMermaidElement, renderMermaidBlocksInElement } from "./render";
 
 export { renderMermaidBlocksInElement } from "./render";
-export { loadMermaidConfig } from "./config";
+
+/**
+ * Load Mermaid configuration based on current theme.
+ */
+export function loadMermaidConfig(): MermaidConfig {
+  const config = loadExtensionConfig();
+  return {
+    startOnLoad: false,
+    theme:
+      document.body.classList.contains("vscode-dark") || document.body.classList.contains("vscode-high-contrast")
+        ? config.darkModeTheme
+        : config.lightModeTheme,
+  } as MermaidConfig;
+}
 
 /**
  * Register Mermaid addons (icon packs, layouts, external diagrams)
