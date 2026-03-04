@@ -13,6 +13,74 @@
 - 支持垂直调整图表大小
 - 支持 MDI 和 Logo 图标
 
+## 项目架构
+
+```mermaid
+flowchart TB
+    subgraph VSCode[VS Code]
+        direction TB
+        MD[Markdown 文件]
+        MP[Markdown 预览]
+    end
+
+    subgraph Ext[vscode-md-diagram]
+        direction TB
+        VE[vscode-extension]
+        PV[preview]
+        CF[config]
+        CR[core]
+        RD[renderers]
+    end
+
+    subgraph Renderers
+        direction LR
+        MR[mermaid]
+        DR[dot]
+        SH[shared]
+    end
+
+    MD --> MP
+    MP --> VE
+    VE --> PV
+    PV --> CF
+    PV --> CR
+    PV --> MR
+    PV --> DR
+    PV --> SH
+    MR -.->|渲染| SVG1[SVG]
+    DR -.->|渲染| SVG2[SVG]
+    MP <-->|显示| SVG1
+    MP <-->|显示| SVG2
+
+    style VSCode fill:#e1f5fe
+    style Ext fill:#fff3e0
+    style Renderers fill:#e8f5e9
+```
+
+### 目录结构
+
+```mermaid
+graph
+    src --> vscode-extension
+    src --> preview
+    src --> renderers
+    src --> core
+    src --> config
+    src --> markdown
+
+    renderers --> mermaid
+    renderers --> dot
+    renderers --> shared
+
+    core --> types
+    core --> utils
+    core --> constants
+    core --> disposable
+    core --> diagramManager
+    core --> renderer
+    core --> interaction
+```
+
 ## 支持的图表类型
 
 ### Mermaid
