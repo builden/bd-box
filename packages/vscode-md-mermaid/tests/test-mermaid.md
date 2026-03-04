@@ -148,3 +148,119 @@ journey
       View results: 3: User
       Click result: 4: User
 ```
+
+---
+
+# DOT Diagram Test
+
+## Basic Flowchart (default box shape)
+
+```dot
+digraph {
+    Start -> Process -> End;
+}
+```
+
+## Flowchart with Circle Start/End (green)
+
+```dot
+digraph {
+    node [shape=circle];
+    Start -> Middle -> End;
+}
+```
+
+## Decision Diamond (yellow)
+
+```dot
+digraph {
+    node [shape=diamond];
+    Input -> Decision -> Yes;
+    Decision -> No -> End;
+}
+```
+
+## Process Box (blue)
+
+```dot
+digraph {
+    node [shape=box];
+    A -> B -> C -> D;
+}
+```
+
+## Parallelogram (purple)
+
+```dot
+digraph {
+    node [shape=parallelogram];
+    Input -> Process -> Output;
+}
+```
+
+## Hexagon (orange)
+
+```dot
+digraph {
+    node [shape=hexagon];
+    Prepare -> Execute -> Complete;
+}
+```
+
+## Mixed Shapes
+
+```dot
+digraph {
+    Start [shape=circle];
+    Decision [shape=diamond];
+    Process1 [shape=box];
+    Process2 [shape=box];
+    End [shape=circle];
+
+    Start -> Decision;
+    Decision -> Process1 [label="Yes"];
+    Decision -> Process2 [label="No"];
+    Process1 -> End;
+    Process2 -> End;
+}
+```
+
+## Undirected Graph
+
+```dot
+graph {
+    A -- B;
+    B -- C;
+    C -- D;
+    A -- D;
+}
+```
+
+## Complex Flowchart
+
+```dot
+digraph {
+    node [shape=box];
+    User -> Login -> Dashboard;
+    Dashboard -> Search -> Results;
+    Results -> ViewDetail -> Cart;
+    Cart -> Checkout -> Order;
+    Order -> Confirmation;
+
+    Search -> NoResults [style=dashed];
+    NoResults -> Dashboard;
+}
+```
+
+## State Machine
+
+```dot
+digraph {
+    node [shape=ellipse];
+    Idle -> Running [label="start"];
+    Running -> Paused [label="pause"];
+    Paused -> Running [label="resume"];
+    Running -> Stopped [label="stop"];
+    Stopped -> Idle [label="reset"];
+}
+```

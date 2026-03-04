@@ -1,6 +1,6 @@
 {
   "name": "vscode-md-mermaid",
-  "version": "1.0.43",
+  "version": "1.0.60",
   "displayName": "Markdown Preview Mermaid Support",
   "description": "Adds Mermaid diagram and flowchart support to VS Code's builtin markdown preview",
   "keywords": [
@@ -30,6 +30,9 @@
     "Other"
   ],
   "contributes": {
+    "markdown.previewStyles": [
+      "./dist/preview/index.css"
+    ],
     "markdown.previewScripts": [
       "./dist/preview/index.bundle.js"
     ],
@@ -67,9 +70,24 @@
           "order": 2,
           "type": "array",
           "default": [
-            "mermaid"
+            "mermaid",
+            "dot"
           ],
           "description": "Default languages in markdown."
+        },
+        "markdown-mermaid.dot.layoutEngine": {
+          "order": 2.5,
+          "type": "string",
+          "enum": [
+            "dot",
+            "neato",
+            "fdp",
+            "sfdp",
+            "twopi",
+            "circo"
+          ],
+          "default": "dot",
+          "description": "Graphviz layout engine for DOT diagrams."
         },
         "markdown-mermaid.maxTextSize": {
           "order": 3,
@@ -123,12 +141,14 @@
   "dependencies": {
     "@iconify-json/logos": "^1.2.0",
     "@iconify-json/mdi": "^1.2.0",
-    "@mermaid-js/mermaid-zenuml": "^0.2.2"
+    "@mermaid-js/mermaid-zenuml": "^0.2.2",
+    "viz.js": "^2.1.2"
   },
   "devDependencies": {
     "@happy-dom/global-registrator": "^16.7.2",
     "@mermaid-js/layout-elk": "^0.2.0",
     "@mermaid-js/layout-tidy-tree": "^0.2.0",
+    "@playwright/test": "^1.58.2",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^25.0.10",
     "@types/vscode": "^1.72.0",
@@ -136,21 +156,23 @@
     "happy-dom": "^16.7.2",
     "mermaid": "^11.12.2",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vsce": "^2.15.0"
   },
   "scripts": {
     "test": "bun test",
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage",
+    "test:e2e": "playwright test",
     "version:patch": "node -e \"const pkg=require('./package.json'); const v=pkg.version.split('.'); v[2]=parseInt(v[2])+1; pkg.version=v.join('.'); require('fs').writeFileSync('./package.json', JSON.stringify(pkg,null,2)+'\\n'); console.log('Version updated to '+pkg.version)\"",
-    "build-webview": "tsx ./build/esbuild-webview.ts",
-    "watch-webview": "tsx ./build/esbuild-webview.ts --watch",
+    "build-webview": "bun build src/markdownPreview/index.ts --target=browser --format=iife --outdir=dist/preview && mv dist/preview/index.js dist/preview/index.bundle.js 2>/dev/null || true",
+    "watch-webview": "bun build src/markdownPreview/index.ts --target=browser --format=iife --outdir=dist/preview --watch",
     "compile-ext": "tsx ./build/esbuild-extension.ts",
     "watch-ext": "tsx ./build/esbuild-extension.ts --watch",
     "package-ext": "tsx ./build/esbuild-extension.ts --production",
     "prepublish": "bun run --sequential package-ext build-webview",
     "build": "bun run --sequential compile-ext build-webview",
     "watch": "bun run --parallel watch-ext watch-webview",
-    "release": "bun run version:patch && bun run build && mkdir -p dist/vsix && vsce package --no-dependencies -o dist/vsix && code --install-extension dist/vsix/vscode-md-mermaid-*.vsix --force"
+    "release": "bun run version:patch && bun run build && mkdir -p dist/vsix && ./node_modules/.bin/vsce package --no-dependencies -o dist/vsix && code --install-extension dist/vsix/vscode-md-mermaid-*.vsix --force"
   }
 }

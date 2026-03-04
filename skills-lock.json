@@ -21,6 +21,11 @@
       "sourceType": "github",
       "computedHash": "9edba9a38684c060fdc38290f640e1dc0c37de286723ac9be73bacacf7cd6f3d"
     },
+    "git-src": {
+      "source": "/Users/builden/Develop/my-proj/bd-box/packages/git-src/skills/git-src",
+      "sourceType": "local",
+      "computedHash": "f36648d644f52b7f5463b3ac3d439d05c3a90d292806e94e41b00ba0d64ce018"
+    },
     "receiving-code-review": {
       "source": "obra/superpowers",
       "sourceType": "github",

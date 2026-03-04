@@ -2,6 +2,7 @@ import MarkdownIt from "markdown-it";
 import { Token } from "markdown-it/index.js";
 
 const mermaidLanguageId = "mermaid";
+const dotLanguageId = "dot";
 const containerTokenName = "mermaidContainer";
 
 const min_markers = 3;
@@ -51,9 +52,20 @@ export function extendMarkdownItWithMermaid(md: MarkdownIt, config: { languageId
 
       const markup = state.src.slice(start, pos);
       const params = state.src.slice(pos, max);
-      if (params.trim().split(" ")[0].toLowerCase() !== mermaidLanguageId) {
+      const lang = params.trim().split(" ")[0].toLowerCase();
+      console.log(
+        "[MD] container called, lang:",
+        lang,
+        "mermaidLanguageId:",
+        mermaidLanguageId,
+        "dotLanguageId:",
+        dotLanguageId,
+      );
+      if (lang !== mermaidLanguageId && lang !== dotLanguageId) {
+        console.log("[MD] container rejected, lang not matched");
         return false;
       }
+      console.log("[MD] container accepted, lang:", lang);
 
       // Since start is found, we can report success here in validation mode
       //
@@ -146,15 +158,21 @@ export function extendMarkdownItWithMermaid(md: MarkdownIt, config: { languageId
     md.renderer.rules[containerTokenName] = (tokens: Token[], idx: number) => {
       const token = tokens[idx];
       const src = token.content;
-      return ` <pre class="mermaid">${preProcess(src)}</pre> `;
+      const lang = token.info.trim().split(" ")[0].toLowerCase();
+      const className = lang === dotLanguageId ? "dot" : "mermaid";
+      return ` <pre class="${className}">${preProcess(src)}</pre> `;
     };
   });
 
   const highlight = md.options.highlight;
   md.options.highlight = (code: string, lang: string, attrs: string) => {
-    const reg = new RegExp("\\b(" + config.languageIds().map(escapeRegExp).join("|") + ")\\b", "i");
+    const languageIds = config.languageIds();
+    console.log("[MD] highlight called, lang:", lang, "languageIds:", languageIds);
+    const reg = new RegExp("\\b(" + languageIds.map(escapeRegExp).join("|") + ")\\b", "i");
     if (lang && reg.test(lang)) {
-      return ` <pre class="mermaid">${preProcess(code)}</pre> `;
+      const className = lang.toLowerCase() === dotLanguageId ? "dot" : "mermaid";
+      console.log("[MD] highlight matched, className:", className);
+      return ` <pre class="${className}">${preProcess(code)}</pre> `;
     }
     return highlight?.(code, lang, attrs) ?? code;
   };

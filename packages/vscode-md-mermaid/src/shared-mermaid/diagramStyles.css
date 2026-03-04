@@ -1,16 +1,19 @@
-.mermaid {
+.mermaid,
+.dot {
   display: flex;
   justify-content: center;
   margin: -1em 0;
   text-align: center;
 }
 
-.mermaid > svg {
+.mermaid > svg,
+.dot > svg {
   max-width: 100%;
   height: auto;
 }
 
-.mermaid-error {
+.mermaid-error,
+.dot-error {
   background-color: var(--vscode-editor-background, #1e1e1e);
   border: 1px solid var(--vscode-errorForeground, #f14c4c);
   color: var(--vscode-errorForeground, #f14c4c);
@@ -35,11 +38,15 @@
 
 .mermaid:hover .mermaid-controls,
 .mermaid:focus-within .mermaid-controls,
-.fullscreen .mermaid-controls {
+.fullscreen .mermaid-controls,
+.dot:hover .mermaid-controls,
+.dot:focus-within .mermaid-controls,
+.fullscreen .dot .mermaid-controls {
   display: flex;
 }
 
-.mermaid .mermaid-controls button {
+.mermaid .mermaid-controls button,
+.dot .mermaid-controls button {
   background: var(--vscode-button-background, #0e639c);
   border: none;
   color: var(--vscode-button-foreground, #ffffff);
@@ -49,7 +56,8 @@
   font-size: 12px;
 }
 
-.mermaid .mermaid-controls button:hover {
+.mermaid .mermaid-controls button:hover,
+.dot .mermaid-controls button:hover {
   background: var(--vscode-button-hoverBackground, #1177bb);
 }
 
@@ -68,7 +76,8 @@
 }
 
 /* Fullscreen styles */
-.mermaid.fullscreen {
+.mermaid.fullscreen,
+.dot.fullscreen {
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
@@ -86,12 +95,14 @@
   box-sizing: border-box !important;
 }
 
-.mermaid.fullscreen svg {
+.mermaid.fullscreen svg,
+.dot.fullscreen svg {
   max-width: 100% !important;
   max-height: 100% !important;
 }
 
-.mermaid.fullscreen .mermaid-controls {
+.mermaid.fullscreen .mermaid-controls,
+.dot.fullscreen .mermaid-controls {
   top: 0.5em !important;
   right: 0.5em;
   bottom: auto !important;

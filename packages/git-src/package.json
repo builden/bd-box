@@ -1,5 +1,5 @@
 {
-  "name": "git-src",
+  "name": "@builden/git-src",
   "version": "1.0.0",
   "type": "module",
   "description": "Git source code manager for AI Agents",

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vscode-md-mermaid DOT Test</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      h1 {
+        color: #333;
+      }
+      .mermaid,
+      .dot {
+        margin: 20px 0;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      .mermaid svg,
+      .dot svg {
+        max-width: 100%;
+        height: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Mermaid and DOT Diagram Test</h1>
+
+    <h2>Mermaid Diagram</h2>
+    <pre class="mermaid">
+graph TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Process 1]
+    B -->|No| D[Process 2]
+    C --> E[End]
+    D --> E
+  </pre
+    >
+
+    <h2>DOT Diagrams</h2>
+
+    <h3>Basic DOT</h3>
+    <pre class="dot">
+digraph {
+    A -> B
+    B -> C
+    A -> C
+}
+  </pre
+    >
+
+    <h3>DOT with shapes (circle = green, diamond = yellow, box = blue)</h3>
+    <pre class="dot">
+digraph {
+    node [shape=circle];
+    A [label="Circle Node" fillcolor="#62d256" style=filled];
+    node [shape=diamond];
+    B [label="Diamond" fillcolor="#fdd835" style=filled];
+    node [shape=box];
+    C [label="Box" fillcolor="#42a5f5" style=filled];
+    A -> B -> C
+}
+  </pre
+    >
+
+    <h3>DOT with parallelogram</h3>
+    <pre class="dot">
+digraph {
+    node [shape=parallelogram];
+    A [label="Input"];
+    node [shape=box];
+    B [label="Process"];
+    node [shape=hexagon];
+    C [label="Decision"];
+    A -> B -> C
+}
+  </pre
+    >
+
+    <script src="../../dist/preview/index.bundle.js"></script>
+  </body>
+</html>

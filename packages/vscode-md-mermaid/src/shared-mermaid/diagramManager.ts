@@ -286,7 +286,12 @@ export class DiagramManager {
   private applyTransform(id: string, svg: SVGSVGElement) {
     const view = this.getView(id, svg);
     svg.style.transform = formatTransform(view);
-    svg.style.transformOrigin = "0 0";
+
+    // Use SVG center as transform origin for zoom-in/zoom-out from center
+    const rect = svg.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    svg.style.transformOrigin = `${centerX}px ${centerY}px`;
   }
 
   retainStates(_activeIds: Set<string>) {
