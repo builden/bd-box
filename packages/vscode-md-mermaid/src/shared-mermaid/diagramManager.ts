@@ -1,6 +1,6 @@
-import type { DiagramExtensionConfig } from "./config";
+import type { DiagramExtensionConfig } from "../core/types";
 import type { IDisposable } from "../core/disposable";
-import { ClickDragMode, ControlsVisibilityMode } from "./config";
+import { ClickDragMode, ControlsVisibilityMode } from "../core/types";
 import type { ViewState, ViewStates } from "../core/types/view";
 import {
   clampZoom,

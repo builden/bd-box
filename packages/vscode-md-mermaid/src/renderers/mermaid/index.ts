@@ -5,7 +5,7 @@ import elkLayouts from "@mermaid-js/layout-elk";
 import tidyTreeLayouts from "@mermaid-js/layout-tidy-tree";
 import zenuml from "@mermaid-js/mermaid-zenuml";
 import mermaid from "mermaid";
-import { iconPacks } from "../../shared-mermaid/iconPackConfig";
+import { iconPacks } from "./iconPackConfig";
 import type { DiagramRenderer } from "../../core/types";
 import { renderMermaidElement, renderMermaidBlocksInElement } from "./render";
 

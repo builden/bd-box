@@ -1,6 +1,5 @@
 /**
  * Core types for diagram rendering system.
- * These types supplement and are compatible with existing types in shared-mermaid/config.ts
  */
 
 // Controls visibility modes

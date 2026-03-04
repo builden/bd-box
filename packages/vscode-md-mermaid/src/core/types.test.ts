@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
-import { ControlsVisibilityMode, ClickDragMode } from "../core/types";
-import type { MermaidExtensionConfig } from "../core/types";
+import { ControlsVisibilityMode, ClickDragMode } from "./types";
+import type { MermaidExtensionConfig } from "./types";
 
 describe("config", () => {
   describe("ControlsVisibilityMode", () => {

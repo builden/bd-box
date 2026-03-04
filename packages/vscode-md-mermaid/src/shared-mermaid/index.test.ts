@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, mock } from "bun:test";
-import { loadMermaidConfig } from "./index";
+import { loadMermaidConfig } from "../renderers/mermaid";
 import { loadExtensionConfig } from "../config/loader";
 import { ClickDragMode, ControlsVisibilityMode } from "../core/types";
 

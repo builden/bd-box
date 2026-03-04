@@ -5,7 +5,7 @@
  * CSS is loaded via markdown.previewStyles in package.json
  */
 import mermaid from "mermaid";
-import { loadMermaidConfig, registerMermaidAddons, renderMermaidBlocksInElement } from "../shared-mermaid";
+import { loadMermaidConfig, registerMermaidAddons, renderMermaidBlocksInElement } from "../renderers/mermaid";
 import { renderDotBlocksInElement, initGraphviz } from "../shared-dot";
 import { DiagramManager } from "../shared-mermaid/diagramManager";
 import type { IDisposable } from "../core/disposable";
