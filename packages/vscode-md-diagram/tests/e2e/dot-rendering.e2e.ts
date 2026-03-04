@@ -7,7 +7,7 @@ const e2eDir = path.resolve(__dirname);
 const scriptPath = path.join(e2eDir, "..", "..", "dist", "preview", "index.bundle.js");
 const testHtmlPath = path.join(e2eDir, "test-dot.html");
 
-test.describe("vscode-md-mermaid DOT Rendering E2E", () => {
+test.describe("vscode-md-diagram DOT Rendering E2E", () => {
   test("should render Mermaid and DOT diagrams to SVG", async ({ page }) => {
     // Collect console messages
     const consoleLogs: string[] = [];

@@ -56,7 +56,7 @@ bun run watch
 
 在 Markdown 文件中使用 `mermaid` 代码块：
 
-```markdown
+````markdown
 ```mermaid
 graph TD;
     A[Start] --> B{Is it working?}
@@ -65,14 +65,15 @@ graph TD;
     D --> B
 `` `
 ```
+````
 
 ### 使用 ::: 语法
 
 ```markdown
 ::: mermaid
 graph TD;
-    A --> B
-    B --> C
+A --> B
+B --> C
 :::
 ```
 
@@ -85,16 +86,16 @@ graph TD;
 
 在 VS Code 设置中可以自定义以下选项：
 
-| 设置项 | 默认值 | 描述 |
-|--------|--------|------|
-| `markdown-mermaid.lightModeTheme` | `default` | 亮色模式主题 |
-| `markdown-mermaid.darkModeTheme` | `dark` | 暗色模式主题 |
-| `markdown-mermaid.languages` | `["mermaid"]` | 支持的语言标识 |
-| `markdown-mermaid.maxTextSize` | `50000` | 最大文本大小 |
-| `markdown-mermaid.mouseNavigation.enabled` | `alt` | 鼠标导航模式 |
-| `markdown-mermaid.controls.show` | `onHoverOrFocus` | 控制按钮显示方式 |
-| `markdown-mermaid.resizable` | `true` | 是否允许调整大小 |
-| `markdown-mermaid.maxHeight` | `""` | 最大高度限制 |
+| 设置项                                     | 默认值           | 描述             |
+| ------------------------------------------ | ---------------- | ---------------- |
+| `markdown-mermaid.lightModeTheme`          | `default`        | 亮色模式主题     |
+| `markdown-mermaid.darkModeTheme`           | `dark`           | 暗色模式主题     |
+| `markdown-mermaid.languages`               | `["mermaid"]`    | 支持的语言标识   |
+| `markdown-mermaid.maxTextSize`             | `50000`          | 最大文本大小     |
+| `markdown-mermaid.mouseNavigation.enabled` | `alt`            | 鼠标导航模式     |
+| `markdown-mermaid.controls.show`           | `onHoverOrFocus` | 控制按钮显示方式 |
+| `markdown-mermaid.resizable`               | `true`           | 是否允许调整大小 |
+| `markdown-mermaid.maxHeight`               | `""`             | 最大高度限制     |
 
 ### 主题选项
 
@@ -112,10 +113,10 @@ graph TD;
 
 ## 快捷键
 
-| 操作 | 快捷键 |
-|------|--------|
+| 操作     | 快捷键                 |
+| -------- | ---------------------- |
 | 打开预览 | `Ctrl/Cmd + Shift + V` |
-| 侧边预览 | `Ctrl/Cmd + K V` |
+| 侧边预览 | `Ctrl/Cmd + K V`       |
 
 ## 示例
 

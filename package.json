@@ -33,7 +33,7 @@
     "test": "AGENT=1 bun run --parallel --workspaces test",
     "test:color": "cd packages/bd-color && bun test",
     "test:lunar": "cd packages/bd-lunar && bun test",
-    "test:mermaid": "cd packages/vscode-md-mermaid && bun test",
+    "test:diagram": "cd packages/vscode-md-diagram && bun test",
     "test:token-previewer": "cd packages/bd-antd-token-previewer && bun test",
     "typecheck": "tsc --noEmit"
   },

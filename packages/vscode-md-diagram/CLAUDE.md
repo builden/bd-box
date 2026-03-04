@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance for Claude Code when working with the vscode-md-mermaid project.
+This file provides guidance for Claude Code when working with the vscode-md-diagram project.
 
 ## Project Overview
 

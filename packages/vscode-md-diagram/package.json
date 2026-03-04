@@ -1,10 +1,12 @@
 {
-  "name": "vscode-md-mermaid",
-  "version": "1.0.77",
-  "displayName": "Markdown Preview Mermaid Support",
-  "description": "Adds Mermaid diagram and flowchart support to VS Code's builtin markdown preview",
+  "name": "vscode-md-diagram",
+  "version": "1.0.78",
+  "displayName": "Markdown Preview Diagram Support",
+  "description": "Adds Mermaid and DOT diagram support to VS Code's builtin markdown preview",
   "keywords": [
     "mermaid",
+    "dot",
+    "graphviz",
     "markdown",
     "flowchart",
     "diagram",
@@ -15,10 +17,10 @@
   "publisher": "builden",
   "license": "MIT",
   "repository": {
-    "url": "https://github.com/builden/vscode-md-mermaid.git"
+    "url": "https://github.com/builden/vscode-md-diagram.git"
   },
   "bugs": {
-    "url": "https://github.com/builden/vscode-md-mermaid/issues"
+    "url": "https://github.com/builden/vscode-md-diagram/issues"
   },
   "engines": {
     "vscode": "^1.100.0"
