@@ -9,14 +9,21 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./src/index.ts",
+      "require": "./dist/index.js"
     }
   },
   "main": "./dist/index.js",
-  "module": "./dist/index.js",
+  "module": "./src/index.ts",
   "name": "@builden/bd-lunar",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "test": "bun test"
