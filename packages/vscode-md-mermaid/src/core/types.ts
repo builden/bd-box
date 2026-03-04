@@ -17,6 +17,13 @@ export enum ClickDragMode {
   Never = "never",
 }
 
+// Mermaid-specific theme configuration
+export const defaultMermaidTheme = "default";
+
+export const validMermaidThemes = ["base", "forest", "dark", "default", "neutral"] as const;
+
+export type ValidMermaidTheme = (typeof validMermaidThemes)[number];
+
 // Layout engine for DOT diagrams
 export type LayoutEngine = "dot" | "neato" | "fdp" | "sfdp" | "twopi" | "circo";
 
