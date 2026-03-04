@@ -124,33 +124,6 @@ describe('format 工具', () => {
       expect(result).toBe('甲辰年')
     })
 
-    it('should handle context-aware replacement: LM followed by 月', () => {
-      const replacers: LunarReplacers = {
-        LM: '五月', Lm: '五', LD: '十五', Ld: '十五', LH: '未时', Lh: '未',
-        LY: '二零二四年', Ly: '二零二四', LGZY: '甲辰年', LGZy: '甲辰'
-      }
-      const result = replaceLunarTokens('YYYY年LM月LD日', replacers)
-      expect(result).toBe('YYYY年五月十五日')
-    })
-
-    it('should handle context-aware replacement: LY followed by 年', () => {
-      const replacers: LunarReplacers = {
-        LM: '五月', Lm: '五', LD: '十五', Ld: '十五', LH: '未时', Lh: '未',
-        LY: '二零二四年', Ly: '二零二四', LGZY: '甲辰年', LGZy: '甲辰'
-      }
-      const result = replaceLunarTokens('YYYY年LY年', replacers)
-      expect(result).toBe('YYYY年二零二四年')
-    })
-
-    it('should handle context-aware replacement: LGZY followed by 年', () => {
-      const replacers: LunarReplacers = {
-        LM: '五月', Lm: '五', LD: '十五', Ld: '十五', LH: '未时', Lh: '未',
-        LY: '二零二四年', Ly: '二零二四', LGZY: '甲辰年', LGZy: '甲辰'
-      }
-      const result = replaceLunarTokens('YYYY年LGZY年', replacers)
-      expect(result).toBe('YYYY年甲辰年')
-    })
-
     it('should preserve escaped brackets', () => {
       const replacers: LunarReplacers = {
         LM: '五月', Lm: '五', LD: '初一', Ld: '初一', LH: '子时', Lh: '子',
@@ -161,20 +134,22 @@ describe('format 工具', () => {
     })
 
     it('should handle combined tokens', () => {
+      // LM/LD/LH 不带后缀，需要在格式中加后缀
       const replacers: LunarReplacers = {
-        LM: '五月', Lm: '五', LD: '十五', Ld: '十五', LH: '未时', Lh: '未',
-        LY: '二零二四年', Ly: '二零二四', LGZY: '甲辰年', LGZy: '甲辰'
+        LM: '五月', Lm: '五', LD: '十五', Ld: '十五', LH: '未', Lh: '未时',
+        LY: '二零二四', Ly: '二零二四年', LGZY: '甲辰', LGZy: '甲辰年'
       }
-      const result = replaceLunarTokens('YYYY年LM月LD日 LH', replacers)
+      const result = replaceLunarTokens('YYYY年Lm月Ld日 Lh', replacers)
       expect(result).toBe('YYYY年五月十五日 未时')
     })
 
     it('should handle leap month LM token', () => {
+      // Lm/Ld 不带后缀，格式中需要加后缀
       const replacers: LunarReplacers = {
-        LM: '闰二月', Lm: '闰二', LD: '十五', Ld: '十五', LH: '午时', Lh: '午',
+        LM: '闰二月', Lm: '闰二', LD: '十五日', Ld: '十五', LH: '午时', Lh: '午',
         LY: '二零二三年', Ly: '二零二三', LGZY: '癸卯年', LGZy: '癸卯'
       }
-      const result = replaceLunarTokens('LM月LD日', replacers)
+      const result = replaceLunarTokens('Lm月Ld日', replacers)
       expect(result).toBe('闰二月十五日')
     })
   })

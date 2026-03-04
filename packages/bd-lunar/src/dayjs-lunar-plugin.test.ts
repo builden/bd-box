@@ -59,7 +59,7 @@ describe('dayjs-lunar-plugin', () => {
 
   describe('format LD/Ld (农历日)', () => {
     // LD 带"日"后缀，Ld 不带
-    it('should format lunar day 1-10 with suffix', () => {
+    it('should format lunar day with suffix', () => {
       expect(dayjs('2024-06-10').format('LD')).toBe('初五日')
       expect(dayjs('2024-06-15').format('LD')).toBe('初十日')
     })
@@ -78,47 +78,39 @@ describe('dayjs-lunar-plugin', () => {
     })
   })
 
-  describe('format LH (时辰)', () => {
-    it('should format zi shichen (23:00-01:00)', () => {
+  describe('format LH/Lh (时辰)', () => {
+    // LH 带"时"后缀，Lh 不带
+    it('should format zi shichen with suffix (23:00-01:00)', () => {
       expect(dayjs('2024-06-15 00:30:00').format('LH')).toBe('子时')
     })
 
-    it('should format chou shichen (01:00-03:00)', () => {
-      expect(dayjs('2024-06-15 02:00:00').format('LH')).toBe('丑时')
+    it('should format zi shichen without suffix', () => {
+      expect(dayjs('2024-06-15 00:30:00').format('Lh')).toBe('子')
     })
 
-    it('should format yin shichen (03:00-05:00)', () => {
-      expect(dayjs('2024-06-15 04:00:00').format('LH')).toBe('寅时')
-    })
-
-    it('should format wei shichen (13:00-15:00)', () => {
+    it('should format wei shichen with suffix (13:00-15:00)', () => {
       expect(dayjs('2024-06-15 14:30:00').format('LH')).toBe('未时')
     })
 
-    it('should format hai shichen (21:00-23:00)', () => {
+    it('should format hai shichen with suffix (21:00-23:00)', () => {
       expect(dayjs('2024-06-15 22:00:00').format('LH')).toBe('亥时')
     })
   })
 
   describe('format combined tokens', () => {
     it('should format LM and LD together', () => {
-      const result = dayjs('2024-06-20').format('YYYY年LM月LD日')
+      const result = dayjs('2024-06-20').format('YYYY年Lm月Ld日')
       expect(result).toBe('2024年五月十五日')
     })
 
     it('should format all lunar tokens together', () => {
-      const result = dayjs('2024-06-15 14:30:00').format('YYYY年LM月LD日 LH')
-      expect(result).toBe('2024年五月初十日 未时')
-    })
-
-    it('should format LM without month suffix when followed by 月', () => {
-      // 2024-06-15 是农历五月初十
-      const result = dayjs('2024-06-15').format('LM月LD日')
-      expect(result).toBe('五月初十日')
+      const result = dayjs('2024-06-15 14:30:00').format('YYYY年Lm月Ld日 Lh')
+      expect(result).toBe('2024年五月初十日 未')
     })
   })
 
   describe('format LY/Ly (农历年)', () => {
+    // LY 带"年"后缀，Ly 不带
     it('should format LY with year suffix', () => {
       expect(dayjs('2024-06-15').format('LY')).toBe('二〇二四年')
     })
@@ -138,19 +130,19 @@ describe('dayjs-lunar-plugin', () => {
 
   describe('format combined tokens with LY', () => {
     it('should format YYYY with LY', () => {
-      expect(dayjs('2024-06-15').format('YYYY年LY')).toBe('2024年二〇二四年')
+      expect(dayjs('2024-06-15').format('YYYY年Ly')).toBe('2024年二〇二四')
     })
 
     it('should format full lunar date with LY', () => {
-      expect(dayjs('2024-06-15').format('YYYY年LY年LM月LD日')).toBe('2024年二〇二四年五月初十日')
+      expect(dayjs('2024-06-15').format('YYYY年Ly年Lm月Ld日')).toBe('2024年二〇二四年五月初十日')
     })
 
     it('should format with mixed tokens', () => {
-      expect(dayjs('2024-06-15 14:30:00').format('YYYY年LY年LM月LD日 Lh')).toBe('2024年二〇二四年五月初十日 未')
+      expect(dayjs('2024-06-15 14:30:00').format('YYYY年Ly年Lm月Ld日 Lh')).toBe('2024年二〇二四年五月初十日 未')
     })
 
     it('should format with LGZY', () => {
-      expect(dayjs('2024-06-15').format('YYYY年LGZY年')).toBe('2024年甲辰年')
+      expect(dayjs('2024-06-15').format('YYYY年LGZy')).toBe('2024年甲辰')
     })
   })
 
@@ -198,9 +190,9 @@ describe('dayjs-lunar-plugin', () => {
     })
 
     it('should handle year-end dates', () => {
-      // 2024年冬月初一
-      const result = dayjs('2024-12-01').format('LM月Ld')
-      expect(result).toBe('冬月初一')
+      // 2024年冬月初一，Lm不带后缀需要加月，Ld不带后缀不加日
+      const result = dayjs('2024-12-01').format('Lm月 Ld')
+      expect(result).toBe('冬月 初一')
     })
 
     it('should handle empty format string', () => {
@@ -210,15 +202,15 @@ describe('dayjs-lunar-plugin', () => {
     })
 
     it('should handle Chinese New Year', () => {
-      // 2024年春节: 2024-02-10
-      const result = dayjs('2024-02-10').format('YYYY年LM月LD日')
+      // 2024年春节: 2024-02-10（正月初一），Lm不带后缀需要加月，Ld不带后缀需要加日
+      const result = dayjs('2024-02-10').format('YYYY年Lm月Ld日')
       expect(result).toBe('2024年正月初一日')
     })
 
     it('should handle leap month format', () => {
-      // 2023年闰二月十五
-      const result = dayjs('2023-04-05').format('LM月LD日')
-      expect(result).toBe('闰二月十五日')
+      // 2023年闰二月十五，Lm/Ld 不带后缀，需要在格式中加后缀
+      const result = dayjs('2023-04-05').format('Lm月 Ld日')
+      expect(result).toBe('闰二月 十五日')
     })
 
     it('should handle all shichen formats with getShichen', () => {

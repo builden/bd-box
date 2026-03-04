@@ -10,11 +10,11 @@ function getReplacers(instance: Dayjs): LunarReplacers {
   const lunar = getLunarInfo(instance.toDate())
   const shichen = getShichen(instance.toDate())
   return {
-    LM: lunar.monthInChinese + '月',
-    Lm: lunar.monthInChinese,
+    LM: lunar.monthInChinese + '月',  // 全大写带后缀
+    Lm: lunar.monthInChinese,         // 小写不带后缀
     LD: lunar.dayInChinese + '日',
     Ld: lunar.dayInChinese,
-    LH: shichen,
+    LH: shichen,                      // getShichen 已带"时"
     Lh: shichen.replace('时', ''),
     LY: lunar.yearInChinese + '年',
     Ly: lunar.yearInChinese,
