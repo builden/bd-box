@@ -6,7 +6,7 @@ import { join, dirname } from "path";
 
 // Find package.json by traversing up from the entry file
 function findPackageJson(): string {
-  let dir = dirname(process.argv[1]);
+  let dir = dirname(process.argv[1] || __filename);
   for (let i = 0; i < 10; i++) {
     const pkgPath = join(dir, "package.json");
     if (existsSync(pkgPath)) {
