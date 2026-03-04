@@ -5,15 +5,11 @@
  * CSS is loaded via markdown.previewStyles in package.json
  */
 import mermaid from "mermaid";
-import {
-  loadExtensionConfig,
-  loadMermaidConfig,
-  registerMermaidAddons,
-  renderMermaidBlocksInElement,
-} from "../shared-mermaid";
+import { loadMermaidConfig, registerMermaidAddons, renderMermaidBlocksInElement } from "../shared-mermaid";
 import { renderDotBlocksInElement, initGraphviz } from "../shared-dot";
 import { DiagramManager } from "../shared-mermaid/diagramManager";
 import type { IDisposable } from "../shared-mermaid/disposable";
+import { loadExtensionConfig } from "../config";
 
 let currentAbortController: AbortController | undefined;
 let currentDisposables: IDisposable[] = [];
