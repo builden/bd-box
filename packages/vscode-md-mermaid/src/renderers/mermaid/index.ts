@@ -10,7 +10,7 @@ import type { DiagramRenderer } from "../../core/types";
 import { renderMermaidElement, renderMermaidBlocksInElement } from "./render";
 
 export { renderMermaidBlocksInElement } from "./render";
-export { loadMermaidConfig, loadExtensionConfig } from "./config";
+export { loadMermaidConfig } from "./config";
 
 /**
  * Register Mermaid addons (icon packs, layouts, external diagrams)

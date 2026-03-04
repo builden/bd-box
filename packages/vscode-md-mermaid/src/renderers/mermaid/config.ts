@@ -2,8 +2,6 @@
  * Mermaid-specific configuration.
  * Uses centralized config from config/loader.ts
  */
-import type { DiagramExtensionConfig } from "../../core/types";
-export type { DiagramExtensionConfig };
 import { MermaidConfig } from "mermaid";
 import { loadExtensionConfig as loadBaseConfig } from "../../config/loader";
 
