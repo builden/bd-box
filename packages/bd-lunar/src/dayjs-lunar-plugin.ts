@@ -1,21 +1,19 @@
 import type { PluginFunc } from 'dayjs'
 import type { Dayjs } from 'dayjs'
 import { getLunarInfo, lunarToSolar } from './lunar'
-import { getShichen } from './shichen'
 import { hasLunarToken, replaceLunarTokens } from './format'
 import type { LunarReplacers } from './types'
 
 /** 从 dayjs 实例获取农历替换值 */
 function getReplacers(instance: Dayjs): LunarReplacers {
   const lunar = getLunarInfo(instance.toDate())
-  const shichen = getShichen(instance.toDate())
   return {
     LM: lunar.monthInChinese + '月',  // 全大写带后缀
     Lm: lunar.monthInChinese,         // 小写不带后缀
     LD: lunar.dayInChinese + '日',
     Ld: lunar.dayInChinese,
-    LH: shichen,                      // getShichen 已带"时"
-    Lh: shichen.replace('时', ''),
+    LH: lunar.timeZhi + '时',          // timeZhi 已包含时辰
+    Lh: lunar.timeZhi,
     LY: lunar.yearInChinese + '年',
     Ly: lunar.yearInChinese,
     LGZY: lunar.yearInGanZhi + '年',
