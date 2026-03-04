@@ -1,6 +1,6 @@
 import type MarkdownIt from "markdown-it";
 import * as vscode from "vscode";
-import { extendMarkdownItWithMermaid } from "../shared-md-mermaid";
+import { extendMarkdownItWithMermaid } from "../markdown";
 import { configSection, injectMermaidConfig } from "./config";
 
 // Version will be injected at build time
