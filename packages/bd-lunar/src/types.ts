@@ -10,8 +10,12 @@ export interface LunarInfo {
   day: number
   /** 农历年中文，如 "二零二四" */
   yearInChinese: string
-  /** 干支年，如 "甲辰" */
-  ganZhiYear: string
+  /** 农历年天干地支，如 "甲辰" */
+  yearInGanZhi: string
+  /** 农历月天干地支 */
+  monthInGanZhi: string
+  /** 农历日天干地支 */
+  dayInGanZhi: string
   /** 农历月中文名称（含闰前缀） */
   monthInChinese: string
   /** 农历日中文名称 */

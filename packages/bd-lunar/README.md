@@ -87,12 +87,14 @@ console.log(info);
 //   year: 2026,           // 农历年
 //   month: 1,            // 农历月（1-12，负数表示闰月）
 //   day: 16,             // 农历日（1-30）
-//   yearInChinese: '二〇二六',  // 农历年中文
-//   ganZhiYear: '丙辰',  // 干支年
-//   monthInChinese: '正月',     // 农历月中文（含闰前缀）
-//   dayInChinese: '十六',      // 农历日中文
-//   timeZhi: '寅',       // 时辰地支
-//   timeInGanZhi: '甲寅' // 时辰天干地支
+//   yearInChinese: '二〇二六',   // 农历年中文
+//   yearInGanZhi: '丙辰',       // 农历年天干地支
+//   monthInGanZhi: '丙寅',      // 农历月天干地支
+//   dayInGanZhi: '丙子',       // 农历日天干地支
+//   monthInChinese: '正月',      // 农历月中文（含闰前缀）
+//   dayInChinese: '十六',       // 农历日中文
+//   timeZhi: '寅',            // 时辰地支
+//   timeInGanZhi: '甲寅'       // 时辰天干地支
 // }
 
 // 阴历转阳历

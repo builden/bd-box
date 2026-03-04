@@ -9,18 +9,18 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
       "import": "./src/index.ts",
-      "require": "./dist/cjs/index.js"
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/index.d.ts"
     }
   },
-  "main": "./dist/index.js",
-  "module": "./src/index.ts",
-  "name": "@builden/bd-lunar",
   "files": [
     "dist",
     "src"
   ],
+  "main": "./dist/index.js",
+  "module": "./src/index.ts",
+  "name": "@builden/bd-lunar",
   "publishConfig": {
     "access": "public"
   },
@@ -30,5 +30,5 @@
   },
   "type": "module",
   "types": "./dist/index.d.ts",
-  "version": "1.0.0"
+  "version": "1.0.1"
 }

@@ -18,8 +18,8 @@ function getReplacers(instance: Dayjs): LunarReplacers {
     Lh: shichen.replace('时', ''),
     LY: lunar.yearInChinese + '年',
     Ly: lunar.yearInChinese,
-    LGZY: lunar.ganZhiYear + '年',
-    LGZy: lunar.ganZhiYear,
+    LGZY: lunar.yearInGanZhi + '年',
+    LGZy: lunar.yearInGanZhi,
   }
 }
 
