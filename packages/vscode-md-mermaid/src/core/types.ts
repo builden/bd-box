@@ -55,3 +55,41 @@ export interface RenderResult {
   readonly contentHash: string;
   readonly promise: Promise<void>;
 }
+
+/**
+ * Diagram renderer interface
+ * Implement this interface to add support for new diagram types
+ */
+export interface DiagramRenderer {
+  /** Unique identifier for the renderer */
+  readonly id: string;
+
+  /** Supported language IDs (e.g., 'mermaid', 'dot', 'plantuml') */
+  readonly languages: readonly string[];
+
+  /** CSS class name for diagram containers */
+  readonly className: string;
+
+  /**
+   * Render a single diagram element
+   * @param container The diagram container element
+   * @param usedIds Set of already used IDs
+   * @param writeOut Callback to write rendered content
+   * @param signal Abort signal
+   */
+  renderElement(
+    container: HTMLElement,
+    usedIds: Set<string>,
+    writeOut: (container: HTMLElement, content: string, contentHash: string) => void,
+    signal?: AbortSignal,
+  ): RenderResult | undefined;
+
+  /**
+   * Render all diagram elements within a root element
+   */
+  renderInElement(
+    root: HTMLElement,
+    writeOut: (container: HTMLElement, content: string, contentHash: string) => void,
+    signal?: AbortSignal,
+  ): Promise<void>;
+}

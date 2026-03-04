@@ -100,17 +100,40 @@ CSS must be loaded via `markdown.previewStyles` in `package.json`:
 
 ### Adding New Diagram Types
 
-1. Create `src/renderers/{type}/` directory
-2. Implement renderer with `renderXxxBlocksInElement()` function
-3. Add language parsing in `src/markdown/index.ts`
-4. Initialize in `src/preview/index.ts`
-5. Ensure CSS has `.xxx` selectors (reuse `.mermaid` styles)
+Use the `DiagramRenderer` interface from `core/types.ts`:
+
+```typescript
+import type { DiagramRenderer } from "./core/types";
+
+export const myRenderer: DiagramRenderer = {
+  id: "my-diagram",
+  languages: ["mydiagram"],
+  className: "mydiagram",
+
+  renderElement(container, usedIds, writeOut, signal) {
+    // Render single diagram
+  },
+
+  renderInElement(root, writeOut, signal) {
+    // Render all diagrams in root
+  },
+};
+```
+
+Then register it in `preview/index.ts`:
+
+```typescript
+import { rendererRegistry } from "./core/renderer";
+import { myRenderer } from "./renderers/mydiagram";
+
+rendererRegistry.register(myRenderer);
+```
 
 ### Key Files
 
-| File                | Purpose                              |
-| ------------------- | ------------------------------------ |
-| `diagramManager.ts` | Controls (zoom, pan, fullscreen)     |
-| `diagramStyles.css` | All diagram styles including `.dot`  |
-| `markdown/index.ts` | Parse mermaid and dot blocks         |
-| `preview/index.ts`  | Webview entry, initializes renderers |
+| File               | Purpose                              |
+| ------------------ | ------------------------------------ |
+| `core/types.ts`    | DiagramRenderer interface            |
+| `core/renderer.ts` | Renderer registry                    |
+| `renderers/`       | Diagram renderers (mermaid, dot)     |
+| `preview/index.ts` | Webview entry, initializes renderers |
