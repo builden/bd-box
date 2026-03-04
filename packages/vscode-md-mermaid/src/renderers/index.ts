@@ -10,7 +10,7 @@ export {
   registerMermaidAddons,
   mermaidRenderer,
 } from "./mermaid";
-export type { MermaidExtensionConfig } from "./mermaid/config";
+export type { DiagramExtensionConfig } from "./mermaid/config";
 
 // DOT renderer
 export { initGraphviz, renderDotBlocksInElement, renderDot, dotRenderer } from "./dot";

@@ -44,7 +44,7 @@ export interface DiagramExtensionConfig {
  * Mermaid-specific configuration
  */
 export interface MermaidExtensionConfig extends DiagramExtensionConfig {
-  readonly mermaidThemes: readonly string[];
+  readonly mermaidThemes?: readonly string[];
 }
 
 /**

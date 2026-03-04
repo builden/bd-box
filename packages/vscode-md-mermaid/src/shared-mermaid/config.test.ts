@@ -5,9 +5,9 @@ import type { MermaidExtensionConfig } from "../core/types";
 describe("config", () => {
   describe("ControlsVisibilityMode", () => {
     it("should have correct values", () => {
-      expect(ControlsVisibilityMode.Never).toBe("never");
-      expect(ControlsVisibilityMode.OnHoverOrFocus).toBe("onHoverOrFocus");
-      expect(ControlsVisibilityMode.Always).toBe("always");
+      expect(String(ControlsVisibilityMode.Never)).toBe("never");
+      expect(String(ControlsVisibilityMode.OnHoverOrFocus)).toBe("onHoverOrFocus");
+      expect(String(ControlsVisibilityMode.Always)).toBe("always");
     });
 
     it("should have three modes", () => {
@@ -18,9 +18,9 @@ describe("config", () => {
 
   describe("ClickDragMode", () => {
     it("should have correct values", () => {
-      expect(ClickDragMode.Always).toBe("always");
-      expect(ClickDragMode.Alt).toBe("alt");
-      expect(ClickDragMode.Never).toBe("never");
+      expect(String(ClickDragMode.Always)).toBe("always");
+      expect(String(ClickDragMode.Alt)).toBe("alt");
+      expect(String(ClickDragMode.Never)).toBe("never");
     });
 
     it("should have three modes", () => {

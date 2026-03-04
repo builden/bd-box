@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from "bun:test";
 import { DiagramManager, clampZoom, parseTransform, formatTransform, getViewMode } from "./diagramManager";
-import type { ViewState } from "./types/view";
-import { ControlsVisibilityMode, ClickDragMode, MermaidExtensionConfig } from "../core/types";
+import type { ViewState } from "../core/types/view";
+import { ControlsVisibilityMode, ClickDragMode, DiagramExtensionConfig } from "../core/types";
 
 describe("DiagramManager", () => {
   let manager: DiagramManager;
-  let config: MermaidExtensionConfig;
+  let config: DiagramExtensionConfig;
 
   // Helper to create SVG element
   const createSvgElement = (): SVGSVGElement => {
@@ -44,7 +44,7 @@ describe("DiagramManager", () => {
 
   describe("updateConfig", () => {
     it("should update config", () => {
-      const newConfig: MermaidExtensionConfig = {
+      const newConfig: DiagramExtensionConfig = {
         ...config,
         showControls: ControlsVisibilityMode.Always,
       };
@@ -99,7 +99,7 @@ describe("DiagramManager", () => {
 
   describe("config variations", () => {
     it("should not setup controls when showControls is Never", () => {
-      const localConfig: MermaidExtensionConfig = {
+      const localConfig: DiagramExtensionConfig = {
         ...config,
         showControls: ControlsVisibilityMode.Never,
       };
@@ -113,7 +113,7 @@ describe("DiagramManager", () => {
     });
 
     it("should setup controls when showControls is Always", () => {
-      const localConfig: MermaidExtensionConfig = {
+      const localConfig: DiagramExtensionConfig = {
         ...config,
         showControls: ControlsVisibilityMode.Always,
       };
@@ -127,7 +127,7 @@ describe("DiagramManager", () => {
     });
 
     it("should not setup resize when resizable is false", () => {
-      const localConfig: MermaidExtensionConfig = {
+      const localConfig: DiagramExtensionConfig = {
         ...config,
         resizable: false,
       };
@@ -141,7 +141,7 @@ describe("DiagramManager", () => {
     });
 
     it("should setup resize when resizable is true", () => {
-      const localConfig: MermaidExtensionConfig = {
+      const localConfig: DiagramExtensionConfig = {
         ...config,
         resizable: true,
       };
