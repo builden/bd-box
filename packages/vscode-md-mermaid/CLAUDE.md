@@ -27,10 +27,13 @@ bun run release
 ```
 src/
 ├── vscode-extension/      # VS Code extension entry point
+├── preview/               # Webview entry point
+├── renderers/             # Diagram renderers (mermaid, dot)
+├── config/                # Configuration management
+├── core/                  # Core types and utilities
+├── markdown/              # Markdown parsing with mermaid/dot support
 ├── shared-mermaid/        # Mermaid rendering logic & diagram manager
-├── shared-dot/            # DOT/Graphviz rendering (uses viz.js)
-├── shared-md-mermaid/     # Markdown parsing with mermaid/dot support
-└── markdownPreview/       # Webview entry point
+└── shared-dot/            # DOT/Graphviz rendering (uses viz.js)
 ```
 
 ## Debugging
@@ -97,17 +100,17 @@ CSS must be loaded via `markdown.previewStyles` in `package.json`:
 
 ### Adding New Diagram Types
 
-1. Create `src/shared-{type}/` directory
+1. Create `src/renderers/{type}/` directory
 2. Implement renderer with `renderXxxBlocksInElement()` function
-3. Add language parsing in `src/shared-md-mermaid/index.ts`
-4. Initialize in `src/markdownPreview/index.ts`
+3. Add language parsing in `src/markdown/index.ts`
+4. Initialize in `src/preview/index.ts`
 5. Ensure CSS has `.xxx` selectors (reuse `.mermaid` styles)
 
 ### Key Files
 
-| File                         | Purpose                              |
-| ---------------------------- | ------------------------------------ |
-| `diagramManager.ts`          | Controls (zoom, pan, fullscreen)     |
-| `diagramStyles.css`          | All diagram styles including `.dot`  |
-| `shared-md-mermaid/index.ts` | Parse `mermaid and `dot blocks       |
-| `markdownPreview/index.ts`   | Webview entry, initializes renderers |
+| File                | Purpose                              |
+| ------------------- | ------------------------------------ |
+| `diagramManager.ts` | Controls (zoom, pan, fullscreen)     |
+| `diagramStyles.css` | All diagram styles including `.dot`  |
+| `markdown/index.ts` | Parse mermaid and dot blocks         |
+| `preview/index.ts`  | Webview entry, initializes renderers |

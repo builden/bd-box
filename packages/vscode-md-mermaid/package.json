@@ -1,6 +1,6 @@
 {
   "name": "vscode-md-mermaid",
-  "version": "1.0.63",
+  "version": "1.0.67",
   "displayName": "Markdown Preview Mermaid Support",
   "description": "Adds Mermaid diagram and flowchart support to VS Code's builtin markdown preview",
   "keywords": [
@@ -166,7 +166,7 @@
     "test:e2e": "playwright test",
     "version:patch": "node -e \"const pkg=require('./package.json'); const v=pkg.version.split('.'); v[2]=parseInt(v[2])+1; pkg.version=v.join('.'); require('fs').writeFileSync('./package.json', JSON.stringify(pkg,null,2)+'\\n'); console.log('Version updated to '+pkg.version)\"",
     "build-webview": "tsx ./build/esbuild-webview.ts",
-    "watch-webview": "bun build src/markdownPreview/index.ts --target=browser --format=iife --outdir=dist/preview --watch",
+    "watch-webview": "bun build src/preview/index.ts --target=browser --format=iife --outdir=dist/preview --watch",
     "compile-ext": "tsx ./build/esbuild-extension.ts",
     "watch-ext": "tsx ./build/esbuild-extension.ts --watch",
     "package-ext": "tsx ./build/esbuild-extension.ts --production",

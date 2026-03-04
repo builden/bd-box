@@ -53,7 +53,7 @@ async function main() {
     external: ['fs'],
     loader: { '.ttf': 'dataurl' },
     plugins: [cssTextPlugin],
-    entryPoints: { 'index.bundle': path.join(srcDir, 'markdownPreview', 'index.ts') },
+    entryPoints: { 'index.bundle': path.join(srcDir, 'preview', 'index.ts') },
     outdir: distPreviewDir,
     format: 'iife',
   };
