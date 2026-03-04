@@ -9,6 +9,7 @@ import { openRepo } from "./commands/open";
 import { updateRepo } from "./commands/update";
 import { checkOutdated } from "./commands/outdated";
 import { manageTags } from "./commands/tag";
+import { upgradeSelf } from "./commands/upgrade";
 import { readFileSync } from "fs";
 import { join } from "path";
 
@@ -118,6 +119,18 @@ program
   .action(async (repo: string, tag: string | undefined, options: { delete?: boolean }) => {
     try {
       await manageTags(repo, tag, { delete: !!options.delete });
+    } catch (error) {
+      console.error("Error:", error);
+      process.exit(1);
+    }
+  });
+
+program
+  .command("upgrade")
+  .description("Upgrade git-src to the latest version")
+  .action(async () => {
+    try {
+      await upgradeSelf();
     } catch (error) {
       console.error("Error:", error);
       process.exit(1);
