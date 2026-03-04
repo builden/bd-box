@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import Table from "cli-table3";
-import { Repo } from "../lib/config";
-import { getRelativeTime, getRepoSize, getRepoVersion } from "../lib/utils";
+import { Repo } from "./config";
+import { getRelativeTime, getRepoSize, getRepoVersion } from "./utils";
 
 export interface RenderTableOptions {
   tag?: string;
