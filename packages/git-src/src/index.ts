@@ -9,10 +9,14 @@ import { openRepo } from "./commands/open";
 import { updateRepo } from "./commands/update";
 import { checkOutdated } from "./commands/outdated";
 import { manageTags } from "./commands/tag";
+import { readFileSync } from "fs";
+import { join } from "path";
+
+const packageJson = JSON.parse(readFileSync(join(__dirname, "../package.json"), "utf-8"));
 
 const program = new Command();
 
-program.name("git-src").description("Git source code manager for AI Agents").version("1.0.0");
+program.name("git-src").description("Git source code manager for AI Agents").version(packageJson.version);
 
 program
   .command("add <repo>")
