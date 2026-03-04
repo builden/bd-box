@@ -48,7 +48,7 @@ export function parseRepoInput(input: string): ParseResult {
   };
 }
 
-export async function addRepo(input: string): Promise<void> {
+export async function addRepo(input: string, options: { tag?: string } = {}): Promise<void> {
   const parsed = parseRepoInput(input);
   const config = new Config();
 
@@ -78,6 +78,7 @@ export async function addRepo(input: string): Promise<void> {
     const repos = config.getRepos();
     const newId = String(repos.length + 1).padStart(3, "0");
 
+    const tags = options.tag ? [options.tag] : [];
     const newRepo: Repo = {
       id: newId,
       name: parsed.name,
@@ -85,7 +86,7 @@ export async function addRepo(input: string): Promise<void> {
       fullName: parsed.fullName,
       path: repoPath,
       url: parsed.url,
-      tags: [],
+      tags,
       addedAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

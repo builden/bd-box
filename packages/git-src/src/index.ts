@@ -17,9 +17,10 @@ program.name("git-src").description("Git source code manager for AI Agents").ver
 program
   .command("add <repo>")
   .description("Add a repository (supports: react, owner/repo, https://github.com/owner/repo)")
-  .action(async (repo: string) => {
+  .option("-t, --tag <tag>", "Add tag to repository")
+  .action(async (repo: string, options: { tag?: string }) => {
     try {
-      await addRepo(repo);
+      await addRepo(repo, options);
     } catch (error) {
       console.error("Error:", error);
       process.exit(1);
