@@ -1,7 +1,21 @@
 import { describe, it, expect } from 'bun:test'
-import { getShichen, SHICHEN_LIST, ZHI_LIST } from '../src/shichen'
+import { getShichen, getTimeZhi, SHICHEN_LIST, ZHI_LIST } from '../src/shichen'
 
 describe('shichen 工具', () => {
+  describe('getTimeZhi', () => {
+    it('should get time zhi without suffix', () => {
+      expect(getTimeZhi(new Date('2024-06-15 14:30:00'))).toBe('未')
+    })
+
+    it('should get zi zhi', () => {
+      expect(getTimeZhi(new Date('2024-06-15 00:30:00'))).toBe('子')
+    })
+
+    it('should get hai zhi', () => {
+      expect(getTimeZhi(new Date('2024-06-15 22:00:00'))).toBe('亥')
+    })
+  })
+
   describe('getShichen', () => {
     it('should get wei shichen (13:00-15:00)', () => {
       expect(getShichen(new Date('2024-06-15 14:30:00'))).toBe('未时')
