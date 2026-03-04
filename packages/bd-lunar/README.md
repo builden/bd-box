@@ -76,20 +76,37 @@ leap.format('YYYY-MM-DD');
 ```typescript
 import { solarToLunar, lunarToSolar, getLunarInfo } from "@builden/bd-lunar";
 
-// 阳历转阴历
-const lunar = solarToLunar(2026, 3, 4);
-console.log(lunar);
-// => { year: 2026, month: 1, day: 16, isLeap: false, ... }
+// 阳历转阴历（getLunarInfo 的别名，两者等价）
+const info = solarToLunar(new Date('2026-03-04'));
+// 或
+const info2 = getLunarInfo(new Date('2026-03-04'));
+
+// 返回字段说明
+console.log(info);
+// => {
+//   year: 2026,           // 农历年
+//   month: 1,            // 农历月（1-12，负数表示闰月）
+//   day: 16,             // 农历日（1-30）
+//   yearInChinese: '二〇二六',  // 农历年中文
+//   ganZhiYear: '丙辰',  // 干支年
+//   monthInChinese: '正月',     // 农历月中文（含闰前缀）
+//   dayInChinese: '十六',      // 农历日中文
+//   timeZhi: '寅',       // 时辰地支
+//   timeInGanZhi: '甲寅' // 时辰天干地支
+// }
 
 // 阴历转阳历
 const solar = lunarToSolar(2026, 1, 16);
 console.log(solar);
-// => { year: 2026, month: 3, day: 4 }
+// => Date 对象
 
-// 获取农历信息
-const info = getLunarInfo(new Date());
-// => { year: 2026, month: 1, day: 16, yearInChinese: '二〇二六', ganZhiYear: '丙辰', ... }
+// 阴历转阳历（带时间）
+const solarWithTime = lunarToSolar(2026, 1, 16, 14, 30, 0);
+console.log(solarWithTime);
+// => Date 对象
 ```
+
+**注意**：`solarToLunar` / `getLunarInfo` 只接受 `Date` 对象参数，不支持传年月日数字。
 
 ### 时辰计算
 
