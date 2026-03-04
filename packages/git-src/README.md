@@ -62,6 +62,9 @@ git-src tag react important --delete
 
 # Remove
 git-src rm react
+
+# Upgrade
+git-src upgrade  # Self-upgrade to latest version
 ```
 
 ## Features
