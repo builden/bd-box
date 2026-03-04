@@ -7,7 +7,7 @@ describe("DOT Integration Tests", () => {
     });
 
     it("should render DOT and produce valid SVG output", async () => {
-      const { renderDot } = await import("../src/shared-dot/dotRenderer");
+      const { renderDot } = await import("../src/renderers/dot/render");
 
       const svg = await renderDot("digraph { A -> B; }");
 
@@ -19,7 +19,7 @@ describe("DOT Integration Tests", () => {
     });
 
     it("should render using viz.js default colors", async () => {
-      const { renderDot } = await import("../src/shared-dot/dotRenderer");
+      const { renderDot } = await import("../src/renderers/dot/render");
 
       // Should render without errors using default colors
       const svg = await renderDot("digraph { node [shape=circle]; A -> B; }");
@@ -27,7 +27,7 @@ describe("DOT Integration Tests", () => {
     });
 
     it("should produce SVG with proper structure for diagramManager", async () => {
-      const { renderDot } = await import("../src/shared-dot/dotRenderer");
+      const { renderDot } = await import("../src/renderers/dot/render");
 
       const svg = await renderDot("digraph { A -> B; }");
 
@@ -46,7 +46,7 @@ describe("DOT Integration Tests", () => {
 
     it("should create controls and setup fullscreen for DOT container", async () => {
       // Import the modules we'll use
-      const { renderDot } = await import("../src/shared-dot/dotRenderer");
+      const { renderDot } = await import("../src/renderers/dot/render");
       const { DiagramManager } = await import("../src/core/diagramManager");
 
       // Create container like webview would
@@ -114,7 +114,7 @@ describe("DOT Integration Tests", () => {
     });
 
     it("should setup controls with Always mode", async () => {
-      const { renderDot } = await import("../src/shared-dot/dotRenderer");
+      const { renderDot } = await import("../src/renderers/dot/render");
       const { DiagramManager } = await import("../src/core/diagramManager");
 
       const container = document.createElement("div");
@@ -153,7 +153,7 @@ describe("DOT Integration Tests", () => {
     });
 
     it("should work for both mermaid and dot with same setup", async () => {
-      const { renderDot } = await import("../src/shared-dot/dotRenderer");
+      const { renderDot } = await import("../src/renderers/dot/render");
       const { DiagramManager } = await import("../src/core/diagramManager");
 
       // Test DOT container
