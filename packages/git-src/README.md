@@ -26,27 +26,34 @@ bun link
 git-src add react
 git-src add facebook/react
 git-src add https://github.com/vuejs/vue
+git-src add react --tag important  # Add with tag
 
 # List repositories
 git-src ls
+git-src ls --tag skills           # Filter by tag
+git-src ls -s                     # Simple output (repo name only)
 
 # Search
 git-src query react
 git-src query --tag important
+git-src query "re*" --simple      # Wildcard search with simple output
+git-src query "*react*" -s -t ui  # Combine options
+
+# Check outdated
+git-src outdated
+git-src outdated react
+git-src outdated --tag skills     # Filter by tag
 
 # Open in editor
 git-src open vue
 git-src open re*     # Wildcard with interactive selection
 git-src open re* -a  # Open all matches
+git-src open re* -d  # Open directory instead of editor
 
 # Update
 git-src update
 git-src update react
 git-src update react -f  # Force re-clone
-
-# Check outdated
-git-src outdated
-git-src outdated react
 
 # Tags
 git-src tag react important
@@ -63,5 +70,7 @@ git-src rm react
 - Auto-extract owner from GitHub URLs
 - Interactive selection for multiple matches
 - Wildcard support in search and open
-- Tag-based organization
+- Tag-based organization and filtering
 - Bun-style colorful output
+- Table display with repo URL links
+- Version read from package.json

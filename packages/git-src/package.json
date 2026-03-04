@@ -1,15 +1,6 @@
 {
-  "name": "@builden/git-src",
-  "version": "1.0.0",
-  "type": "module",
-  "description": "Git source code manager for AI Agents",
   "bin": {
     "git-src": "./dist/index.js"
-  },
-  "scripts": {
-    "build": "esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js --format=esm --target=node18 --packages=external",
-    "dev": "bun run src/index.ts",
-    "test": "bun test"
   },
   "dependencies": {
     "chalk": "^5.3.0",
@@ -18,9 +9,18 @@
     "execa": "^9.5.2",
     "ora": "^9.3.0"
   },
+  "description": "Git source code manager for AI Agents",
   "devDependencies": {
     "@types/node": "^22.10.5",
     "bun-types": "^1.1.37",
     "esbuild": "^0.27.3"
-  }
+  },
+  "name": "@builden/git-src",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js --format=esm --target=node18 --packages=external",
+    "dev": "bun run src/index.ts",
+    "test": "bun test"
+  },
+  "type": "module",
+  "version": "1.0.1"
 }
