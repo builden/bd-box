@@ -12,6 +12,8 @@ export function getLunarInfo(date: Date): LunarInfo {
     year: lunar.getYear(),
     month: lunar.getMonth(),
     day: lunar.getDay(),
+    yearInChinese: lunar.getYearInChinese(),
+    ganZhiYear: lunar.getYearInGanZhi(),
     monthInChinese: lunar.getMonthInChinese(),
     dayInChinese: lunar.getDayInChinese(),
     timeZhi: lunar.getTimeZhi(),
