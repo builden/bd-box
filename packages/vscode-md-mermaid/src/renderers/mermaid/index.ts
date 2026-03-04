@@ -6,12 +6,30 @@ import tidyTreeLayouts from "@mermaid-js/layout-tidy-tree";
 import zenuml from "@mermaid-js/mermaid-zenuml";
 import mermaid from "mermaid";
 import type { MermaidConfig } from "mermaid";
-import { iconPacks } from "./iconPackConfig";
 import type { DiagramRenderer } from "../../core/types";
 import { loadExtensionConfig } from "../../config/loader";
 import { renderMermaidElement, renderMermaidBlocksInElement } from "./render";
 
 export { renderMermaidBlocksInElement } from "./render";
+
+// Icon packs for mermaid diagrams
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const iconPacks: any[] = [
+  {
+    name: "logos",
+    loader: async () => {
+      const logos = await import("@iconify-json/logos");
+      return logos.icons;
+    },
+  },
+  {
+    name: "mdi",
+    loader: async () => {
+      const mdi = await import("@iconify-json/mdi");
+      return mdi.icons;
+    },
+  },
+];
 
 /**
  * Load Mermaid configuration based on current theme.

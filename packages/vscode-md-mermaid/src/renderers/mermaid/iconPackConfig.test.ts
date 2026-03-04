@@ -1,5 +1,21 @@
 import { describe, it, expect } from "bun:test";
-import { iconPacks } from "./iconPackConfig";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const iconPacks: any[] = [
+  {
+    name: "logos",
+    loader: async () => {
+      const logos = await import("@iconify-json/logos");
+      return logos.icons;
+    },
+  },
+  {
+    name: "mdi",
+    loader: async () => {
+      const mdi = await import("@iconify-json/mdi");
+      return mdi.icons;
+    },
+  },
+];
 
 describe("iconPackConfig", () => {
   describe("iconPacks", () => {
