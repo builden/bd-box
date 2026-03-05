@@ -1,5 +1,5 @@
 ---
-name: bun
+name: bun-expert
 description: Bun 运行时开发技巧。用于 Bun 项目开发、monorepo 配置、npm 包发布、单元测试。使用 bun install、bun build、bun test + happy-dom。配置 workspaces、shared build scripts、package.json exports。
 ---
 
