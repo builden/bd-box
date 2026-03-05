@@ -3,6 +3,7 @@
     "git-src": "./dist/index.js"
   },
   "dependencies": {
+    "@builden/bd-utils": "workspace:*",
     "cli-table3": "^0.6.5",
     "commander": "^12.1.0",
     "execa": "^9.5.2",
@@ -22,5 +23,5 @@
     "test": "bun test"
   },
   "type": "module",
-  "version": "1.0.4"
+  "version": "1.0.5"
 }

@@ -1,0 +1,38 @@
+{
+  "name": "@builden/bd-utils",
+  "version": "1.0.0",
+  "type": "module",
+  "files": [
+    "dist",
+    "src",
+    "scripts"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./src/index.ts",
+      "require": "./dist/index.cjs"
+    },
+    "./scripts": {
+      "import": "./scripts/build.ts"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "execa": "^9.0.0",
+    "ora": "^8.0.0",
+    "picocolors": "^1.0.0"
+  },
+  "scripts": {
+    "test": "bun test",
+    "build": "bun build.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.0.0",
+    "bun-types": "^1.0.0",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.0.0"
+  }
+}

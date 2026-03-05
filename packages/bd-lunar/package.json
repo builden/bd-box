@@ -1,12 +1,11 @@
 {
-  "dependencies": {
-    "dayjs": "^1.11.10",
-    "lunar-typescript": "^1.8.6"
-  },
-  "devDependencies": {
-    "@types/bun": "^1.0.0",
-    "typescript": "^5.0.0"
-  },
+  "name": "@builden/bd-lunar",
+  "version": "1.0.1",
+  "type": "module",
+  "files": [
+    "dist",
+    "src"
+  ],
   "exports": {
     ".": {
       "import": "./src/index.ts",
@@ -14,21 +13,20 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
-  "main": "./dist/index.js",
-  "module": "./src/index.ts",
-  "name": "@builden/bd-lunar",
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.10",
+    "lunar-typescript": "^1.8.6"
+  },
+  "devDependencies": {
+    "@builden/bd-utils": "workspace:*",
+    "@types/bun": "^1.0.0",
+    "typescript": "^5.0.0"
   },
   "scripts": {
     "build": "bun build.ts",
     "test": "bun test"
-  },
-  "type": "module",
-  "types": "./dist/index.d.ts",
-  "version": "1.0.1"
+  }
 }

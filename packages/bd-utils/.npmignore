@@ -1,0 +1,26 @@
+# 测试文件
+*.test.ts
+*.spec.ts
+tests/
+
+# 开发配置
+.bun/
+bun.lockb
+bun.lock
+
+# 测试和覆盖率
+coverage/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 其他
+*.md
+!README.md

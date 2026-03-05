@@ -1,11 +1,11 @@
 // ========================
-// bd-color 构建脚本
+// bd-utils 构建脚本
 // ========================
 
-import { buildPkg } from "@builden/bd-utils/scripts";
+import { buildPkg } from "./scripts/build.js";
 
 await buildPkg({
   entrypoint: "./src/index.ts",
   outDir: "./dist",
-  external: ["@ant-design/colors"],
+  external: ["execa", "ora", "picocolors"],
 });
