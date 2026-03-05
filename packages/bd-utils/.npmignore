@@ -21,6 +21,9 @@ coverage/
 *.swp
 *.swo
 
+# 构建脚本（不需要发布）
+scripts/build.ts
+
 # 其他
 *.md
 !README.md
