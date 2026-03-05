@@ -30,25 +30,25 @@ pnpm add -g git-src
 
 ## Commands
 
-| Command                      | Description               |
-| ---------------------------- | ------------------------- |
-| `git-src add <repo>`         | Add a repository         |
-| `git-src ls`                 | List all repositories    |
-| `git-src rm <repo>`          | Remove a repository      |
-| `git-src query [pattern]`    | Search repositories      |
-| `git-src open <repo>`        | Open repository in editor |
-| `git-src update [repo]`      | Update repositories      |
-| `git-src outdated [repo]`    | Check for updates        |
-| `git-src tag <repo> [tag]`   | Manage tags              |
-| `git-src upgrade`            | Self-update              |
-| `git-src --version`          | Show version             |
+| Command                    | Description               |
+| -------------------------- | ------------------------- |
+| `git-src add <repo>`       | Add a repository          |
+| `git-src ls`               | List all repositories     |
+| `git-src rm <repo>`        | Remove a repository       |
+| `git-src query [pattern]`  | Search repositories       |
+| `git-src open <repo>`      | Open repository in editor |
+| `git-src update [repo]`    | Update repositories       |
+| `git-src outdated [repo]`  | Check for updates         |
+| `git-src tag <repo> [tag]` | Manage tags               |
+| `git-src upgrade`          | Self-update               |
+| `git-src --version`        | Show version              |
 
 ## Options
 
-| Option                  | Description                    |
-| ---------------------- | ------------------------------ |
-| `--tag, -t <tag>`      | Filter by tag                 |
-| `--simple, -s`         | Show repo name instead of URL  |
+| Option            | Description                   |
+| ----------------- | ----------------------------- |
+| `--tag, -t <tag>` | Filter by tag                 |
+| `--simple, -s`    | Show repo name instead of URL |
 
 ## Usage Examples
 
