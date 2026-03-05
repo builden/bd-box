@@ -1,5 +1,5 @@
 ---
-name: typescript-export
+name: typescript-expert
 description: TypeScript 高阶类型建模技巧。用于避免使用 any 处理复杂类型：第三方库无类型声明、API 响应结构复杂、深度嵌套对象、需要从现有类型提取部分类型、需要防止原始类型混淆时。使用泛型、条件类型、递归类型、模板字面量、unknown + 类型守卫、Barnded Types 等精确建模类型。
 ---
 
