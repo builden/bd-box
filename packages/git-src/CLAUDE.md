@@ -32,7 +32,7 @@ bun test
 ## Dependencies
 
 - commander - CLI framework
-- chalk - Terminal colors
+- picocolors - Terminal colors
 - cli-table3 - Table rendering
 - execa - Shell command execution
 - ora - Spinners
