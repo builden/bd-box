@@ -36,3 +36,6 @@ coverage/
 
 # typescript
 *.tsbuildinfo
+
+# worktrees
+.worktrees/
