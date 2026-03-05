@@ -35,9 +35,12 @@ git-src ls -s                     # Simple output (repo name only)
 
 # Search
 git-src query react
+git-src q react                  # Short alias
+git-src s react                  # Short alias
+git-src search react             # Full alias
 git-src query --tag important
-git-src query "re*" --simple      # Wildcard search with simple output
-git-src query "*react*" -s -t ui  # Combine options
+git-src query "re*" --simple     # Wildcard search with simple output
+git-src query "*react*" -s -t ui # Combine options
 
 # Check outdated
 git-src outdated

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import chalk from "chalk";
+import pc from "picocolors";
 import Table from "cli-table3";
 
 describe("renderTable - filtering and sorting logic", () => {
@@ -16,10 +16,7 @@ describe("renderTable - filtering and sorting logic", () => {
   });
 
   it("should return empty array when no repos match tag", () => {
-    const repos = [
-      { tags: ["frontend"] },
-      { tags: ["editor"] },
-    ] as unknown as import("./config").Repo[];
+    const repos = [{ tags: ["frontend"] }, { tags: ["editor"] }] as unknown as import("./config").Repo[];
 
     const filtered = repos.filter((r) => r.tags.includes("nonexistent"));
     expect(filtered).toHaveLength(0);
@@ -70,20 +67,13 @@ describe("RenderTableOptions interface", () => {
 describe("cli-table3 table creation", () => {
   it("should create table with correct headers", () => {
     const table = new Table({
-      head: [
-        chalk.gray("#"),
-        chalk.gray("REPO"),
-        chalk.gray("SIZE"),
-        chalk.gray("VERSION"),
-        chalk.gray("UPDATED"),
-        chalk.gray("TAGS"),
-      ],
+      head: [pc.gray("#"), pc.gray("REPO"), pc.gray("SIZE"), pc.gray("VERSION"), pc.gray("UPDATED"), pc.gray("TAGS")],
       truncate: "",
     });
 
     expect(table.options.head).toHaveLength(6);
-    expect(table.options.head![0]).toBe(chalk.gray("#"));
-    expect(table.options.head![1]).toBe(chalk.gray("REPO"));
+    expect(table.options.head![0]).toBe(pc.gray("#"));
+    expect(table.options.head![1]).toBe(pc.gray("REPO"));
   });
 
   it("should push rows to table", () => {

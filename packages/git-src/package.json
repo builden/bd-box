@@ -3,11 +3,11 @@
     "git-src": "./dist/index.js"
   },
   "dependencies": {
-    "chalk": "^5.3.0",
     "cli-table3": "^0.6.5",
     "commander": "^12.1.0",
     "execa": "^9.5.2",
-    "ora": "^9.3.0"
+    "ora": "^9.3.0",
+    "picocolors": "^1.1.1"
   },
   "description": "Git source code manager for AI Agents",
   "devDependencies": {
@@ -22,5 +22,5 @@
     "test": "bun test"
   },
   "type": "module",
-  "version": "1.0.2"
+  "version": "1.0.3"
 }

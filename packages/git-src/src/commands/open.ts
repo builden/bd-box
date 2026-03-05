@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import pc from "picocolors";
 import { Config, Repo } from "../lib/config";
 import { execFile } from "child_process";
 import { promisify } from "util";
@@ -22,7 +22,7 @@ async function openPath(path: string, openDir: boolean = false): Promise<void> {
     try {
       await execFileAsync("open", [path]);
     } catch {
-      console.log(chalk.yellow(`Please open: ${path}`));
+      console.log(pc.yellow(`Please open: ${path}`));
     }
   } else {
     // Try to open in VS Code, otherwise use system default
@@ -33,7 +33,7 @@ async function openPath(path: string, openDir: boolean = false): Promise<void> {
       try {
         await execFileAsync("open", [path]);
       } catch {
-        console.log(chalk.yellow(`Please open: ${path}`));
+        console.log(pc.yellow(`Please open: ${path}`));
       }
     }
   }
@@ -48,14 +48,14 @@ async function selectRepo(matches: Repo[]): Promise<Repo | Repo[] | null> {
       output: process.stdout,
     });
 
-    console.log(chalk.gray("\nSelect a repository:"));
+    console.log(pc.gray("\nSelect a repository:"));
     matches.forEach((repo, index) => {
-      console.log(chalk.white(`[${index + 1}] ${repo.fullName}`));
+      console.log(pc.white(`[${index + 1}] ${repo.fullName}`));
     });
-    console.log(chalk.gray("[a] Open all"));
-    console.log(chalk.gray("[q] Quit\n"));
+    console.log(pc.gray("[a] Open all"));
+    console.log(pc.gray("[q] Quit\n"));
 
-    rl.question(chalk.cyan("Choice: "), (answer) => {
+    rl.question(pc.cyan("Choice: "), (answer) => {
       rl.close();
 
       if (answer.toLowerCase() === "q") {
@@ -84,7 +84,7 @@ export async function openRepo(
   if (!pattern) {
     const configPath = config.getConfigPath();
     const configDir = dirname(configPath);
-    console.log(chalk.green(`Opening config directory...`));
+    console.log(pc.green(`Opening config directory...`));
     await openPath(configDir, true);
     return;
   }
@@ -92,13 +92,13 @@ export async function openRepo(
   const matches = matchRepos(config.getRepos(), pattern);
 
   if (matches.length === 0) {
-    console.error(chalk.red(`No repository matching "${pattern}" found`));
+    console.error(pc.red(`No repository matching "${pattern}" found`));
     process.exit(1);
   }
 
   if (matches.length === 1) {
     const repo = matches[0];
-    console.log(chalk.green(`Opening ${repo.fullName}...`));
+    console.log(pc.green(`Opening ${repo.fullName}...`));
     await openPath(repo.path, options.dir);
     return;
   }
@@ -108,24 +108,24 @@ export async function openRepo(
     const selected = await selectRepo(matches);
 
     if (!selected) {
-      console.log(chalk.yellow("Cancelled"));
+      console.log(pc.yellow("Cancelled"));
       return;
     }
 
     // Check if user selected "open all"
     if (Array.isArray(selected)) {
       for (const repo of matches) {
-        console.log(chalk.green(`Opening ${repo.fullName}...`));
+        console.log(pc.green(`Opening ${repo.fullName}...`));
         await openPath(repo.path, options.dir);
       }
     } else {
-      console.log(chalk.green(`Opening ${selected.fullName}...`));
+      console.log(pc.green(`Opening ${selected.fullName}...`));
       await openPath(selected.path, options.dir);
     }
   } else {
     // Open all matches
     for (const repo of matches) {
-      console.log(chalk.green(`Opening ${repo.fullName}...`));
+      console.log(pc.green(`Opening ${repo.fullName}...`));
       await openPath(repo.path, options.dir);
     }
   }

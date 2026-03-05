@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import pc from "picocolors";
 import { execa } from "execa";
 import ora from "ora";
 import { readFileSync, existsSync } from "fs";
@@ -33,10 +33,18 @@ async function detectPackageManager(): Promise<PackageManager | null> {
 
   // Get global bin directories for each package manager
   const [bunGlobalDir, npmGlobalPrefix, yarnGlobalDir, pnpmGlobalDir] = await Promise.all([
-    execa("bun", ["global", "dir"]).then((r) => r.stdout.trim()).catch(() => ""),
-    execa("npm", ["root", "-g"]).then((r) => r.stdout.trim()).catch(() => ""),
-    execa("yarn", ["global", "dir"]).then((r) => r.stdout.trim()).catch(() => ""),
-    execa("pnpm", ["root", "-g"]).then((r) => r.stdout.trim()).catch(() => ""),
+    execa("bun", ["global", "dir"])
+      .then((r) => r.stdout.trim())
+      .catch(() => ""),
+    execa("npm", ["root", "-g"])
+      .then((r) => r.stdout.trim())
+      .catch(() => ""),
+    execa("yarn", ["global", "dir"])
+      .then((r) => r.stdout.trim())
+      .catch(() => ""),
+    execa("pnpm", ["root", "-g"])
+      .then((r) => r.stdout.trim())
+      .catch(() => ""),
   ]);
 
   // Check bun
@@ -82,14 +90,14 @@ export async function upgradeSelf(): Promise<void> {
   const currentVersion = packageJson.version;
   const packageName = packageJson.name;
 
-  console.log(chalk.gray(`Current version: ${currentVersion}`));
+  console.log(pc.gray(`Current version: ${currentVersion}`));
 
   // Detect package manager
   const pm = await detectPackageManager();
   if (!pm) {
-    console.log(chalk.yellow("Unable to detect package manager. Trying npm..."));
+    console.log(pc.yellow("Unable to detect package manager. Trying npm..."));
   } else {
-    console.log(chalk.gray(`Detected package manager: ${pm.name}`));
+    console.log(pc.gray(`Detected package manager: ${pm.name}`));
   }
 
   // Fetch latest version from npm
@@ -102,11 +110,11 @@ export async function upgradeSelf(): Promise<void> {
     spinner.succeed(`Latest version: ${latestVersion}`);
 
     if (latestVersion === currentVersion) {
-      console.log(chalk.green("You are using the latest version."));
+      console.log(pc.green("You are using the latest version."));
       return;
     }
 
-    console.log(chalk.yellow(`Update available: ${currentVersion} → ${latestVersion}`));
+    console.log(pc.yellow(`Update available: ${currentVersion} → ${latestVersion}`));
 
     const confirmSpinner = ora("Upgrading...").start();
 
@@ -115,7 +123,7 @@ export async function upgradeSelf(): Promise<void> {
 
     await execa(manager.command, manager.args);
 
-    confirmSpinner.succeed(chalk.green(`Upgraded to ${latestVersion}`));
+    confirmSpinner.succeed(pc.green(`Upgraded to ${latestVersion}`));
   } catch (error) {
     spinner.fail("Failed to check for updates");
     throw error;

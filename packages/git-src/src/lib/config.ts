@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { dirname } from "path";
+import { homedir } from "os";
 
 export interface Repo {
   id: string;
@@ -31,7 +32,7 @@ export class Config {
   private configPath: string;
   private config: GitSrcConfig;
 
-  constructor(configPath: string = `${process.env.HOME}/.git-src/config.json`) {
+  constructor(configPath: string = `${homedir()}/.git-src/config.json`) {
     this.configPath = configPath;
     this.config = this.load();
   }

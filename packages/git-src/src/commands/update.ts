@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import pc from "picocolors";
 import { execa } from "execa";
 import { Config, Repo } from "../lib/config";
 
@@ -10,12 +10,12 @@ export async function updateRepo(
   const repos = repoName ? ([config.findRepo(repoName!)].filter(Boolean) as Repo[]) : config.getRepos();
 
   if (repos.length === 0 && repoName) {
-    console.error(chalk.red(`Repository "${repoName}" not found`));
+    console.error(pc.red(`Repository "${repoName}" not found`));
     process.exit(1);
   }
 
   if (repos.length === 0) {
-    console.log(chalk.yellow("No repositories to update."));
+    console.log(pc.yellow("No repositories to update."));
     return;
   }
 

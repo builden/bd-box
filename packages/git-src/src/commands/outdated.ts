@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import pc from "picocolors";
 import { execa } from "execa";
 import { Config, Repo } from "../lib/config";
 
@@ -12,12 +12,12 @@ export async function checkOutdated(repoName: string | null, options: { tag?: st
   }
 
   if (repos.length === 0 && repoName) {
-    console.error(chalk.red(`Repository "${repoName}" not found`));
+    console.error(pc.red(`Repository "${repoName}" not found`));
     process.exit(1);
   }
 
   if (repos.length === 0) {
-    console.log(chalk.yellow("No repositories to check."));
+    console.log(pc.yellow("No repositories to check."));
     return;
   }
 
@@ -67,11 +67,11 @@ export async function checkOutdated(repoName: string | null, options: { tag?: st
   const upToDate = results.filter((r) => !r.hasUpdates);
 
   if (outdated.length > 0) {
-    console.log(chalk.yellow(`\n${outdated.length} repository(s) can be updated:\n`));
-    outdated.forEach((r) => console.log(chalk.white(r.repo.fullName)));
+    console.log(pc.yellow(`\n${outdated.length} repository(s) can be updated:\n`));
+    outdated.forEach((r) => console.log(pc.white(r.repo.fullName)));
   }
 
   if (upToDate.length > 0) {
-    console.log(chalk.green(`\n${upToDate.length} repository(s) are up to date`));
+    console.log(pc.green(`\n${upToDate.length} repository(s) are up to date`));
   }
 }

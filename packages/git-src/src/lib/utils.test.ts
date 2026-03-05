@@ -61,6 +61,6 @@ describe("getPackageJsonVersion", () => {
 
   it("should return correct version for git-src package", () => {
     const version = getPackageJsonVersion();
-    expect(version).toBe("1.0.2");
+    expect(version).toBe("1.0.3");
   });
 });

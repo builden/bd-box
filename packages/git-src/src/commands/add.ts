@@ -2,6 +2,7 @@ import { execa } from "execa";
 import ora from "ora";
 import { Config, Repo } from "../lib/config";
 import { existsSync, mkdirSync } from "fs";
+import { homedir } from "os";
 
 export interface ParseResult {
   owner: string;
@@ -59,7 +60,7 @@ export async function addRepo(input: string, options: { tag?: string } = {}): Pr
     return;
   }
 
-  const basePath = `${process.env.HOME}/.git-src`;
+  const basePath = `${homedir()}/.git-src`;
   const ownerPath = `${basePath}/${parsed.owner}`;
   const repoPath = `${ownerPath}/${parsed.name}`;
 

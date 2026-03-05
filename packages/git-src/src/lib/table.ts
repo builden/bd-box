@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import pc from "picocolors";
 import Table from "cli-table3";
 import { Repo } from "./config";
 import { getRelativeTime, getRepoSize, getRepoVersion } from "./utils";
@@ -16,7 +16,7 @@ export async function renderTable(repos: Repo[], options: RenderTableOptions = {
   }
 
   if (filtered.length === 0) {
-    console.log(chalk.yellow("No repositories found."));
+    console.log(pc.yellow("No repositories found."));
     return;
   }
 
@@ -28,14 +28,7 @@ export async function renderTable(repos: Repo[], options: RenderTableOptions = {
 
   // Create table with cli-table3
   const table = new Table({
-    head: [
-      chalk.gray("#"),
-      chalk.gray("REPO"),
-      chalk.gray("SIZE"),
-      chalk.gray("VERSION"),
-      chalk.gray("UPDATED"),
-      chalk.gray("TAGS"),
-    ],
+    head: [pc.gray("#"), pc.gray("REPO"), pc.gray("SIZE"), pc.gray("VERSION"), pc.gray("UPDATED"), pc.gray("TAGS")],
     truncate: "",
   });
 
@@ -46,12 +39,12 @@ export async function renderTable(repos: Repo[], options: RenderTableOptions = {
     const updated = getRelativeTime(repo.updatedAt);
     const tags = repo.tags.join(", ") || "-";
     // Display repo: simple mode shows name, otherwise shows URL as blue link
-    const repoDisplay = options.simple ? repo.fullName : chalk.blue.underline(repo.url);
+    const repoDisplay = options.simple ? repo.fullName : pc.underline(pc.blue(repo.url));
 
     table.push([String(i + 1), repoDisplay, size, version, updated, tags]);
   }
 
-  console.log(chalk.gray(`Found ${filtered.length} repository(s):\n`));
+  console.log(pc.gray(`Found ${filtered.length} repository(s):\n`));
   console.log(table.toString());
-  console.log(chalk.gray(`\n[${filtered.length} repos]`));
+  console.log(pc.gray(`\n[${filtered.length} repos]`));
 }

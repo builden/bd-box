@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import pc from "picocolors";
 import { execa } from "execa";
 import { Config } from "../lib/config";
 
@@ -7,7 +7,7 @@ export async function removeRepo(repoName: string): Promise<void> {
   const repo = config.findRepo(repoName);
 
   if (!repo) {
-    console.error(chalk.red(`Repository "${repoName}" not found`));
+    console.error(pc.red(`Repository "${repoName}" not found`));
     process.exit(1);
   }
 
