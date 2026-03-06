@@ -94,6 +94,25 @@
         "typescript": "^5.0.0",
       },
     },
+    "packages/bd-skills": {
+      "name": "@builden/bd-skills",
+      "version": "0.0.1",
+      "bin": {
+        "bd-skills": "./dist/index.js",
+      },
+      "dependencies": {
+        "@builden/bd-utils": "workspace:*",
+        "cli-table3": "^0.6.5",
+        "commander": "^12.1.0",
+        "execa": "^9.5.2",
+        "picocolors": "^1.1.1",
+      },
+      "devDependencies": {
+        "@types/node": "^22.10.5",
+        "bun-types": "^1.1.37",
+        "esbuild": "^0.27.3",
+      },
+    },
     "packages/bd-utils": {
       "name": "@builden/bd-utils",
       "version": "1.0.0",
@@ -444,6 +463,8 @@
     "@builden/bd-color": ["@builden/bd-color@workspace:packages/bd-color"],
 
     "@builden/bd-lunar": ["@builden/bd-lunar@workspace:packages/bd-lunar"],
+
+    "@builden/bd-skills": ["@builden/bd-skills@workspace:packages/bd-skills"],
 
     "@builden/bd-utils": ["@builden/bd-utils@workspace:packages/bd-utils"],
 

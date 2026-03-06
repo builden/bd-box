@@ -1,0 +1,26 @@
+{
+  "bin": {
+    "bd-skills": "./dist/index.js"
+  },
+  "dependencies": {
+    "@builden/bd-utils": "workspace:*",
+    "cli-table3": "^0.6.5",
+    "commander": "^12.1.0",
+    "execa": "^9.5.2",
+    "picocolors": "^1.1.1"
+  },
+  "description": "Skills manager for AI Agents - wrapper around vercel-labs/skills",
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "bun-types": "^1.1.37",
+    "esbuild": "^0.27.3"
+  },
+  "name": "@builden/bd-skills",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js --format=esm --target=node18 --packages=external",
+    "dev": "bun run src/index.ts",
+    "test": "bun test"
+  },
+  "type": "module",
+  "version": "0.0.1"
+}
