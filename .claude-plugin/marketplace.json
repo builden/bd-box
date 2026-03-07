@@ -1,0 +1,20 @@
+{
+  "name": "builden-plugins",
+  "owner": {
+    "name": "Builden"
+  },
+  "metadata": {
+    "description": "Builden's Claude Code plugins - skills and development tools for full-stack development"
+  },
+  "plugins": [
+    {
+      "name": "builden",
+      "source": "./cc-plugin",
+      "description": "Builden's personal skills and development agents for full-stack development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Builden"
+      }
+    }
+  ]
+}
