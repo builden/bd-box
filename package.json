@@ -29,6 +29,7 @@
   "name": "bd-box",
   "private": true,
   "scripts": {
+    "plugin:install": "claude plugin install builden-dev@builden-plugins",
     "docs:dev": "mint dev",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "lint": "eslint . --fix",
