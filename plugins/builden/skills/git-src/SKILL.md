@@ -1,189 +1,78 @@
 ---
 name: git-src
-description: Manage local Git repositories for AI Agents to reference source code
+description: 管理本地 Git 仓库供 Agent 参考源代码。当需要查阅开源项目源码、搜索特定库的实现、或分析知名框架代码时使用。
 ---
 
 # git-src
 
-> AI Skill for managing Git repositories locally
+管理本地 Git 仓库的工具，供 Agent 参考源代码。
 
-## Setup
+## 快速开始
 
-git-src 工具将仓库存储在 `~/.git-src/{owner}/{repo}` 目录
-配置文件位于 `~/.git-src/config.json`
-
-## Installation
+### 列出仓库
 
 ```bash
-# Using npm
-npm install -g git-src
-
-# Using bun (recommended)
-bun add -g git-src
-
-# Using yarn
-yarn global add git-src
-
-# Using pnpm
-pnpm add -g git-src
-```
-
-## Commands
-
-| Command                    | Description               |
-| -------------------------- | ------------------------- |
-| `git-src add <repo>`       | Add a repository          |
-| `git-src ls`               | List all repositories     |
-| `git-src rm <repo>`        | Remove a repository       |
-| `git-src query [pattern]`  | Search repositories       |
-| `git-src open <repo>`      | Open repository in editor |
-| `git-src update [repo]`    | Update repositories       |
-| `git-src outdated [repo]`  | Check for updates         |
-| `git-src tag <repo> [tag]` | Manage tags               |
-| `git-src upgrade`          | Self-update               |
-| `git-src --version`        | Show version              |
-
-## Options
-
-| Option            | Description                   |
-| ----------------- | ----------------------------- |
-| `--tag, -t <tag>` | Filter by tag                 |
-| `--simple, -s`    | Show repo name instead of URL |
-
-## Usage Examples
-
-### List all repositories
-
-```bash
+# 列出所有仓库
 git-src ls
-```
 
-### List with tag filter
-
-```bash
+# 按标签筛选
 git-src ls --tag frontend
-git-src ls -t important
 ```
 
-### Simple mode (show repo name only)
+### 搜索仓库
 
 ```bash
-git-src ls --simple
-git-src ls -s
-```
-
-### Search repositories
-
-```bash
-# Search by name
+# 按名称搜索
 git-src query react
 
-# Search with wildcards
+# 通配符搜索
 git-src query "re*"
-
-# Filter by tag
-git-src query --tag important
-git-src query react --tag frontend
 ```
 
-### Add repositories
+### 添加仓库
 
 ```bash
-# Simple name (assumes facebook)
+# 添加仓库
 git-src add react
 
-# Owner/repo format
+# 使用 Owner/repo 格式
 git-src add facebook/react
 
-# Full GitHub URL
-git-src add https://github.com/vuejs/vue
-git-src add git@github.com:microsoft/vscode.git
-
-# With tag
-git-src add react --tag frontend
-git-src add vue --tag frontend --tag popular
+# 带标签
+git-src add vue --tag frontend
 ```
 
-### Open repositories
+### 打开仓库
 
 ```bash
-# Open by name
+# 在编辑器中打开
 git-src open vue
 
-# Open with wildcard (interactive selection)
+# 通配符（交互式选择）
 git-src open re*
-
-# Open all matching
-git-src open re* --all
 ```
 
-### Update repositories
+## 检查更新
 
 ```bash
-# Update all
-git-src update
-
-# Update specific repo
-git-src update react
-
-# Force re-clone
-git-src update react --force
-```
-
-### Check outdated
-
-```bash
-# Check all
+# 检查哪些仓库有更新
 git-src outdated
 
-# Check specific repo
-git-src outdated react
-
-# Filter by tag
-git-src outdated --tag frontend
-```
-
-### Tag management
-
-```bash
-# Add tag
-git-src tag react important
-
-# List tags
-git-src tag react
-
-# Delete tag
-git-src tag react important --delete
-```
-
-### Self-update
-
-```bash
-# Upgrade to latest version
+# 更新所有仓库
 git-src upgrade
 ```
 
-### Version
+## 详细命令
 
-```bash
-# Show version
-git-src --version
-```
+完整命令文档见 [references/commands.md](references/commands.md)。
 
-## AI Agent Usage
+## 使用场景
 
-When you need to reference actual source code:
+1. **需要参考源码时**：先 `git-src query <关键词>` 搜索相关仓库
+2. **查看知名框架实现**：用 `git-src add` 添加后用 `git-src open` 打开
+3. **检查更新**：`git-src outdated` 查看哪些仓库有更新
 
-1. **Search for a repository**: Use `git-src query <keyword>` to find relevant repositories
-2. **List known repos**: Use `git-src ls` to see all available repositories
-3. **Filter by tag**: Use `git-src ls --tag <tag>` to filter repositories
-4. **Open in editor**: Use `git-src open <repo>` to open the repository in your editor
-5. **Check for updates**: Use `git-src outdated` to see which repos have updates
-6. **Keep tool updated**: Use `git-src upgrade` to update the tool itself
+## 存储位置
 
-The tool automatically:
-
-- Clones with `--depth 1` to save space
-- Extracts owner from GitHub URLs for directory organization
-- Tracks version info and tags
-- Detects package manager (bun/npm/yarn/pnpm) for self-upgrade
+- 仓库存储：`~/.git-src/{owner}/{repo}`
+- 配置文件：`~/.git-src/config.json`
