@@ -128,6 +128,18 @@ skill-name/
 
 详见 [references/evaluation.md](references/evaluation.md)。
 
+### 纪律性 Skills 的专门测试
+
+对于强制执行 discipline 的 Skills（如 TDD、代码审查要求），使用与通用评估不同的专门测试方法。这些 Skills 需要抵抗 Agent 的"理性化"倾向——即 Agent 为自己的违规行为寻找借口的能力。
+
+**为什么需要专门测试：**
+
+- 纪律性 Skills 有compliance costs（时间、精力、重构）
+- Agent 有动机绕过规则（"就这一次"）
+- 压力下 Agent 会选择捷径而非规则
+
+详见 [references/testing-disciplined-skills.md](references/testing-disciplined-skills.md)。
+
 ### 迭代开发 Skills
 
 使用一个 Agent 实例创建供其他实例使用的 Skill。使用真实工作流测试并根据观察迭代。

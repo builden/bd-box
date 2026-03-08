@@ -83,3 +83,9 @@
 1. 与团队成员分享 Skills 并观察他们的使用情况
 2. 询问：Skill 是否在预期时激活？指令是否清晰？缺少什么？
 3. 纳入反馈以解决你自己使用模式中的盲点
+
+## 纪律性 Skills 的专门测试
+
+对于强制执行 discipline 的 Skills（如 TDD、代码审查要求），通用评估方法可能不足。这些 Skills 需要抵抗 Agent 的理性化倾向。
+
+详见 [testing-disciplined-skills.md](testing-disciplined-skills.md)。
