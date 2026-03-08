@@ -63,6 +63,7 @@ bun test
 ### 测试框架
 
 - [bun test + happy-dom](references/testing.md)
+- [Playwright E2E 测试](references/playwright.md)
 - [测试文件组织](references/testing.md#测试文件组织)
 
 ### 包发布
@@ -74,7 +75,7 @@ bun test
 
 - [常见错误及解决方案](references/common-mistakes.md)
 
-## Resources
+## 参考资源
 
 - [Bun Documentation](https://bun.sh/docs)
 - [Bun GitHub](https://github.com/oven-sh/bun)
