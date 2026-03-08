@@ -30,6 +30,7 @@
   "private": true,
   "scripts": {
     "plugin:install": "claude plugin install builden-dev@builden-plugins",
+    "plugin:link-rules": "cp -r plugins/builden-dev/rules/* ~/.claude/rules/",
     "docs:dev": "mint dev",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "lint": "eslint . --fix",
