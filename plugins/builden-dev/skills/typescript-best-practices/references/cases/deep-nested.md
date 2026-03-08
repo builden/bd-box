@@ -231,12 +231,13 @@ type Limited = DeepReadonlyLimited<Config, 2>;
 
 ### 配置合并
 
-DeepPartial<T> = T```typescript
-type extends (...args: any[]) => any
-? T
-: T extends object
-? { [K in keyof T]?: DeepPartial<T[K]> }
-: T;
+```typescript
+type DeepPartial<T> = T extends (...args: any[]) => any
+  ? T
+  : T extends object
+    ? { [K in keyof T]?: DeepPartial<T[K]> }
+    : T;
+```
 
 function deepMerge<T extends object>(target: T, source: DeepPartial<T>): T {
 const result = { ...target };
