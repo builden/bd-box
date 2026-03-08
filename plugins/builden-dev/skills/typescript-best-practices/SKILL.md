@@ -7,6 +7,8 @@ description: TypeScript 高阶类型建模技巧。当需要避免使用 any 处
 
 本 skill 帮助开发者在遇到复杂类型时避免使用 `any`，使用 TypeScript 高阶类型技巧精确建模。
 
+> **强制规范**：TypeScript 类型规范已移至 [rules/typescript.md](../../rules/typescript.md)，请遵守。
+
 ## 使用场景
 
 - 第三方库没有类型定义 → 用 `declare module` + `unknown`
@@ -17,17 +19,9 @@ description: TypeScript 高阶类型建模技巧。当需要避免使用 any 处
 
 [完整决策树 →](references/decision-tree.md)
 
-## 核心原则
+## 类型建模技巧
 
-1. **永远优先用 `unknown` 而非 `any`**
-2. **用类型守卫窄化 unknown**
-3. **用泛型构建可复用的类型工具**
-4. **用条件类型提取而非手动定义**
-5. **用 Branded Types 防止 domain primitive 混淆**
-
-## 延伸阅读
-
-### 类型安全技巧
+### unknown + 类型守卫
 
 - [unknown + 类型守卫](references/advanced-types.md)
 - [条件类型提取](references/advanced-types.md)

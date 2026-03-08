@@ -11,7 +11,7 @@
       "name": "builden",
       "source": "./plugins/builden",
       "description": "Builden's personal skills and development agents for full-stack development",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "author": {
         "name": "Builden"
       }
@@ -20,7 +20,7 @@
       "name": "builden-dev",
       "source": "./plugins/builden-dev",
       "description": "Builden's development skills - Bun expert and TypeScript expert",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "author": {
         "name": "Builden"
       }
