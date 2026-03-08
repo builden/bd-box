@@ -138,7 +138,7 @@ skill-name/
 - Agent 有动机绕过规则（"就这一次"）
 - 压力下 Agent 会选择捷径而非规则
 
-详见 [references/testing-disciplined-skills.md](references/testing-disciplined-skills.md)。
+详见 [disciplined-testing skill](../disciplined-testing/SKILL.md)。
 
 ### 迭代开发 Skills
 
@@ -170,9 +170,8 @@ skill-name/
 
 ## 下一步
 
-1. **RED 阶段**：创建压力测试场景，运行子代理验证基线行为
-2. **GREEN 阶段**：分析失败原因，编写 Skill 改进
-3. **REFACTOR 阶段**：添加理性化防御，关闭漏洞
-4. **迭代**：重复以上步骤直到无懈可击
+使用 **disciplined-testing** skill 进行测试驱动优化：
 
-详细流程见 [references/testing-disciplined-skills.md](references/testing-disciplined-skills.md)。
+1. 调用 `builden:disciplined-testing` skill
+2. 按照 RED → GREEN → REFACTOR 循环进行
+3. 迭代直到 Skill 防弹

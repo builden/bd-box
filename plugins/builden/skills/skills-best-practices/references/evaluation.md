@@ -88,4 +88,4 @@
 
 对于强制执行 discipline 的 Skills（如 TDD、代码审查要求），通用评估方法可能不足。这些 Skills 需要抵抗 Agent 的理性化倾向。
 
-详见 [testing-disciplined-skills.md](testing-disciplined-skills.md)。
+详见 [disciplined-testing skill](../disciplined-testing/SKILL.md)。
