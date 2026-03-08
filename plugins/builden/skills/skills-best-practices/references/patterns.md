@@ -117,6 +117,49 @@ fix(reports): 修复时区转换中的日期格式
    - 完成后重新打包
 ```
 
+## 可视化选择
+
+根据内容类型选择合适的可视化方式，平衡清晰度和 token 消耗。
+
+### 选择原则
+
+| 场景                    | 推荐方式                 |
+| ----------------------- | ------------------------ |
+| 一对一映射（场景→方案） | 表格                     |
+| 多分支复杂流程          | Mermaid Flowchart        |
+| 状态机/状态流转         | Mermaid State Diagram    |
+| API 交互序列            | Mermaid Sequence Diagram |
+| 线性步骤                | 编号列表                 |
+
+### Skill 中常用的 Mermaid 类型
+
+- **flowchart**：决策树、工作流、多分支流程
+- **stateDiagram-v2**：状态机、状态流转
+- **sequenceDiagram**：API 调用、组件交互
+- **classDiagram**：数据模型（较少使用）
+
+### 不推荐
+
+- ❌ **ASCII 流程图**：占用更多 tokens 且不如 Mermaid 清晰
+- ❌ **Gantt、Pie**：在 Skill 中很少用到
+
+### 示例：复杂流程用 Mermaid
+
+````markdown
+### 类型决策流程
+
+```mermaid
+flowchart TD
+    A[开始] --> B{第三方库无类型?}
+    B -->|是| C[declare module + unknown]
+    B -->|否| D{复杂嵌套对象?}
+    D -->|是| E[递归类型 DeepReadonly/Partial]
+    D -->|否| F{多个可能类型?}
+    F -->|是| G[联合类型 + discriminated unions]
+    F -->|否| H[unknown + 类型守卫]
+```
+````
+
 ## 需要避免的反模式
 
 ### Windows 风格路径
