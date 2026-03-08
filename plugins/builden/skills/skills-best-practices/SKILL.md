@@ -170,7 +170,9 @@ skill-name/
 
 ## 下一步
 
-1. 查看 `references/` 中的参考文档
-2. 按照这些模式创建你的第一个 Skill
-3. 使用真实使用场景测试
-4. 根据观察结果迭代
+1. **RED 阶段**：创建压力测试场景，运行子代理验证基线行为
+2. **GREEN 阶段**：分析失败原因，编写 Skill 改进
+3. **REFACTOR 阶段**：添加理性化防御，关闭漏洞
+4. **迭代**：重复以上步骤直到无懈可击
+
+详细流程见 [references/testing-disciplined-skills.md](references/testing-disciplined-skills.md)。
