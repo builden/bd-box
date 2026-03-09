@@ -24,16 +24,16 @@ export interface HSV {
 }
 
 export interface OKLCH {
-  l: number;  // 0-1
-  c: number;  // 0-~0.5
-  h: number;  // 0-360
+  l: number; // 0-1
+  c: number; // 0-~0.5
+  h: number; // 0-360
   a?: number; // 0-1
 }
 
 export interface OKLAB {
-  l: number;  // 0-1
-  a: number;  // -0.5 - 0.5 (OKLAB a-axis)
-  b: number;  // -0.5 - 0.5
+  l: number; // 0-1
+  a: number; // -0.5 - 0.5 (OKLAB a-axis)
+  b: number; // -0.5 - 0.5
   alpha?: number; // 0-1
 }
 
@@ -48,7 +48,10 @@ export interface ColorInterface {
   g: number;
   b: number;
   a: number;
-  
+
+  // 静态方法
+  isValid(input: unknown): boolean;
+
   // 转换方法
   toHexString(): string;
   toRgb(): RGB;
@@ -56,10 +59,11 @@ export interface ColorInterface {
   toHsl(): HSL;
   toHslString(): string;
   toHsv(): HSV;
+  toHsvString(): string;
   toOklch(): OKLCH;
   toOklab(): OKLAB;
   toString(): string;
-  
+
   // 颜色操作
   clone(): ColorInterface;
   lighten(amount: number): ColorInterface;
@@ -70,12 +74,12 @@ export interface ColorInterface {
   tint(amount: number): ColorInterface;
   shade(amount: number): ColorInterface;
   grayscale(): ColorInterface;
-  
+
   // 状态判断
   isDark(): boolean;
   isLight(): boolean;
   equals(other: ColorInput): boolean;
-  
+
   // 便捷方法
   getLuminance(): number;
   getBrightness(): number;
@@ -86,35 +90,35 @@ export interface ColorInterface {
 // 生成选项
 // ========================
 
-export type GenerateAlgorithm = 'ant-design' | 'tailwind' | 'oklch';
+export type GenerateAlgorithm = "ant-design" | "tailwind" | "oklch";
 
 export interface GenerateOptions {
   /** 渐变步数 */
   steps?: number;
   /** 输出格式 */
-  format?: 'hex' | 'rgb' | 'hsl';
+  format?: "hex" | "rgb" | "hsl";
 }
 
 export interface AntDesignOptions extends GenerateOptions {
-  algorithm?: 'ant-design';
-  theme?: 'light' | 'dark';
+  algorithm?: "ant-design";
+  theme?: "light" | "dark";
   backgroundColor?: string;
 }
 
 export interface TailwindOptions extends GenerateOptions {
-  algorithm: 'tailwind';
+  algorithm: "tailwind";
   /** 主色位置，默认为 500 对应 index 5 */
   baseIndex?: number;
 }
 
 export interface OklchOptions extends GenerateOptions {
-  algorithm: 'oklch';
+  algorithm: "oklch";
   /** 起始亮度 (0-1) */
   startL?: number;
   /** 结束亮度 (0-1) */
   endL?: number;
   /** 插值方式 */
-  interpolation?: 'linear' | 'ease-in-out';
+  interpolation?: "linear" | "ease-in-out";
 }
 
 export type ColorGenerateOptions = AntDesignOptions | TailwindOptions | OklchOptions;

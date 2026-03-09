@@ -132,14 +132,48 @@ function createPalettes<T>(colorMap: Record<string, string>, createFn: (color: s
 }
 
 // ========================
-// 预设导出
+// 预设导出（延迟计算）
 // ========================
 
+const _antDesignPalettes: Presets = createPalettes(antDesignPrimaryColors, createAntDesignPalette);
+const _antDesignDarkPalettes: Presets = createPalettes(antDesignPrimaryColors, createAntDesignDarkPalette);
+const _tailwindPalettes: Presets = createPalettes(tailwindPrimaryColors, createTailwindPalette);
+
 /** ant-design 亮色调色板 */
-export const antDesignPalettes: Presets = createPalettes(antDesignPrimaryColors, createAntDesignPalette);
+export const antDesignPalettes: Presets = new Proxy({} as Presets, {
+  get(_, key) {
+    return _antDesignPalettes[key as keyof typeof _antDesignPalettes];
+  },
+  ownKeys() {
+    return Reflect.ownKeys(_antDesignPalettes);
+  },
+  getOwnPropertyDescriptor() {
+    return { enumerable: true, configurable: true };
+  },
+});
 
 /** ant-design 暗色调色板 */
-export const antDesignDarkPalettes: Presets = createPalettes(antDesignPrimaryColors, createAntDesignDarkPalette);
+export const antDesignDarkPalettes: Presets = new Proxy({} as Presets, {
+  get(_, key) {
+    return _antDesignDarkPalettes[key as keyof typeof _antDesignDarkPalettes];
+  },
+  ownKeys() {
+    return Reflect.ownKeys(_antDesignDarkPalettes);
+  },
+  getOwnPropertyDescriptor() {
+    return { enumerable: true, configurable: true };
+  },
+});
 
 /** Tailwind CSS 调色板 */
-export const tailwindPalettes: Presets = createPalettes(tailwindPrimaryColors, createTailwindPalette);
+export const tailwindPalettes: Presets = new Proxy({} as Presets, {
+  get(_, key) {
+    return _tailwindPalettes[key as keyof typeof _tailwindPalettes];
+  },
+  ownKeys() {
+    return Reflect.ownKeys(_tailwindPalettes);
+  },
+  getOwnPropertyDescriptor() {
+    return { enumerable: true, configurable: true };
+  },
+});
