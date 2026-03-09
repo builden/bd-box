@@ -1,0 +1,17 @@
+{
+  "description": "Builden 开发环境自动格式化 hooks",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | xargs bun prettier --ignore-unknown --write",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
