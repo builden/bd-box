@@ -6,6 +6,25 @@
 - 禁止使用 `npm` / `yarn` / `pnpm`
 - 启动新项目使用 `bun init`
 
+### 禁止使用
+
+- 禁止使用 `npm install` / `yarn add` / `pnpm add`
+- 禁止使用 `jest` / `vitest`（必须用 `bun test`）
+- 禁止使用 `tsc` / `esbuild`（必须用 `bun build`）
+
+### 红线标志
+
+当 Agent 提出以下理由时，必须拒绝并坚持使用 Bun：
+
+| 错误理由              | 正确回应               |
+| --------------------- | ---------------------- |
+| "团队习惯了 npm/yarn" | 必须使用 bun install   |
+| "Bun 生态不够成熟"    | 直接使用，出了问题再调 |
+| "先调研对比再决定"    | 直接使用               |
+| "Node.js 更稳定"      | 必须使用 bun           |
+| "更熟悉 npm"          | 必须使用 bun           |
+| "文档更完善"          | 必须使用 bun           |
+
 ## 项目 Skill
 
 - 优先使用项目已有的 skill（如 `builden-dev:typescript-best-practices`）
