@@ -252,8 +252,25 @@ export type QueryOptions = BaseOptions;
 
 ```bash
 # .husky/pre-commit
-bun x lint-staged && bun test
+bun x lint-staged && bun run test
 ```
+
+**注意**：使用 `bun run test` 而不是 `bun test`，因为后者会运行根目录的测试而非各 workspace 的测试。
+
+### Monorepo test 脚本配置
+
+如果部分包没有测试文件，需要显式指定要运行测试的包：
+
+```json
+// package.json
+{
+  "scripts": {
+    "test": "bun run --parallel -F pkg1 -F pkg2 -F pkg3 test"
+  }
+}
+```
+
+其中 `-F` 指定包名（package.json 中的 name 字段）。
 
 ---
 
@@ -273,7 +290,12 @@ bunx husky init
 echo "bun lint && bun test" > .husky/pre-commit
 
 # 4. 配置 pre-commit（monorepo）
-echo "bun x lint-staged && bun test" > .husky/pre-commit
+echo "bun x lint-staged && bun run test" > .husky/pre-commit
+
+# 5. 配置 monorepo test 脚本（如果有子包没有测试）
+# 假设有 pkg1, pkg2, pkg3 有测试
+# 注意：bd-skills 没有测试，需要排除
+echo 'test": "bun run --parallel -F bd-color -F bd-lunar -F bd-utils -F git-src test"' >> package.json
 
 # 5. 创建 prettier 配置
 echo '{"printWidth": 120, "singleQuote": true}' > .prettierrc
