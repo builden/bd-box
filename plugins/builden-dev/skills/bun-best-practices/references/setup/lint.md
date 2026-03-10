@@ -255,22 +255,9 @@ export type QueryOptions = BaseOptions;
 bun x lint-staged && bun run test
 ```
 
-**注意**：使用 `bun run test` 而不是 `bun test`，因为后者会运行根目录的测试而非各 workspace 的测试。
+**注意**：使用 `bun run test` 而不是 `bun test`，，因为后者会运行根目录的测试而非各 workspace 的测试。
 
-### Monorepo test 脚本配置
-
-如果部分包没有测试文件，需要显式指定要运行测试的包：
-
-```json
-// package.json
-{
-  "scripts": {
-    "test": "bun run --parallel -F pkg1 -F pkg2 -F pkg3 test"
-  }
-}
-```
-
-其中 `-F` 指定包名（package.json 中的 name 字段）。
+**规范要求**：所有子项目都必须有测试文件和 test 脚本。
 
 ---
 

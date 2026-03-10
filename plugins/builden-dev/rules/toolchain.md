@@ -48,6 +48,7 @@
 - **必须编写测试，覆盖率 ≥ 80%**
   - commit 前：`bun test`
   - push 前：`bun run test:smoke`
+- **注意**：monorepo 使用 `bun run --workspaces --if-present test`
 - 详细规范见 [testing.md](skills/bun-best-practices/references/testing/testing.md)
 
 ## 调试规范

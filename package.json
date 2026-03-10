@@ -34,7 +34,7 @@
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "lint": "eslint . --fix",
     "prepare": "husky",
-    "test": "AGENT=1 bun run --parallel -F bd-color -F bd-lunar -F bd-utils -F git-src -F vscode-md-diagram -F bd-antd-token-previewer test",
+    "test": "AGENT=1 bun run --parallel --workspaces test",
     "test:color": "cd packages/bd-color && bun test",
     "test:lunar": "cd packages/bd-lunar && bun test",
     "test:diagram": "cd packages/vscode-md-diagram && bun test",
