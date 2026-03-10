@@ -10,6 +10,7 @@
 - [目录结构](#目录结构)
 - [运行命令](#运行命令)
 - [基础配置](#基础配置)（bun test）
+- [性能测试](./performance.md)（Mitata）
 - [Playwright E2E](./playwright.md)
 
 ---
@@ -22,6 +23,7 @@
 | API 测试 | bun test   | `.api.ts`   | `tests/api/`，API 端点验证                   |
 | 集成测试 | bun test   | `.spec.ts`  | `tests/integration/`，业务逻辑               |
 | 冒烟测试 | bun test   | `.smoke.ts` | `tests/smoke/`，核心用户流程，console 无警告 |
+| 性能测试 | Mitata     | `.bench.ts` | `tests/bench/`，基准测试                     |
 | E2E 测试 | Playwright | `.e2e.ts`   | `tests/e2e/`，浏览器端到端                   |
 
 ## 测试优先级
@@ -60,6 +62,8 @@ tests/
   integration/       # 集成测试
   smoke/            # 冒烟测试
     *.smoke.ts
+  bench/            # 性能测试
+    *.bench.ts
   e2e/              # Playwright E2E 测试
     *.e2e.ts
   playwright.config.ts
@@ -73,6 +77,7 @@ tests/
 ```bash
 bun test              # 单元测试 + API 测试 + 集成测试
 bun run test:smoke   # 冒烟测试
+bun run test:bench   # 性能测试（Mitata）
 bun run test:e2e     # Playwright E2E 测试
 ```
 

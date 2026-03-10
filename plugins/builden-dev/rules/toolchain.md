@@ -29,6 +29,12 @@
 - **必须编写测试，覆盖率 ≥ 80%**
   - commit 前：`bun test`
   - push 前：`bun run test:smoke`
-  - 详细规范见 [testing.md](skills/bun-best-practices/references/testing.md)
-- 提交前进行代码审查
-- 保持代码简洁，避免过度工程化
+- 详细规范见 [testing.md](skills/bun-best-practices/references/testing/testing.md)
+
+## 调试规范
+
+- 调试优先级：日志 → 测试 → 源码 → chrome-devtools
+- 使用 pino 进行结构化日志
+- 详细规范：
+  - [logging.md](skills/bun-best-practices/references/debugging/logging.md)
+  - [debugging.md](skills/bun-best-practices/references/debugging/debugging.md)
