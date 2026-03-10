@@ -17,6 +17,7 @@ bun-best-practices/
     │   └── debugging.md         # 调试方法论
     ├── setup/                   # 项目搭建
     │   ├── monorepo.md          # Bun workspaces
+    │   ├── lint.md              # Lint 配置
     │   └── gitignore.md         # 测试输出忽略
     ├── publishing/              # 发布阶段
     │   └── package-publishing.md # npm 包发布
@@ -36,6 +37,7 @@ bun-best-practices/
 | **调试** | debugging/logging.md               | 日志规范：工具、级别、写入技巧     | 需要添加日志时    |
 | **调试** | debugging/debugging.md             | 调试方法论：优先级、手段、工具     | 排查问题时        |
 | **搭建** | setup/monorepo.md                  | Bun workspaces 配置                | 搭建 monorepo 时  |
+| **搭建** | setup/lint.md                      | ESLint + Prettier + Husky 配置     | 配置 lint 时      |
 | **搭建** | setup/gitignore.md                 | 测试输出目录忽略                   | 配置 gitignore 时 |
 | **发布** | publishing/package-publishing.md   | npm 包发布                         | 发布包时          |
 | **避坑** | troubleshooting/common-mistakes.md | 常见错误及方案                     | 遇到问题时        |

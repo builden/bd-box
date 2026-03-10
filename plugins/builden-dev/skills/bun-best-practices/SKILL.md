@@ -31,6 +31,7 @@ description: Bun 运行时开发技巧。用于 Bun 项目开发、monorepo 配�
 | 性能基准测试    | `references/testing/performance.md`             |
 | E2E 测试        | `references/testing/playwright.md`              |
 | Monorepo 配置   | `references/setup/monorepo.md`                  |
+| Lint 配置       | `references/setup/lint.md`                      |
 | Gitignore 模板  | `references/setup/gitignore.md`                 |
 | npm 包发布      | `references/publishing/package-publishing.md`   |
 | 常见错误        | `references/troubleshooting/common-mistakes.md` |

@@ -57,3 +57,11 @@
 - 详细规范：
   - [logging.md](skills/bun-best-practices/references/debugging/logging.md)
   - [debugging.md](skills/bun-best-practices/references/debugging/debugging.md)
+
+## Lint 规范
+
+- 使用 prettier 统一代码格式（printWidth: 120）
+- 使用 eslint 进行代码检查
+- 使用 husky + lint-staged 自动检查
+  - pre-commit: `bun lint && bun test`
+- 详细规范见 [lint.md](skills/bun-best-practices/references/setup/lint.md)
