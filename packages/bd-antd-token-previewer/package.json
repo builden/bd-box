@@ -20,9 +20,10 @@
   },
   "description": "Ant Design token previewer",
   "devDependencies": {
+    "@happy-dom/global-registrator": "^16.7.2",
+    "@playwright/test": "^1.58.2",
     "@rc-component/father-plugin": "^1.1.0",
     "@testing-library/react": "^16.3.0",
-    "@happy-dom/global-registrator": "^16.7.2",
     "@types/node": "^24.7.2",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.1",
@@ -87,6 +88,7 @@
     "prepublishOnly": "npm run compile && np --yolo --no-publish && npm run docs:deploy",
     "start": "dumi dev",
     "test": "bun test",
+    "test:e2e": "playwright test",
     "test:run": "bun test"
   },
   "sideEffects": [

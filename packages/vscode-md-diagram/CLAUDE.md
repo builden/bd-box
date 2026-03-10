@@ -67,6 +67,14 @@ bun test
 
 Place in `tests/` directory.
 
+### Smoke Tests
+
+Use Playwright. Files in `tests/smoke/*.e2e.ts`. Core user flow tests, no console errors.
+
+```bash
+bun run test:smoke
+```
+
 ### E2E Tests
 
 Use Playwright. Files in `tests/e2e/*.e2e.ts`

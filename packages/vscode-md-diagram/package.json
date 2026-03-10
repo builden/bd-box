@@ -166,6 +166,7 @@
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage",
     "test:e2e": "playwright test",
+    "test:smoke": "playwright test tests/smoke",
     "version:patch": "node -e \"const pkg=require('./package.json'); const v=pkg.version.split('.'); v[2]=parseInt(v[2])+1; pkg.version=v.join('.'); require('fs').writeFileSync('./package.json', JSON.stringify(pkg,null,2)+'\\n'); console.log('Version updated to '+pkg.version)\"",
     "build-webview": "tsx ./build/esbuild-webview.ts",
     "watch-webview": "bun build src/preview/index.ts --target=browser --format=iife --outdir=dist/preview --watch",
