@@ -219,6 +219,42 @@ chmod +x .husky/pre-commit
 chmod +x .husky/commit-msg
 ```
 
+### 空接口报错
+
+使用 `@typescript-eslint/no-empty-object-type` 规则时，空接口会报错。解决方案：
+
+```typescript
+// ❌ 错误：空接口
+export interface EmptyOptions {}
+
+// ✅ 正确 1：使用 type 替代
+export type EmptyOptions = Record<string, never>;
+
+// ✅ 正确 2：使用类型别名
+export type QueryOptions = BaseOptions;
+```
+
+### lint-staged 执行顺序
+
+确保 eslint 在 prettier 之前执行：
+
+```json
+{
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": ["bun eslint --fix", "bun prettier --write"]
+  }
+}
+```
+
+### Monorepo 中 pre-commit 配置
+
+在 monorepo 中，建议 pre-commit 同时运行 lint-staged 和测试：
+
+```bash
+# .husky/pre-commit
+bun x lint-staged && bun test
+```
+
 ---
 
 ## 7. 初始化脚本
@@ -233,11 +269,27 @@ bun add -D typescript-eslint
 # 2. 初始化 husky
 bunx husky init
 
-# 3. 配置 pre-commit
+# 3. 配置 pre-commit（单项目）
 echo "bun lint && bun test" > .husky/pre-commit
 
-# 4. 创建 prettier 配置
+# 4. 配置 pre-commit（monorepo）
+echo "bun x lint-staged && bun test" > .husky/pre-commit
+
+# 5. 创建 prettier 配置
 echo '{"printWidth": 120, "singleQuote": true}' > .prettierrc
+
+# 6. 创建 .prettierignore
+cat > .prettierignore << 'EOF'
+node_modules/
+dist/
+build/
+*.min.js
+*.css.map
+*.map
+coverage/
+.turbo/
+.output/
+EOF
 ```
 
 ---

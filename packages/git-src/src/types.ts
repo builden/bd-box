@@ -26,13 +26,13 @@ export interface ListOptions {
   simple?: boolean;
 }
 
-export interface QueryOptions extends ListOptions {}
+export type QueryOptions = ListOptions;
 
 export interface AddOptions {
   tag?: string;
 }
 
-export interface RemoveOptions {}
+export type RemoveOptions = Record<string, never>;
 
 export interface OpenOptions {
   all?: boolean;

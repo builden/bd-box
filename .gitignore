@@ -41,3 +41,7 @@ coverage/
 
 # worktrees
 .worktrees/
+
+# electrobun
+artifacts/
+**/bd-color-desktop/build/
