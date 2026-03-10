@@ -8,6 +8,12 @@
 bun-best-practices/
 ├── README.md                    # 本文件：按需加载指南
 └── references/
+    ├── architecture/            # 项目规范（新增）
+    │   ├── index.md            # 规范入口
+    │   ├── business.md         # 业务架构模板
+    │   ├── system.md          # 系统架构模板
+    │   ├── data.md            # 数据分层模板
+    │   └── ui.md              # UI 布局模板
     ├── testing/                 # 测试阶段
     │   ├── testing.md           # 测试入口
     │   ├── performance.md       # 性能测试
@@ -31,6 +37,11 @@ bun-best-practices/
 
 | 阶段     | 文件                               | 职责                               | 何时查阅          |
 | -------- | ---------------------------------- | ---------------------------------- | ----------------- |
+| **规范** | architecture/index.md              | 项目规范入口：目录、结构、维护策略 | 项目初始化        |
+| **规范** | architecture/business.md           | 业务架构模板：领域、概念、流程     | 设计业务架构      |
+| **规范** | architecture/system.md             | 系统架构模板：分层、技术选型、模块 | 设计系统架构      |
+| **规范** | architecture/data.md               | 数据分层模板：原始/派生数据、联动  | 设计数据流        |
+| **规范** | architecture/ui.md                 | UI 布局模板：组件层级、响应式      | 设计前端布局      |
 | **测试** | testing/testing.md                 | 测试入口：分类、结构、命令、覆盖率 | 编写测试时        |
 | **测试** | testing/performance.md             | 性能测试：Mitata 基准测试          | 优化性能时        |
 | **测试** | testing/playwright.md              | E2E 测试：Playwright 端到端        | 编写 E2E 时       |
@@ -45,6 +56,25 @@ bun-best-practices/
 ---
 
 ## 开发流程与规范映射
+
+### 0. 项目初始化
+
+```mermaid
+flowchart LR
+    A[新建项目] --> B[创建规范文档]
+    B --> C[docs/specs/]
+    C --> D[architecture/business.md]
+    C --> E[architecture/system.md]
+    C --> F[architecture/data.md]
+    C --> G[architecture/ui.md]
+```
+
+| 动作         | 查阅规范                 |
+| ------------ | ------------------------ |
+| 设计业务架构 | architecture/business.md |
+| 设计系统架构 | architecture/system.md   |
+| 设计数据分层 | architecture/data.md     |
+| 设计 UI 布局 | architecture/ui.md       |
 
 ### 1. 项目搭建
 
@@ -126,6 +156,11 @@ Claude Code 按需加载这些规范的方式：
 
 | 场景            | 加载的文件                                    |
 | --------------- | --------------------------------------------- |
+| 新建项目        | architecture/index.md                         |
+| 设计业务架构    | architecture/business.md                      |
+| 设计系统架构    | architecture/system.md                        |
+| 设计数据分层    | architecture/data.md                          |
+| 设计 UI 布局    | architecture/ui.md                            |
 | 新建 monorepo   | setup/monorepo.md                             |
 | 配置 gitignore  | setup/gitignore.md                            |
 | `bun test` 失败 | rules/toolchain.md → testing/testing.md       |
@@ -140,6 +175,12 @@ Claude Code 按需加载这些规范的方式：
 ---
 
 ## 快速索引
+
+### 规范相关
+
+- **文档位置**：`docs/specs/`
+- **文档类型**：业务架构、系统架构、数据分层、UI 布局
+- **维护时机**：项目初始化 → 功能开发中 → 重构/大改 → Code Review
 
 ### 测试相关
 
@@ -166,7 +207,15 @@ Claude Code 按需加载这些规范的方式：
 graph TB
     subgraph 开发流程
         direction LR
-        S[搭建] --> C[编码] --> T[测试] --> D[调试] --> P[发布]
+        I[初始化] --> S[搭建] --> C[编码] --> T[测试] --> D[调试] --> P[发布]
+    end
+
+    subgraph 初始化阶段
+        I1[architecture/index.md]
+        I2[architecture/business.md]
+        I3[architecture/system.md]
+        I4[architecture/data.md]
+        I5[architecture/ui.md]
     end
 
     subgraph 搭建阶段
@@ -193,6 +242,12 @@ graph TB
         TR[troubleshooting/common-mistakes.md]
     end
 
+    I --> I1
+    I1 --> I2
+    I1 --> I3
+    I1 --> I4
+    I1 --> I5
+    I --> S
     S --> S1
     S --> S2
     C --> T1
@@ -201,11 +256,18 @@ graph TB
     D --> D1
     D --> D2
     P --> P1
+    TR -.->|贯穿所有阶段| I
     TR -.->|贯穿所有阶段| S
     TR -.->|贯穿所有阶段| C
     TR -.->|贯穿所有阶段| T
     TR -.->|贯穿所有阶段| D
 
+    style I fill:#fce4ec
+    style I1 fill:#fce4ec
+    style I2 fill:#fce4ec
+    style I3 fill:#fce4ec
+    style I4 fill:#fce4ec
+    style I5 fill:#fce4ec
     style S fill:#e1f5fe
     style C fill:#e1f5fe
     style T fill:#e1f5fe
@@ -228,6 +290,11 @@ graph TB
 
 | 场景                 | 使用的规范                                    |
 | -------------------- | --------------------------------------------- |
+| 新建项目             | architecture/index.md                         |
+| 设计业务架构         | architecture/business.md                      |
+| 设计系统架构         | architecture/system.md                        |
+| 设计数据分层         | architecture/data.md                          |
+| 设计 UI 布局         | architecture/ui.md                            |
 | 新建 monorepo 项目   | setup/monorepo.md                             |
 | 配置测试输出忽略     | setup/gitignore.md                            |
 | 搭建测试框架         | testing/testing.md                            |
@@ -245,9 +312,10 @@ graph TB
 
 ## 快速开始
 
-1. **搭建项目**：参考 [setup/monorepo.md](./references/setup/monorepo.md)
-2. **编写测试**：参考 [testing/testing.md](./references/testing/testing.md)
-3. **添加日志**：参考 [debugging/logging.md](./references/debugging/logging.md)
-4. **排查问题**：参考 [debugging/debugging.md](./references/debugging/debugging.md)
-5. **性能优化**：参考 [testing/performance.md](./references/testing/performance.md)
-6. **发布包**：参考 [publishing/package-publishing.md](./references/publishing/package-publishing.md)
+1. **项目初始化**：参考 [architecture/index.md](./references/architecture/index.md)
+2. **搭建项目**：参考 [setup/monorepo.md](./references/setup/monorepo.md)
+3. **编写测试**：参考 [testing/testing.md](./references/testing/testing.md)
+4. **添加日志**：参考 [debugging/logging.md](./references/debugging/logging.md)
+5. **排查问题**：参考 [debugging/debugging.md](./references/debugging/debugging.md)
+6. **性能优化**：参考 [testing/performance.md](./references/testing/performance.md)
+7. **发布包**：参考 [publishing/package-publishing.md](./references/publishing/package-publishing.md)
