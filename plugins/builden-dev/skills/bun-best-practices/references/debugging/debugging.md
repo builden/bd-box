@@ -52,5 +52,6 @@
 ## 相关规范
 
 - **日志规范**：[logging.md](./logging.md) - pino 配置、写入技巧
+- **布局规范**：[layout.md](./layout.md) - 布局复刻流程、设计原则
 - **测试规范**：[testing.md](../testing/testing.md) - 测试编写、复现问题
 - **性能测试**：[performance.md](../testing/performance.md) - Mitata 基准测试
