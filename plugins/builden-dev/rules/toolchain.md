@@ -26,5 +26,9 @@
 ## 代码质量
 
 - 使用 TDD 方式开发（先写测试再写实现）
+- **必须编写测试，覆盖率 ≥ 80%**
+  - commit 前：`bun test`
+  - push 前：`bun run test:smoke`
+  - 详细规范见 [testing.md](skills/bun-best-practices/references/testing.md)
 - 提交前进行代码审查
 - 保持代码简洁，避免过度工程化
