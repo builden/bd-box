@@ -10,6 +10,8 @@
 | [system.md](system.md)     | 系统架构模板     |
 | [data.md](data.md)         | 数据分层架构模板 |
 | [ui.md](ui.md)             | UI 布局架构模板  |
+| [api.md](api.md)           | API 接口规范模板 |
+| [glossary.md](glossary.md) | 项目术语表模板   |
 
 ## 文档位置
 

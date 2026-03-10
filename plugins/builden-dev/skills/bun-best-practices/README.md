@@ -11,9 +11,11 @@ bun-best-practices/
     ├── architecture/            # 项目规范（新增）
     │   ├── index.md            # 规范入口
     │   ├── business.md         # 业务架构模板
-    │   ├── system.md          # 系统架构模板
+    │   ├── system.md           # 系统架构模板
     │   ├── data.md            # 数据分层模板
-    │   └── ui.md              # UI 布局模板
+    │   ├── ui.md              # UI 布局模板
+    │   ├── api.md              # API 接口规范模板
+    │   └── glossary.md         # 项目术语表模板
     ├── testing/                 # 测试阶段
     │   ├── testing.md           # 测试入口
     │   ├── performance.md       # 性能测试
@@ -42,6 +44,8 @@ bun-best-practices/
 | **规范** | architecture/system.md             | 系统架构模板：分层、技术选型、模块 | 设计系统架构      |
 | **规范** | architecture/data.md               | 数据分层模板：原始/派生数据、联动  | 设计数据流        |
 | **规范** | architecture/ui.md                 | UI 布局模板：组件层级、响应式      | 设计前端布局      |
+| **规范** | architecture/api.md                | API 接口规范：路径、请求、响应     | 设计 API 接口     |
+| **规范** | architecture/glossary.md           | 项目术语表：统一术语、变量命名     | 项目初始化        |
 | **测试** | testing/testing.md                 | 测试入口：分类、结构、命令、覆盖率 | 编写测试时        |
 | **测试** | testing/performance.md             | 性能测试：Mitata 基准测试          | 优化性能时        |
 | **测试** | testing/playwright.md              | E2E 测试：Playwright 端到端        | 编写 E2E 时       |
@@ -67,14 +71,18 @@ flowchart LR
     C --> E[architecture/system.md]
     C --> F[architecture/data.md]
     C --> G[architecture/ui.md]
+    C --> H[architecture/api.md]
+    C --> I[architecture/glossary.md]
 ```
 
-| 动作         | 查阅规范                 |
-| ------------ | ------------------------ |
-| 设计业务架构 | architecture/business.md |
-| 设计系统架构 | architecture/system.md   |
-| 设计数据分层 | architecture/data.md     |
-| 设计 UI 布局 | architecture/ui.md       |
+| 动作          | 查阅规范                 |
+| ------------- | ------------------------ |
+| 设计业务架构  | architecture/business.md |
+| 设计系统架构  | architecture/system.md   |
+| 设计数据分层  | architecture/data.md     |
+| 设计 UI 布局  | architecture/ui.md       |
+| 设计 API 接口 | architecture/api.md      |
+| 统一术语      | architecture/glossary.md |
 
 ### 1. 项目搭建
 
@@ -161,6 +169,8 @@ Claude Code 按需加载这些规范的方式：
 | 设计系统架构    | architecture/system.md                        |
 | 设计数据分层    | architecture/data.md                          |
 | 设计 UI 布局    | architecture/ui.md                            |
+| 设计 API 接口   | architecture/api.md                           |
+| 统一术语命名    | architecture/glossary.md                      |
 | 新建 monorepo   | setup/monorepo.md                             |
 | 配置 gitignore  | setup/gitignore.md                            |
 | `bun test` 失败 | rules/toolchain.md → testing/testing.md       |
@@ -216,6 +226,8 @@ graph TB
         I3[architecture/system.md]
         I4[architecture/data.md]
         I5[architecture/ui.md]
+        I6[architecture/api.md]
+        I7[architecture/glossary.md]
     end
 
     subgraph 搭建阶段
@@ -247,6 +259,8 @@ graph TB
     I1 --> I3
     I1 --> I4
     I1 --> I5
+    I1 --> I6
+    I1 --> I7
     I --> S
     S --> S1
     S --> S2
@@ -268,6 +282,8 @@ graph TB
     style I3 fill:#fce4ec
     style I4 fill:#fce4ec
     style I5 fill:#fce4ec
+    style I6 fill:#fce4ec
+    style I7 fill:#fce4ec
     style S fill:#e1f5fe
     style C fill:#e1f5fe
     style T fill:#e1f5fe
@@ -295,6 +311,8 @@ graph TB
 | 设计系统架构         | architecture/system.md                        |
 | 设计数据分层         | architecture/data.md                          |
 | 设计 UI 布局         | architecture/ui.md                            |
+| 设计 API 接口        | architecture/api.md                           |
+| 统一术语命名         | architecture/glossary.md                      |
 | 新建 monorepo 项目   | setup/monorepo.md                             |
 | 配置测试输出忽略     | setup/gitignore.md                            |
 | 搭建测试框架         | testing/testing.md                            |
