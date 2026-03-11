@@ -14,6 +14,7 @@
 - [Toast - 轻提示](toast.md)
 - [Alert - 警告提示](alert.md)
 - [Spin - 加载](spin.md)
+- [Button - 按钮](button.md)
 
 ### 导航类
 
@@ -26,6 +27,13 @@
 - [Input - 输入框](input.md)
 - [Select - 选择器](select.md)
 - [Form - 表单](form.md)
+- [Switch - 开关](switch.md)
+- [DatePicker - 日期选择器](date-picker.md)
+
+### 数据展示类
+
+- [Table - 表格](table.md)
+- [Pagination - 分页](pagination.md)
 
 ### 布局类
 
