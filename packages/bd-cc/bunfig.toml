@@ -1,0 +1,4 @@
+# bun test configuration for bd-cc
+
+[test]
+preload = ["./tests/setup.ts"]
