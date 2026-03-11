@@ -1,27 +1,27 @@
-import { safeJsonParse } from '../../../lib/utils.js';
-import type { ChatMessage, ClaudePermissionSuggestion, PermissionGrantResult } from '../types/types.js';
-import { CLAUDE_SETTINGS_KEY, getClaudeSettings, safeLocalStorage } from './chatStorage';
+import { safeJsonParse } from "../../../lib/utils";
+import type { ChatMessage, ClaudePermissionSuggestion, PermissionGrantResult } from "../types/types";
+import { CLAUDE_SETTINGS_KEY, getClaudeSettings, safeLocalStorage } from "./chatStorage";
 
 export function buildClaudeToolPermissionEntry(toolName?: string, toolInput?: unknown) {
   if (!toolName) return null;
-  if (toolName !== 'Bash') return toolName;
+  if (toolName !== "Bash") return toolName;
 
   const parsed = safeJsonParse(toolInput);
-  const command = typeof parsed?.command === 'string' ? parsed.command.trim() : '';
+  const command = typeof parsed?.command === "string" ? parsed.command.trim() : "";
   if (!command) return toolName;
 
   const tokens = command.split(/\s+/);
   if (tokens.length === 0) return toolName;
 
-  if (tokens[0] === 'git' && tokens[1]) {
+  if (tokens[0] === "git" && tokens[1]) {
     return `Bash(${tokens[0]} ${tokens[1]}:*)`;
   }
   return `Bash(${tokens[0]}:*)`;
 }
 
 export function formatToolInputForDisplay(input: unknown) {
-  if (input === undefined || input === null) return '';
-  if (typeof input === 'string') return input;
+  if (input === undefined || input === null) return "";
+  if (typeof input === "string") return input;
   try {
     return JSON.stringify(input, null, 2);
   } catch {
@@ -33,7 +33,7 @@ export function getClaudePermissionSuggestion(
   message: ChatMessage | null | undefined,
   provider: string,
 ): ClaudePermissionSuggestion | null {
-  if (provider !== 'claude') return null;
+  if (provider !== "claude") return null;
   if (!message?.toolResult?.isError) return null;
 
   const toolName = message?.toolName;
@@ -42,7 +42,7 @@ export function getClaudePermissionSuggestion(
 
   const settings = getClaudeSettings();
   const isAllowed = settings.allowedTools.includes(entry);
-  return { toolName: toolName || 'UnknownTool', entry, isAllowed };
+  return { toolName: toolName || "UnknownTool", entry, isAllowed };
 }
 
 export function grantClaudeToolPermission(entry: string | null): PermissionGrantResult {
