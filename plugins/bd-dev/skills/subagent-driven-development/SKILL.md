@@ -105,7 +105,7 @@ digraph process {
 
 实施者："在我开始之前——hook 应该安装在用户级别还是系统级别？"
 
-你："用户级别（~/.config/builden-dev/hooks/）"
+你："用户级别（~/.config/bd-dev/hooks/）"
 
 实施者："明白了。正在实施..."
 [稍后] 实施者：

@@ -43,7 +43,7 @@ grep -i "worktree.*director" CLAUDE.md 2>/dev/null
 没有找到 worktree 目录。我应该在哪里创建 worktree？
 
 1. .worktrees/（项目本地，隐藏）
-2. ~/.config/builden-dev/worktrees/<项目名>/（全局位置）
+2. ~/.config/bd-dev/worktrees/<项目名>/（全局位置）
 
 你更偏好哪个？
 ```
@@ -69,7 +69,7 @@ git check-ignore -q .worktrees 2>/dev/null || git check-ignore -q worktrees 2>/d
 
 **为什么关键：** 防止意外将 worktree 内容提交到仓库。
 
-### 对于全局目录（~/.config/builden-dev/worktrees）
+### 对于全局目录（~/.config/bd-dev/worktrees）
 
 不需要 .gitignore 验证——完全在项目外部。
 
@@ -89,8 +89,8 @@ case $LOCATION in
   .worktrees|worktrees)
     path="$LOCATION/$BRANCH_NAME"
     ;;
-  ~/.config/builden-dev/worktrees/*)
-    path="~/.config/builden-dev/worktrees/$project/$BRANCH_NAME"
+  ~/.config/bd-dev/worktrees/*)
+    path="~/.config/bd-dev/worktrees/$project/$BRANCH_NAME"
     ;;
 esac
 
