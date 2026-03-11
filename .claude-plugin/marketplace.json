@@ -1,29 +1,29 @@
 {
-  "name": "builden-plugins",
-  "owner": {
-    "name": "Builden"
-  },
   "metadata": {
     "description": "Builden's Claude Code plugins - skills and development tools for full-stack development"
   },
+  "name": "bd-plugins",
+  "owner": {
+    "name": "Builden"
+  },
   "plugins": [
     {
-      "name": "builden",
-      "source": "./plugins/builden",
-      "description": "Builden's personal skills and development agents for full-stack development",
-      "version": "1.1.0",
       "author": {
         "name": "Builden"
-      }
+      },
+      "description": "Builden's personal skills and development agents for full-stack development",
+      "name": "bd",
+      "source": "./plugins/bd",
+      "version": "1.1.0"
     },
     {
-      "name": "builden-dev",
-      "source": "./plugins/builden-dev",
-      "description": "Builden's development skills - Bun expert and TypeScript expert",
-      "version": "1.1.0",
       "author": {
         "name": "Builden"
-      }
+      },
+      "description": "Builden's development skills - Bun expert and TypeScript expert",
+      "name": "bd-dev",
+      "source": "./plugins/bd-dev",
+      "version": "1.1.0"
     }
   ]
 }

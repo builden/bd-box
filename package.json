@@ -17,27 +17,27 @@
     "typescript-eslint": "^8.56.1"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
-      "bun eslint --fix",
+    "*.{json,md,css,scss,less,html,vue,yaml,toml}": [
       "bun prettier --write"
     ],
-    "*.{json,md,css,scss,less,html,vue,yaml,toml}": [
+    "*.{ts,tsx,js,jsx}": [
+      "bun eslint --fix",
       "bun prettier --write"
     ]
   },
   "name": "bd-box",
   "private": true,
   "scripts": {
-    "plugin:install": "claude plugin install builden-dev@builden-plugins",
-    "plugin:link-rules": "cp -r plugins/builden-dev/rules/* ~/.claude/rules/",
     "docs:dev": "mint dev",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "lint": "eslint . --fix",
+    "plugin:install": "claude plugin install bd-dev@bd-plugins && claude plugin install bd@bd-plugins",
+    "plugin:link-rules": "cp -r plugins/bd-dev/rules/* ~/.claude/rules/",
     "prepare": "husky",
-    "test": "AGENT=1 bun run --parallel --workspaces test",
+    "test": "AGENT=1 bun run --parallel --workspaces --if-present test",
     "test:color": "cd packages/bd-color && bun test",
-    "test:lunar": "cd packages/bd-lunar && bun test",
     "test:diagram": "cd packages/vscode-md-diagram && bun test",
+    "test:lunar": "cd packages/bd-lunar && bun test",
     "test:token-previewer": "cd packages/bd-antd-token-previewer && bun test",
     "typecheck": "tsc --noEmit"
   },
