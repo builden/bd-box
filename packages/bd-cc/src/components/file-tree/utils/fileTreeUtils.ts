@@ -1,12 +1,12 @@
-import type { TFunction } from 'i18next';
-import { IMAGE_FILE_EXTENSIONS } from '../constants/constants';
-import type { FileTreeNode } from '../types/types';
+import type { TFunction } from "i18next";
+import dayjs from "dayjs";
+import { IMAGE_FILE_EXTENSIONS } from "../constants/constants";
+import type { FileTreeNode } from "../types/types";
 
 export function filterFileTree(items: FileTreeNode[], query: string): FileTreeNode[] {
   return items.reduce<FileTreeNode[]>((filteredItems, item) => {
     const matchesName = item.name.toLowerCase().includes(query);
-    const filteredChildren =
-      item.type === 'directory' && item.children ? filterFileTree(item.children, query) : [];
+    const filteredChildren = item.type === "directory" && item.children ? filterFileTree(item.children, query) : [];
 
     if (matchesName || filteredChildren.length > 0) {
       filteredItems.push({
@@ -25,7 +25,7 @@ export function collectExpandedDirectoryPaths(items: FileTreeNode[]): string[] {
 
   const visit = (nodes: FileTreeNode[]) => {
     nodes.forEach((node) => {
-      if (node.type === 'directory' && node.children && node.children.length > 0) {
+      if (node.type === "directory" && node.children && node.children.length > 0) {
         paths.push(node.path);
         visit(node.children);
       }
@@ -38,46 +38,45 @@ export function collectExpandedDirectoryPaths(items: FileTreeNode[]): string[] {
 
 export function formatFileSize(bytes?: number): string {
   if (!bytes || bytes === 0) {
-    return '0 B';
+    return "0 B";
   }
 
   const base = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const sizes = ["B", "KB", "MB", "GB"];
   const index = Math.floor(Math.log(bytes) / Math.log(base));
 
-  return `${(bytes / Math.pow(base, index)).toFixed(1).replace(/\.0$/, '')} ${sizes[index]}`;
+  return `${(bytes / Math.pow(base, index)).toFixed(1).replace(/\.0$/, "")} ${sizes[index]}`;
 }
 
 export function formatRelativeTime(date: string | undefined, t: TFunction): string {
   if (!date) {
-    return '-';
+    return "-";
   }
 
-  const now = new Date();
-  const past = new Date(date);
-  const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
+  const past = dayjs(date);
+  const now = dayjs(Date.now());
+  const diffInSeconds = Math.floor(now.diff(past, "second"));
 
   if (diffInSeconds < 60) {
-    return t('fileTree.justNow');
+    return t("fileTree.justNow");
   }
 
   if (diffInSeconds < 3600) {
-    return t('fileTree.minAgo', { count: Math.floor(diffInSeconds / 60) });
+    return t("fileTree.minAgo", { count: Math.floor(diffInSeconds / 60) });
   }
 
   if (diffInSeconds < 86400) {
-    return t('fileTree.hoursAgo', { count: Math.floor(diffInSeconds / 3600) });
+    return t("fileTree.hoursAgo", { count: Math.floor(diffInSeconds / 3600) });
   }
 
   if (diffInSeconds < 2592000) {
-    return t('fileTree.daysAgo', { count: Math.floor(diffInSeconds / 86400) });
+    return t("fileTree.daysAgo", { count: Math.floor(diffInSeconds / 86400) });
   }
 
-  return past.toLocaleDateString();
+  return past.format("YYYY-MM-DD");
 }
 
 export function isImageFile(filename: string): boolean {
-  const extension = filename.split('.').pop()?.toLowerCase();
+  const extension = filename.split(".").pop()?.toLowerCase();
   return Boolean(extension && IMAGE_FILE_EXTENSIONS.has(extension));
 }
-
