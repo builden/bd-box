@@ -25,7 +25,6 @@ describe("chatStorage", () => {
         skipPermissions: true,
         projectSortOrder: "date" as const,
       };
-      // @ts-ignore - localStorage is mocked in setup
       localStorage.setItem(CLAUDE_SETTINGS_KEY, JSON.stringify(storedSettings));
 
       const settings = getClaudeSettings();
@@ -37,7 +36,6 @@ describe("chatStorage", () => {
     });
 
     it("should use default for missing allowedTools", () => {
-      // @ts-ignore
       localStorage.setItem(CLAUDE_SETTINGS_KEY, JSON.stringify({ projectSortOrder: "date" }));
 
       const settings = getClaudeSettings();
@@ -46,7 +44,6 @@ describe("chatStorage", () => {
     });
 
     it("should use default for malformed allowedTools", () => {
-      // @ts-ignore
       localStorage.setItem(CLAUDE_SETTINGS_KEY, JSON.stringify({ allowedTools: "not-array" }));
 
       const settings = getClaudeSettings();
@@ -55,7 +52,6 @@ describe("chatStorage", () => {
     });
 
     it("should use default when stored data is invalid JSON", () => {
-      // @ts-ignore
       localStorage.setItem(CLAUDE_SETTINGS_KEY, "invalid-json");
 
       const settings = getClaudeSettings();
