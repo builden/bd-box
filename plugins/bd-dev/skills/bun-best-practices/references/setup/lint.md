@@ -1,14 +1,24 @@
 # Lint 规范
 
-本文档定义项目的代码检查（Lint）规范，包括 eslint、prettier、husky、lint-staged 的配置和使用方式。
+本文档定义 Bun 项目的代码检查（Lint）规范，包括 Prettier、ESLint、Husky、lint-staged 的配置和使用方式。
 
 ---
 
-## 1. Prettier 配置
+## 1. 概述
 
-### 基础配置
+| 工具            | 作用               | 运行时机                |
+| --------------- | ------------------ | ----------------------- |
+| **Prettier**    | 代码格式化         | 手动 / lint-staged      |
+| **ESLint**      | 代码质量检查       | 手动 / lint-staged / CI |
+| **lint-staged** | 只检查 staged 文件 | pre-commit              |
+| **Husky**       | Git hooks 管理     | commit 时触发           |
+| **CI**          | 完整检查           | push / PR 时触发        |
 
-项目统一使用以下 prettier 配置：
+---
+
+## 2. Prettier 配置
+
+### 2.1 基础配置
 
 ```json
 // .prettierrc
@@ -22,7 +32,7 @@
 }
 ```
 
-### .prettierignore
+### 2.2 .prettierignore
 
 ```gitignore
 node_modules/
@@ -36,19 +46,21 @@ coverage/
 .output/
 ```
 
+### 2.3 支持的文件类型
+
+| 类型 | 扩展名                          |
+| ---- | ------------------------------- |
+| 代码 | `.ts`, `.tsx`, `.js`, `.jsx`    |
+| 样式 | `.css`, `.scss`, `.less`        |
+| 模板 | `.html`, `.vue`, `.svelte`      |
+| 数据 | `.json`, `.jsonc`               |
+| 其他 | `.md`, `.yaml`, `.yml`, `.toml` |
+
 ---
 
-## 2. ESLint 配置
+## 3. ESLint 配置
 
-### 推荐：@antfu/eslint-config
-
-**推荐使用 @antfu/eslint-config**，它包含：
-
-- TypeScript 支持
-- React/React Hooks 规则
-- Import 排序
-- Unocss/Tailwind 支持
-- 自动与 prettier 集成
+### 3.1 推荐：@antfu/eslint-config
 
 ```bash
 bun add -D @antfu/eslint-config
@@ -59,31 +71,26 @@ bun add -D @antfu/eslint-config
 import antfu from "@antfu/eslint-config";
 
 export default antfu({
-  // 可选配置
   stylistic: {
     printWidth: 120,
   },
 });
 ```
 
-### 备选：手动配置
-
-**优先使用工具初始化，再增量修改：**
+### 3.2 备选：手动配置
 
 ```bash
-# 初始化基础配置
-bunx eslint init
-
-# 根据项目类型追加插件和规则
+bun add -D eslint prettier
+bun add -D typescript-eslint
 ```
 
-| 项目类型       | 需要添加的插件/配置                                |
-| -------------- | -------------------------------------------------- |
-| **React**      | `eslint-plugin-react`, `eslint-plugin-react-hooks` |
-| **Node.js**    | `eslint-plugin-n` (Node 最佳实践)                  |
-| **TypeScript** | `typescript-eslint` (必须)                         |
+| 项目类型        | 需要添加的插件                                     |
+| --------------- | -------------------------------------------------- |
+| React           | `eslint-plugin-react`, `eslint-plugin-react-hooks` |
+| Node.js         | `eslint-plugin-n`                                  |
+| Tailwind CSS v4 | 不需要 eslint-plugin-tailwindcss                   |
 
-### 常用脚本
+### 3.3 常用脚本
 
 ```json
 {
@@ -94,37 +101,61 @@ bunx eslint init
 }
 ```
 
-### Prettier 支持的文件类型
+---
 
-Prettier 支持以下文件类型（按项目需求启用）：
+## 4. lint-staged 配置
 
-| 类型 | 扩展名                          | 说明                  |
-| ---- | ------------------------------- | --------------------- |
-| 代码 | `.ts`, `.tsx`, `.js`, `.jsx`    | JavaScript/TypeScript |
-| 样式 | `.css`, `.scss`, `.less`        | CSS 预处理            |
-| 模板 | `.html`, `.vue`, `.svelte`      | HTML 框架             |
-| 数据 | `.json`, `.jsonc`               | JSON 配置             |
-| 其他 | `.md`, `.yaml`, `.yml`, `.toml` | 文档和配置            |
+### 4.1 作用
+
+只检查 **staged（暂存）** 的文件，不检查整个项目。
+
+### 4.2 配置
+
+```json
+{
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": ["eslint --fix", "prettier --write"],
+    "*.{json,md,css,scss,less,html,vue,yaml,toml}": ["prettier --write"]
+  }
+}
+```
+
+### 4.3 执行顺序
+
+```
+暂存文件 → eslint --fix → prettier --write → 提交
+```
+
+**注意**：eslint 必须在 prettier 之前执行。
 
 ---
 
-## 3. Husky 配置
+## 5. Husky 配置
 
-### 安装与初始化
+### 5.1 安装
 
 ```bash
 bun add -D husky
 bunx husky init
 ```
 
-### 触发时机
+### 5.2 pre-commit 配置
 
-| Hook           | 作用         | 命令                       |
-| -------------- | ------------ | -------------------------- |
-| **pre-commit** | 代码检查     | `bun lint && bun test`     |
-| **commit-msg** | 提交信息规范 | `bun commitlint --edit $1` |
+**单项目**：
 
-### 启用 commitlint（可选）
+```bash
+echo "bun lint" > .husky/pre-commit
+```
+
+**Monorepo**：
+
+```bash
+echo "bun x lint-staged" > .husky/pre-commit
+```
+
+> ⚠️ **重要**：pre-commit 只运行 lint-staged，不运行测试。测试交给 CI。
+
+### 5.3 commit-msg（可选）
 
 ```bash
 bun add -D @commitlint/cli @commitlint/config-conventional
@@ -137,217 +168,42 @@ export default {
 };
 ```
 
----
-
-## 4. lint-staged 配置
-
-### 基础配置
-
-```json
-{
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx}": ["bun eslint --fix", "bun prettier --write"],
-    "*.{json,md,css,scss,less,html,vue,yaml,toml}": ["bun prettier --write"]
-  }
-}
-```
-
-### 执行顺序
-
-```
-暂存文件 → eslint --fix → prettier --write → 提交
-```
-
-**注意**：eslint 必须在 prettier 之前执行，因为 prettier 可能格式化掉 eslint 能修复的问题。
-
----
-
-## 5. Monorepo 配置
-
-### 根目录配置
-
-根目录安装所有 lint 依赖：
-
 ```bash
-bun add -D eslint prettier husky lint-staged
-bun add -D @commitlint/cli @commitlint/config-conventional
-bun add -D typescript-eslint
-```
-
-### package 独立配置
-
-各 package 可根据需要覆盖规则：
-
-```json
-// packages/my-package/package.json
-{
-  "eslintConfig": {
-    "extends": ["../../.eslintrc.json"],
-    "rules": {
-      // 特定规则覆盖
-    }
-  }
-}
+echo "bun commitlint --edit \$1" > .husky/commit-msg
 ```
 
 ---
 
-## 6. 常见问题
+## 6. 单项目 vs Monorepo
 
-### Prettier 与 ESLint 冲突
+### 6.1 对比
 
-如果 eslint 和 prettier 规则冲突，使用 `eslint-config-prettier` 解决：
+| 配置项      | 单项目     | Monorepo                               |
+| ----------- | ---------- | -------------------------------------- |
+| pre-commit  | `bun lint` | `bun x lint-staged`                    |
+| test 命令   | `bun test` | `bun run --parallel --workspaces test` |
+| lint 命令   | `eslint .` | `eslint .` (根目录)                    |
+| lint-staged | 需要       | 需要                                   |
 
-```bash
-bun add -D eslint-config-prettier
-```
-
-```js
-// eslint.config.js
-import tseslint from "typescript-eslint";
-import prettier from "eslint-config-prettier";
-
-export default tseslint.config(prettier);
-```
-
-### Windows 环境 Husky 不工作
-
-确保 husky 目录有执行权限：
+### 6.2 Monorepo 根目录配置
 
 ```bash
-chmod +x .husky/pre-commit
-chmod +x .husky/commit-msg
-```
-
-### 空接口报错
-
-使用 `@typescript-eslint/no-empty-object-type` 规则时，空接口会报错。解决方案：
-
-```typescript
-// ❌ 错误：空接口
-export interface EmptyOptions {}
-
-// ✅ 正确 1：使用 type 替代
-export type EmptyOptions = Record<string, never>;
-
-// ✅ 正确 2：使用类型别名
-export type QueryOptions = BaseOptions;
-```
-
-### lint-staged 执行顺序
-
-确保 eslint 在 prettier 之前执行：
-
-```json
-{
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx}": ["bun eslint --fix", "bun prettier --write"]
-  }
-}
-```
-
-### Monorepo 中 pre-commit 配置
-
-在 monorepo 中，建议 pre-commit 同时运行 lint-staged 和测试：
-
-```bash
-# .husky/pre-commit
-bun x lint-staged && bun run test
-```
-
-**注意**：使用 `bun run test` 而不是 `bun test`，，因为后者会运行根目录的测试而非各 workspace 的测试。
-
-**规范要求**：所有子项目都必须有测试文件和 test 脚本。
-
----
-
-## 7. 初始化脚本
-
-新项目一键配置：
-
-```bash
-# 1. 安装依赖
-bun add -D eslint prettier husky lint-staged
-bun add -D typescript-eslint
-
-# 2. 初始化 husky
-bunx husky init
-
-# 3. 配置 pre-commit（单项目）
-echo "bun lint" > .husky/pre-commit
-
-# 4. 配置 pre-commit（monorepo）
-echo "bun x lint-staged" > .husky/pre-commit
-
-# 5. 配置 monorepo test 脚本（如果有子包没有测试）
-# 假设有 pkg1, pkg2, pkg3 有测试
-# 注意：bd-skills 没有测试，需要排除
-echo 'test": "bun run --parallel -F bd-color -F bd-lunar -F bd-utils -F git-src test"' >> package.json
-
-# 5. 创建 prettier 配置
-echo '{"printWidth": 120, "singleQuote": true}' > .prettierrc
-
-# 6. 创建 .prettierignore
-cat > .prettierignore << 'EOF'
-node_modules/
-dist/
-build/
-*.min.js
-*.css.map
-*.map
-coverage/
-.turbo/
-.output/
-EOF
+# 安装依赖（只在根目录）
+bun add -D eslint prettier husky lint-staged typescript-eslint
 ```
 
 ---
 
-## 8. Pre-commit 与 CI 职责划分
+## 7. CI 配置
 
-### 8.1 职责分离原则
+### 7.1 为什么 CI 是必须的
 
-| 环节           | 职责                        | 运行位置 |
-| -------------- | --------------------------- | -------- |
-| **pre-commit** | 代码质量检查（lint-staged） | 本地     |
-| **CI**         | 完整测试 + lint             | 服务端   |
+| 环节       | 检查范围    | 阻塞提交？   |
+| ---------- | ----------- | ------------ |
+| pre-commit | staged 文件 | 否（可跳过） |
+| CI         | 全部文件    | 是           |
 
-**推荐配置**：
-
-```bash
-# .husky/pre-commit（Monorepo）
-bun x lint-staged
-
-# .husky/pre-commit（单项目）
-bun lint
-```
-
-**不要在 pre-commit 中运行 test**：
-
-- ❌ `bun x lint-staged && bun run test` → 每次提交跑全部测试
-- ❌ `bun lint && bun test` → 每次提交跑全部测试
-
-### 8.2 为什么不应该在 pre-commit 中运行测试
-
-1. **阻塞 unrelated 改动**：某包测试失败会导致所有提交阻塞
-2. **效率低下**：每次 commit 都要等全部测试跑完
-3. **重复劳动**：CI 已经会跑全量测试
-
-### 8.3 Monorepo 示例
-
-```bash
-# .husky/pre-commit
-bun x lint-staged
-
-# package.json
-{
-  "scripts": {
-    "test": "bun run --parallel --workspaces test"
-  }
-}
-```
-
-### 8.4 GitHub Actions CI 配置
+### 7.2 GitHub Actions 配置
 
 ```yaml
 # .github/workflows/ci.yml
@@ -384,9 +240,116 @@ jobs:
 
 ---
 
-## 9. Gitignore 配置
+## 8. 常见问题
 
-确保忽略 lint 输出：
+### Q1: Prettier 与 ESLint 冲突
+
+```bash
+bun add -D eslint-config-prettier
+```
+
+```js
+// eslint.config.js
+import tseslint from "typescript-eslint";
+import prettier from "eslint-config-prettier";
+
+export default tseslint.config(prettier);
+```
+
+### Q2: Windows 环境 Husky 不工作
+
+```bash
+chmod +x .husky/pre-commit
+chmod +x .husky/commit-msg
+```
+
+### Q3: 空接口报错
+
+```typescript
+// ❌ 错误
+export interface EmptyOptions {}
+
+// ✅ 正确
+export type EmptyOptions = Record<string, never>;
+```
+
+### Q4: Tailwind CSS v4 需要 eslint 插件吗？
+
+**不需要**。eslint-plugin-tailwindcss 不支持 v4，且 v4 不需要。
+
+---
+
+## 9. 一键初始化
+
+### 9.1 单项目
+
+```bash
+# 1. 安装依赖
+bun add -D eslint prettier husky lint-staged typescript-eslint
+
+# 2. 初始化 husky
+bunx husky init
+
+# 3. 配置 pre-commit
+echo "bun lint" > .husky/pre-commit
+
+# 4. 创建 prettier 配置
+echo '{"printWidth": 120, "singleQuote": true}' > .prettierrc
+
+# 5. 创建 .prettierignore
+cat > .prettierignore << 'EOF'
+node_modules/
+dist/
+build/
+coverage/
+.turbo/
+.output/
+EOF
+```
+
+### 9.2 Monorepo
+
+```bash
+# 1. 安装依赖（根目录）
+bun add -D eslint prettier husky lint-staged typescript-eslint
+
+# 2. 初始化 husky
+bunx husky init
+
+# 3. 配置 pre-commit
+echo "bun x lint-staged" > .husky/pre-commit
+
+# 4. 配置 test 脚本
+# package.json
+{
+  "scripts": {
+    "test": "bun run --parallel --workspaces test"
+  }
+}
+
+# 5. 创建 prettier 配置（同上）
+# 6. 创建 .prettierignore（同上）
+
+# 7. 添加 CI 配置
+mkdir -p .github/workflows
+cat > .github/workflows/ci.yml << 'EOF'
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run test
+      - run: bun run lint
+EOF
+```
+
+---
+
+## 10. Gitignore 配置
 
 ```gitignore
 # lint output
@@ -395,7 +358,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# 格式化输出（如果有）
+# 格式化缓存
 .eslintcache
 .prettiercache
 ```
