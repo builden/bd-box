@@ -274,10 +274,10 @@ bun add -D typescript-eslint
 bunx husky init
 
 # 3. 配置 pre-commit（单项目）
-echo "bun lint && bun test" > .husky/pre-commit
+echo "bun lint" > .husky/pre-commit
 
 # 4. 配置 pre-commit（monorepo）
-echo "bun x lint-staged && bun run test" > .husky/pre-commit
+echo "bun x lint-staged" > .husky/pre-commit
 
 # 5. 配置 monorepo test 脚本（如果有子包没有测试）
 # 假设有 pkg1, pkg2, pkg3 有测试
@@ -303,7 +303,88 @@ EOF
 
 ---
 
-## 8. Gitignore 配置
+## 8. Pre-commit 与 CI 职责划分
+
+### 8.1 职责分离原则
+
+| 环节           | 职责                        | 运行位置 |
+| -------------- | --------------------------- | -------- |
+| **pre-commit** | 代码质量检查（lint-staged） | 本地     |
+| **CI**         | 完整测试 + lint             | 服务端   |
+
+**推荐配置**：
+
+```bash
+# .husky/pre-commit（Monorepo）
+bun x lint-staged
+
+# .husky/pre-commit（单项目）
+bun lint
+```
+
+**不要在 pre-commit 中运行 test**：
+
+- ❌ `bun x lint-staged && bun run test` → 每次提交跑全部测试
+- ❌ `bun lint && bun test` → 每次提交跑全部测试
+
+### 8.2 为什么不应该在 pre-commit 中运行测试
+
+1. **阻塞 unrelated 改动**：某包测试失败会导致所有提交阻塞
+2. **效率低下**：每次 commit 都要等全部测试跑完
+3. **重复劳动**：CI 已经会跑全量测试
+
+### 8.3 Monorepo 示例
+
+```bash
+# .husky/pre-commit
+bun x lint-staged
+
+# package.json
+{
+  "scripts": {
+    "test": "bun run --parallel --workspaces test"
+  }
+}
+```
+
+### 8.4 GitHub Actions CI 配置
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test & Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run tests
+        run: bun run test
+
+      - name: Run lint
+        run: bun run lint
+```
+
+---
+
+## 9. Gitignore 配置
 
 确保忽略 lint 输出：
 

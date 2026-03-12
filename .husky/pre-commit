@@ -1,1 +1,1 @@
-bun x lint-staged && bun run test
+bun x lint-staged
