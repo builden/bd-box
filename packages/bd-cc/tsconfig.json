@@ -14,7 +14,13 @@
     "forceConsistentCasingInFileNames": true,
     "allowJs": true,
     // "checkJs": true,
-    "types": ["vite/client"]
+    "types": ["vite/client", "bun-types"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@/types": ["src/types/index.ts"],
+      "@/types/*": ["src/types/*"]
+    }
   },
   "include": ["src", "shared", "vite.config.js", "*.test.ts", "tests"]
 }

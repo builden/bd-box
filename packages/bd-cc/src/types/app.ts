@@ -1,6 +1,8 @@
-export type SessionProvider = 'claude' | 'cursor' | 'codex' | 'gemini';
+export type SessionProvider = "claude" | "cursor" | "codex" | "gemini";
 
-export type AppTab = 'chat' | 'files' | 'shell' | 'git' | 'tasks' | 'preview' | `plugin:${string}`;
+export type PermissionMode = "default" | "acceptEdits" | "bypassPermissions" | "plan";
+
+export type AppTab = "chat" | "files" | "shell" | "git" | "tasks" | "preview" | `plugin:${string}`;
 
 export interface ProjectSession {
   id: string;
@@ -45,7 +47,7 @@ export interface Project {
 }
 
 export interface LoadingProgress {
-  type?: 'loading_progress';
+  type?: "loading_progress";
   phase?: string;
   current: number;
   total: number;
@@ -54,17 +56,17 @@ export interface LoadingProgress {
 }
 
 export interface ProjectsUpdatedMessage {
-  type: 'projects_updated';
+  type: "projects_updated";
   projects: Project[];
   changedFile?: string;
   [key: string]: unknown;
 }
 
 export interface LoadingProgressMessage extends LoadingProgress {
-  type: 'loading_progress';
+  type: "loading_progress";
 }
 
 export type AppSocketMessage =
   | LoadingProgressMessage
   | ProjectsUpdatedMessage
-  | { type?: string;[key: string]: unknown };
+  | { type?: string; [key: string]: unknown };

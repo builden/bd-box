@@ -1,8 +1,9 @@
-import type { Project, ProjectSession, SessionProvider } from '../../../types/app';
+import type { Project, ProjectSession, PermissionMode, SessionProvider } from "../../../types/app";
 
 export type Provider = SessionProvider;
 
-export type PermissionMode = 'default' | 'acceptEdits' | 'bypassPermissions' | 'plan';
+// PermissionMode 已在 @/types/app 中定义，此处重新导出保持向后兼容
+export type { PermissionMode } from "../../../types/app";
 
 export interface ChatImage {
   data: string;
