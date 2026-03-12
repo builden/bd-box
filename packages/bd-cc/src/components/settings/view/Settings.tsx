@@ -1,21 +1,22 @@
-import { X } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import ProviderLoginModal from '../../provider-auth/view/ProviderLoginModal';
-import { Button } from '../../../shared/view/ui';
-import ClaudeMcpFormModal from '../view/modals/ClaudeMcpFormModal';
-import CodexMcpFormModal from '../view/modals/CodexMcpFormModal';
-import SettingsSidebar from '../view/SettingsSidebar';
-import AgentsSettingsTab from '../view/tabs/agents-settings/AgentsSettingsTab';
-import AppearanceSettingsTab from '../view/tabs/AppearanceSettingsTab';
-import CredentialsSettingsTab from '../view/tabs/api-settings/CredentialsSettingsTab';
-import GitSettingsTab from '../view/tabs/git-settings/GitSettingsTab';
-import TasksSettingsTab from '../view/tabs/tasks-settings/TasksSettingsTab';
-import PluginSettingsTab from '../../plugins/view/PluginSettingsTab';
-import { useSettingsController } from '../hooks/useSettingsController';
-import type { SettingsProps } from '../types/types';
+import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import ProviderLoginModal from "../../provider-auth/view/ProviderLoginModal";
+import { Button } from "../../../shared/view/ui";
+import ClaudeMcpFormModal from "../view/modals/ClaudeMcpFormModal";
+import CodexMcpFormModal from "../view/modals/CodexMcpFormModal";
+import SettingsSidebar from "../view/SettingsSidebar";
+import AgentsSettingsTab from "../view/tabs/agents-settings/AgentsSettingsTab";
+import AppearanceSettingsTab from "../view/tabs/AppearanceSettingsTab";
+import CredentialsSettingsTab from "../view/tabs/api-settings/CredentialsSettingsTab";
+import GitSettingsTab from "../view/tabs/git-settings/GitSettingsTab";
+import TasksSettingsTab from "../view/tabs/tasks-settings/TasksSettingsTab";
+import PluginSettingsTab from "../../plugins/view/PluginSettingsTab";
+import SkillsSettingsTab from "./tabs/skills-settings/SkillsSettingsTab";
+import { useSettingsController } from "../hooks/useSettingsController";
+import type { SettingsProps } from "../types/types";
 
-function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }: SettingsProps) {
-  const { t } = useTranslation('settings');
+function Settings({ isOpen, onClose, projects = [], initialTab = "agents" }: SettingsProps) {
+  const { t } = useTranslation("settings");
   const {
     activeTab,
     setActiveTab,
@@ -74,23 +75,24 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }: Set
     return null;
   }
 
-  const isAuthenticated = loginProvider === 'claude'
-    ? claudeAuthStatus.authenticated
-    : loginProvider === 'cursor'
-      ? cursorAuthStatus.authenticated
-      : loginProvider === 'codex'
-        ? codexAuthStatus.authenticated
-        : false;
+  const isAuthenticated =
+    loginProvider === "claude"
+      ? claudeAuthStatus.authenticated
+      : loginProvider === "cursor"
+        ? cursorAuthStatus.authenticated
+        : loginProvider === "codex"
+          ? codexAuthStatus.authenticated
+          : false;
 
   return (
     <div className="modal-backdrop fixed inset-0 z-[9999] flex items-center justify-center bg-background/80 backdrop-blur-sm md:p-4">
       <div className="flex h-full w-full flex-col overflow-hidden border border-border bg-background shadow-2xl md:h-[90vh] md:max-w-4xl md:rounded-xl">
         {/* Header */}
         <div className="flex flex-shrink-0 items-center justify-between border-b border-border px-4 py-3 md:px-5">
-          <h2 className="text-base font-semibold text-foreground">{t('title')}</h2>
+          <h2 className="text-base font-semibold text-foreground">{t("title")}</h2>
           <div className="flex items-center gap-2">
-            {saveStatus === 'success' && (
-              <span className="text-xs text-muted-foreground animate-in fade-in">{t('saveStatus.success')}</span>
+            {saveStatus === "success" && (
+              <span className="text-xs text-muted-foreground animate-in fade-in">{t("saveStatus.success")}</span>
             )}
             <Button
               variant="ghost"
@@ -109,32 +111,35 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }: Set
 
           {/* Content */}
           <main className="flex-1 overflow-y-auto">
-            <div key={activeTab} className="settings-content-enter space-y-6 p-4 pb-safe-area-inset-bottom md:space-y-8 md:p-6">
-              {activeTab === 'appearance' && (
+            <div
+              key={activeTab}
+              className="settings-content-enter space-y-6 p-4 pb-safe-area-inset-bottom md:space-y-8 md:p-6"
+            >
+              {activeTab === "appearance" && (
                 <AppearanceSettingsTab
                   projectSortOrder={projectSortOrder}
                   onProjectSortOrderChange={setProjectSortOrder}
                   codeEditorSettings={codeEditorSettings}
-                  onCodeEditorThemeChange={(value) => updateCodeEditorSetting('theme', value)}
-                  onCodeEditorWordWrapChange={(value) => updateCodeEditorSetting('wordWrap', value)}
-                  onCodeEditorShowMinimapChange={(value) => updateCodeEditorSetting('showMinimap', value)}
-                  onCodeEditorLineNumbersChange={(value) => updateCodeEditorSetting('lineNumbers', value)}
-                  onCodeEditorFontSizeChange={(value) => updateCodeEditorSetting('fontSize', value)}
+                  onCodeEditorThemeChange={(value) => updateCodeEditorSetting("theme", value)}
+                  onCodeEditorWordWrapChange={(value) => updateCodeEditorSetting("wordWrap", value)}
+                  onCodeEditorShowMinimapChange={(value) => updateCodeEditorSetting("showMinimap", value)}
+                  onCodeEditorLineNumbersChange={(value) => updateCodeEditorSetting("lineNumbers", value)}
+                  onCodeEditorFontSizeChange={(value) => updateCodeEditorSetting("fontSize", value)}
                 />
               )}
 
-              {activeTab === 'git' && <GitSettingsTab />}
+              {activeTab === "git" && <GitSettingsTab />}
 
-              {activeTab === 'agents' && (
+              {activeTab === "agents" && (
                 <AgentsSettingsTab
                   claudeAuthStatus={claudeAuthStatus}
                   cursorAuthStatus={cursorAuthStatus}
                   codexAuthStatus={codexAuthStatus}
                   geminiAuthStatus={geminiAuthStatus}
-                  onClaudeLogin={() => openLoginForProvider('claude')}
-                  onCursorLogin={() => openLoginForProvider('cursor')}
-                  onCodexLogin={() => openLoginForProvider('codex')}
-                  onGeminiLogin={() => openLoginForProvider('gemini')}
+                  onClaudeLogin={() => openLoginForProvider("claude")}
+                  onCursorLogin={() => openLoginForProvider("cursor")}
+                  onCodexLogin={() => openLoginForProvider("codex")}
+                  onGeminiLogin={() => openLoginForProvider("gemini")}
                   claudePermissions={claudePermissions}
                   onClaudePermissionsChange={setClaudePermissions}
                   cursorPermissions={cursorPermissions}
@@ -159,21 +164,23 @@ function Settings({ isOpen, onClose, projects = [], initialTab = 'agents' }: Set
                 />
               )}
 
-              {activeTab === 'tasks' && <TasksSettingsTab />}
+              {activeTab === "tasks" && <TasksSettingsTab />}
 
-              {activeTab === 'api' && <CredentialsSettingsTab />}
+              {activeTab === "api" && <CredentialsSettingsTab />}
 
-              {activeTab === 'plugins' && <PluginSettingsTab />}
+              {activeTab === "plugins" && <PluginSettingsTab />}
+
+              {activeTab === "skills" && <SkillsSettingsTab />}
             </div>
           </main>
         </div>
       </div>
 
       <ProviderLoginModal
-        key={loginProvider || 'claude'}
+        key={loginProvider || "claude"}
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
-        provider={loginProvider || 'claude'}
+        provider={loginProvider || "claude"}
         project={selectedProject}
         onComplete={handleLoginComplete}
         isAuthenticated={isAuthenticated}

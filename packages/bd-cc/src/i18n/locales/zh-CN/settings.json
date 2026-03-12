@@ -105,7 +105,8 @@
     "git": "Git",
     "apiTokens": "API 和令牌",
     "tasks": "任务",
-    "plugins": "插件"
+    "plugins": "插件",
+    "skills": "技能"
   },
   "appearanceSettings": {
     "darkMode": {
@@ -470,5 +471,32 @@
     "installAriaLabel": "插件 git 仓库 URL",
     "tab": "标签",
     "runningStatus": "运行中"
+  },
+  "skillSettings": {
+    "title": "技能",
+    "description": "管理 Claude Code 技能。技能通过自定义工具和知识扩展 AI 助手的能力。",
+    "installPlaceholder": "https://github.com/user/my-skill",
+    "installButton": "安装",
+    "installing": "安装中…",
+    "securityWarning": "只安装您已审查过源代码或信任作者提供的技能。",
+    "scanningSkills": "扫描技能…",
+    "noSkillsInstalled": "未安装任何技能",
+    "pullLatest": "从 Git 拉取最新版本",
+    "noGitRemote": "无 Git 远程仓库 — 无法更新",
+    "uninstallSkill": "卸载技能",
+    "confirmUninstall": "再次点击确认",
+    "confirmUninstallMessage": "确定要移除 {{name}} 吗？此操作无法撤销。",
+    "cancel": "取消",
+    "remove": "移除",
+    "updateFailed": "更新失败",
+    "installFailed": "安装失败",
+    "uninstallFailed": "卸载失败",
+    "toggleFailed": "切换失败",
+    "learnMore": "了解更多关于技能",
+    "docs": "文档",
+    "enable": "启用",
+    "disable": "禁用",
+    "installAriaLabel": "技能 Git 仓库 URL",
+    "symlink": "已链接"
   }
 }

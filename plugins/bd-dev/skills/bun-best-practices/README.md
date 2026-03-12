@@ -26,6 +26,7 @@ bun-best-practices/
     ├── setup/                   # 项目搭建
     │   ├── monorepo.md          # Bun workspaces
     │   ├── lint.md              # Lint 配置
+    │   ├── concurrently.md      # 多进程管理
     │   └── gitignore.md         # 测试输出忽略
     ├── publishing/              # 发布阶段
     │   └── package-publishing.md # npm 包发布
@@ -53,6 +54,7 @@ bun-best-practices/
 | **调试** | debugging/debugging.md             | 调试方法论：优先级、手段、工具     | 排查问题时        |
 | **搭建** | setup/monorepo.md                  | Bun workspaces 配置                | 搭建 monorepo 时  |
 | **搭建** | setup/lint.md                      | ESLint + Prettier + Husky 配置     | 配置 lint 时      |
+| **搭建** | setup/concurrently.md              | 多进程并行管理工具                 | 同时运行多命令时  |
 | **搭建** | setup/gitignore.md                 | 测试输出目录忽略                   | 配置 gitignore 时 |
 | **发布** | publishing/package-publishing.md   | npm 包发布                         | 发布包时          |
 | **避坑** | troubleshooting/common-mistakes.md | 常见错误及方案                     | 遇到问题时        |
@@ -95,10 +97,11 @@ flowchart LR
     E -->|参考| F[setup/gitignore.md]
 ```
 
-| 动作           | 查阅规范           |
-| -------------- | ------------------ |
-| 搭建 monorepo  | setup/monorepo.md  |
-| 配置 gitignore | setup/gitignore.md |
+| 动作           | 查阅规范              |
+| -------------- | --------------------- |
+| 搭建 monorepo  | setup/monorepo.md     |
+| 并行运行多命令 | setup/concurrently.md |
+| 配置 gitignore | setup/gitignore.md    |
 
 ### 2. 编码阶段
 
@@ -172,6 +175,7 @@ Claude Code 按需加载这些规范的方式：
 | 设计 API 接口   | architecture/api.md                           |
 | 统一术语命名    | architecture/glossary.md                      |
 | 新建 monorepo   | setup/monorepo.md                             |
+| 并行运行多命令  | setup/concurrently.md                         |
 | 配置 gitignore  | setup/gitignore.md                            |
 | `bun test` 失败 | rules/toolchain.md → testing/testing.md       |
 | 排查生产问题    | debugging/logging.md → debugging/debugging.md |
@@ -232,7 +236,8 @@ graph TB
 
     subgraph 搭建阶段
         S1[setup/monorepo.md]
-        S2[setup/gitignore.md]
+        S2[setup/concurrently.md]
+        S3[setup/gitignore.md]
     end
 
     subgraph 测试阶段
@@ -264,6 +269,7 @@ graph TB
     I --> S
     S --> S1
     S --> S2
+    S --> S3
     C --> T1
     T1 --> T2
     T1 --> T3
@@ -314,6 +320,7 @@ graph TB
 | 设计 API 接口        | architecture/api.md                           |
 | 统一术语命名         | architecture/glossary.md                      |
 | 新建 monorepo 项目   | setup/monorepo.md                             |
+| 并行运行多命令       | setup/concurrently.md                         |
 | 配置测试输出忽略     | setup/gitignore.md                            |
 | 搭建测试框架         | testing/testing.md                            |
 | 编写单元测试         | testing/testing.md                            |

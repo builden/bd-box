@@ -105,7 +105,8 @@
     "git": "Git",
     "apiTokens": "API & Tokens",
     "tasks": "Tasks",
-    "plugins": "Plugins"
+    "plugins": "Plugins",
+    "skills": "Skills"
   },
   "appearanceSettings": {
     "darkMode": {
@@ -470,5 +471,32 @@
     "installAriaLabel": "Plugin git repository URL",
     "tab": "tab",
     "runningStatus": "running"
+  },
+  "skillSettings": {
+    "title": "Skills",
+    "description": "Manage Claude Code skills. Skills extend the AI assistant's capabilities with custom tools and knowledge.",
+    "installPlaceholder": "https://github.com/user/my-skill",
+    "installButton": "Install",
+    "installing": "Installing…",
+    "securityWarning": "Only install skills whose source code you have reviewed or from authors you trust.",
+    "scanningSkills": "Scanning skills…",
+    "noSkillsInstalled": "No skills installed",
+    "pullLatest": "Pull latest from git",
+    "noGitRemote": "No git remote — update not available",
+    "uninstallSkill": "Uninstall skill",
+    "confirmUninstall": "Click again to confirm",
+    "confirmUninstallMessage": "Remove {{name}}? This cannot be undone.",
+    "cancel": "Cancel",
+    "remove": "Remove",
+    "updateFailed": "Update failed",
+    "installFailed": "Installation failed",
+    "uninstallFailed": "Uninstall failed",
+    "toggleFailed": "Toggle failed",
+    "learnMore": "Learn more about skills",
+    "docs": "Docs",
+    "enable": "Enable",
+    "disable": "Disable",
+    "installAriaLabel": "Skill git repository URL",
+    "symlink": "linked"
   }
 }

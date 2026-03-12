@@ -1,8 +1,8 @@
-import { Bot, GitBranch, Key, ListChecks, Palette, Puzzle } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { cn } from '../../../lib/utils';
-import { PillBar, Pill } from '../../../shared/view/ui';
-import type { SettingsMainTab } from '../types/types';
+import { Bot, GitBranch, Key, ListChecks, Palette, Puzzle, Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { cn } from "../../../lib/utils";
+import { PillBar, Pill } from "../../../shared/view/ui";
+import type { SettingsMainTab } from "../types/types";
 
 type SettingsSidebarProps = {
   activeTab: SettingsMainTab;
@@ -16,16 +16,17 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'agents', labelKey: 'mainTabs.agents', icon: Bot },
-  { id: 'appearance', labelKey: 'mainTabs.appearance', icon: Palette },
-  { id: 'git', labelKey: 'mainTabs.git', icon: GitBranch },
-  { id: 'api', labelKey: 'mainTabs.apiTokens', icon: Key },
-  { id: 'tasks', labelKey: 'mainTabs.tasks', icon: ListChecks },
-  { id: 'plugins', labelKey: 'mainTabs.plugins', icon: Puzzle },
+  { id: "agents", labelKey: "mainTabs.agents", icon: Bot },
+  { id: "appearance", labelKey: "mainTabs.appearance", icon: Palette },
+  { id: "git", labelKey: "mainTabs.git", icon: GitBranch },
+  { id: "api", labelKey: "mainTabs.apiTokens", icon: Key },
+  { id: "tasks", labelKey: "mainTabs.tasks", icon: ListChecks },
+  { id: "plugins", labelKey: "mainTabs.plugins", icon: Puzzle },
+  { id: "skills", labelKey: "mainTabs.skills", icon: Sparkles },
 ];
 
 export default function SettingsSidebar({ activeTab, onChange }: SettingsSidebarProps) {
-  const { t } = useTranslation('settings');
+  const { t } = useTranslation("settings");
 
   return (
     <>
@@ -41,10 +42,10 @@ export default function SettingsSidebar({ activeTab, onChange }: SettingsSidebar
                 key={item.id}
                 onClick={() => onChange(item.id)}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors duration-150',
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors duration-150",
                   isActive
-                    ? 'bg-accent text-accent-foreground'
-                    : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground active:bg-accent/50',
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground active:bg-accent/50",
                 )}
               >
                 <Icon className="h-4 w-4 flex-shrink-0" />

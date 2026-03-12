@@ -1,15 +1,15 @@
-import type { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction } from "react";
 
-export type SettingsMainTab = 'agents' | 'appearance' | 'git' | 'api' | 'tasks' | 'plugins';
-export type AgentProvider = 'claude' | 'cursor' | 'codex' | 'gemini';
-export type AgentCategory = 'account' | 'permissions' | 'mcp';
-export type ProjectSortOrder = 'name' | 'date';
-export type SaveStatus = 'success' | 'error' | null;
-export type CodexPermissionMode = 'default' | 'acceptEdits' | 'bypassPermissions';
-export type GeminiPermissionMode = 'default' | 'auto_edit' | 'yolo';
-export type McpImportMode = 'form' | 'json';
-export type McpScope = 'user' | 'local';
-export type McpTransportType = 'stdio' | 'sse' | 'http';
+export type SettingsMainTab = "agents" | "appearance" | "git" | "api" | "tasks" | "plugins" | "skills";
+export type AgentProvider = "claude" | "cursor" | "codex" | "gemini";
+export type AgentCategory = "account" | "permissions" | "mcp";
+export type ProjectSortOrder = "name" | "date";
+export type SaveStatus = "success" | "error" | null;
+export type CodexPermissionMode = "default" | "acceptEdits" | "bypassPermissions";
+export type GeminiPermissionMode = "default" | "auto_edit" | "yolo";
+export type McpImportMode = "form" | "json";
+export type McpScope = "user" | "local";
+export type McpTransportType = "stdio" | "sse" | "http";
 
 export type SettingsProject = {
   name: string;
@@ -77,7 +77,7 @@ export type CodexMcpFormConfig = {
 
 export type CodexMcpFormState = {
   name: string;
-  type: 'stdio';
+  type: "stdio";
   config: CodexMcpFormConfig;
 };
 
@@ -113,7 +113,7 @@ export type CursorPermissionsState = {
 };
 
 export type CodeEditorSettingsState = {
-  theme: 'dark' | 'light';
+  theme: "dark" | "light";
   wordWrap: boolean;
   showMinimap: boolean;
   lineNumbers: boolean;
