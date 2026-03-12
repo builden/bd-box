@@ -1,20 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Trash2,
-  RefreshCw,
-  GitBranch,
-  Loader2,
-  ShieldAlert,
-  ExternalLink,
-  BookOpen,
-  Download,
-  Sparkles,
-} from "lucide-react";
+import { Trash2, RefreshCw, GitBranch, Loader2, ShieldAlert, ExternalLink, BookOpen, Sparkles } from "lucide-react";
 import { useSkills } from "../../../../../contexts/SkillsContext";
 import type { Skill } from "../../../../../contexts/SkillsContext";
-
-const STARTER_SKILL_URL = "https://github.com/anthropics/claude-code-skills";
 
 /* ─── Toggle Switch ─────────────────────────────────────────────────────── */
 function ToggleSwitch({

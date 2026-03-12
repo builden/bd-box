@@ -50,13 +50,6 @@ describe("fileTreeUtils", () => {
   });
 
   describe("collectExpandedDirectoryPaths", () => {
-    const createNode = (name: string, type: "file" | "directory", children?: any[]): any => ({
-      name,
-      path: `/${name}`,
-      type,
-      children,
-    });
-
     it("should return empty array for empty input", () => {
       expect(collectExpandedDirectoryPaths([])).toEqual([]);
     });

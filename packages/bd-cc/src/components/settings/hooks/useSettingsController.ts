@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { authenticatedFetch } from '../../../utils/api';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTheme } from "../../../contexts/ThemeContext";
+import { authenticatedFetch } from "../../../utils/api";
 import {
   AUTH_STATUS_ENDPOINTS,
   DEFAULT_AUTH_STATUS,
   DEFAULT_CODE_EDITOR_SETTINGS,
   DEFAULT_CURSOR_PERMISSIONS,
-} from '../constants/constants';
+} from "../constants/constants";
 import type {
   AgentProvider,
   AuthStatus,
@@ -23,7 +23,7 @@ import type {
   ProjectSortOrder,
   SettingsMainTab,
   SettingsProject,
-} from '../types/types';
+} from "../types/types";
 
 type ThemeContextValue = {
   isDarkMode: boolean;
@@ -96,22 +96,20 @@ type CodexSettingsStorage = {
   permissionMode?: CodexPermissionMode;
 };
 
-type ActiveLoginProvider = AgentProvider | '';
+type ActiveLoginProvider = AgentProvider | "";
 
-const KNOWN_MAIN_TABS: SettingsMainTab[] = ['agents', 'appearance', 'git', 'api', 'tasks', 'plugins'];
+const KNOWN_MAIN_TABS: SettingsMainTab[] = ["agents", "appearance", "git", "api", "tasks", "plugins"];
 
 const normalizeMainTab = (tab: string): SettingsMainTab => {
   // Keep backwards compatibility with older callers that still pass "tools".
-  if (tab === 'tools') {
-    return 'agents';
+  if (tab === "tools") {
+    return "agents";
   }
 
-  return KNOWN_MAIN_TABS.includes(tab as SettingsMainTab) ? (tab as SettingsMainTab) : 'agents';
+  return KNOWN_MAIN_TABS.includes(tab as SettingsMainTab) ? (tab as SettingsMainTab) : "agents";
 };
 
-const getErrorMessage = (error: unknown): string => (
-  error instanceof Error ? error.message : 'Unknown error'
-);
+const getErrorMessage = (error: unknown): string => (error instanceof Error ? error.message : "Unknown error");
 
 const parseJson = <T>(value: string | null, fallback: T): T => {
   if (!value) {
@@ -126,49 +124,48 @@ const parseJson = <T>(value: string | null, fallback: T): T => {
 };
 
 const toCodexPermissionMode = (value: unknown): CodexPermissionMode => {
-  if (value === 'acceptEdits' || value === 'bypassPermissions') {
+  if (value === "acceptEdits" || value === "bypassPermissions") {
     return value;
   }
 
-  return 'default';
+  return "default";
 };
 
 const readCodeEditorSettings = (): CodeEditorSettingsState => ({
-  theme: localStorage.getItem('codeEditorTheme') === 'light' ? 'light' : 'dark',
-  wordWrap: localStorage.getItem('codeEditorWordWrap') === 'true',
-  showMinimap: localStorage.getItem('codeEditorShowMinimap') !== 'false',
-  lineNumbers: localStorage.getItem('codeEditorLineNumbers') !== 'false',
-  fontSize: localStorage.getItem('codeEditorFontSize') ?? DEFAULT_CODE_EDITOR_SETTINGS.fontSize,
+  theme: localStorage.getItem("codeEditorTheme") === "light" ? "light" : "dark",
+  wordWrap: localStorage.getItem("codeEditorWordWrap") === "true",
+  showMinimap: localStorage.getItem("codeEditorShowMinimap") !== "false",
+  lineNumbers: localStorage.getItem("codeEditorLineNumbers") !== "false",
+  fontSize: localStorage.getItem("codeEditorFontSize") ?? DEFAULT_CODE_EDITOR_SETTINGS.fontSize,
 });
 
-const mapCliServersToMcpServers = (servers: McpCliServer[] = []): McpServer[] => (
+const mapCliServersToMcpServers = (servers: McpCliServer[] = []): McpServer[] =>
   servers.map((server) => ({
     id: server.name,
     name: server.name,
-    type: server.type || 'stdio',
-    scope: 'user',
+    type: server.type || "stdio",
+    scope: "user",
     config: {
-      command: server.command || '',
+      command: server.command || "",
       args: server.args || [],
       env: server.env || {},
-      url: server.url || '',
+      url: server.url || "",
       headers: server.headers || {},
       timeout: 30000,
     },
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
-  }))
-);
+  }));
 
 const getDefaultProject = (projects: SettingsProject[]): SettingsProject => {
   if (projects.length > 0) {
     return projects[0];
   }
 
-  const cwd = typeof process !== 'undefined' && process.cwd ? process.cwd() : '';
+  const cwd = typeof process !== "undefined" && process.cwd ? process.cwd() : "";
   return {
-    name: 'default',
-    displayName: 'default',
+    name: "default",
+    displayName: "default",
     fullPath: cwd,
     path: cwd,
   };
@@ -186,26 +183,24 @@ const createEmptyCursorPermissions = (): CursorPermissionsState => ({
   ...DEFAULT_CURSOR_PERMISSIONS,
 });
 
-export function useSettingsController({ isOpen, initialTab, projects, onClose }: UseSettingsControllerArgs) {
+export function useSettingsController({ isOpen, initialTab, projects }: UseSettingsControllerArgs) {
   const { isDarkMode, toggleDarkMode } = useTheme() as ThemeContextValue;
   const closeTimerRef = useRef<number | null>(null);
 
   const [activeTab, setActiveTab] = useState<SettingsMainTab>(() => normalizeMainTab(initialTab));
-  const [saveStatus, setSaveStatus] = useState<'success' | 'error' | null>(null);
+  const [saveStatus, setSaveStatus] = useState<"success" | "error" | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [projectSortOrder, setProjectSortOrder] = useState<ProjectSortOrder>('name');
-  const [codeEditorSettings, setCodeEditorSettings] = useState<CodeEditorSettingsState>(() => (
-    readCodeEditorSettings()
-  ));
+  const [projectSortOrder, setProjectSortOrder] = useState<ProjectSortOrder>("name");
+  const [codeEditorSettings, setCodeEditorSettings] = useState<CodeEditorSettingsState>(() => readCodeEditorSettings());
 
-  const [claudePermissions, setClaudePermissions] = useState<ClaudePermissionsState>(() => (
-    createEmptyClaudePermissions()
-  ));
-  const [cursorPermissions, setCursorPermissions] = useState<CursorPermissionsState>(() => (
-    createEmptyCursorPermissions()
-  ));
-  const [codexPermissionMode, setCodexPermissionMode] = useState<CodexPermissionMode>('default');
-  const [geminiPermissionMode, setGeminiPermissionMode] = useState<GeminiPermissionMode>('default');
+  const [claudePermissions, setClaudePermissions] = useState<ClaudePermissionsState>(() =>
+    createEmptyClaudePermissions(),
+  );
+  const [cursorPermissions, setCursorPermissions] = useState<CursorPermissionsState>(() =>
+    createEmptyCursorPermissions(),
+  );
+  const [codexPermissionMode, setCodexPermissionMode] = useState<CodexPermissionMode>("default");
+  const [geminiPermissionMode, setGeminiPermissionMode] = useState<GeminiPermissionMode>("default");
 
   const [mcpServers, setMcpServers] = useState<McpServer[]>([]);
   const [cursorMcpServers, setCursorMcpServers] = useState<McpServer[]>([]);
@@ -220,7 +215,7 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
   const [editingCodexMcpServer, setEditingCodexMcpServer] = useState<McpServer | null>(null);
 
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [loginProvider, setLoginProvider] = useState<ActiveLoginProvider>('');
+  const [loginProvider, setLoginProvider] = useState<ActiveLoginProvider>("");
   const [selectedProject, setSelectedProject] = useState<SettingsProject | null>(null);
 
   const [claudeAuthStatus, setClaudeAuthStatus] = useState<AuthStatus>(DEFAULT_AUTH_STATUS);
@@ -229,17 +224,17 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
   const [geminiAuthStatus, setGeminiAuthStatus] = useState<AuthStatus>(DEFAULT_AUTH_STATUS);
 
   const setAuthStatusByProvider = useCallback((provider: AgentProvider, status: AuthStatus) => {
-    if (provider === 'claude') {
+    if (provider === "claude") {
       setClaudeAuthStatus(status);
       return;
     }
 
-    if (provider === 'cursor') {
+    if (provider === "cursor") {
       setCursorAuthStatus(status);
       return;
     }
 
-    if (provider === 'gemini') {
+    if (provider === "gemini") {
       setGeminiAuthStatus(status);
       return;
     }
@@ -247,57 +242,60 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
     setCodexAuthStatus(status);
   }, []);
 
-  const checkAuthStatus = useCallback(async (provider: AgentProvider) => {
-    try {
-      const response = await authenticatedFetch(AUTH_STATUS_ENDPOINTS[provider]);
+  const checkAuthStatus = useCallback(
+    async (provider: AgentProvider) => {
+      try {
+        const response = await authenticatedFetch(AUTH_STATUS_ENDPOINTS[provider]);
 
-      if (!response.ok) {
+        if (!response.ok) {
+          setAuthStatusByProvider(provider, {
+            authenticated: false,
+            email: null,
+            loading: false,
+            error: "Failed to check authentication status",
+          });
+          return;
+        }
+
+        const data = await toResponseJson<StatusApiResponse>(response);
+        setAuthStatusByProvider(provider, {
+          authenticated: Boolean(data.authenticated),
+          email: data.email || null,
+          loading: false,
+          error: data.error || null,
+          method: data.method,
+        });
+      } catch (error) {
+        console.error(`Error checking ${provider} auth status:`, error);
         setAuthStatusByProvider(provider, {
           authenticated: false,
           email: null,
           loading: false,
-          error: 'Failed to check authentication status',
+          error: getErrorMessage(error),
         });
-        return;
       }
-
-      const data = await toResponseJson<StatusApiResponse>(response);
-      setAuthStatusByProvider(provider, {
-        authenticated: Boolean(data.authenticated),
-        email: data.email || null,
-        loading: false,
-        error: data.error || null,
-        method: data.method,
-      });
-    } catch (error) {
-      console.error(`Error checking ${provider} auth status:`, error);
-      setAuthStatusByProvider(provider, {
-        authenticated: false,
-        email: null,
-        loading: false,
-        error: getErrorMessage(error),
-      });
-    }
-  }, [setAuthStatusByProvider]);
+    },
+    [setAuthStatusByProvider],
+  );
 
   const fetchCursorMcpServers = useCallback(async () => {
     try {
-      const response = await authenticatedFetch('/api/cursor/mcp');
+      const response = await authenticatedFetch("/api/cursor/mcp");
       if (!response.ok) {
-        console.error('Failed to fetch Cursor MCP servers');
+        console.error("Failed to fetch Cursor MCP servers");
         return;
       }
 
       const data = await toResponseJson<{ servers?: McpServer[] }>(response);
       setCursorMcpServers(data.servers || []);
     } catch (error) {
-      console.error('Error fetching Cursor MCP servers:', error);
+      console.error("Error fetching Cursor MCP servers:", error);
     }
   }, []);
 
   const fetchCodexMcpServers = useCallback(async () => {
     try {
-      const configResponse = await authenticatedFetch('/api/codex/mcp/config/read');
+      const configResponse = await authenticatedFetch("/api/codex/mcp/config/read");
 
       if (configResponse.ok) {
         const configData = await toResponseJson<McpReadResponse>(configResponse);
@@ -307,7 +305,7 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
         }
       }
 
-      const cliResponse = await authenticatedFetch('/api/codex/mcp/cli/list');
+      const cliResponse = await authenticatedFetch("/api/codex/mcp/cli/list");
       if (!cliResponse.ok) {
         return;
       }
@@ -319,13 +317,13 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
 
       setCodexMcpServers(mapCliServersToMcpServers(cliData.servers));
     } catch (error) {
-      console.error('Error fetching Codex MCP servers:', error);
+      console.error("Error fetching Codex MCP servers:", error);
     }
   }, []);
 
   const fetchMcpServers = useCallback(async () => {
     try {
-      const configResponse = await authenticatedFetch('/api/mcp/config/read');
+      const configResponse = await authenticatedFetch("/api/mcp/config/read");
       if (configResponse.ok) {
         const configData = await toResponseJson<McpReadResponse>(configResponse);
         if (configData.success && configData.servers) {
@@ -334,7 +332,7 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
         }
       }
 
-      const cliResponse = await authenticatedFetch('/api/mcp/cli/list');
+      const cliResponse = await authenticatedFetch("/api/mcp/cli/list");
       if (cliResponse.ok) {
         const cliData = await toResponseJson<McpCliReadResponse>(cliResponse);
         if (cliData.success && cliData.servers) {
@@ -343,41 +341,41 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
         }
       }
 
-      const fallbackResponse = await authenticatedFetch('/api/mcp/servers?scope=user');
+      const fallbackResponse = await authenticatedFetch("/api/mcp/servers?scope=user");
       if (!fallbackResponse.ok) {
-        console.error('Failed to fetch MCP servers');
+        console.error("Failed to fetch MCP servers");
         return;
       }
 
       const fallbackData = await toResponseJson<{ servers?: McpServer[] }>(fallbackResponse);
       setMcpServers(fallbackData.servers || []);
     } catch (error) {
-      console.error('Error fetching MCP servers:', error);
+      console.error("Error fetching MCP servers:", error);
     }
   }, []);
 
-  const deleteMcpServer = useCallback(async (serverId: string, scope = 'user') => {
+  const deleteMcpServer = useCallback(async (serverId: string, scope = "user") => {
     const response = await authenticatedFetch(`/api/mcp/cli/remove/${serverId}?scope=${scope}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
 
     if (!response.ok) {
       const error = await toResponseJson<JsonResult>(response);
-      throw new Error(error.error || 'Failed to delete server');
+      throw new Error(error.error || "Failed to delete server");
     }
 
     const result = await toResponseJson<JsonResult>(response);
     if (!result.success) {
-      throw new Error(result.error || 'Failed to delete server via Claude CLI');
+      throw new Error(result.error || "Failed to delete server via Claude CLI");
     }
   }, []);
 
   const saveMcpServer = useCallback(
     async (serverData: ClaudeMcpFormState, editingServer: McpServer | null) => {
-      const newServerScope = serverData.scope || 'user';
+      const newServerScope = serverData.scope || "user";
 
-      const response = await authenticatedFetch('/api/mcp/cli/add', {
-        method: 'POST',
+      const response = await authenticatedFetch("/api/mcp/cli/add", {
+        method: "POST",
         body: JSON.stringify({
           name: serverData.name,
           type: serverData.type,
@@ -393,21 +391,20 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
 
       if (!response.ok) {
         const error = await toResponseJson<JsonResult>(response);
-        throw new Error(error.error || 'Failed to save server');
+        throw new Error(error.error || "Failed to save server");
       }
 
       const result = await toResponseJson<JsonResult>(response);
       if (!result.success) {
-        throw new Error(result.error || 'Failed to save server via Claude CLI');
+        throw new Error(result.error || "Failed to save server via Claude CLI");
       }
 
       if (!editingServer?.id) {
         return;
       }
 
-      const previousServerScope = editingServer.scope || 'user';
-      const didServerIdentityChange =
-        editingServer.id !== serverData.name || previousServerScope !== newServerScope;
+      const previousServerScope = editingServer.scope || "user";
+      const didServerIdentityChange = editingServer.id !== serverData.name || previousServerScope !== newServerScope;
 
       if (!didServerIdentityChange) {
         return;
@@ -416,7 +413,7 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
       try {
         await deleteMcpServer(editingServer.id, previousServerScope);
       } catch (error) {
-        console.warn('Saved MCP server update but failed to remove the previous server entry.', {
+        console.warn("Saved MCP server update but failed to remove the previous server entry.", {
           previousServerId: editingServer.id,
           previousServerScope,
           error: getErrorMessage(error),
@@ -428,9 +425,9 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
 
   const submitMcpForm = useCallback(
     async (formData: ClaudeMcpFormState, editingServer: McpServer | null) => {
-      if (formData.importMode === 'json') {
-        const response = await authenticatedFetch('/api/mcp/cli/add-json', {
-          method: 'POST',
+      if (formData.importMode === "json") {
+        const response = await authenticatedFetch("/api/mcp/cli/add-json", {
+          method: "POST",
           body: JSON.stringify({
             name: formData.name,
             jsonConfig: formData.jsonInput,
@@ -441,19 +438,19 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
 
         if (!response.ok) {
           const error = await toResponseJson<JsonResult>(response);
-          throw new Error(error.error || 'Failed to add server');
+          throw new Error(error.error || "Failed to add server");
         }
 
         const result = await toResponseJson<JsonResult>(response);
         if (!result.success) {
-          throw new Error(result.error || 'Failed to add server via JSON');
+          throw new Error(result.error || "Failed to add server via JSON");
         }
       } else {
         await saveMcpServer(formData, editingServer);
       }
 
       await fetchMcpServers();
-      setSaveStatus('success');
+      setSaveStatus("success");
       setShowMcpForm(false);
       setEditingMcpServer(null);
     },
@@ -461,8 +458,8 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
   );
 
   const handleMcpDelete = useCallback(
-    async (serverId: string, scope = 'user') => {
-      if (!window.confirm('Are you sure you want to delete this MCP server?')) {
+    async (serverId: string, scope = "user") => {
+      if (!window.confirm("Are you sure you want to delete this MCP server?")) {
         return;
       }
 
@@ -471,37 +468,37 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
         await deleteMcpServer(serverId, scope);
         await fetchMcpServers();
         setDeleteError(null);
-        setSaveStatus('success');
+        setSaveStatus("success");
       } catch (error) {
         setDeleteError(getErrorMessage(error));
-        setSaveStatus('error');
+        setSaveStatus("error");
       }
     },
     [deleteMcpServer, fetchMcpServers],
   );
 
-  const testMcpServer = useCallback(async (serverId: string, scope = 'user') => {
+  const testMcpServer = useCallback(async (serverId: string, scope = "user") => {
     const response = await authenticatedFetch(`/api/mcp/servers/${serverId}/test?scope=${scope}`, {
-      method: 'POST',
+      method: "POST",
     });
 
     if (!response.ok) {
       const error = await toResponseJson<McpTestResponse>(response);
-      throw new Error(error.error || 'Failed to test server');
+      throw new Error(error.error || "Failed to test server");
     }
 
     const data = await toResponseJson<McpTestResponse>(response);
-    return data.testResult || { success: false, message: 'No test result returned' };
+    return data.testResult || { success: false, message: "No test result returned" };
   }, []);
 
-  const discoverMcpTools = useCallback(async (serverId: string, scope = 'user') => {
+  const discoverMcpTools = useCallback(async (serverId: string, scope = "user") => {
     const response = await authenticatedFetch(`/api/mcp/servers/${serverId}/tools?scope=${scope}`, {
-      method: 'POST',
+      method: "POST",
     });
 
     if (!response.ok) {
       const error = await toResponseJson<McpToolsResponse>(response);
-      throw new Error(error.error || 'Failed to discover tools');
+      throw new Error(error.error || "Failed to discover tools");
     }
 
     const data = await toResponseJson<McpToolsResponse>(response);
@@ -509,11 +506,11 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
   }, []);
 
   const handleMcpTest = useCallback(
-    async (serverId: string, scope = 'user') => {
+    async (serverId: string, scope = "user") => {
       try {
         setMcpTestResults((prev) => ({
           ...prev,
-          [serverId]: { success: false, message: 'Testing server...', details: [], loading: true },
+          [serverId]: { success: false, message: "Testing server...", details: [], loading: true },
         }));
 
         const result = await testMcpServer(serverId, scope);
@@ -533,7 +530,7 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
   );
 
   const handleMcpToolsDiscovery = useCallback(
-    async (serverId: string, scope = 'user') => {
+    async (serverId: string, scope = "user") => {
       try {
         setMcpToolsLoading((prev) => ({ ...prev, [serverId]: true }));
         const result = await discoverMcpTools(serverId, scope);
@@ -552,24 +549,24 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
 
   const deleteCodexMcpServer = useCallback(async (serverId: string) => {
     const response = await authenticatedFetch(`/api/codex/mcp/cli/remove/${serverId}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
 
     if (!response.ok) {
       const error = await toResponseJson<JsonResult>(response);
-      throw new Error(error.error || 'Failed to delete server');
+      throw new Error(error.error || "Failed to delete server");
     }
 
     const result = await toResponseJson<JsonResult>(response);
     if (!result.success) {
-      throw new Error(result.error || 'Failed to delete Codex MCP server');
+      throw new Error(result.error || "Failed to delete Codex MCP server");
     }
   }, []);
 
   const saveCodexMcpServer = useCallback(
     async (serverData: CodexMcpFormState, editingServer: McpServer | null) => {
-      const response = await authenticatedFetch('/api/codex/mcp/cli/add', {
-        method: 'POST',
+      const response = await authenticatedFetch("/api/codex/mcp/cli/add", {
+        method: "POST",
         body: JSON.stringify({
           name: serverData.name,
           command: serverData.config.command,
@@ -580,12 +577,12 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
 
       if (!response.ok) {
         const error = await toResponseJson<JsonResult>(response);
-        throw new Error(error.error || 'Failed to save server');
+        throw new Error(error.error || "Failed to save server");
       }
 
       const result = await toResponseJson<JsonResult>(response);
       if (!result.success) {
-        throw new Error(result.error || 'Failed to save Codex MCP server');
+        throw new Error(result.error || "Failed to save Codex MCP server");
       }
 
       if (!editingServer?.name || editingServer.name === serverData.name) {
@@ -595,7 +592,7 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
       try {
         await deleteCodexMcpServer(editingServer.name);
       } catch (error) {
-        console.warn('Saved Codex MCP server update but failed to remove the previous server entry.', {
+        console.warn("Saved Codex MCP server update but failed to remove the previous server entry.", {
           previousServerName: editingServer.name,
           error: getErrorMessage(error),
         });
@@ -608,7 +605,7 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
     async (formData: CodexMcpFormState, editingServer: McpServer | null) => {
       await saveCodexMcpServer(formData, editingServer);
       await fetchCodexMcpServers();
-      setSaveStatus('success');
+      setSaveStatus("success");
       setShowCodexMcpForm(false);
       setEditingCodexMcpServer(null);
     },
@@ -617,7 +614,7 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
 
   const handleCodexMcpDelete = useCallback(
     async (serverName: string) => {
-      if (!window.confirm('Are you sure you want to delete this MCP server?')) {
+      if (!window.confirm("Are you sure you want to delete this MCP server?")) {
         return;
       }
 
@@ -626,10 +623,10 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
         await deleteCodexMcpServer(serverName);
         await fetchCodexMcpServers();
         setDeleteError(null);
-        setSaveStatus('success');
+        setSaveStatus("success");
       } catch (error) {
         setDeleteError(getErrorMessage(error));
-        setSaveStatus('error');
+        setSaveStatus("error");
       }
     },
     [deleteCodexMcpServer, fetchCodexMcpServers],
@@ -637,100 +634,105 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
 
   const loadSettings = useCallback(async () => {
     try {
-      const savedClaudeSettings = parseJson<ClaudeSettingsStorage>(
-        localStorage.getItem('claude-settings'),
-        {},
-      );
+      const savedClaudeSettings = parseJson<ClaudeSettingsStorage>(localStorage.getItem("claude-settings"), {});
       setClaudePermissions({
         allowedTools: savedClaudeSettings.allowedTools || [],
         disallowedTools: savedClaudeSettings.disallowedTools || [],
         skipPermissions: Boolean(savedClaudeSettings.skipPermissions),
       });
-      setProjectSortOrder(savedClaudeSettings.projectSortOrder === 'date' ? 'date' : 'name');
+      setProjectSortOrder(savedClaudeSettings.projectSortOrder === "date" ? "date" : "name");
 
-      const savedCursorSettings = parseJson<CursorSettingsStorage>(
-        localStorage.getItem('cursor-tools-settings'),
-        {},
-      );
+      const savedCursorSettings = parseJson<CursorSettingsStorage>(localStorage.getItem("cursor-tools-settings"), {});
       setCursorPermissions({
         allowedCommands: savedCursorSettings.allowedCommands || [],
         disallowedCommands: savedCursorSettings.disallowedCommands || [],
         skipPermissions: Boolean(savedCursorSettings.skipPermissions),
       });
 
-      const savedCodexSettings = parseJson<CodexSettingsStorage>(
-        localStorage.getItem('codex-settings'),
-        {},
-      );
+      const savedCodexSettings = parseJson<CodexSettingsStorage>(localStorage.getItem("codex-settings"), {});
       setCodexPermissionMode(toCodexPermissionMode(savedCodexSettings.permissionMode));
 
       const savedGeminiSettings = parseJson<{ permissionMode?: GeminiPermissionMode }>(
-        localStorage.getItem('gemini-settings'),
+        localStorage.getItem("gemini-settings"),
         {},
       );
-      setGeminiPermissionMode(savedGeminiSettings.permissionMode || 'default');
+      setGeminiPermissionMode(savedGeminiSettings.permissionMode || "default");
 
-      await Promise.all([
-        fetchMcpServers(),
-        fetchCursorMcpServers(),
-        fetchCodexMcpServers(),
-      ]);
+      await Promise.all([fetchMcpServers(), fetchCursorMcpServers(), fetchCodexMcpServers()]);
     } catch (error) {
-      console.error('Error loading settings:', error);
+      console.error("Error loading settings:", error);
       setClaudePermissions(createEmptyClaudePermissions());
       setCursorPermissions(createEmptyCursorPermissions());
-      setCodexPermissionMode('default');
-      setProjectSortOrder('name');
+      setCodexPermissionMode("default");
+      setProjectSortOrder("name");
     }
   }, [fetchCodexMcpServers, fetchCursorMcpServers, fetchMcpServers]);
 
-  const openLoginForProvider = useCallback((provider: AgentProvider) => {
-    setLoginProvider(provider);
-    setSelectedProject(getDefaultProject(projects));
-    setShowLoginModal(true);
-  }, [projects]);
+  const openLoginForProvider = useCallback(
+    (provider: AgentProvider) => {
+      setLoginProvider(provider);
+      setSelectedProject(getDefaultProject(projects));
+      setShowLoginModal(true);
+    },
+    [projects],
+  );
 
-  const handleLoginComplete = useCallback((exitCode: number) => {
-    if (exitCode !== 0 || !loginProvider) {
-      return;
-    }
+  const handleLoginComplete = useCallback(
+    (exitCode: number) => {
+      if (exitCode !== 0 || !loginProvider) {
+        return;
+      }
 
-    setSaveStatus('success');
-    void checkAuthStatus(loginProvider);
-  }, [checkAuthStatus, loginProvider]);
+      setSaveStatus("success");
+      void checkAuthStatus(loginProvider);
+    },
+    [checkAuthStatus, loginProvider],
+  );
 
   const saveSettings = useCallback(() => {
     try {
       const now = new Date().toISOString();
-      localStorage.setItem('claude-settings', JSON.stringify({
-        allowedTools: claudePermissions.allowedTools,
-        disallowedTools: claudePermissions.disallowedTools,
-        skipPermissions: claudePermissions.skipPermissions,
-        projectSortOrder,
-        lastUpdated: now,
-      }));
+      localStorage.setItem(
+        "claude-settings",
+        JSON.stringify({
+          allowedTools: claudePermissions.allowedTools,
+          disallowedTools: claudePermissions.disallowedTools,
+          skipPermissions: claudePermissions.skipPermissions,
+          projectSortOrder,
+          lastUpdated: now,
+        }),
+      );
 
-      localStorage.setItem('cursor-tools-settings', JSON.stringify({
-        allowedCommands: cursorPermissions.allowedCommands,
-        disallowedCommands: cursorPermissions.disallowedCommands,
-        skipPermissions: cursorPermissions.skipPermissions,
-        lastUpdated: now,
-      }));
+      localStorage.setItem(
+        "cursor-tools-settings",
+        JSON.stringify({
+          allowedCommands: cursorPermissions.allowedCommands,
+          disallowedCommands: cursorPermissions.disallowedCommands,
+          skipPermissions: cursorPermissions.skipPermissions,
+          lastUpdated: now,
+        }),
+      );
 
-      localStorage.setItem('codex-settings', JSON.stringify({
-        permissionMode: codexPermissionMode,
-        lastUpdated: now,
-      }));
+      localStorage.setItem(
+        "codex-settings",
+        JSON.stringify({
+          permissionMode: codexPermissionMode,
+          lastUpdated: now,
+        }),
+      );
 
-      localStorage.setItem('gemini-settings', JSON.stringify({
-        permissionMode: geminiPermissionMode,
-        lastUpdated: now,
-      }));
+      localStorage.setItem(
+        "gemini-settings",
+        JSON.stringify({
+          permissionMode: geminiPermissionMode,
+          lastUpdated: now,
+        }),
+      );
 
-      setSaveStatus('success');
+      setSaveStatus("success");
     } catch (error) {
-      console.error('Error saving settings:', error);
-      setSaveStatus('error');
+      console.error("Error saving settings:", error);
+      setSaveStatus("error");
     }
   }, [
     claudePermissions.allowedTools,
@@ -778,19 +780,19 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
 
     setActiveTab(normalizeMainTab(initialTab));
     void loadSettings();
-    void checkAuthStatus('claude');
-    void checkAuthStatus('cursor');
-    void checkAuthStatus('codex');
-    void checkAuthStatus('gemini');
+    void checkAuthStatus("claude");
+    void checkAuthStatus("cursor");
+    void checkAuthStatus("codex");
+    void checkAuthStatus("gemini");
   }, [checkAuthStatus, initialTab, isOpen, loadSettings]);
 
   useEffect(() => {
-    localStorage.setItem('codeEditorTheme', codeEditorSettings.theme);
-    localStorage.setItem('codeEditorWordWrap', String(codeEditorSettings.wordWrap));
-    localStorage.setItem('codeEditorShowMinimap', String(codeEditorSettings.showMinimap));
-    localStorage.setItem('codeEditorLineNumbers', String(codeEditorSettings.lineNumbers));
-    localStorage.setItem('codeEditorFontSize', codeEditorSettings.fontSize);
-    window.dispatchEvent(new Event('codeEditorSettingsChanged'));
+    localStorage.setItem("codeEditorTheme", codeEditorSettings.theme);
+    localStorage.setItem("codeEditorWordWrap", String(codeEditorSettings.wordWrap));
+    localStorage.setItem("codeEditorShowMinimap", String(codeEditorSettings.showMinimap));
+    localStorage.setItem("codeEditorLineNumbers", String(codeEditorSettings.lineNumbers));
+    localStorage.setItem("codeEditorFontSize", codeEditorSettings.fontSize);
+    window.dispatchEvent(new Event("codeEditorSettingsChanged"));
   }, [codeEditorSettings]);
 
   // Auto-save permissions and sort order with debounce
@@ -836,16 +838,19 @@ export function useSettingsController({ isOpen, initialTab, projects, onClose }:
     }
   }, [isOpen]);
 
-  useEffect(() => () => {
-    if (closeTimerRef.current !== null) {
-      window.clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-    if (autoSaveTimerRef.current !== null) {
-      window.clearTimeout(autoSaveTimerRef.current);
-      autoSaveTimerRef.current = null;
-    }
-  }, []);
+  useEffect(
+    () => () => {
+      if (closeTimerRef.current !== null) {
+        window.clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+      }
+      if (autoSaveTimerRef.current !== null) {
+        window.clearTimeout(autoSaveTimerRef.current);
+        autoSaveTimerRef.current = null;
+      }
+    },
+    [],
+  );
 
   return {
     activeTab,
