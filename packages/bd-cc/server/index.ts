@@ -63,10 +63,10 @@ import {
   resolveToolApproval,
   getPendingApprovalsForSession,
   reconnectSessionWriter,
-} from './claude-sdk.ts';
-import { spawnCursor, abortCursorSession, isCursorSessionActive, getActiveCursorSessions } from './cursor-cli.ts';
-import { queryCodex, abortCodexSession, isCodexSessionActive, getActiveCodexSessions } from './openai-codex.ts';
-import { spawnGemini, abortGeminiSession, isGeminiSessionActive, getActiveGeminiSessions } from './gemini-cli.ts';
+} from './providers/claude.ts';
+import { spawnCursor, abortCursorSession, isCursorSessionActive, getActiveCursorSessions } from './providers/cursor.ts';
+import { queryCodex, abortCodexSession, isCodexSessionActive, getActiveCodexSessions } from './providers/codex.ts';
+import { spawnGemini, abortGeminiSession, isGeminiSessionActive, getActiveGeminiSessions } from './providers/gemini.ts';
 import sessionManager from './sessionManager.ts';
 import gitRoutes from './routes/git.ts';
 import authRoutes from './routes/auth.ts';

@@ -6,7 +6,7 @@ import { promises as fs } from 'fs';
 import crypto from 'crypto';
 import { userDb, apiKeysDb, githubTokensDb } from '../database/index.ts';
 import { addProjectManually } from '../projects.ts';
-import { queryClaudeSDK } from '../claude-sdk.ts';
+import { queryClaudeSDK } from '../providers/claude.ts';
 import { spawnCursor } from '../cursor-cli.ts';
 import { queryCodex } from '../openai-codex.ts';
 import { spawnGemini } from '../gemini-cli.ts';
