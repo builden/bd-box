@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import React, { memo, type ReactNode } from 'react';
 import { cn } from '../../../lib/utils';
 
 /* ── Container ─────────────────────────────────────────────────── */
@@ -7,13 +7,11 @@ type PillBarProps = {
   className?: string;
 };
 
-export function PillBar({ children, className }: PillBarProps) {
+export const PillBar = memo(function PillBar({ children, className }: PillBarProps) {
   return (
-    <div className={cn('inline-flex items-center gap-[2px] rounded-lg bg-muted/60 p-[3px]', className)}>
-      {children}
-    </div>
+    <div className={cn('inline-flex items-center gap-[2px] rounded-lg bg-muted/60 p-[3px]', className)}>{children}</div>
   );
-}
+});
 
 /* ── Individual pill button ────────────────────────────────────── */
 type PillProps = {
@@ -23,19 +21,17 @@ type PillProps = {
   className?: string;
 };
 
-export function Pill({ isActive, onClick, children, className }: PillProps) {
+export const Pill = memo(function Pill({ isActive, onClick, children, className }: PillProps) {
   return (
     <button
       onClick={onClick}
       className={cn(
         'flex touch-manipulation items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-all duration-150',
-        isActive
-          ? 'bg-background text-foreground shadow-sm'
-          : 'text-muted-foreground active:bg-background/50',
-        className,
+        isActive ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground active:bg-background/50',
+        className
       )}
     >
       {children}
     </button>
   );
-}
+});
