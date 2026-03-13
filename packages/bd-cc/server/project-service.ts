@@ -60,6 +60,7 @@
 import { promises as fs } from 'fs';
 import fsSync from 'fs';
 import path from 'path';
+import { normalizeComparablePath, isVisibleCodexUserMessage } from './utils/project-utils';
 import readline from 'readline';
 import crypto from 'crypto';
 import sqlite3 from 'sqlite3';
@@ -1249,22 +1250,6 @@ async function getCursorSessions(projectPath) {
   }
 }
 
-function normalizeComparablePath(inputPath) {
-  if (!inputPath || typeof inputPath !== 'string') {
-    return '';
-  }
-
-  const withoutLongPathPrefix = inputPath.startsWith('\\\\?\\') ? inputPath.slice(4) : inputPath;
-  const normalized = path.normalize(withoutLongPathPrefix.trim());
-
-  if (!normalized) {
-    return '';
-  }
-
-  const resolved = path.resolve(normalized);
-  return process.platform === 'win32' ? resolved.toLowerCase() : resolved;
-}
-
 async function findCodexJsonlFiles(dir) {
   const files = [];
 
@@ -1359,23 +1344,6 @@ async function getCodexSessions(projectPath, options = {}) {
     console.error('Error fetching Codex sessions:', error);
     return [];
   }
-}
-
-function isVisibleCodexUserMessage(payload) {
-  if (!payload || payload.type !== 'user_message') {
-    return false;
-  }
-
-  // Codex logs internal context (environment, instructions) as non-plain user_message kinds.
-  if (payload.kind && payload.kind !== 'plain') {
-    return false;
-  }
-
-  if (typeof payload.message !== 'string' || payload.message.trim().length === 0) {
-    return false;
-  }
-
-  return true;
 }
 
 // Parse a Codex session JSONL file to extract metadata
