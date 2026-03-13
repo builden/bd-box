@@ -2,37 +2,9 @@ import express from 'express';
 import { userDb } from '../database/index.ts';
 import { authenticateToken } from '../middleware/auth.ts';
 import { getSystemGitConfig } from '../utils/gitConfig.ts';
-import { spawn } from 'child_process';
+import { runCommand } from '../utils/spawn.ts';
 
 const router = express.Router();
-
-function spawnAsync(command, args, options = {}) {
-  return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { ...options, shell: false });
-    let stdout = '';
-    let stderr = '';
-    child.stdout.on('data', (data) => {
-      stdout += data.toString();
-    });
-    child.stderr.on('data', (data) => {
-      stderr += data.toString();
-    });
-    child.on('error', (error) => {
-      reject(error);
-    });
-    child.on('close', (code) => {
-      if (code === 0) {
-        resolve({ stdout, stderr });
-        return;
-      }
-      const error = new Error(`Command failed: ${command} ${args.join(' ')}`);
-      error.code = code;
-      error.stdout = stdout;
-      error.stderr = stderr;
-      reject(error);
-    });
-  });
-}
 
 router.get('/git-config', authenticateToken, async (req, res) => {
   try {
@@ -83,8 +55,8 @@ router.post('/git-config', authenticateToken, async (req, res) => {
     userDb.updateGitConfig(userId, gitName, gitEmail);
 
     try {
-      await spawnAsync('git', ['config', '--global', 'user.name', gitName]);
-      await spawnAsync('git', ['config', '--global', 'user.email', gitEmail]);
+      await runCommand('git', ['config', '--global', 'user.name', gitName]);
+      await runCommand('git', ['config', '--global', 'user.email', gitEmail]);
       console.log(`Applied git config globally: ${gitName} <${gitEmail}>`);
     } catch (gitError) {
       console.error('Error applying git config:', gitError);

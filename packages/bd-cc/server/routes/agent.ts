@@ -66,37 +66,6 @@ const validateExternalApiKey = (req, res, next) => {
  * @param {string} repoPath - Path to the git repository
  * @returns {Promise<string>} - Remote URL of the repository
  */
-async function getGitRemoteUrl(repoPath) {
-  return new Promise((resolve, reject) => {
-    const gitProcess = spawn('git', ['config', '--get', 'remote.origin.url'], {
-      cwd: repoPath,
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
-
-    let stdout = '';
-    let stderr = '';
-
-    gitProcess.stdout.on('data', (data) => {
-      stdout += data.toString();
-    });
-
-    gitProcess.stderr.on('data', (data) => {
-      stderr += data.toString();
-    });
-
-    gitProcess.on('close', (code) => {
-      if (code === 0) {
-        resolve(stdout.trim());
-      } else {
-        reject(new Error(`Failed to get git remote: ${stderr}`));
-      }
-    });
-
-    gitProcess.on('error', (error) => {
-      reject(new Error(`Failed to execute git: ${error.message}`));
-    });
-  });
-}
 
 /**
  * Normalize GitHub URLs for comparison
