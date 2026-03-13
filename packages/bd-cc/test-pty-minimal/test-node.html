@@ -1,0 +1,118 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Node PTY Test</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+    <style>
+      body {
+        background: #1e1e1e;
+        padding: 20px;
+        color: #aaa;
+        font-family: sans-serif;
+      }
+      h1 {
+        color: #fff;
+        margin-bottom: 10px;
+      }
+      .container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .panel {
+        border: 1px solid #333;
+        padding: 10px;
+      }
+      .panel h2 {
+        margin: 0 0 10px 0;
+        font-size: 14px;
+        color: #888;
+      }
+      .status {
+        color: #0f0;
+        margin-bottom: 10px;
+        font-size: 12px;
+      }
+      .terminal {
+        width: 100%;
+        height: 280px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Node PTY Test (Port 3008)</h1>
+
+    <div class="container">
+      <div class="panel">
+        <h2>Node + Shell</h2>
+        <div id="s1" class="status">Connecting...</div>
+        <div id="t1" class="terminal"></div>
+      </div>
+      <div class="panel">
+        <h2>Node + Claude</h2>
+        <div id="s2" class="status">Connecting...</div>
+        <div id="t2" class="terminal"></div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+    <script>
+      // 终端配置
+      const TERM_CONFIG = {
+        cursorBlink: true,
+        fontSize: 13,
+        theme: { background: '#1e1e1e', foreground: '#d4d4d4' },
+      };
+
+      // 终端列表配置
+      const TERMINALS = [
+        { id: 1, cmd: 'zsh', ws: 'ws://localhost:3008' },
+        { id: 2, cmd: 'claude', ws: 'ws://localhost:3008' },
+      ];
+
+      // 初始化终端
+      function initTerminal(config) {
+        // 创建终端
+        const term = new Terminal(TERM_CONFIG);
+        const fit = new FitAddon.FitAddon();
+        term.loadAddon(fit);
+        term.open(document.getElementById('t' + config.id));
+        fit.fit();
+
+        // 状态显示
+        const status = document.getElementById('s' + config.id);
+
+        // WebSocket 连接
+        const ws = new WebSocket(config.ws);
+
+        ws.onopen = () => {
+          status.textContent = 'Connected!';
+          // 只对非默认命令发送 init
+          if (config.cmd !== 'zsh') {
+            ws.send(JSON.stringify({ type: 'init', cmd: config.cmd }));
+          }
+        };
+
+        ws.onmessage = (e) => {
+          const d = JSON.parse(e.data);
+          if (d.type === 'output') term.write(d.data);
+        };
+
+        ws.onclose = () => {
+          status.textContent = 'Disconnected';
+          status.style.color = '#f00';
+        };
+
+        // 终端输入 → WebSocket
+        term.onData((data) => {
+          ws.send(JSON.stringify({ type: 'input', data }));
+        });
+      }
+
+      // 初始化所有终端
+      TERMINALS.forEach(initTerminal);
+    </script>
+  </body>
+</html>

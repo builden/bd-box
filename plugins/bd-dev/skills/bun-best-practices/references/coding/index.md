@@ -10,6 +10,7 @@
 | [performance.md](./performance.md) | 性能基准测试（Mitata）         |
 | [playwright.md](./playwright.md)   | E2E 测试                       |
 | [refactoring.md](./refactoring.md) | 大型重构规范                   |
+| [runtime.md](./runtime.md)         | PTY + WebSocket 运行时技巧     |
 
 ---
 
