@@ -78,7 +78,7 @@ export function useShellConnection({
         onProcessCompleteRef.current(exitCode);
       }
     },
-    [isPlainShellRef, onProcessCompleteRef],
+    [isPlainShellRef, onProcessCompleteRef]
   );
 
   const handleSocketMessage = useCallback(
@@ -104,7 +104,7 @@ export function useShellConnection({
         }
       }
     },
-    [handleProcessCompletion, onOutputRef, setAuthUrl, terminalRef],
+    [handleProcessCompletion, onOutputRef, setAuthUrl, terminalRef]
   );
 
   const connectWebSocket = useCallback(
@@ -127,6 +127,7 @@ export function useShellConnection({
         wsRef.current = socket;
 
         socket.onopen = () => {
+          console.log('[Shell] WebSocket connected, preparing init message...');
           setIsConnected(true);
           setIsConnecting(false);
           connectingRef.current = false;
@@ -142,17 +143,21 @@ export function useShellConnection({
 
             currentFitAddon.fit();
 
-            sendSocketMessage(socket, {
+            const initMessage = {
               type: 'init',
               projectPath: currentProject.fullPath || currentProject.path || '',
               sessionId: isPlainShellRef.current ? null : selectedSessionRef.current?.id || null,
               hasSession: isPlainShellRef.current ? false : Boolean(selectedSessionRef.current),
-              provider: isPlainShellRef.current ? 'plain-shell' : (selectedSessionRef.current?.__provider || localStorage.getItem('selected-provider') || 'claude'),
+              provider: isPlainShellRef.current
+                ? 'plain-shell'
+                : selectedSessionRef.current?.__provider || localStorage.getItem('selected-provider') || 'claude',
               cols: currentTerminal.cols,
               rows: currentTerminal.rows,
               initialCommand: initialCommandRef.current,
               isPlainShell: isPlainShellRef.current,
-            });
+            };
+            console.log('[Shell] Sending init message:', JSON.stringify(initMessage));
+            sendSocketMessage(socket, initMessage);
           }, TERMINAL_INIT_DELAY_MS);
         };
 
@@ -192,7 +197,7 @@ export function useShellConnection({
       setAuthUrl,
       terminalRef,
       wsRef,
-    ],
+    ]
   );
 
   const connectToShell = useCallback(() => {

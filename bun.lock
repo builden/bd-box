@@ -77,8 +77,8 @@
       "name": "@siteboon/claude-code-ui",
       "version": "1.25.0",
       "bin": {
-        "claude-code-ui": "server/cli.js",
-        "cloudcli": "server/cli.js",
+        "claude-code-ui": "server/cli.ts",
+        "cloudcli": "server/cli.ts",
       },
       "dependencies": {
         "@anthropic-ai/claude-agent-sdk": "^0.2.74",

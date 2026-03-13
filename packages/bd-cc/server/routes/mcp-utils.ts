@@ -7,7 +7,7 @@
  */
 
 import express from 'express';
-import { detectTaskMasterMCPServer, getAllMCPServers } from '../utils/mcp-detector.js';
+import { detectTaskMasterMCPServer, getAllMCPServers } from '../utils/mcp-detector.ts';
 
 const router = express.Router();
 

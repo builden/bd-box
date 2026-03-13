@@ -1,6 +1,6 @@
 import { spawn } from 'child_process';
 import path from 'path';
-import { scanPlugins, getPluginsConfig, getPluginDir } from './plugin-loader.js';
+import { scanPlugins, getPluginsConfig, getPluginDir } from './plugin-loader.ts';
 
 // Map<pluginName, { process, port }>
 const runningPlugins = new Map();

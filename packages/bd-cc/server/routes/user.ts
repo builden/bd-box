@@ -1,7 +1,7 @@
 import express from 'express';
-import { userDb } from '../database/db.js';
-import { authenticateToken } from '../middleware/auth.js';
-import { getSystemGitConfig } from '../utils/gitConfig.js';
+import { userDb } from '../database/index.ts';
+import { authenticateToken } from '../middleware/auth.ts';
+import { getSystemGitConfig } from '../utils/gitConfig.ts';
 import { spawn } from 'child_process';
 
 const router = express.Router();
@@ -11,11 +11,20 @@ function spawnAsync(command, args, options = {}) {
     const child = spawn(command, args, { ...options, shell: false });
     let stdout = '';
     let stderr = '';
-    child.stdout.on('data', (data) => { stdout += data.toString(); });
-    child.stderr.on('data', (data) => { stderr += data.toString(); });
-    child.on('error', (error) => { reject(error); });
+    child.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+    child.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+    child.on('error', (error) => {
+      reject(error);
+    });
     child.on('close', (code) => {
-      if (code === 0) { resolve({ stdout, stderr }); return; }
+      if (code === 0) {
+        resolve({ stdout, stderr });
+        return;
+      }
       const error = new Error(`Command failed: ${command} ${args.join(' ')}`);
       error.code = code;
       error.stdout = stdout;
@@ -38,14 +47,16 @@ router.get('/git-config', authenticateToken, async (req, res) => {
       if (systemConfig.git_name || systemConfig.git_email) {
         userDb.updateGitConfig(userId, systemConfig.git_name, systemConfig.git_email);
         gitConfig = systemConfig;
-        console.log(`Auto-populated git config from system for user ${userId}: ${systemConfig.git_name} <${systemConfig.git_email}>`);
+        console.log(
+          `Auto-populated git config from system for user ${userId}: ${systemConfig.git_name} <${systemConfig.git_email}>`
+        );
       }
     }
 
     res.json({
       success: true,
       gitName: gitConfig?.git_name || null,
-      gitEmail: gitConfig?.git_email || null
+      gitEmail: gitConfig?.git_email || null,
     });
   } catch (error) {
     console.error('Error getting git config:', error);
@@ -82,7 +93,7 @@ router.post('/git-config', authenticateToken, async (req, res) => {
     res.json({
       success: true,
       gitName,
-      gitEmail
+      gitEmail,
     });
   } catch (error) {
     console.error('Error updating git config:', error);
@@ -97,7 +108,7 @@ router.post('/complete-onboarding', authenticateToken, async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Onboarding completed successfully'
+      message: 'Onboarding completed successfully',
     });
   } catch (error) {
     console.error('Error completing onboarding:', error);
@@ -112,7 +123,7 @@ router.get('/onboarding-status', authenticateToken, async (req, res) => {
 
     res.json({
       success: true,
-      hasCompletedOnboarding: hasCompleted
+      hasCompletedOnboarding: hasCompleted,
     });
   } catch (error) {
     console.error('Error checking onboarding status:', error);

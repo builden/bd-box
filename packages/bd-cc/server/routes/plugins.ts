@@ -13,13 +13,13 @@ import {
   installPluginFromGit,
   updatePluginFromGit,
   uninstallPlugin,
-} from "../utils/plugin-loader.js";
+} from "../utils/plugin-loader.ts";
 import {
   startPluginServer,
   stopPluginServer,
   getPluginPort,
   isPluginRunning,
-} from "../utils/plugin-process-manager.js";
+} from "../utils/plugin-process-manager.ts";
 
 const router = express.Router();
 

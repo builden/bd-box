@@ -1,57 +1,57 @@
 /**
  * PROJECT DISCOVERY AND MANAGEMENT SYSTEM
  * ========================================
- * 
+ *
  * This module manages project discovery for both Claude CLI and Cursor CLI sessions.
- * 
+ *
  * ## Architecture Overview
- * 
+ *
  * 1. **Claude Projects** (stored in ~/.claude/projects/)
  *    - Each project is a directory named with the project path encoded (/ replaced with -)
  *    - Contains .jsonl files with conversation history including 'cwd' field
  *    - Project metadata stored in ~/.claude/project-config.json
- * 
+ *
  * 2. **Cursor Projects** (stored in ~/.cursor/chats/)
  *    - Each project directory is named with MD5 hash of the absolute project path
  *    - Example: /Users/john/myproject -> MD5 -> a1b2c3d4e5f6...
  *    - Contains session directories with SQLite databases (store.db)
  *    - Project path is NOT stored in the database - only in the MD5 hash
- * 
+ *
  * ## Project Discovery Strategy
- * 
+ *
  * 1. **Claude Projects Discovery**:
  *    - Scan ~/.claude/projects/ directory for Claude project folders
  *    - Extract actual project path from .jsonl files (cwd field)
  *    - Fall back to decoded directory name if no sessions exist
- * 
+ *
  * 2. **Cursor Sessions Discovery**:
  *    - For each KNOWN project (from Claude or manually added)
  *    - Compute MD5 hash of the project's absolute path
  *    - Check if ~/.cursor/chats/{md5_hash}/ directory exists
  *    - Read session metadata from SQLite store.db files
- * 
+ *
  * 3. **Manual Project Addition**:
  *    - Users can manually add project paths via UI
  *    - Stored in ~/.claude/project-config.json with 'manuallyAdded' flag
  *    - Allows discovering Cursor sessions for projects without Claude sessions
- * 
+ *
  * ## Critical Limitations
- * 
+ *
  * - **CANNOT discover Cursor-only projects**: From a quick check, there was no mention of
  *   the cwd of each project. if someone has the time, you can try to reverse engineer it.
- * 
+ *
  * - **Project relocation breaks history**: If a project directory is moved or renamed,
  *   the MD5 hash changes, making old Cursor sessions inaccessible unless the old
  *   path is known and manually added.
- * 
+ *
  * ## Error Handling
- * 
+ *
  * - Missing ~/.claude directory is handled gracefully with automatic creation
  * - ENOENT errors are caught and handled without crashing
  * - Empty arrays returned when no projects/sessions exist
- * 
+ *
  * ## Caching Strategy
- * 
+ *
  * - Project directory extraction is cached to minimize file I/O
  * - Cache is cleared when project configuration changes
  * - Session data is fetched on-demand, not cached
@@ -65,8 +65,8 @@ import crypto from 'crypto';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import os from 'os';
-import sessionManager from './sessionManager.js';
-import { applyCustomSessionNames } from './database/db.js';
+import sessionManager from './sessionManager.ts';
+import { applyCustomSessionNames } from './database/index.ts';
 
 // Import TaskMaster detection functions
 async function detectTaskMasterFolder(projectPath) {
@@ -79,24 +79,21 @@ async function detectTaskMasterFolder(projectPath) {
       if (!stats.isDirectory()) {
         return {
           hasTaskmaster: false,
-          reason: '.taskmaster exists but is not a directory'
+          reason: '.taskmaster exists but is not a directory',
         };
       }
     } catch (error) {
       if (error.code === 'ENOENT') {
         return {
           hasTaskmaster: false,
-          reason: '.taskmaster directory not found'
+          reason: '.taskmaster directory not found',
         };
       }
       throw error;
     }
 
     // Check for key TaskMaster files
-    const keyFiles = [
-      'tasks/tasks.json',
-      'config.json'
-    ];
+    const keyFiles = ['tasks/tasks.json', 'config.json'];
 
     const fileStatus = {};
     let hasEssentialFiles = true;
@@ -129,7 +126,7 @@ async function detectTaskMasterFolder(projectPath) {
           tasks = tasksData.tasks;
         } else {
           // Tagged format - get tasks from all tags
-          Object.values(tasksData).forEach(tagData => {
+          Object.values(tasksData).forEach((tagData) => {
             if (tagData.tasks) {
               tasks = tasks.concat(tagData.tasks);
             }
@@ -137,31 +134,34 @@ async function detectTaskMasterFolder(projectPath) {
         }
 
         // Calculate task statistics
-        const stats = tasks.reduce((acc, task) => {
-          acc.total++;
-          acc[task.status] = (acc[task.status] || 0) + 1;
+        const stats = tasks.reduce(
+          (acc, task) => {
+            acc.total++;
+            acc[task.status] = (acc[task.status] || 0) + 1;
 
-          // Count subtasks
-          if (task.subtasks) {
-            task.subtasks.forEach(subtask => {
-              acc.subtotalTasks++;
-              acc.subtasks = acc.subtasks || {};
-              acc.subtasks[subtask.status] = (acc.subtasks[subtask.status] || 0) + 1;
-            });
+            // Count subtasks
+            if (task.subtasks) {
+              task.subtasks.forEach((subtask) => {
+                acc.subtotalTasks++;
+                acc.subtasks = acc.subtasks || {};
+                acc.subtasks[subtask.status] = (acc.subtasks[subtask.status] || 0) + 1;
+              });
+            }
+
+            return acc;
+          },
+          {
+            total: 0,
+            subtotalTasks: 0,
+            pending: 0,
+            'in-progress': 0,
+            done: 0,
+            review: 0,
+            deferred: 0,
+            cancelled: 0,
+            subtasks: {},
           }
-
-          return acc;
-        }, {
-          total: 0,
-          subtotalTasks: 0,
-          pending: 0,
-          'in-progress': 0,
-          done: 0,
-          review: 0,
-          deferred: 0,
-          cancelled: 0,
-          subtasks: {}
-        });
+        );
 
         taskMetadata = {
           taskCount: stats.total,
@@ -171,7 +171,7 @@ async function detectTaskMasterFolder(projectPath) {
           inProgress: stats['in-progress'] || 0,
           review: stats.review || 0,
           completionPercentage: stats.total > 0 ? Math.round((stats.done / stats.total) * 100) : 0,
-          lastModified: (await fs.stat(tasksPath)).mtime.toISOString()
+          lastModified: (await fs.stat(tasksPath)).mtime.toISOString(),
         };
       } catch (parseError) {
         console.warn('Failed to parse tasks.json:', parseError.message);
@@ -184,14 +184,13 @@ async function detectTaskMasterFolder(projectPath) {
       hasEssentialFiles,
       files: fileStatus,
       metadata: taskMetadata,
-      path: taskMasterPath
+      path: taskMasterPath,
     };
-
   } catch (error) {
     console.error('Error detecting TaskMaster folder:', error);
     return {
       hasTaskmaster: false,
-      reason: `Error checking directory: ${error.message}`
+      reason: `Error checking directory: ${error.message}`,
     };
   }
 }
@@ -289,7 +288,7 @@ async function extractProjectDirectory(projectName) {
     await fs.access(projectDir);
 
     const files = await fs.readdir(projectDir);
-    const jsonlFiles = files.filter(file => file.endsWith('.jsonl'));
+    const jsonlFiles = files.filter((file) => file.endsWith('.jsonl'));
 
     if (jsonlFiles.length === 0) {
       // Fall back to decoded project name if no sessions
@@ -301,7 +300,7 @@ async function extractProjectDirectory(projectName) {
         const fileStream = fsSync.createReadStream(jsonlFile);
         const rl = readline.createInterface({
           input: fileStream,
-          crlfDelay: Infinity
+          crlfDelay: Infinity,
         });
 
         for await (const line of rl) {
@@ -363,7 +362,6 @@ async function extractProjectDirectory(projectName) {
     projectDirectoryCache.set(projectName, extractedPath);
 
     return extractedPath;
-
   } catch (error) {
     // If the directory doesn't exist, just use the decoded project name
     if (error.code === 'ENOENT') {
@@ -397,15 +395,15 @@ async function getProjects(progressCallback = null) {
 
     // First, get existing Claude projects from the file system
     const entries = await fs.readdir(claudeDir, { withFileTypes: true });
-    directories = entries.filter(e => e.isDirectory());
+    directories = entries.filter((e) => e.isDirectory());
 
     // Build set of existing project names for later
-    directories.forEach(e => existingProjects.add(e.name));
+    directories.forEach((e) => existingProjects.add(e.name));
 
     // Count manual projects not already in directories
-    const manualProjectsCount = Object.entries(config)
-      .filter(([name, cfg]) => cfg.manuallyAdded && !existingProjects.has(name))
-      .length;
+    const manualProjectsCount = Object.entries(config).filter(
+      ([name, cfg]) => cfg.manuallyAdded && !existingProjects.has(name)
+    ).length;
 
     totalProjects = directories.length + manualProjectsCount;
 
@@ -418,7 +416,7 @@ async function getProjects(progressCallback = null) {
           phase: 'loading',
           current: processedProjects,
           total: totalProjects,
-          currentProject: entry.name
+          currentProject: entry.name,
         });
       }
 
@@ -440,8 +438,8 @@ async function getProjects(progressCallback = null) {
         geminiSessions: [],
         sessionMeta: {
           hasMore: false,
-          total: 0
-        }
+          total: 0,
+        },
       };
 
       // Try to get sessions for this project (just first 5 for performance)
@@ -450,13 +448,13 @@ async function getProjects(progressCallback = null) {
         project.sessions = sessionResult.sessions || [];
         project.sessionMeta = {
           hasMore: sessionResult.hasMore,
-          total: sessionResult.total
+          total: sessionResult.total,
         };
       } catch (e) {
         console.warn(`Could not load sessions for project ${entry.name}:`, e.message);
         project.sessionMeta = {
           hasMore: false,
-          total: 0
+          total: 0,
         };
       }
       applyCustomSessionNames(project.sessions, 'claude');
@@ -485,8 +483,8 @@ async function getProjects(progressCallback = null) {
       try {
         const uiSessions = sessionManager.getProjectSessions(actualProjectDir) || [];
         const cliSessions = await getGeminiCliSessions(actualProjectDir);
-        const uiIds = new Set(uiSessions.map(s => s.id));
-        const mergedGemini = [...uiSessions, ...cliSessions.filter(s => !uiIds.has(s.id))];
+        const uiIds = new Set(uiSessions.map((s) => s.id));
+        const mergedGemini = [...uiSessions, ...cliSessions.filter((s) => !uiIds.has(s.id))];
         project.geminiSessions = mergedGemini;
       } catch (e) {
         console.warn(`Could not load Gemini sessions for project ${entry.name}:`, e.message);
@@ -501,7 +499,8 @@ async function getProjects(progressCallback = null) {
           hasTaskmaster: taskMasterResult.hasTaskmaster,
           hasEssentialFiles: taskMasterResult.hasEssentialFiles,
           metadata: taskMasterResult.metadata,
-          status: taskMasterResult.hasTaskmaster && taskMasterResult.hasEssentialFiles ? 'configured' : 'not-configured'
+          status:
+            taskMasterResult.hasTaskmaster && taskMasterResult.hasEssentialFiles ? 'configured' : 'not-configured',
         };
       } catch (e) {
         console.warn(`Could not detect TaskMaster for project ${entry.name}:`, e.message);
@@ -509,7 +508,7 @@ async function getProjects(progressCallback = null) {
           hasTaskmaster: false,
           hasEssentialFiles: false,
           metadata: null,
-          status: 'error'
+          status: 'error',
         };
       }
 
@@ -521,9 +520,7 @@ async function getProjects(progressCallback = null) {
       console.error('Error reading projects directory:', error);
     }
     // Calculate total for manual projects only (no directories exist)
-    totalProjects = Object.entries(config)
-      .filter(([name, cfg]) => cfg.manuallyAdded)
-      .length;
+    totalProjects = Object.entries(config).filter(([name, cfg]) => cfg.manuallyAdded).length;
   }
 
   // Add manually configured projects that don't exist as folders yet
@@ -537,7 +534,7 @@ async function getProjects(progressCallback = null) {
           phase: 'loading',
           current: processedProjects,
           total: totalProjects,
-          currentProject: projectName
+          currentProject: projectName,
         });
       }
 
@@ -556,7 +553,7 @@ async function getProjects(progressCallback = null) {
       const project = {
         name: projectName,
         path: actualProjectDir,
-        displayName: projectConfig.displayName || await generateDisplayName(projectName, actualProjectDir),
+        displayName: projectConfig.displayName || (await generateDisplayName(projectName, actualProjectDir)),
         fullPath: actualProjectDir,
         isCustomName: !!projectConfig.displayName,
         isManuallyAdded: true,
@@ -564,10 +561,10 @@ async function getProjects(progressCallback = null) {
         geminiSessions: [],
         sessionMeta: {
           hasMore: false,
-          total: 0
+          total: 0,
         },
         cursorSessions: [],
-        codexSessions: []
+        codexSessions: [],
       };
 
       // Try to fetch Cursor sessions for manual projects too
@@ -592,8 +589,8 @@ async function getProjects(progressCallback = null) {
       try {
         const uiSessions = sessionManager.getProjectSessions(actualProjectDir) || [];
         const cliSessions = await getGeminiCliSessions(actualProjectDir);
-        const uiIds = new Set(uiSessions.map(s => s.id));
-        project.geminiSessions = [...uiSessions, ...cliSessions.filter(s => !uiIds.has(s.id))];
+        const uiIds = new Set(uiSessions.map((s) => s.id));
+        project.geminiSessions = [...uiSessions, ...cliSessions.filter((s) => !uiIds.has(s.id))];
       } catch (e) {
         console.warn(`Could not load Gemini sessions for manual project ${projectName}:`, e.message);
       }
@@ -613,7 +610,7 @@ async function getProjects(progressCallback = null) {
           status: taskMasterStatus,
           hasTaskmaster: taskMasterResult.hasTaskmaster,
           hasEssentialFiles: taskMasterResult.hasEssentialFiles,
-          metadata: taskMasterResult.metadata
+          metadata: taskMasterResult.metadata,
         };
       } catch (error) {
         console.warn(`TaskMaster detection failed for manual project ${projectName}:`, error.message);
@@ -621,7 +618,7 @@ async function getProjects(progressCallback = null) {
           status: 'error',
           hasTaskmaster: false,
           hasEssentialFiles: false,
-          error: error.message
+          error: error.message,
         };
       }
 
@@ -634,7 +631,7 @@ async function getProjects(progressCallback = null) {
     progressCallback({
       phase: 'complete',
       current: totalProjects,
-      total: totalProjects
+      total: totalProjects,
     });
   }
 
@@ -648,7 +645,7 @@ async function getSessions(projectName, limit = 5, offset = 0) {
     const files = await fs.readdir(projectDir);
     // agent-*.jsonl files contain session start data at this point. This needs to be revisited
     // periodically to make sure only accurate data is there and no new functionality is added there
-    const jsonlFiles = files.filter(file => file.endsWith('.jsonl') && !file.startsWith('agent-'));
+    const jsonlFiles = files.filter((file) => file.endsWith('.jsonl') && !file.startsWith('agent-'));
 
     if (jsonlFiles.length === 0) {
       return { sessions: [], hasMore: false, total: 0 };
@@ -673,7 +670,7 @@ async function getSessions(projectName, limit = 5, offset = 0) {
       const jsonlFile = path.join(projectDir, file);
       const result = await parseJsonlSessions(jsonlFile);
 
-      result.sessions.forEach(session => {
+      result.sessions.forEach((session) => {
         if (!allSessions.has(session.id)) {
           allSessions.set(session.id, session);
         }
@@ -688,7 +685,7 @@ async function getSessions(projectName, limit = 5, offset = 0) {
     }
 
     // Build UUID-to-session mapping for timeline detection
-    allEntries.forEach(entry => {
+    allEntries.forEach((entry) => {
       if (entry.uuid && entry.sessionId) {
         uuidToSessionMap.set(entry.uuid, entry.sessionId);
       }
@@ -699,7 +696,7 @@ async function getSessions(projectName, limit = 5, offset = 0) {
     const sessionToFirstUserMsgId = new Map(); // sessionId -> firstUserMsgId
 
     // Find the first user message for each session
-    allEntries.forEach(entry => {
+    allEntries.forEach((entry) => {
       if (entry.sessionId && entry.type === 'user' && entry.parentUuid === null && entry.uuid) {
         // This is a first user message in a session (parentUuid is null)
         const firstUserMsgId = entry.uuid;
@@ -712,7 +709,7 @@ async function getSessions(projectName, limit = 5, offset = 0) {
             if (!sessionGroups.has(firstUserMsgId)) {
               sessionGroups.set(firstUserMsgId, {
                 latestSession: session,
-                allSessions: [session]
+                allSessions: [session],
               });
             } else {
               const group = sessionGroups.get(firstUserMsgId);
@@ -730,26 +727,27 @@ async function getSessions(projectName, limit = 5, offset = 0) {
 
     // Collect all sessions that don't belong to any group (standalone sessions)
     const groupedSessionIds = new Set();
-    sessionGroups.forEach(group => {
-      group.allSessions.forEach(session => groupedSessionIds.add(session.id));
+    sessionGroups.forEach((group) => {
+      group.allSessions.forEach((session) => groupedSessionIds.add(session.id));
     });
 
-    const standaloneSessionsArray = Array.from(allSessions.values())
-      .filter(session => !groupedSessionIds.has(session.id));
+    const standaloneSessionsArray = Array.from(allSessions.values()).filter(
+      (session) => !groupedSessionIds.has(session.id)
+    );
 
     // Combine grouped sessions (only show latest from each group) + standalone sessions
-    const latestFromGroups = Array.from(sessionGroups.values()).map(group => {
+    const latestFromGroups = Array.from(sessionGroups.values()).map((group) => {
       const session = { ...group.latestSession };
       // Add metadata about grouping
       if (group.allSessions.length > 1) {
         session.isGrouped = true;
         session.groupSize = group.allSessions.length;
-        session.groupSessions = group.allSessions.map(s => s.id);
+        session.groupSessions = group.allSessions.map((s) => s.id);
       }
       return session;
     });
     const visibleSessions = [...latestFromGroups, ...standaloneSessionsArray]
-      .filter(session => !session.summary.startsWith('{ "'))
+      .filter((session) => !session.summary.startsWith('{ "'))
       .sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity));
 
     const total = visibleSessions.length;
@@ -761,7 +759,7 @@ async function getSessions(projectName, limit = 5, offset = 0) {
       hasMore,
       total,
       offset,
-      limit
+      limit,
     };
   } catch (error) {
     console.error(`Error reading sessions for project ${projectName}:`, error);
@@ -778,7 +776,7 @@ async function parseJsonlSessions(filePath) {
     const fileStream = fsSync.createReadStream(filePath);
     const rl = readline.createInterface({
       input: fileStream,
-      crlfDelay: Infinity
+      crlfDelay: Infinity,
     });
 
     for await (const line of rl) {
@@ -801,7 +799,7 @@ async function parseJsonlSessions(filePath) {
                 lastActivity: new Date(),
                 cwd: entry.cwd || '',
                 lastUserMessage: null,
-                lastAssistantMessage: null
+                lastAssistantMessage: null,
               });
             }
 
@@ -827,19 +825,19 @@ async function parseJsonlSessions(filePath) {
                 textContent = content[0].text;
               }
 
-              const isSystemMessage = typeof textContent === 'string' && (
-                textContent.startsWith('<command-name>') ||
-                textContent.startsWith('<command-message>') ||
-                textContent.startsWith('<command-args>') ||
-                textContent.startsWith('<local-command-stdout>') ||
-                textContent.startsWith('<system-reminder>') ||
-                textContent.startsWith('Caveat:') ||
-                textContent.startsWith('This session is being continued from a previous') ||
-                textContent.startsWith('Invalid API key') ||
-                textContent.includes('{"subtasks":') || // Filter Task Master prompts
-                textContent.includes('CRITICAL: You MUST respond with ONLY a JSON') || // Filter Task Master system prompts
-                textContent === 'Warmup' // Explicitly filter out "Warmup"
-              );
+              const isSystemMessage =
+                typeof textContent === 'string' &&
+                (textContent.startsWith('<command-name>') ||
+                  textContent.startsWith('<command-message>') ||
+                  textContent.startsWith('<command-args>') ||
+                  textContent.startsWith('<local-command-stdout>') ||
+                  textContent.startsWith('<system-reminder>') ||
+                  textContent.startsWith('Caveat:') ||
+                  textContent.startsWith('This session is being continued from a previous') ||
+                  textContent.startsWith('Invalid API key') ||
+                  textContent.includes('{"subtasks":') || // Filter Task Master prompts
+                  textContent.includes('CRITICAL: You MUST respond with ONLY a JSON') || // Filter Task Master system prompts
+                  textContent === 'Warmup'); // Explicitly filter out "Warmup"
 
               if (typeof textContent === 'string' && textContent.length > 0 && !isSystemMessage) {
                 session.lastUserMessage = textContent;
@@ -863,11 +861,11 @@ async function parseJsonlSessions(filePath) {
                 }
 
                 // Additional filter for assistant messages with system content
-                const isSystemAssistantMessage = typeof assistantText === 'string' && (
-                  assistantText.startsWith('Invalid API key') ||
-                  assistantText.includes('{"subtasks":') ||
-                  assistantText.includes('CRITICAL: You MUST respond with ONLY a JSON')
-                );
+                const isSystemAssistantMessage =
+                  typeof assistantText === 'string' &&
+                  (assistantText.startsWith('Invalid API key') ||
+                    assistantText.includes('{"subtasks":') ||
+                    assistantText.includes('CRITICAL: You MUST respond with ONLY a JSON'));
 
                 if (assistantText && !isSystemAssistantMessage) {
                   session.lastAssistantMessage = assistantText;
@@ -900,22 +898,21 @@ async function parseJsonlSessions(filePath) {
 
     // Filter out sessions that contain JSON responses (Task Master errors)
     const allSessions = Array.from(sessions.values());
-    const filteredSessions = allSessions.filter(session => {
+    const filteredSessions = allSessions.filter((session) => {
       const shouldFilter = session.summary.startsWith('{ "');
       if (shouldFilter) {
       }
       // Log a sample of summaries to debug
-      if (Math.random() < 0.01) { // Log 1% of sessions
+      if (Math.random() < 0.01) {
+        // Log 1% of sessions
       }
       return !shouldFilter;
     });
 
-
     return {
       sessions: filteredSessions,
-      entries: entries
+      entries: entries,
     };
-
   } catch (error) {
     console.error('Error reading JSONL file:', error);
     return { sessions: [], entries: [] };
@@ -930,7 +927,7 @@ async function parseAgentTools(filePath) {
     const fileStream = fsSync.createReadStream(filePath);
     const rl = readline.createInterface({
       input: fileStream,
-      crlfDelay: Infinity
+      crlfDelay: Infinity,
     });
 
     for await (const line of rl) {
@@ -945,7 +942,7 @@ async function parseAgentTools(filePath) {
                   toolId: part.id,
                   toolName: part.name,
                   toolInput: part.input,
-                  timestamp: entry.timestamp
+                  timestamp: entry.timestamp,
                 });
               }
             }
@@ -955,13 +952,16 @@ async function parseAgentTools(filePath) {
             for (const part of entry.message.content) {
               if (part.type === 'tool_result') {
                 // Find the matching tool and add result
-                const tool = tools.find(t => t.toolId === part.tool_use_id);
+                const tool = tools.find((t) => t.toolId === part.tool_use_id);
                 if (tool) {
                   tool.toolResult = {
-                    content: typeof part.content === 'string' ? part.content :
-                      Array.isArray(part.content) ? part.content.map(c => c.text || '').join('\n') :
-                        JSON.stringify(part.content),
-                    isError: Boolean(part.is_error)
+                    content:
+                      typeof part.content === 'string'
+                        ? part.content
+                        : Array.isArray(part.content)
+                          ? part.content.map((c) => c.text || '').join('\n')
+                          : JSON.stringify(part.content),
+                    isError: Boolean(part.is_error),
                   };
                 }
               }
@@ -986,8 +986,8 @@ async function getSessionMessages(projectName, sessionId, limit = null, offset =
   try {
     const files = await fs.readdir(projectDir);
     // agent-*.jsonl files contain subagent tool history - we'll process them separately
-    const jsonlFiles = files.filter(file => file.endsWith('.jsonl') && !file.startsWith('agent-'));
-    const agentFiles = files.filter(file => file.endsWith('.jsonl') && file.startsWith('agent-'));
+    const jsonlFiles = files.filter((file) => file.endsWith('.jsonl') && !file.startsWith('agent-'));
+    const agentFiles = files.filter((file) => file.endsWith('.jsonl') && file.startsWith('agent-'));
 
     if (jsonlFiles.length === 0) {
       return { messages: [], total: 0, hasMore: false };
@@ -1003,7 +1003,7 @@ async function getSessionMessages(projectName, sessionId, limit = null, offset =
       const fileStream = fsSync.createReadStream(jsonlFile);
       const rl = readline.createInterface({
         input: fileStream,
-        crlfDelay: Infinity
+        crlfDelay: Infinity,
       });
 
       for await (const line of rl) {
@@ -1049,9 +1049,7 @@ async function getSessionMessages(projectName, sessionId, limit = null, offset =
       }
     }
     // Sort messages by timestamp
-    const sortedMessages = messages.sort((a, b) =>
-      new Date(a.timestamp || 0) - new Date(b.timestamp || 0)
-    );
+    const sortedMessages = messages.sort((a, b) => new Date(a.timestamp || 0) - new Date(b.timestamp || 0));
 
     const total = sortedMessages.length;
 
@@ -1072,7 +1070,7 @@ async function getSessionMessages(projectName, sessionId, limit = null, offset =
       total,
       hasMore,
       offset,
-      limit
+      limit,
     };
   } catch (error) {
     console.error(`Error reading messages for session ${sessionId}:`, error);
@@ -1093,7 +1091,7 @@ async function renameProject(projectName, newDisplayName) {
     // Set custom display name, preserving other properties (manuallyAdded, originalPath)
     config[projectName] = {
       ...config[projectName],
-      displayName: newDisplayName.trim()
+      displayName: newDisplayName.trim(),
     };
   }
 
@@ -1107,7 +1105,7 @@ async function deleteSession(projectName, sessionId) {
 
   try {
     const files = await fs.readdir(projectDir);
-    const jsonlFiles = files.filter(file => file.endsWith('.jsonl'));
+    const jsonlFiles = files.filter((file) => file.endsWith('.jsonl'));
 
     if (jsonlFiles.length === 0) {
       throw new Error('No session files found for this project');
@@ -1117,10 +1115,10 @@ async function deleteSession(projectName, sessionId) {
     for (const file of jsonlFiles) {
       const jsonlFile = path.join(projectDir, file);
       const content = await fs.readFile(jsonlFile, 'utf8');
-      const lines = content.split('\n').filter(line => line.trim());
+      const lines = content.split('\n').filter((line) => line.trim());
 
       // Check if this file contains the session
-      const hasSession = lines.some(line => {
+      const hasSession = lines.some((line) => {
         try {
           const data = JSON.parse(line);
           return data.sessionId === sessionId;
@@ -1131,7 +1129,7 @@ async function deleteSession(projectName, sessionId) {
 
       if (hasSession) {
         // Filter out all entries for this session
-        const filteredLines = lines.filter(line => {
+        const filteredLines = lines.filter((line) => {
           try {
             const data = JSON.parse(line);
             return data.sessionId !== sessionId;
@@ -1249,7 +1247,7 @@ async function addProjectManually(projectPath, displayName = null) {
   // Add to config as manually added project
   config[projectName] = {
     manuallyAdded: true,
-    originalPath: absolutePath
+    originalPath: absolutePath,
   };
 
   if (displayName) {
@@ -1258,15 +1256,14 @@ async function addProjectManually(projectPath, displayName = null) {
 
   await saveProjectConfig(config);
 
-
   return {
     name: projectName,
     path: absolutePath,
     fullPath: absolutePath,
-    displayName: displayName || await generateDisplayName(projectName, absolutePath),
+    displayName: displayName || (await generateDisplayName(projectName, absolutePath)),
     isManuallyAdded: true,
     sessions: [],
-    cursorSessions: []
+    cursorSessions: [],
   };
 }
 
@@ -1302,13 +1299,13 @@ async function getCursorSessions(projectPath) {
         try {
           const stat = await fs.stat(storeDbPath);
           dbStatMtimeMs = stat.mtimeMs;
-        } catch (_) { }
+        } catch (_) {}
 
         // Open SQLite database
         const db = await open({
           filename: storeDbPath,
           driver: sqlite3.Database,
-          mode: sqlite3.OPEN_READONLY
+          mode: sqlite3.OPEN_READONLY,
         });
 
         // Get metadata from meta table
@@ -1361,9 +1358,8 @@ async function getCursorSessions(projectPath) {
           createdAt: createdAt,
           lastActivity: createdAt, // For compatibility with Claude sessions
           messageCount: messageCountResult.count || 0,
-          projectPath: projectPath
+          projectPath: projectPath,
         });
-
       } catch (error) {
         console.warn(`Could not read Cursor session ${sessionId}:`, error.message);
       }
@@ -1374,22 +1370,18 @@ async function getCursorSessions(projectPath) {
 
     // Return only the first 5 sessions for performance
     return sessions.slice(0, 5);
-
   } catch (error) {
     console.error('Error fetching Cursor sessions:', error);
     return [];
   }
 }
 
-
 function normalizeComparablePath(inputPath) {
   if (!inputPath || typeof inputPath !== 'string') {
     return '';
   }
 
-  const withoutLongPathPrefix = inputPath.startsWith('\\\\?\\')
-    ? inputPath.slice(4)
-    : inputPath;
+  const withoutLongPathPrefix = inputPath.startsWith('\\\\?\\') ? inputPath.slice(4) : inputPath;
   const normalized = path.normalize(withoutLongPathPrefix.trim());
 
   if (!normalized) {
@@ -1408,7 +1400,7 @@ async function findCodexJsonlFiles(dir) {
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) {
-        files.push(...await findCodexJsonlFiles(fullPath));
+        files.push(...(await findCodexJsonlFiles(fullPath)));
       } else if (entry.name.endsWith('.jsonl')) {
         files.push(fullPath);
       }
@@ -1485,12 +1477,11 @@ async function getCodexSessions(projectPath, options = {}) {
       indexRef.sessionsByProject = await buildCodexSessionsIndex();
     }
 
-    const sessionsByProject = indexRef?.sessionsByProject || await buildCodexSessionsIndex();
+    const sessionsByProject = indexRef?.sessionsByProject || (await buildCodexSessionsIndex());
     const sessions = sessionsByProject.get(normalizedProjectPath) || [];
 
     // Return limited sessions for performance (0 = unlimited for deletion)
     return limit > 0 ? sessions.slice(0, limit) : [...sessions];
-
   } catch (error) {
     console.error('Error fetching Codex sessions:', error);
     return [];
@@ -1510,7 +1501,7 @@ function isVisibleCodexUserMessage(payload) {
   if (typeof payload.message !== 'string' || payload.message.trim().length === 0) {
     return false;
   }
-  
+
   return true;
 }
 
@@ -1520,7 +1511,7 @@ async function parseCodexSessionFile(filePath) {
     const fileStream = fsSync.createReadStream(filePath);
     const rl = readline.createInterface({
       input: fileStream,
-      crlfDelay: Infinity
+      crlfDelay: Infinity,
     });
 
     let sessionMeta = null;
@@ -1545,7 +1536,7 @@ async function parseCodexSessionFile(filePath) {
               cwd: entry.payload.cwd,
               model: entry.payload.model || entry.payload.model_provider,
               timestamp: entry.timestamp,
-              git: entry.payload.git
+              git: entry.payload.git,
             };
           }
 
@@ -1557,10 +1548,13 @@ async function parseCodexSessionFile(filePath) {
             }
           }
 
-          if (entry.type === 'response_item' && entry.payload?.type === 'message' && entry.payload.role === 'assistant') {
+          if (
+            entry.type === 'response_item' &&
+            entry.payload?.type === 'message' &&
+            entry.payload.role === 'assistant'
+          ) {
             messageCount++;
           }
-
         } catch (parseError) {
           // Skip malformed lines
         }
@@ -1571,15 +1565,16 @@ async function parseCodexSessionFile(filePath) {
       return {
         ...sessionMeta,
         timestamp: lastTimestamp || sessionMeta.timestamp,
-        summary: lastUserMessage ?
-          (lastUserMessage.length > 50 ? lastUserMessage.substring(0, 50) + '...' : lastUserMessage) :
-          'Codex Session',
-        messageCount
+        summary: lastUserMessage
+          ? lastUserMessage.length > 50
+            ? lastUserMessage.substring(0, 50) + '...'
+            : lastUserMessage
+          : 'Codex Session',
+        messageCount,
       };
     }
 
     return null;
-
   } catch (error) {
     console.error('Error parsing Codex session file:', error);
     return null;
@@ -1622,14 +1617,14 @@ async function getCodexSessionMessages(sessionId, limit = null, offset = 0) {
     const fileStream = fsSync.createReadStream(sessionFilePath);
     const rl = readline.createInterface({
       input: fileStream,
-      crlfDelay: Infinity
+      crlfDelay: Infinity,
     });
 
     // Helper to extract text from Codex content array
     const extractText = (content) => {
       if (!Array.isArray(content)) return content;
       return content
-        .map(item => {
+        .map((item) => {
           if (item.type === 'input_text' || item.type === 'output_text') {
             return item.text;
           }
@@ -1653,11 +1648,11 @@ async function getCodexSessionMessages(sessionId, limit = null, offset = 0) {
             if (info.total_token_usage) {
               tokenUsage = {
                 used: info.total_token_usage.total_tokens || 0,
-                total: info.model_context_window || 200000
+                total: info.model_context_window || 200000,
               };
             }
           }
-          
+
           // Use event_msg.user_message for user-visible inputs.
           if (entry.type === 'event_msg' && isVisibleCodexUserMessage(entry.payload)) {
             messages.push({
@@ -1665,8 +1660,8 @@ async function getCodexSessionMessages(sessionId, limit = null, offset = 0) {
               timestamp: entry.timestamp,
               message: {
                 role: 'user',
-                content: entry.payload.message
-              }
+                content: entry.payload.message,
+              },
             });
           }
 
@@ -1687,15 +1682,15 @@ async function getCodexSessionMessages(sessionId, limit = null, offset = 0) {
                 timestamp: entry.timestamp,
                 message: {
                   role: 'assistant',
-                  content: textContent
-                }
+                  content: textContent,
+                },
               });
             }
           }
 
           if (entry.type === 'response_item' && entry.payload?.type === 'reasoning') {
             const summaryText = entry.payload.summary
-              ?.map(s => s.text)
+              ?.map((s) => s.text)
               .filter(Boolean)
               .join('\n');
             if (summaryText?.trim()) {
@@ -1704,8 +1699,8 @@ async function getCodexSessionMessages(sessionId, limit = null, offset = 0) {
                 timestamp: entry.timestamp,
                 message: {
                   role: 'assistant',
-                  content: summaryText
-                }
+                  content: summaryText,
+                },
               });
             }
           }
@@ -1730,7 +1725,7 @@ async function getCodexSessionMessages(sessionId, limit = null, offset = 0) {
               timestamp: entry.timestamp,
               toolName: toolName,
               toolInput: toolInput,
-              toolCallId: entry.payload.call_id
+              toolCallId: entry.payload.call_id,
             });
           }
 
@@ -1739,7 +1734,7 @@ async function getCodexSessionMessages(sessionId, limit = null, offset = 0) {
               type: 'tool_result',
               timestamp: entry.timestamp,
               toolCallId: entry.payload.call_id,
-              output: entry.payload.output
+              output: entry.payload.output,
             });
           }
 
@@ -1772,9 +1767,9 @@ async function getCodexSessionMessages(sessionId, limit = null, offset = 0) {
                 toolInput: JSON.stringify({
                   file_path: filePath,
                   old_string: oldLines.join('\n'),
-                  new_string: newLines.join('\n')
+                  new_string: newLines.join('\n'),
                 }),
-                toolCallId: entry.payload.call_id
+                toolCallId: entry.payload.call_id,
               });
             } else {
               messages.push({
@@ -1782,7 +1777,7 @@ async function getCodexSessionMessages(sessionId, limit = null, offset = 0) {
                 timestamp: entry.timestamp,
                 toolName: toolName,
                 toolInput: input,
-                toolCallId: entry.payload.call_id
+                toolCallId: entry.payload.call_id,
               });
             }
           }
@@ -1792,10 +1787,9 @@ async function getCodexSessionMessages(sessionId, limit = null, offset = 0) {
               type: 'tool_result',
               timestamp: entry.timestamp,
               toolCallId: entry.payload.call_id,
-              output: entry.payload.output || ''
+              output: entry.payload.output || '',
             });
           }
-
         } catch (parseError) {
           // Skip malformed lines
         }
@@ -1820,12 +1814,11 @@ async function getCodexSessionMessages(sessionId, limit = null, offset = 0) {
         hasMore,
         offset,
         limit,
-        tokenUsage
+        tokenUsage,
       };
     }
 
     return { messages, tokenUsage };
-
   } catch (error) {
     console.error(`Error reading Codex session messages for ${sessionId}:`, error);
     return { messages: [], total: 0, hasMore: false };
@@ -1843,12 +1836,12 @@ async function deleteCodexSession(sessionId) {
         for (const entry of entries) {
           const fullPath = path.join(dir, entry.name);
           if (entry.isDirectory()) {
-            files.push(...await findJsonlFiles(fullPath));
+            files.push(...(await findJsonlFiles(fullPath)));
           } else if (entry.name.endsWith('.jsonl')) {
             files.push(fullPath);
           }
         }
-      } catch (error) { }
+      } catch (error) {}
       return files;
     };
 
@@ -1876,24 +1869,28 @@ async function searchConversations(query, limit = 50, onProjectResult = null, si
   const config = await loadProjectConfig();
   const results = [];
   let totalMatches = 0;
-  const words = safeQuery.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+  const words = safeQuery
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((w) => w.length > 0);
   if (words.length === 0) return { results: [], totalMatches: 0, query: safeQuery };
 
   const isAborted = () => signal?.aborted === true;
 
   const isSystemMessage = (textContent) => {
-    return typeof textContent === 'string' && (
-      textContent.startsWith('<command-name>') ||
-      textContent.startsWith('<command-message>') ||
-      textContent.startsWith('<command-args>') ||
-      textContent.startsWith('<local-command-stdout>') ||
-      textContent.startsWith('<system-reminder>') ||
-      textContent.startsWith('Caveat:') ||
-      textContent.startsWith('This session is being continued from a previous') ||
-      textContent.startsWith('Invalid API key') ||
-      textContent.includes('{"subtasks":') ||
-      textContent.includes('CRITICAL: You MUST respond with ONLY a JSON') ||
-      textContent === 'Warmup'
+    return (
+      typeof textContent === 'string' &&
+      (textContent.startsWith('<command-name>') ||
+        textContent.startsWith('<command-message>') ||
+        textContent.startsWith('<command-args>') ||
+        textContent.startsWith('<local-command-stdout>') ||
+        textContent.startsWith('<system-reminder>') ||
+        textContent.startsWith('Caveat:') ||
+        textContent.startsWith('This session is being continued from a previous') ||
+        textContent.startsWith('Invalid API key') ||
+        textContent.includes('{"subtasks":') ||
+        textContent.includes('CRITICAL: You MUST respond with ONLY a JSON') ||
+        textContent === 'Warmup')
     );
   };
 
@@ -1901,17 +1898,17 @@ async function searchConversations(query, limit = 50, onProjectResult = null, si
     if (typeof content === 'string') return content;
     if (Array.isArray(content)) {
       return content
-        .filter(part => part.type === 'text' && part.text)
-        .map(part => part.text)
+        .filter((part) => part.type === 'text' && part.text)
+        .map((part) => part.text)
         .join(' ');
     }
     return '';
   };
 
   const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const wordPatterns = words.map(w => new RegExp(`(?<!\\p{L})${escapeRegex(w)}(?!\\p{L})`, 'u'));
+  const wordPatterns = words.map((w) => new RegExp(`(?<!\\p{L})${escapeRegex(w)}(?!\\p{L})`, 'u'));
   const allWordsMatch = (textLower) => {
-    return wordPatterns.every(p => p.test(textLower));
+    return wordPatterns.every((p) => p.test(textLower));
   };
 
   const buildSnippet = (text, textLower, snippetLen = 150) => {
@@ -1958,7 +1955,7 @@ async function searchConversations(query, limit = 50, onProjectResult = null, si
   try {
     await fs.access(claudeDir);
     const entries = await fs.readdir(claudeDir, { withFileTypes: true });
-    const projectDirs = entries.filter(e => e.isDirectory());
+    const projectDirs = entries.filter((e) => e.isDirectory());
     let scannedProjects = 0;
     const totalProjects = projectDirs.length;
 
@@ -1967,8 +1964,7 @@ async function searchConversations(query, limit = 50, onProjectResult = null, si
 
       const projectName = projectEntry.name;
       const projectDir = path.join(claudeDir, projectName);
-      const displayName = config[projectName]?.displayName
-        || await generateDisplayName(projectName);
+      const displayName = config[projectName]?.displayName || (await generateDisplayName(projectName));
 
       let files;
       try {
@@ -1977,14 +1973,12 @@ async function searchConversations(query, limit = 50, onProjectResult = null, si
         continue;
       }
 
-      const jsonlFiles = files.filter(
-        file => file.endsWith('.jsonl') && !file.startsWith('agent-')
-      );
+      const jsonlFiles = files.filter((file) => file.endsWith('.jsonl') && !file.startsWith('agent-'));
 
       const projectResult = {
         projectName,
         projectDisplayName: displayName,
-        sessions: []
+        sessions: [],
       };
 
       for (const file of jsonlFiles) {
@@ -2001,7 +1995,7 @@ async function searchConversations(query, limit = 50, onProjectResult = null, si
           const fileStream = fsSync.createReadStream(filePath);
           const rl = readline.createInterface({
             input: fileStream,
-            crlfDelay: Infinity
+            crlfDelay: Infinity,
           });
 
           for await (const line of rl) {
@@ -2073,7 +2067,7 @@ async function searchConversations(query, limit = 50, onProjectResult = null, si
                 highlights,
                 timestamp: entry.timestamp || null,
                 provider: 'claude',
-                messageUuid: entry.uuid || null
+                messageUuid: entry.uuid || null,
               });
               totalMatches++;
             }
@@ -2086,12 +2080,14 @@ async function searchConversations(query, limit = 50, onProjectResult = null, si
           projectResult.sessions.push({
             sessionId,
             provider: 'claude',
-            sessionSummary: sessionSummaries.get(sessionId) || (() => {
-              const msgs = sessionLastMessages.get(sessionId);
-              const lastMsg = msgs?.user || msgs?.assistant;
-              return lastMsg ? (lastMsg.length > 50 ? lastMsg.substring(0, 50) + '...' : lastMsg) : 'New Session';
-            })(),
-            matches
+            sessionSummary:
+              sessionSummaries.get(sessionId) ||
+              (() => {
+                const msgs = sessionLastMessages.get(sessionId);
+                const lastMsg = msgs?.user || msgs?.assistant;
+                return lastMsg ? (lastMsg.length > 50 ? lastMsg.substring(0, 50) + '...' : lastMsg) : 'New Session';
+              })(),
+            matches,
           });
         }
       }
@@ -2101,8 +2097,19 @@ async function searchConversations(query, limit = 50, onProjectResult = null, si
         const actualProjectDir = await extractProjectDirectory(projectName);
         if (actualProjectDir && !isAborted() && totalMatches < safeLimit) {
           await searchCodexSessionsForProject(
-            actualProjectDir, projectResult, words, allWordsMatch, extractText, isSystemMessage,
-            buildSnippet, safeLimit, () => totalMatches, (n) => { totalMatches += n; }, isAborted
+            actualProjectDir,
+            projectResult,
+            words,
+            allWordsMatch,
+            extractText,
+            isSystemMessage,
+            buildSnippet,
+            safeLimit,
+            () => totalMatches,
+            (n) => {
+              totalMatches += n;
+            },
+            isAborted
           );
         }
       } catch {
@@ -2114,8 +2121,16 @@ async function searchConversations(query, limit = 50, onProjectResult = null, si
         const actualProjectDir = await extractProjectDirectory(projectName);
         if (actualProjectDir && !isAborted() && totalMatches < safeLimit) {
           await searchGeminiSessionsForProject(
-            actualProjectDir, projectResult, words, allWordsMatch,
-            buildSnippet, safeLimit, () => totalMatches, (n) => { totalMatches += n; }
+            actualProjectDir,
+            projectResult,
+            words,
+            allWordsMatch,
+            buildSnippet,
+            safeLimit,
+            () => totalMatches,
+            (n) => {
+              totalMatches += n;
+            }
           );
         }
       } catch {
@@ -2140,8 +2155,17 @@ async function searchConversations(query, limit = 50, onProjectResult = null, si
 }
 
 async function searchCodexSessionsForProject(
-  projectPath, projectResult, words, allWordsMatch, extractText, isSystemMessage,
-  buildSnippet, limit, getTotalMatches, addMatches, isAborted
+  projectPath,
+  projectResult,
+  words,
+  allWordsMatch,
+  extractText,
+  isSystemMessage,
+  buildSnippet,
+  limit,
+  getTotalMatches,
+  addMatches,
+  isAborted
 ) {
   const normalizedProjectPath = normalizeComparablePath(projectPath);
   if (!normalizedProjectPath) return;
@@ -2171,7 +2195,9 @@ async function searchCodexSessionsForProject(
             sessionMeta = entry.payload;
             break;
           }
-        } catch { continue; }
+        } catch {
+          continue;
+        }
       }
 
       // Skip sessions that don't belong to this project
@@ -2190,7 +2216,11 @@ async function searchCodexSessionsForProject(
         if (!line.trim()) continue;
 
         let entry;
-        try { entry = JSON.parse(line); } catch { continue; }
+        try {
+          entry = JSON.parse(line);
+        } catch {
+          continue;
+        }
 
         let text = null;
         let role = null;
@@ -2203,15 +2233,15 @@ async function searchCodexSessionsForProject(
           const contentParts = entry.payload.content || [];
           if (entry.payload.role === 'user') {
             text = contentParts
-              .filter(p => p.type === 'input_text' && p.text)
-              .map(p => p.text)
+              .filter((p) => p.type === 'input_text' && p.text)
+              .map((p) => p.text)
               .join(' ');
             role = 'user';
             if (text) lastUserMessage = text;
           } else if (entry.payload.role === 'assistant') {
             text = contentParts
-              .filter(p => p.type === 'output_text' && p.text)
-              .map(p => p.text)
+              .filter((p) => p.type === 'output_text' && p.text)
+              .map((p) => p.text)
               .join(' ');
             role = 'assistant';
           }
@@ -2233,9 +2263,11 @@ async function searchCodexSessionsForProject(
           sessionId: sessionMeta.id,
           provider: 'codex',
           sessionSummary: lastUserMessage
-            ? (lastUserMessage.length > 50 ? lastUserMessage.substring(0, 50) + '...' : lastUserMessage)
+            ? lastUserMessage.length > 50
+              ? lastUserMessage.substring(0, 50) + '...'
+              : lastUserMessage
             : 'Codex Session',
-          matches
+          matches,
         });
       }
     } catch {
@@ -2245,8 +2277,14 @@ async function searchCodexSessionsForProject(
 }
 
 async function searchGeminiSessionsForProject(
-  projectPath, projectResult, words, allWordsMatch,
-  buildSnippet, limit, getTotalMatches, addMatches
+  projectPath,
+  projectResult,
+  words,
+  allWordsMatch,
+  buildSnippet,
+  limit,
+  getTotalMatches,
+  addMatches
 ) {
   // 1) Search in-memory sessions (created via UI)
   for (const [sessionId, session] of sessionManager.sessions) {
@@ -2258,9 +2296,15 @@ async function searchGeminiSessionsForProject(
       if (getTotalMatches() >= limit) break;
       if (msg.role !== 'user' && msg.role !== 'assistant') continue;
 
-      const text = typeof msg.content === 'string' ? msg.content
-        : Array.isArray(msg.content) ? msg.content.filter(p => p.type === 'text').map(p => p.text).join(' ')
-        : '';
+      const text =
+        typeof msg.content === 'string'
+          ? msg.content
+          : Array.isArray(msg.content)
+            ? msg.content
+                .filter((p) => p.type === 'text')
+                .map((p) => p.text)
+                .join(' ')
+            : '';
       if (!text) continue;
 
       const textLower = text.toLowerCase();
@@ -2269,27 +2313,31 @@ async function searchGeminiSessionsForProject(
       if (matches.length < 2) {
         const { snippet, highlights } = buildSnippet(text, textLower);
         matches.push({
-          role: msg.role, snippet, highlights,
+          role: msg.role,
+          snippet,
+          highlights,
           timestamp: msg.timestamp ? msg.timestamp.toISOString() : null,
-          provider: 'gemini'
+          provider: 'gemini',
         });
         addMatches(1);
       }
     }
 
     if (matches.length > 0) {
-      const firstUserMsg = session.messages.find(m => m.role === 'user');
+      const firstUserMsg = session.messages.find((m) => m.role === 'user');
       const summary = firstUserMsg?.content
-        ? (typeof firstUserMsg.content === 'string'
-          ? (firstUserMsg.content.length > 50 ? firstUserMsg.content.substring(0, 50) + '...' : firstUserMsg.content)
-          : 'Gemini Session')
+        ? typeof firstUserMsg.content === 'string'
+          ? firstUserMsg.content.length > 50
+            ? firstUserMsg.content.substring(0, 50) + '...'
+            : firstUserMsg.content
+          : 'Gemini Session'
         : 'Gemini Session';
 
       projectResult.sessions.push({
         sessionId,
         provider: 'gemini',
         sessionSummary: summary,
-        matches
+        matches,
       });
     }
   }
@@ -2357,9 +2405,8 @@ async function searchGeminiSessionsForProject(
         for (const msg of session.messages) {
           if (getTotalMatches() >= limit) break;
 
-          const role = msg.type === 'user' ? 'user'
-            : (msg.type === 'gemini' || msg.type === 'assistant') ? 'assistant'
-            : null;
+          const role =
+            msg.type === 'user' ? 'user' : msg.type === 'gemini' || msg.type === 'assistant' ? 'assistant' : null;
           if (!role) continue;
 
           let text = '';
@@ -2367,8 +2414,8 @@ async function searchGeminiSessionsForProject(
             text = msg.content;
           } else if (Array.isArray(msg.content)) {
             text = msg.content
-              .filter(p => p.text)
-              .map(p => p.text)
+              .filter((p) => p.text)
+              .map((p) => p.text)
               .join(' ');
           }
           if (!text) continue;
@@ -2381,9 +2428,11 @@ async function searchGeminiSessionsForProject(
           if (matches.length < 2) {
             const { snippet, highlights } = buildSnippet(text, textLower);
             matches.push({
-              role, snippet, highlights,
+              role,
+              snippet,
+              highlights,
               timestamp: msg.timestamp || null,
-              provider: 'gemini'
+              provider: 'gemini',
             });
             addMatches(1);
           }
@@ -2391,14 +2440,16 @@ async function searchGeminiSessionsForProject(
 
         if (matches.length > 0) {
           const summary = firstUserText
-            ? (firstUserText.length > 50 ? firstUserText.substring(0, 50) + '...' : firstUserText)
+            ? firstUserText.length > 50
+              ? firstUserText.substring(0, 50) + '...'
+              : firstUserText
             : 'Gemini CLI Session';
 
           projectResult.sessions.push({
             sessionId: cliSessionId,
             provider: 'gemini',
             sessionSummary: summary,
-            matches
+            matches,
           });
         }
       } catch {
@@ -2455,12 +2506,17 @@ async function getGeminiCliSessions(projectPath) {
         if (!session.messages || !Array.isArray(session.messages)) continue;
 
         const sessionId = session.sessionId || chatFile.replace('.json', '');
-        const firstUserMsg = session.messages.find(m => m.type === 'user');
+        const firstUserMsg = session.messages.find((m) => m.type === 'user');
         let summary = 'Gemini CLI Session';
         if (firstUserMsg) {
           const text = Array.isArray(firstUserMsg.content)
-            ? firstUserMsg.content.filter(p => p.text).map(p => p.text).join(' ')
-            : (typeof firstUserMsg.content === 'string' ? firstUserMsg.content : '');
+            ? firstUserMsg.content
+                .filter((p) => p.text)
+                .map((p) => p.text)
+                .join(' ')
+            : typeof firstUserMsg.content === 'string'
+              ? firstUserMsg.content
+              : '';
           if (text) {
             summary = text.length > 50 ? text.substring(0, 50) + '...' : text;
           }
@@ -2471,7 +2527,7 @@ async function getGeminiCliSessions(projectPath) {
           summary,
           messageCount: session.messages.length,
           lastActivity: session.lastUpdated || session.startTime || null,
-          provider: 'gemini'
+          provider: 'gemini',
         });
       } catch {
         continue;
@@ -2479,9 +2535,7 @@ async function getGeminiCliSessions(projectPath) {
     }
   }
 
-  return sessions.sort((a, b) =>
-    new Date(b.lastActivity || 0) - new Date(a.lastActivity || 0)
-  );
+  return sessions.sort((a, b) => new Date(b.lastActivity || 0) - new Date(a.lastActivity || 0));
 }
 
 async function getGeminiCliSessionMessages(sessionId) {
@@ -2511,22 +2565,24 @@ async function getGeminiCliSessionMessages(sessionId) {
         const fileSessionId = session.sessionId || chatFile.replace('.json', '');
         if (fileSessionId !== sessionId) continue;
 
-        return (session.messages || []).map(msg => {
-          const role = msg.type === 'user' ? 'user'
-            : (msg.type === 'gemini' || msg.type === 'assistant') ? 'assistant'
-            : msg.type;
+        return (session.messages || []).map((msg) => {
+          const role =
+            msg.type === 'user' ? 'user' : msg.type === 'gemini' || msg.type === 'assistant' ? 'assistant' : msg.type;
 
           let content = '';
           if (typeof msg.content === 'string') {
             content = msg.content;
           } else if (Array.isArray(msg.content)) {
-            content = msg.content.filter(p => p.text).map(p => p.text).join('\n');
+            content = msg.content
+              .filter((p) => p.text)
+              .map((p) => p.text)
+              .join('\n');
           }
 
           return {
             type: 'message',
             message: { role, content },
-            timestamp: msg.timestamp || null
+            timestamp: msg.timestamp || null,
           };
         });
       } catch {
@@ -2557,5 +2613,5 @@ export {
   deleteCodexSession,
   getGeminiCliSessions,
   getGeminiCliSessionMessages,
-  searchConversations
+  searchConversations,
 };

@@ -6,9 +6,9 @@ const spawnFunction = process.platform === 'win32' ? crossSpawn : spawn;
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
-import { getSessions, getSessionMessages } from './projects.js';
-import sessionManager from './sessionManager.js';
-import GeminiResponseHandler from './gemini-response-handler.js';
+import { getSessions, getSessionMessages } from './projects.ts';
+import sessionManager from './sessionManager.ts';
+import GeminiResponseHandler from './gemini-response-handler.ts';
 
 let activeGeminiProcesses = new Map(); // Track active processes by session ID
 

@@ -17,7 +17,7 @@ import os from 'os';
  */
 export async function detectTaskMasterMCPServer() {
     try {
-        // Read Claude configuration files directly (same logic as mcp.js)
+        // Read Claude configuration files directly (same logic as mcp.ts)
         const homeDir = os.homedir();
         const configPaths = [
             path.join(homeDir, '.claude.json'),

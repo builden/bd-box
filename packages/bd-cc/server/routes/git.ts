@@ -2,9 +2,9 @@ import express from 'express';
 import { spawn } from 'child_process';
 import path from 'path';
 import { promises as fs } from 'fs';
-import { extractProjectDirectory } from '../projects.js';
-import { queryClaudeSDK } from '../claude-sdk.js';
-import { spawnCursor } from '../cursor-cli.js';
+import { extractProjectDirectory } from '../projects.ts';
+import { queryClaudeSDK } from '../claude-sdk.ts';
+import { spawnCursor } from '../cursor-cli.ts';
 
 const router = express.Router();
 const COMMIT_DIFF_CHARACTER_LIMIT = 500_000;

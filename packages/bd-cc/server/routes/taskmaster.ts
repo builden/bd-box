@@ -16,9 +16,9 @@ import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import os from 'os';
-import { extractProjectDirectory } from '../projects.js';
-import { detectTaskMasterMCPServer } from '../utils/mcp-detector.js';
-import { broadcastTaskMasterProjectUpdate, broadcastTaskMasterTasksUpdate } from '../utils/taskmaster-websocket.js';
+import { extractProjectDirectory } from '../projects.ts';
+import { detectTaskMasterMCPServer } from '../utils/mcp-detector.ts';
+import { broadcastTaskMasterProjectUpdate, broadcastTaskMasterTasksUpdate } from '../utils/taskmaster-websocket.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -350,7 +350,7 @@ router.get('/detect/:projectName', async (req, res) => {
 router.get('/detect-all', async (req, res) => {
     try {
         // Import getProjects from the projects module
-        const { getProjects } = await import('../projects.js');
+        const { getProjects } = await import('../projects.ts');
         const projects = await getProjects();
 
         // Run detection for all projects in parallel

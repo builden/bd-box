@@ -1,5 +1,5 @@
 import express from 'express';
-import { apiKeysDb, credentialsDb } from '../database/db.js';
+import { apiKeysDb, credentialsDb } from '../database/index.ts';
 
 const router = express.Router();
 
@@ -12,9 +12,9 @@ router.get('/api-keys', async (req, res) => {
   try {
     const apiKeys = apiKeysDb.getApiKeys(req.user.id);
     // Don't send the full API key in the list for security
-    const sanitizedKeys = apiKeys.map(key => ({
+    const sanitizedKeys = apiKeys.map((key) => ({
       ...key,
-      api_key: key.api_key.substring(0, 10) + '...'
+      api_key: key.api_key.substring(0, 10) + '...',
     }));
     res.json({ apiKeys: sanitizedKeys });
   } catch (error) {
@@ -35,7 +35,7 @@ router.post('/api-keys', async (req, res) => {
     const result = apiKeysDb.createApiKey(req.user.id, keyName.trim());
     res.json({
       success: true,
-      apiKey: result
+      apiKey: result,
     });
   } catch (error) {
     console.error('Error creating API key:', error);
@@ -127,7 +127,7 @@ router.post('/credentials', async (req, res) => {
 
     res.json({
       success: true,
-      credential: result
+      credential: result,
     });
   } catch (error) {
     console.error('Error creating credential:', error);

@@ -249,7 +249,7 @@ async function startServer() {
     checkForUpdates(true);
 
     // Import and run the server
-    await import('./index.js');
+    await import('./index.ts');
 }
 
 // Parse CLI arguments

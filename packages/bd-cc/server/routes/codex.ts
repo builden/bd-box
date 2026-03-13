@@ -4,8 +4,8 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 import TOML from '@iarna/toml';
-import { getCodexSessions, getCodexSessionMessages, deleteCodexSession } from '../projects.js';
-import { applyCustomSessionNames, sessionNamesDb } from '../database/db.js';
+import { getCodexSessions, getCodexSessionMessages, deleteCodexSession } from '../projects.ts';
+import { applyCustomSessionNames, sessionNamesDb } from '../database/index.ts';
 
 const router = express.Router();
 
@@ -31,8 +31,8 @@ router.get('/config', async (req, res) => {
       config: {
         model: config.model || null,
         mcpServers: config.mcp_servers || {},
-        approvalMode: config.approval_mode || 'suggest'
-      }
+        approvalMode: config.approval_mode || 'suggest',
+      },
     });
   } catch (error) {
     if (error.code === 'ENOENT') {
@@ -41,8 +41,8 @@ router.get('/config', async (req, res) => {
         config: {
           model: null,
           mcpServers: {},
-          approvalMode: 'suggest'
-        }
+          approvalMode: 'suggest',
+        },
       });
     } else {
       console.error('Error reading Codex config:', error);
@@ -108,8 +108,12 @@ router.get('/mcp/cli/list', async (req, res) => {
     let stdout = '';
     let stderr = '';
 
-    proc.stdout?.on('data', (data) => { stdout += data.toString(); });
-    proc.stderr?.on('data', (data) => { stderr += data.toString(); });
+    proc.stdout?.on('data', (data) => {
+      stdout += data.toString();
+    });
+    proc.stderr?.on('data', (data) => {
+      stderr += data.toString();
+    });
 
     proc.on('close', (code) => {
       if (code === 0) {
@@ -124,7 +128,7 @@ router.get('/mcp/cli/list', async (req, res) => {
       respond(isMissing ? 503 : 500, {
         error: isMissing ? 'Codex CLI not installed' : 'Failed to run Codex CLI',
         details: error.message,
-        code: error.code
+        code: error.code,
       });
     });
   } catch (error) {
@@ -159,8 +163,12 @@ router.post('/mcp/cli/add', async (req, res) => {
     let stdout = '';
     let stderr = '';
 
-    proc.stdout?.on('data', (data) => { stdout += data.toString(); });
-    proc.stderr?.on('data', (data) => { stderr += data.toString(); });
+    proc.stdout?.on('data', (data) => {
+      stdout += data.toString();
+    });
+    proc.stderr?.on('data', (data) => {
+      stderr += data.toString();
+    });
 
     proc.on('close', (code) => {
       if (code === 0) {
@@ -175,7 +183,7 @@ router.post('/mcp/cli/add', async (req, res) => {
       respond(isMissing ? 503 : 500, {
         error: isMissing ? 'Codex CLI not installed' : 'Failed to run Codex CLI',
         details: error.message,
-        code: error.code
+        code: error.code,
       });
     });
   } catch (error) {
@@ -193,8 +201,12 @@ router.delete('/mcp/cli/remove/:name', async (req, res) => {
     let stdout = '';
     let stderr = '';
 
-    proc.stdout?.on('data', (data) => { stdout += data.toString(); });
-    proc.stderr?.on('data', (data) => { stderr += data.toString(); });
+    proc.stdout?.on('data', (data) => {
+      stdout += data.toString();
+    });
+    proc.stderr?.on('data', (data) => {
+      stderr += data.toString();
+    });
 
     proc.on('close', (code) => {
       if (code === 0) {
@@ -209,7 +221,7 @@ router.delete('/mcp/cli/remove/:name', async (req, res) => {
       respond(isMissing ? 503 : 500, {
         error: isMissing ? 'Codex CLI not installed' : 'Failed to run Codex CLI',
         details: error.message,
-        code: error.code
+        code: error.code,
       });
     });
   } catch (error) {
@@ -227,8 +239,12 @@ router.get('/mcp/cli/get/:name', async (req, res) => {
     let stdout = '';
     let stderr = '';
 
-    proc.stdout?.on('data', (data) => { stdout += data.toString(); });
-    proc.stderr?.on('data', (data) => { stderr += data.toString(); });
+    proc.stdout?.on('data', (data) => {
+      stdout += data.toString();
+    });
+    proc.stderr?.on('data', (data) => {
+      stderr += data.toString();
+    });
 
     proc.on('close', (code) => {
       if (code === 0) {
@@ -243,7 +259,7 @@ router.get('/mcp/cli/get/:name', async (req, res) => {
       respond(isMissing ? 503 : 500, {
         error: isMissing ? 'Codex CLI not installed' : 'Failed to run Codex CLI',
         details: error.message,
-        code: error.code
+        code: error.code,
       });
     });
   } catch (error) {
@@ -265,7 +281,8 @@ router.get('/mcp/config/read', async (req, res) => {
     }
 
     if (!configData) {
-      return res.json({ success: true, configPath, servers: [] });    }
+      return res.json({ success: true, configPath, servers: [] });
+    }
 
     const servers = [];
 
@@ -279,9 +296,9 @@ router.get('/mcp/config/read', async (req, res) => {
           config: {
             command: config.command || '',
             args: config.args || [],
-            env: config.env || {}
+            env: config.env || {},
           },
-          raw: config
+          raw: config,
         });
       }
     }
@@ -294,7 +311,7 @@ router.get('/mcp/config/read', async (req, res) => {
 
 function parseCodexListOutput(output) {
   const servers = [];
-  const lines = output.split('\n').filter(line => line.trim());
+  const lines = output.split('\n').filter((line) => line.trim());
 
   for (const line of lines) {
     if (line.includes(':')) {
