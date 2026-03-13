@@ -2,12 +2,38 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 
+// Debounce utility
+function debounce(fn: (sessionId: string) => void, delay: number) {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  return (sessionId: string) => {
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(sessionId), delay);
+  };
+}
+
+interface Session {
+  id: string;
+  projectPath: string;
+  messages: Array<{ role: string; content: string; timestamp: Date }>;
+  createdAt: Date;
+  lastActivity: Date;
+}
+
 class SessionManager {
+  sessions: Map<string, Session>;
+  maxSessions: number;
+  sessionsDir: string;
+  ready: Promise<void>;
+  private pendingSaves: Set<string> = new Set();
+  private saveDebounced: (sessionId: string) => void;
+
   constructor() {
     // Store sessions in memory with conversation history
     this.sessions = new Map();
     this.maxSessions = 100;
     this.sessionsDir = path.join(os.homedir(), '.gemini', 'sessions');
+    // Debounce saves to avoid excessive disk I/O (500ms delay)
+    this.saveDebounced = debounce((sessionId: string) => this.flushSave(sessionId), 500);
     this.ready = this.init();
   }
 
@@ -31,7 +57,7 @@ class SessionManager {
       projectPath: projectPath,
       messages: [],
       createdAt: new Date(),
-      lastActivity: new Date()
+      lastActivity: new Date(),
     };
 
     // Evict oldest session from memory if we exceed limit
@@ -41,6 +67,7 @@ class SessionManager {
     }
 
     this.sessions.set(sessionId, session);
+    // Immediate save for new sessions
     this.saveSession(sessionId);
 
     return session;
@@ -58,15 +85,42 @@ class SessionManager {
     const message = {
       role: role, // 'user' or 'assistant'
       content: content,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     session.messages.push(message);
     session.lastActivity = new Date();
 
-    this.saveSession(sessionId);
+    // Use debounced save instead of immediate save
+    this.pendingSaves.add(sessionId);
+    this.saveDebounced(sessionId);
 
     return session;
+  }
+
+  // Internal: actually save to disk
+  private async flushSave(sessionId: string) {
+    if (!this.pendingSaves.has(sessionId)) return;
+
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      this.pendingSaves.delete(sessionId);
+      return;
+    }
+
+    try {
+      const filePath = this._safeFilePath(sessionId);
+      await fs.writeFile(filePath, JSON.stringify(session, null, 2));
+    } catch (error) {
+      // console.error('Error saving session:', error);
+    }
+
+    this.pendingSaves.delete(sessionId);
+  }
+
+  // Force sync save (for critical operations like delete)
+  async forceSaveSession(sessionId: string) {
+    await this.flushSave(sessionId);
   }
 
   // Get session by ID
@@ -84,14 +138,12 @@ class SessionManager {
           id: session.id,
           summary: this.getSessionSummary(session),
           messageCount: session.messages.length,
-          lastActivity: session.lastActivity
+          lastActivity: session.lastActivity,
         });
       }
     }
 
-    return sessions.sort((a, b) =>
-      new Date(b.lastActivity) - new Date(a.lastActivity)
-    );
+    return sessions.sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity));
   }
 
   // Get session summary
@@ -101,7 +153,7 @@ class SessionManager {
     }
 
     // Find first user message
-    const firstUserMessage = session.messages.find(m => m.role === 'user');
+    const firstUserMessage = session.messages.find((m) => m.role === 'user');
     if (firstUserMessage) {
       const content = firstUserMessage.content;
       return content.length > 50 ? content.substring(0, 50) + '...' : content;
@@ -170,7 +222,7 @@ class SessionManager {
             // Convert dates
             session.createdAt = new Date(session.createdAt);
             session.lastActivity = new Date(session.lastActivity);
-            session.messages.forEach(msg => {
+            session.messages.forEach((msg) => {
               msg.timestamp = new Date(msg.timestamp);
             });
 
@@ -208,13 +260,13 @@ class SessionManager {
     const session = this.sessions.get(sessionId);
     if (!session) return [];
 
-    return session.messages.map(msg => ({
+    return session.messages.map((msg) => ({
       type: 'message',
       message: {
         role: msg.role,
-        content: msg.content
+        content: msg.content,
       },
-      timestamp: msg.timestamp.toISOString()
+      timestamp: msg.timestamp.toISOString(),
     }));
   }
 }

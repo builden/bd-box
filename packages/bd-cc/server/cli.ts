@@ -69,22 +69,11 @@ const packageJsonPath = path.join(__dirname, '../package.json');
 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
 // Load environment variables from .env file if it exists
+import { parseEnvFile } from './utils/env-parser';
+
 function loadEnvFile() {
-  try {
-    const envPath = path.join(__dirname, '../.env');
-    const envFile = fs.readFileSync(envPath, 'utf8');
-    envFile.split('\n').forEach((line) => {
-      const trimmedLine = line.trim();
-      if (trimmedLine && !trimmedLine.startsWith('#')) {
-        const [key, ...valueParts] = trimmedLine.split('=');
-        if (key && valueParts.length > 0 && !process.env[key]) {
-          process.env[key] = valueParts.join('=').trim();
-        }
-      }
-    });
-  } catch (e) {
-    // .env file is optional
-  }
+  const envPath = path.join(__dirname, '../.env');
+  parseEnvFile(envPath);
 }
 
 // Get the database path (same logic as db.js)

@@ -1,10 +1,20 @@
-import fs from "fs";
-import path from "path";
-import os from "os";
-import { spawn } from "child_process";
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import { spawn } from 'child_process';
+import {
+  sanitizeRepoUrl,
+  ensureDir,
+  readJsonConfig,
+  writeJsonConfig,
+  getGitRemoteUrl,
+  removeDir,
+  mkTempDir,
+  parseYamlFrontmatter,
+} from './base-loader';
 
-const SKILLS_DIR = path.join(os.homedir(), ".claude", "skills");
-const SKILLS_CONFIG_PATH = path.join(os.homedir(), ".claude-code-ui", "skills.json");
+const SKILLS_DIR = path.join(os.homedir(), '.claude', 'skills');
+const SKILLS_CONFIG_PATH = path.join(os.homedir(), '.claude-code-ui', 'skills.json');
 
 export interface SkillManifest {
   name: string;
@@ -25,70 +35,27 @@ export interface SkillInfo {
 }
 
 export function getSkillsDir(): string {
-  if (!fs.existsSync(SKILLS_DIR)) {
-    fs.mkdirSync(SKILLS_DIR, { recursive: true });
-  }
+  ensureDir(SKILLS_DIR);
   return SKILLS_DIR;
 }
 
 export function getSkillsConfig(): Record<string, { enabled?: boolean }> {
-  try {
-    if (fs.existsSync(SKILLS_CONFIG_PATH)) {
-      return JSON.parse(fs.readFileSync(SKILLS_CONFIG_PATH, "utf-8"));
-    }
-  } catch {
-    // Corrupted config, start fresh
-  }
-  return {};
+  return readJsonConfig<Record<string, { enabled?: boolean }>>(SKILLS_CONFIG_PATH, {});
 }
 
 export function saveSkillsConfig(config: Record<string, { enabled?: boolean }>) {
-  const dir = path.dirname(SKILLS_CONFIG_PATH);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
-  }
-  fs.writeFileSync(SKILLS_CONFIG_PATH, JSON.stringify(config, null, 2), { mode: 0o600 });
-}
-
-function sanitizeRepoUrl(raw: string): string {
-  try {
-    const u = new URL(raw);
-    u.username = "";
-    u.password = "";
-    return u.toString().replace(/\/$/, "");
-  } catch {
-    return raw.replace(/\/\/[^@/]+@/, "//");
-  }
+  writeJsonConfig(SKILLS_CONFIG_PATH, config);
 }
 
 function parseSkillMarkdown(manifestPath: string): SkillManifest | null {
   try {
-    const content = fs.readFileSync(manifestPath, "utf-8");
-    const match = content.match(/^---\n([\s\S]*?)\n---/);
-    if (!match) return null;
-
-    // Simple YAML parsing for SKILL.md front matter
-    const frontMatter: Record<string, string> = {};
-    const lines = match[1].split("\n");
-    for (const line of lines) {
-      const colonIndex = line.indexOf(":");
-      if (colonIndex > 0) {
-        const key = line.slice(0, colonIndex).trim();
-        let value = line.slice(colonIndex + 1).trim();
-        // Remove quotes if present
-        if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
-          value = value.slice(1, -1);
-        }
-        frontMatter[key] = value;
-      }
-    }
-
-    if (!frontMatter.name) return null;
+    const frontMatter = parseYamlFrontmatter(fs.readFileSync(manifestPath, 'utf-8'));
+    if (!frontMatter || !frontMatter.name) return null;
 
     return {
       name: frontMatter.name,
-      description: frontMatter.description || "",
-      allowedTools: frontMatter.allowedTools || "",
+      description: frontMatter.description || '',
+      allowedTools: frontMatter.allowedTools || '',
     };
   } catch {
     return null;
@@ -110,10 +77,10 @@ export function scanSkills(): SkillInfo[] {
   for (const entry of entries) {
     // Skip files and hidden directories
     if (!entry.isDirectory() && !entry.isSymbolicLink()) continue;
-    if (entry.name.startsWith(".")) continue;
+    if (entry.name.startsWith('.')) continue;
 
     const entryPath = path.join(skillsDir, entry.name);
-    const manifestPath = path.join(entryPath, "SKILL.md");
+    const manifestPath = path.join(entryPath, 'SKILL.md');
 
     if (!fs.existsSync(manifestPath)) continue;
 
@@ -134,18 +101,18 @@ export function scanSkills(): SkillInfo[] {
 
     // Try to read git remote URL
     let repoUrl: string | null = null;
-    const gitDir = entry.isSymbolicLink() && sourcePath ? path.join(sourcePath, ".git") : path.join(entryPath, ".git");
+    const gitDir = entry.isSymbolicLink() && sourcePath ? path.join(sourcePath, '.git') : path.join(entryPath, '.git');
 
     try {
       if (fs.existsSync(gitDir)) {
-        const gitConfigPath = path.join(gitDir, "config");
+        const gitConfigPath = path.join(gitDir, 'config');
         if (fs.existsSync(gitConfigPath)) {
-          const gitConfig = fs.readFileSync(gitConfigPath, "utf-8");
+          const gitConfig = fs.readFileSync(gitConfigPath, 'utf-8');
           const match = gitConfig.match(/url\s*=\s*(.+)/);
           if (match) {
-            repoUrl = match[1].trim().replace(/\.git$/, "");
-            if (repoUrl.startsWith("git@")) {
-              repoUrl = repoUrl.replace(/^git@([^:]+):/, "https://$1/");
+            repoUrl = match[1].trim().replace(/\.git$/, '');
+            if (repoUrl.startsWith('git@')) {
+              repoUrl = repoUrl.replace(/^git@([^:]+):/, 'https://$1/');
             }
             repoUrl = sanitizeRepoUrl(repoUrl);
           }
@@ -157,9 +124,9 @@ export function scanSkills(): SkillInfo[] {
 
     skills.push({
       name: manifest.name,
-      displayName: manifest.name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-      description: manifest.description || "",
-      allowedTools: manifest.allowedTools || "",
+      displayName: manifest.name.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+      description: manifest.description || '',
+      allowedTools: manifest.allowedTools || '',
       enabled: config[manifest.name]?.enabled !== false,
       dirName: entry.name,
       repoUrl,
@@ -180,25 +147,25 @@ export function getSkillDir(name: string): string | null {
 
 export async function installSkillFromGit(url: string): Promise<SkillInfo> {
   return new Promise((resolve, reject) => {
-    if (typeof url !== "string" || !url.trim()) {
-      return reject(new Error("Invalid URL: must be a non-empty string"));
+    if (typeof url !== 'string' || !url.trim()) {
+      return reject(new Error('Invalid URL: must be a non-empty string'));
     }
-    if (url.startsWith("-")) {
+    if (url.startsWith('-')) {
       return reject(new Error('Invalid URL: must not start with "-"'));
     }
 
-    const urlClean = url.replace(/\.git$/, "").replace(/\/$/, "");
-    const repoName = urlClean.split("/").pop();
+    const urlClean = url.replace(/\.git$/, '').replace(/\/$/, '');
+    const repoName = urlClean.split('/').pop();
 
     if (!repoName || !/^[a-zA-Z0-9_.-]+$/.test(repoName)) {
-      return reject(new Error("Could not determine a valid directory name from the URL"));
+      return reject(new Error('Could not determine a valid directory name from the URL'));
     }
 
     const skillsDir = getSkillsDir();
     const targetDir = path.resolve(skillsDir, repoName);
 
     if (!targetDir.startsWith(skillsDir + path.sep)) {
-      return reject(new Error("Invalid skill directory path"));
+      return reject(new Error('Invalid skill directory path'));
     }
 
     if (fs.existsSync(targetDir)) {
@@ -221,20 +188,20 @@ export async function installSkillFromGit(url: string): Promise<SkillInfo> {
         return reject(new Error(`Failed to move skill into place: ${(err as Error).message}`));
       }
 
-      const manifestPath = path.join(targetDir, "SKILL.md");
+      const manifestPath = path.join(targetDir, 'SKILL.md');
       const manifest = parseSkillMarkdown(manifestPath);
       if (!manifest) {
-        return reject(new Error("Cloned repository does not contain a valid SKILL.md"));
+        return reject(new Error('Cloned repository does not contain a valid SKILL.md'));
       }
 
       const skill: SkillInfo = {
         name: manifest.name,
-        displayName: manifest.name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-        description: manifest.description || "",
-        allowedTools: manifest.allowedTools || "",
+        displayName: manifest.name.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+        description: manifest.description || '',
+        allowedTools: manifest.allowedTools || '',
         enabled: true,
         dirName: repoName,
-        repoUrl: url.replace(/\.git$/, "").replace(/\/$/, ""),
+        repoUrl: url.replace(/\.git$/, '').replace(/\/$/, ''),
         isSymlink: false,
         sourcePath: null,
       };
@@ -242,31 +209,31 @@ export async function installSkillFromGit(url: string): Promise<SkillInfo> {
       resolve(skill);
     };
 
-    const gitProcess = spawn("git", ["clone", "--depth", "1", "--", url, tempDir], {
-      stdio: ["ignore", "pipe", "pipe"],
+    const gitProcess = spawn('git', ['clone', '--depth', '1', '--', url, tempDir], {
+      stdio: ['ignore', 'pipe', 'pipe'],
     });
 
-    let stderr = "";
-    gitProcess.stderr.on("data", (data) => {
+    let stderr = '';
+    gitProcess.stderr.on('data', (data) => {
       stderr += data.toString();
     });
 
-    gitProcess.on("close", (code) => {
+    gitProcess.on('close', (code) => {
       if (code !== 0) {
         cleanupTemp();
         return reject(new Error(`git clone failed (exit code ${code}): ${stderr.trim()}`));
       }
 
-      const manifestPath = path.join(tempDir, "SKILL.md");
+      const manifestPath = path.join(tempDir, 'SKILL.md');
       if (!fs.existsSync(manifestPath)) {
         cleanupTemp();
-        return reject(new Error("Cloned repository does not contain a SKILL.md"));
+        return reject(new Error('Cloned repository does not contain a SKILL.md'));
       }
 
       const manifest = parseSkillMarkdown(manifestPath);
       if (!manifest) {
         cleanupTemp();
-        return reject(new Error("SKILL.md is invalid or missing required fields"));
+        return reject(new Error('SKILL.md is invalid or missing required fields'));
       }
 
       const existing = scanSkills().find((s) => s.name === manifest.name);
@@ -278,7 +245,7 @@ export async function installSkillFromGit(url: string): Promise<SkillInfo> {
       finalize();
     });
 
-    gitProcess.on("error", (err) => {
+    gitProcess.on('error', (err) => {
       cleanupTemp();
       reject(new Error(`Failed to spawn git: ${err.message}`));
     });
@@ -292,25 +259,25 @@ export async function updateSkillFromGit(name: string): Promise<SkillInfo> {
       return reject(new Error(`Skill "${name}" not found`));
     }
 
-    const gitProcess = spawn("git", ["pull", "--ff-only", "--"], {
+    const gitProcess = spawn('git', ['pull', '--ff-only', '--'], {
       cwd: skillDir,
-      stdio: ["ignore", "pipe", "pipe"],
+      stdio: ['ignore', 'pipe', 'pipe'],
     });
 
-    let stderr = "";
-    gitProcess.stderr.on("data", (data) => {
+    let stderr = '';
+    gitProcess.stderr.on('data', (data) => {
       stderr += data.toString();
     });
 
-    gitProcess.on("close", (code) => {
+    gitProcess.on('close', (code) => {
       if (code !== 0) {
         return reject(new Error(`git pull failed (exit code ${code}): ${stderr.trim()}`));
       }
 
-      const manifestPath = path.join(skillDir, "SKILL.md");
+      const manifestPath = path.join(skillDir, 'SKILL.md');
       const manifest = parseSkillMarkdown(manifestPath);
       if (!manifest) {
-        return reject(new Error("SKILL.md is invalid after update"));
+        return reject(new Error('SKILL.md is invalid after update'));
       }
 
       const skills = scanSkills();
@@ -322,7 +289,7 @@ export async function updateSkillFromGit(name: string): Promise<SkillInfo> {
       resolve(skill);
     });
 
-    gitProcess.on("error", (err) => {
+    gitProcess.on('error', (err) => {
       reject(new Error(`Failed to spawn git: ${err.message}`));
     });
   });
@@ -342,7 +309,7 @@ export async function uninstallSkill(name: string): Promise<void> {
       break;
     } catch (err) {
       const error = err as { code?: string };
-      if (error.code === "EBUSY" && attempt < MAX_RETRIES) {
+      if (error.code === 'EBUSY' && attempt < MAX_RETRIES) {
         await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
       } else {
         throw err;

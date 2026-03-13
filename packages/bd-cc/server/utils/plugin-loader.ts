@@ -2,51 +2,37 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { spawn } from 'child_process';
+import {
+  sanitizeRepoUrl,
+  ensureDir,
+  readJsonConfig,
+  writeJsonConfig,
+  getGitRemoteUrl,
+  gitClone,
+  gitPullFFOnly,
+  removeDir,
+  npmInstall,
+  mkTempDir,
+} from './base-loader';
 
 const PLUGINS_DIR = path.join(os.homedir(), '.claude-code-ui', 'plugins');
 const PLUGINS_CONFIG_PATH = path.join(os.homedir(), '.claude-code-ui', 'plugins.json');
 
 const REQUIRED_MANIFEST_FIELDS = ['name', 'displayName', 'entry'];
-
-/** Strip embedded credentials from a repo URL before exposing it to the client. */
-function sanitizeRepoUrl(raw) {
-  try {
-    const u = new URL(raw);
-    u.username = '';
-    u.password = '';
-    return u.toString().replace(/\/$/, '');
-  } catch {
-    // Not a parseable URL (e.g. SSH shorthand) — strip user:pass@ segment
-    return raw.replace(/\/\/[^@/]+@/, '//');
-  }
-}
 const ALLOWED_TYPES = ['react', 'module'];
 const ALLOWED_SLOTS = ['tab'];
 
 export function getPluginsDir() {
-  if (!fs.existsSync(PLUGINS_DIR)) {
-    fs.mkdirSync(PLUGINS_DIR, { recursive: true });
-  }
+  ensureDir(PLUGINS_DIR);
   return PLUGINS_DIR;
 }
 
 export function getPluginsConfig() {
-  try {
-    if (fs.existsSync(PLUGINS_CONFIG_PATH)) {
-      return JSON.parse(fs.readFileSync(PLUGINS_CONFIG_PATH, 'utf-8'));
-    }
-  } catch {
-    // Corrupted config, start fresh
-  }
-  return {};
+  return readJsonConfig<Record<string, { enabled?: boolean }>>(PLUGINS_CONFIG_PATH, {});
 }
 
-export function savePluginsConfig(config) {
-  const dir = path.dirname(PLUGINS_CONFIG_PATH);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
-  }
-  fs.writeFileSync(PLUGINS_CONFIG_PATH, JSON.stringify(config, null, 2), { mode: 0o600 });
+export function savePluginsConfig(config: Record<string, { enabled?: boolean }>) {
+  writeJsonConfig(PLUGINS_CONFIG_PATH, config);
 }
 
 export function validateManifest(manifest) {
@@ -66,11 +52,17 @@ export function validateManifest(manifest) {
   }
 
   if (manifest.type && !ALLOWED_TYPES.includes(manifest.type)) {
-    return { valid: false, error: `Invalid plugin type: ${manifest.type}. Must be one of: ${ALLOWED_TYPES.join(', ')}` };
+    return {
+      valid: false,
+      error: `Invalid plugin type: ${manifest.type}. Must be one of: ${ALLOWED_TYPES.join(', ')}`,
+    };
   }
 
   if (manifest.slot && !ALLOWED_SLOTS.includes(manifest.slot)) {
-    return { valid: false, error: `Invalid plugin slot: ${manifest.slot}. Must be one of: ${ALLOWED_SLOTS.join(', ')}` };
+    return {
+      valid: false,
+      error: `Invalid plugin slot: ${manifest.slot}. Must be one of: ${ALLOWED_SLOTS.join(', ')}`,
+    };
   }
 
   // Validate entry is a relative path without traversal
@@ -85,7 +77,7 @@ export function validateManifest(manifest) {
   }
 
   if (manifest.permissions !== undefined) {
-    if (!Array.isArray(manifest.permissions) || !manifest.permissions.every(p => typeof p === 'string')) {
+    if (!Array.isArray(manifest.permissions) || !manifest.permissions.every((p) => typeof p === 'string')) {
       return { valid: false, error: 'Permissions must be an array of strings' };
     }
   }
@@ -147,7 +139,9 @@ export function scanPlugins() {
             repoUrl = sanitizeRepoUrl(repoUrl);
           }
         }
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
 
       plugins.push({
         name: manifest.name,
@@ -175,7 +169,7 @@ export function scanPlugins() {
 
 export function getPluginDir(name) {
   const plugins = scanPlugins();
-  const plugin = plugins.find(p => p.name === name);
+  const plugin = plugins.find((p) => p.name === name);
   if (!plugin) return null;
   return path.join(getPluginsDir(), plugin.dirName);
 }
@@ -231,7 +225,9 @@ export function installPluginFromGit(url) {
     const tempDir = fs.mkdtempSync(path.join(pluginsDir, `.tmp-${repoName}-`));
 
     const cleanupTemp = () => {
-      try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch {}
+      try {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+      } catch {}
     };
 
     const finalize = (manifest) => {
@@ -249,7 +245,9 @@ export function installPluginFromGit(url) {
     });
 
     let stderr = '';
-    gitProcess.stderr.on('data', (data) => { stderr += data.toString(); });
+    gitProcess.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
 
     gitProcess.on('close', (code) => {
       if (code !== 0) {
@@ -279,7 +277,7 @@ export function installPluginFromGit(url) {
       }
 
       // Reject if another installed plugin already uses this name
-      const existing = scanPlugins().find(p => p.name === manifest.name);
+      const existing = scanPlugins().find((p) => p.name === manifest.name);
       if (existing) {
         cleanupTemp();
         return reject(new Error(`A plugin named "${manifest.name}" is already installed (in "${existing.dirName}")`));
@@ -332,7 +330,9 @@ export function updatePluginFromGit(name) {
     });
 
     let stderr = '';
-    gitProcess.stderr.on('data', (data) => { stderr += data.toString(); });
+    gitProcess.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
 
     gitProcess.on('close', (code) => {
       if (code !== 0) {
@@ -378,28 +378,14 @@ export function updatePluginFromGit(name) {
   });
 }
 
-export async function uninstallPlugin(name) {
+export async function uninstallPlugin(name: string): Promise<void> {
   const pluginDir = getPluginDir(name);
   if (!pluginDir) {
     throw new Error(`Plugin "${name}" not found`);
   }
 
-  // On Windows, file handles may be released slightly after process exit.
-  // Retry a few times with a short delay before giving up.
-  const MAX_RETRIES = 5;
-  const RETRY_DELAY_MS = 500;
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      fs.rmSync(pluginDir, { recursive: true, force: true });
-      break;
-    } catch (err) {
-      if (err.code === 'EBUSY' && attempt < MAX_RETRIES) {
-        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
-      } else {
-        throw err;
-      }
-    }
-  }
+  // Use shared removeDir with retry logic for Windows EBUSY
+  await removeDir(pluginDir);
 
   // Remove from config
   const config = getPluginsConfig();
