@@ -25,10 +25,7 @@
 {
   "printWidth": 120,
   "singleQuote": true,
-  "trailingComma": "es5",
-  "semi": true,
-  "tabWidth": 2,
-  "useTabs": false
+  "trailingComma": "es5"
 }
 ```
 
@@ -68,7 +65,7 @@ bun add -D @antfu/eslint-config
 
 ```js
 // eslint.config.js
-import antfu from "@antfu/eslint-config";
+import antfu from '@antfu/eslint-config';
 
 export default antfu({
   stylistic: {
@@ -250,8 +247,8 @@ bun add -D eslint-config-prettier
 
 ```js
 // eslint.config.js
-import tseslint from "typescript-eslint";
-import prettier from "eslint-config-prettier";
+import tseslint from 'typescript-eslint';
+import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(prettier);
 ```
@@ -294,7 +291,7 @@ bunx husky init
 echo "bun lint" > .husky/pre-commit
 
 # 4. 创建 prettier 配置
-echo '{"printWidth": 120, "singleQuote": true}' > .prettierrc
+echo '{"printWidth": 120, "singleQuote": true, "trailingComma": "es5"}' > .prettierrc
 
 # 5. 创建 .prettierignore
 cat > .prettierignore << 'EOF'
