@@ -216,7 +216,7 @@
 
 ## 调试方法
 
-重构过程中遇到问题时，遵循 [debugging.md](../debugging/debugging.md) 的优先级：
+重构过程中遇到问题时，遵循调试优先级：
 
 ```
 1. 日志 → 2. 测试 → 3. 源码
@@ -226,7 +226,7 @@
 
 - 先用测试用例复现问题
 - 测试即调试：把问题转化为测试用例，既能定位又能防止回归
-- 详细规范见 [testing.md](../testing/testing.md)
+- 详细规范见 [testing.md](./testing.md)
 
 ---
 
@@ -293,14 +293,14 @@
 
 ```typescript
 // ✅ 测试真实场景
-it("should work with real Claude CLI", () => {
+it('should work with real Claude CLI', () => {
   ws.send({
-    type: "init",
-    provider: "claude", // 不是 plain shell
+    type: 'init',
+    provider: 'claude', // 不是 plain shell
     isPlainShell: false,
   });
   // 验证 PTY 进程启动
-  expect(await isProcessRunning("spawn-helper")).toBe(true);
+  expect(await isProcessRunning('spawn-helper')).toBe(true);
 });
 ```
 

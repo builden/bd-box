@@ -7,32 +7,26 @@
 ```
 bun-best-practices/
 ├── README.md                    # 本文件：按需加载指南
+├── SKILL.md                     # Skill 触发器（Level 2 入口）
 └── references/
-    ├── architecture/            # 项目规范（新增）
-    │   ├── index.md            # 规范入口
-    │   ├── business.md         # 业务架构模板
-    │   ├── system.md           # 系统架构模板
-    │   ├── data.md            # 数据分层模板
-    │   ├── ui.md              # UI 布局模板
-    │   ├── api.md              # API 接口规范模板
-    │   └── glossary.md         # 项目术语表模板
-    ├── testing/                 # 测试阶段
-    │   ├── testing.md           # 测试入口
-    │   ├── performance.md       # 性能测试
-    │   └── playwright.md        # E2E 测试
-    ├── debugging/               # 调试阶段
-    │   ├── logging.md           # 日志规范
-    │   └── debugging.md         # 调试方法论
-    ├── setup/                   # 项目搭建
-    │   ├── monorepo.md          # Bun workspaces
-    │   ├── lint.md              # Lint 配置
-    │   ├── concurrently.md      # 多进程管理
-    │   └── gitignore.md         # 测试输出忽略
-    ├── publishing/              # 发布阶段
-    │   └── package-publishing.md # npm 包发布
-    ├── refactoring/            # 重构规范
-    │   └── refactoring.md     # 重构规范
-    └── troubleshooting/         # 避坑指南
+    ├── setup/                   # 项目搭建（Level 2 入口）
+    │   ├── index.md            # 搭建入口
+    │   ├── monorepo.md         # Bun workspaces
+    │   ├── lint.md             # Lint 配置
+    │   ├── release.md          # 发布配置
+    │   ├── concurrently.md     # 多进程管理
+    │   └── gitignore.md        # 测试输出忽略
+    ├── coding/                 # 编码测试（Level 2 入口）
+    │   ├── index.md            # 编码入口
+    │   ├── testing.md           # 测试框架
+    │   ├── performance.md      # 性能测试
+    │   ├── playwright.md        # E2E 测试
+    │   └── refactoring.md      # 重构规范
+    ├── debugging/              # 调试阶段（Level 2 入口）
+    │   ├── index.md            # 调试入口
+    │   ├── logging.md          # 日志规范
+    │   └── debugging.md        # 调试方法论
+    └── troubleshooting/        # 避坑指南（Level 3 按需）
         └── common-mistakes.md   # 常见错误
 ```
 
@@ -40,100 +34,77 @@ bun-best-practices/
 
 ## 文件职责划分
 
-| 阶段     | 文件                               | 职责                               | 何时查阅          |
-| -------- | ---------------------------------- | ---------------------------------- | ----------------- |
-| **规范** | architecture/index.md              | 项目规范入口：目录、结构、维护策略 | 项目初始化        |
-| **规范** | architecture/business.md           | 业务架构模板：领域、概念、流程     | 设计业务架构      |
-| **规范** | architecture/system.md             | 系统架构模板：分层、技术选型、模块 | 设计系统架构      |
-| **规范** | architecture/data.md               | 数据分层模板：原始/派生数据、联动  | 设计数据流        |
-| **规范** | architecture/ui.md                 | UI 布局模板：组件层级、响应式      | 设计前端布局      |
-| **规范** | architecture/api.md                | API 接口规范：路径、请求、响应     | 设计 API 接口     |
-| **规范** | architecture/glossary.md           | 项目术语表：统一术语、变量命名     | 项目初始化        |
-| **测试** | testing/testing.md                 | 测试入口：分类、结构、命令、覆盖率 | 编写测试时        |
-| **测试** | testing/performance.md             | 性能测试：Mitata 基准测试          | 优化性能时        |
-| **测试** | testing/playwright.md              | E2E 测试：Playwright 端到端        | 编写 E2E 时       |
-| **调试** | debugging/logging.md               | 日志规范：工具、级别、写入技巧     | 需要添加日志时    |
-| **调试** | debugging/debugging.md             | 调试方法论：优先级、手段、工具     | 排查问题时        |
-| **搭建** | setup/monorepo.md                  | Bun workspaces 配置                | 搭建 monorepo 时  |
-| **搭建** | setup/lint.md                      | ESLint + Prettier + Husky 配置     | 配置 lint 时      |
-| **搭建** | setup/concurrently.md              | 多进程并行管理工具                 | 同时运行多命令时  |
-| **搭建** | setup/gitignore.md                 | 测试输出目录忽略                   | 配置 gitignore 时 |
-| **发布** | publishing/package-publishing.md   | npm 包发布                         | 发布包时          |
-| **重构** | refactoring/refactoring.md         | 大型重构规范：计划、进度、验证     | 大型重构时        |
-| **避坑** | troubleshooting/common-mistakes.md | 常见错误及方案                     | 遇到问题时        |
+| 分类     | 文件                               | 职责                              | 何时查阅      |
+| -------- | ---------------------------------- | --------------------------------- | ------------- |
+| **搭建** | setup/index.md                     | 搭建入口：monorepo、lint、release | 搭建项目时    |
+| **搭建** | setup/monorepo.md                  | Bun workspaces 配置               | 配置 monorepo |
+| **搭建** | setup/lint.md                      | ESLint + Prettier + Husky 配置    | 配置 lint     |
+| **搭建** | setup/release.md                   | release-it 版本发布配置           | 发布时        |
+| **编码** | coding/index.md                    | 编码入口：测试、重构              | 编写代码时    |
+| **编码** | coding/testing.md                  | 测试框架、覆盖率要求              | 写测试时      |
+| **编码** | coding/performance.md              | 性能基准测试                      | 优化性能时    |
+| **编码** | coding/playwright.md               | E2E 测试                          | 写 E2E 时     |
+| **编码** | coding/refactoring.md              | 大型重构规范                      | 重构时        |
+| **调试** | debugging/index.md                 | 调试入口：日志、方法论            | 排查问题时    |
+| **调试** | debugging/logging.md               | 日志规范：工具、级别              | 添加日志时    |
+| **调试** | debugging/debugging.md             | 调试方法论：优先级                | 调试时        |
+| **避坑** | troubleshooting/common-mistakes.md | 常见错误及方案                    | 遇到问题      |
 
 ---
 
 ## 开发流程与规范映射
 
-### 0. 项目初始化
-
-```mermaid
-flowchart LR
-    A[新建项目] --> B[创建规范文档]
-    B --> C[docs/specs/]
-    C --> D[architecture/business.md]
-    C --> E[architecture/system.md]
-    C --> F[architecture/data.md]
-    C --> G[architecture/ui.md]
-    C --> H[architecture/api.md]
-    C --> I[architecture/glossary.md]
-```
-
-| 动作          | 查阅规范                 |
-| ------------- | ------------------------ |
-| 设计业务架构  | architecture/business.md |
-| 设计系统架构  | architecture/system.md   |
-| 设计数据分层  | architecture/data.md     |
-| 设计 UI 布局  | architecture/ui.md       |
-| 设计 API 接口 | architecture/api.md      |
-| 统一术语      | architecture/glossary.md |
-
-### 1. 项目搭建
+### 1. 项目搭建（一次性）
 
 ```mermaid
 flowchart LR
     A[新建项目] --> B{选择类型}
     B -->|Monorepo| C[setup/monorepo.md]
     B -->|单包| D[直接开始]
-    C --> E[配置 gitignore]
-    E -->|参考| F[setup/gitignore.md]
+    C --> E[配置 lint]
+    E --> F[setup/lint.md]
+    F --> G[配置发布]
+    G --> H[setup/release.md]
 ```
 
 | 动作           | 查阅规范              |
 | -------------- | --------------------- |
 | 搭建 monorepo  | setup/monorepo.md     |
+| 配置 lint      | setup/lint.md         |
+| 配置发布       | setup/release.md      |
 | 并行运行多命令 | setup/concurrently.md |
 | 配置 gitignore | setup/gitignore.md    |
 
-### 2. 编码阶段
+### 2. 编码阶段（持续循环）
 
 ```mermaid
 flowchart LR
     A[编写代码] --> B[编写测试]
     B --> C[运行 bun test]
     C --> D{通过?}
-    D -->|是| E[提交代码]
+    D -->|是| E[考虑重构]
     D -->|否| B
 
-    B -.->|需要基准测试| F[testing/performance.md]
-    B -.->|需要 E2E| G[testing/playwright.md]
+    E -.->|需要优化| F[coding/performance.md]
+    E -.->|需要 E2E| G[coding/playwright.md]
+    E -.->|大型重构| H[coding/refactoring.md]
 ```
 
-| 动作              | 查阅规范               |
-| ----------------- | ---------------------- |
-| 编写单元/集成测试 | testing/testing.md     |
-| 性能优化/基准对比 | testing/performance.md |
-| 浏览器端到端验证  | testing/playwright.md  |
+| 动作              | 查阅规范              |
+| ----------------- | --------------------- |
+| 编写单元/集成测试 | coding/testing.md     |
+| 性能优化/基准对比 | coding/performance.md |
+| 浏览器端到端验证  | coding/playwright.md  |
+| 大型重构          | coding/refactoring.md |
 
-### 3. 调试阶段
+### 3. 调试阶段（按需）
 
 ```mermaid
 flowchart TD
     A[发现问题] --> B{选择调试手段}
 
     B -->|1. 先看日志| C[debugging/logging.md]
-    B -->|2. 写测试复现| D[testing/testing.md]
+    B -->|2. 写测试复现| D[coding/testing.md]
     B -->|3. 阅读源码| E[使用 LSP]
     B -->|4. 前端问题| F[chrome-devtools]
 
@@ -146,17 +117,11 @@ flowchart TD
 | 优先级 | 手段   | 查阅规范             |
 | ------ | ------ | -------------------- |
 | 1      | 日志   | debugging/logging.md |
-| 2      | 测试   | testing/testing.md   |
+| 2      | 测试   | coding/testing.md    |
 | 3      | 源码   | 使用 LSP             |
 | 4      | 浏览器 | chrome-devtools      |
 
-### 4. 发布阶段
-
-| 动作        | 查阅规范                         |
-| ----------- | -------------------------------- |
-| 发布 npm 包 | publishing/package-publishing.md |
-
-### 5. 避坑
+### 4. 避坑（按需）
 
 | 动作         | 查阅规范                           |
 | ------------ | ---------------------------------- |
@@ -170,21 +135,16 @@ Claude Code 按需加载这些规范的方式：
 
 | 场景            | 加载的文件                                    |
 | --------------- | --------------------------------------------- |
-| 新建项目        | architecture/index.md                         |
-| 设计业务架构    | architecture/business.md                      |
-| 设计系统架构    | architecture/system.md                        |
-| 设计数据分层    | architecture/data.md                          |
-| 设计 UI 布局    | architecture/ui.md                            |
-| 设计 API 接口   | architecture/api.md                           |
-| 统一术语命名    | architecture/glossary.md                      |
 | 新建 monorepo   | setup/monorepo.md                             |
+| 配置 lint       | setup/lint.md                                 |
+| 配置发布        | setup/release.md                              |
 | 并行运行多命令  | setup/concurrently.md                         |
 | 配置 gitignore  | setup/gitignore.md                            |
-| `bun test` 失败 | rules/toolchain.md → testing/testing.md       |
+| `bun test` 失败 | rules/toolchain.md → coding/testing.md        |
 | 排查生产问题    | debugging/logging.md → debugging/debugging.md |
-| 性能优化        | testing/performance.md                        |
-| E2E 测试        | testing/testing.md → testing/playwright.md    |
-| 发布 npm 包     | publishing/package-publishing.md              |
+| 性能优化        | coding/performance.md                         |
+| E2E 测试        | coding/testing.md → coding/playwright.md      |
+| 大型重构        | coding/refactoring.md                         |
 | 遇到错误        | troubleshooting/common-mistakes.md            |
 
 **rules/toolchain.md** 是精简入口，Claude Code 启动时加载，指向详细规范。
@@ -224,89 +184,71 @@ Claude Code 按需加载这些规范的方式：
 graph TB
     subgraph 开发流程
         direction LR
-        I[初始化] --> S[搭建] --> C[编码] --> T[测试] --> D[调试] --> P[发布]
-    end
-
-    subgraph 初始化阶段
-        I1[architecture/index.md]
-        I2[architecture/business.md]
-        I3[architecture/system.md]
-        I4[architecture/data.md]
-        I5[architecture/ui.md]
-        I6[architecture/api.md]
-        I7[architecture/glossary.md]
+        S[搭建] --> C[编码] --> D[调试]
     end
 
     subgraph 搭建阶段
-        S1[setup/monorepo.md]
-        S2[setup/concurrently.md]
-        S3[setup/gitignore.md]
+        S1[setup/index.md]
+        S2[setup/monorepo.md]
+        S3[setup/lint.md]
+        S4[setup/release.md]
     end
 
-    subgraph 测试阶段
-        T1[testing/testing.md]
-        T2[testing/performance.md]
-        T3[testing/playwright.md]
+    subgraph 编码阶段
+        C1[coding/index.md]
+        C2[coding/testing.md]
+        C3[coding/performance.md]
+        C4[coding/playwright.md]
+        C5[coding/refactoring.md]
     end
 
     subgraph 调试阶段
-        D1[debugging/logging.md]
-        D2[debugging/debugging.md]
-    end
-
-    subgraph 发布阶段
-        P1[publishing/package-publishing.md]
+        D1[debugging/index.md]
+        D2[debugging/logging.md]
+        D3[debugging/debugging.md]
     end
 
     subgraph 避坑
         TR[troubleshooting/common-mistakes.md]
     end
 
-    I --> I1
-    I1 --> I2
-    I1 --> I3
-    I1 --> I4
-    I1 --> I5
-    I1 --> I6
-    I1 --> I7
-    I --> S
     S --> S1
-    S --> S2
-    S --> S3
-    C --> T1
-    T1 --> T2
-    T1 --> T3
+    S1 --> S2
+    S1 --> S3
+    S1 --> S4
+
+    C --> C1
+    C1 --> C2
+    C1 --> C3
+    C1 --> C4
+    C1 --> C5
+
     D --> D1
-    D --> D2
-    P --> P1
-    TR -.->|贯穿所有阶段| I
+    D1 --> D2
+    D1 --> D3
+
     TR -.->|贯穿所有阶段| S
     TR -.->|贯穿所有阶段| C
-    TR -.->|贯穿所有阶段| T
     TR -.->|贯穿所有阶段| D
 
-    style I fill:#fce4ec
-    style I1 fill:#fce4ec
-    style I2 fill:#fce4ec
-    style I3 fill:#fce4ec
-    style I4 fill:#fce4ec
-    style I5 fill:#fce4ec
-    style I6 fill:#fce4ec
-    style I7 fill:#fce4ec
     style S fill:#e1f5fe
-    style C fill:#e1f5fe
-    style T fill:#e1f5fe
-    style D fill:#e1f5fe
-    style P fill:#e1f5fe
-    style T1 fill:#fff3e0
-    style T2 fill:#fff3e0
-    style T3 fill:#fff3e0
-    style D1 fill:#e8f5e9
-    style D2 fill:#fce4ec
-    style S1 fill:#f3e5f5
+    style S1 fill:#e1f5fe
     style S2 fill:#f3e5f5
-    style P1 fill:#e0f7fa
+    style S3 fill:#f3e5f5
+    style S4 fill:#f3e5f5
+    style C fill:#e1f5fe
+    style C1 fill:#e1f5fe
+    style C2 fill:#fff3e0
+    style C3 fill:#fff3e0
+    style C4 fill:#fff3e0
+    style C5 fill:#fff3e0
+    style D fill:#e1f5fe
+    style D1 fill:#e1f5fe
+    style D2 fill:#e8f5e9
+    style D3 fill:#fce4ec
     style TR fill:#ffebee
+```
+
 ```
 
 ---
@@ -315,35 +257,31 @@ graph TB
 
 | 场景                 | 使用的规范                                    |
 | -------------------- | --------------------------------------------- |
-| 新建项目             | architecture/index.md                         |
-| 设计业务架构         | architecture/business.md                      |
-| 设计系统架构         | architecture/system.md                        |
-| 设计数据分层         | architecture/data.md                          |
-| 设计 UI 布局         | architecture/ui.md                            |
-| 设计 API 接口        | architecture/api.md                           |
-| 统一术语命名         | architecture/glossary.md                      |
 | 新建 monorepo 项目   | setup/monorepo.md                             |
+| 配置 lint            | setup/lint.md                                 |
+| 配置发布             | setup/release.md                              |
 | 并行运行多命令       | setup/concurrently.md                         |
 | 配置测试输出忽略     | setup/gitignore.md                            |
-| 搭建测试框架         | testing/testing.md                            |
-| 编写单元测试         | testing/testing.md                            |
-| 优化算法性能         | testing/performance.md                        |
+| 搭建测试框架         | coding/testing.md                             |
+| 编写单元测试         | coding/testing.md                             |
+| 优化算法性能         | coding/performance.md                         |
+| E2E 测试             | coding/testing.md → coding/playwright.md      |
+| 大型重构             | coding/refactoring.md                        |
 | 添加业务日志         | debugging/logging.md                          |
 | 排查线上问题         | debugging/logging.md → debugging/debugging.md |
 | 前端 DOM 问题        | debugging/debugging.md (chrome-devtools)      |
-| 端到端功能验证       | testing/testing.md → testing/playwright.md    |
-| 冒烟测试验证核心流程 | testing/testing.md (test:smoke)               |
-| 发布 npm 包          | publishing/package-publishing.md              |
+| 冒烟测试验证核心流程 | coding/testing.md (test:smoke)               |
 | 遇到常见错误         | troubleshooting/common-mistakes.md            |
 
 ---
 
 ## 快速开始
 
-1. **项目初始化**：参考 [architecture/index.md](./references/architecture/index.md)
-2. **搭建项目**：参考 [setup/monorepo.md](./references/setup/monorepo.md)
-3. **编写测试**：参考 [testing/testing.md](./references/testing/testing.md)
-4. **添加日志**：参考 [debugging/logging.md](./references/debugging/logging.md)
-5. **排查问题**：参考 [debugging/debugging.md](./references/debugging/debugging.md)
-6. **性能优化**：参考 [testing/performance.md](./references/testing/performance.md)
-7. **发布包**：参考 [publishing/package-publishing.md](./references/publishing/package-publishing.md)
+1. **搭建项目**：参考 [setup/index.md](./references/setup/index.md)
+2. **编写测试**：参考 [coding/testing.md](./references/coding/testing.md)
+3. **添加日志**：参考 [debugging/logging.md](./references/debugging/logging.md)
+4. **排查问题**：参考 [debugging/debugging.md](./references/debugging/debugging.md)
+5. **性能优化**：参考 [coding/performance.md](./references/coding/performance.md)
+6. **大型重构**：参考 [coding/refactoring.md](./references/coding/refactoring.md)
+7. **发布包**：参考 [setup/release.md](./references/setup/release.md)
+```

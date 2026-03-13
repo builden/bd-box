@@ -35,13 +35,13 @@
 
 ```typescript
 // ❌ 不完整的测试
-it("should connect to terminal", () => {
-  ws.send({ type: "init", isPlainShell: true }); // 只测试了 plain shell
+it('should connect to terminal', () => {
+  ws.send({ type: 'init', isPlainShell: true }); // 只测试了 plain shell
 });
 
 // ✅ 完整的测试
-it("should connect to Claude CLI", () => {
-  ws.send({ type: "init", provider: "claude", isPlainShell: false });
+it('should connect to Claude CLI', () => {
+  ws.send({ type: 'init', provider: 'claude', isPlainShell: false });
 });
 ```
 
@@ -51,11 +51,11 @@ it("should connect to Claude CLI", () => {
 
 ```typescript
 // ✅ 验证 PTY 进程是否启动
-it("should keep PTY process alive", async () => {
-  const before = countProcesses("spawn-helper");
+it('should keep PTY process alive', async () => {
+  const before = countProcesses('spawn-helper');
   await connectToTerminal();
-  await waitForOutput("Starting new Claude session");
-  const after = countProcesses("spawn-helper");
+  await waitForOutput('Starting new Claude session');
+  const after = countProcesses('spawn-helper');
   expect(after).toBeGreaterThan(before);
 });
 ```
@@ -130,21 +130,21 @@ bun run test:bench   # 性能测试（Mitata）
 
 ```typescript
 // tests/api/users.api.ts
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect } from 'bun:test';
 
-describe("Users API", () => {
-  it("GET /api/users should return user list", async () => {
-    const response = await fetch("http://localhost:3000/api/users");
+describe('Users API', () => {
+  it('GET /api/users should return user list', async () => {
+    const response = await fetch('http://localhost:3000/api/users');
     expect(response.status).toBe(200);
     const data = await response.json();
     expect(Array.isArray(data)).toBe(true);
   });
 
-  it("POST /api/users should create user", async () => {
-    const response = await fetch("http://localhost:3000/api/users", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: "Test User" }),
+  it('POST /api/users should create user', async () => {
+    const response = await fetch('http://localhost:3000/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Test User' }),
     });
     expect(response.status).toBe(201);
   });
@@ -205,19 +205,19 @@ preload = ["./tests/setup.ts"]
 ### playwright.config.ts
 
 ```typescript
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  testDir: "./tests/e2e",
-  testMatch: ["**/*.e2e.ts"], // 匹配所有 .e2e.ts 和 .smoke.e2e.ts
-  reporter: [["html", { outputFolder: "tests/test-results/playwright-report" }]],
+  testDir: './tests/e2e',
+  testMatch: ['**/*.e2e.ts'], // 匹配所有 .e2e.ts 和 .smoke.e2e.ts
+  reporter: [['html', { outputFolder: 'tests/test-results/playwright-report' }]],
   use: {
-    trace: "on-first-retry",
+    trace: 'on-first-retry',
   },
   projects: [
     {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
     },
   ],
 });
@@ -227,7 +227,7 @@ export default defineConfig({
 
 ```typescript
 // tests/setup.ts
-import { GlobalRegistrator } from "@happy-dom/global-registrator";
+import { GlobalRegistrator } from '@happy-dom/global-registrator';
 GlobalRegistrator.register();
 ```
 
@@ -256,7 +256,7 @@ mock.module('mermaid', () => ({
 ### 超时配置
 
 ```typescript
-test("slow test", async () => {
+test('slow test', async () => {
   await someSlowOperation();
 }, 30000); // 30 seconds
 ```

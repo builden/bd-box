@@ -30,7 +30,7 @@ bun add -d mitata
 
 ```typescript
 // bench.ts
-import { run, bench, summary } from "mitata";
+import { run, bench, summary } from 'mitata';
 
 function fibonacci(n: number): number {
   if (n <= 1) return n;
@@ -38,9 +38,9 @@ function fibonacci(n: number): number {
 }
 
 // 比较两种实现
-bench("fibonacci(30) - naive", () => fibonacci(30));
+bench('fibonacci(30) - naive', () => fibonacci(30));
 
-bench("fibonacci(30) - memo", () => {
+bench('fibonacci(30) - memo', () => {
   const memo = new Map<number, number>();
   const fib = (n: number): number => {
     if (n <= 1) return n;
@@ -64,23 +64,23 @@ bun run bench.ts
 ### 参数化测试
 
 ```typescript
-bench("Array.from($size)", function* (state) {
-  const size = state.get("size");
+bench('Array.from($size)', function* (state) {
+  const size = state.get('size');
   yield () => Array.from({ length: size });
-}).range("size", 1, 1024); // 1, 8, 64, 512...
+}).range('size', 1, 1024); // 1, 8, 64, 512...
 ```
 
 ### 可视化
 
 ```typescript
-import { boxplot, summary } from "mitata";
+import { boxplot, summary } from 'mitata';
 
 boxplot(() => {
   summary(() => {
-    bench("test 1", () => {
+    bench('test 1', () => {
       /* ... */
     });
-    bench("test 2", () => {
+    bench('test 2', () => {
       /* ... */
     });
   });

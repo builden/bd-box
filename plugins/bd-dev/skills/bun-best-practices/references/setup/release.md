@@ -1,14 +1,21 @@
 # Release 配置
 
-使用 release-it 管理版本发布。
+本文件包含两部分：
 
-## 安装
+1. **发布工具配置**：使用 release-it 管理版本发布
+2. **npm 包配置**：package.json 字段、依赖策略、构建脚本
+
+---
+
+## 第一部分：release-it 发布工具
+
+### 安装
 
 ```bash
 bun add -D release-it
 ```
 
-## 配置 .release-it.json
+### 配置 .release-it.json
 
 ```json
 {
@@ -91,3 +98,151 @@ bun run release:major
 ### Windows 环境
 
 release-it 跨平台，但如果遇到问题，确保使用 Git Bash 或 WSL。
+
+---
+
+## 第二部分：npm 包配置
+
+### package.json 基础字段
+
+```json
+{
+  "name": "@builden/bd-utils",
+  "version": "0.1.0",
+  "type": "module",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  }
+}
+```
+
+### Exports 字段 (ESM + CJS)
+
+```json
+{
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./src/index.ts",
+      "require": "./dist/index.cjs"
+    },
+    "./scripts": {
+      "import": "./scripts/build.ts"
+    }
+  }
+}
+```
+
+### 移除冗余字段
+
+使用 `exports` 字段时，删除冗余字段：
+
+```json
+// ❌ 删除这些
+{
+  "main": "./dist/index.js",
+  "module": "./src/index.ts",
+  "types": "./dist/index.d.ts"
+}
+
+// ✅ 只需要 exports
+{
+  "exports": { ... }
+}
+```
+
+### 依赖策略：CLI 工具
+
+CLI 工具应使用 peerDependencies + devDependencies：
+
+```json
+{
+  "peerDependencies": {
+    "execa": "^9.0.0",
+    "ora": "^8.0.0",
+    "picocolors": "^1.0.0"
+  },
+  "devDependencies": {
+    "execa": "^9.0.0",
+    "ora": "^8.0.0",
+    "picocolors": "^1.0.0"
+  }
+}
+```
+
+**原因**：CLI 工具应该使用消费项目的版本，而不是打包自己的副本。
+
+### 共享构建脚本
+
+创建 `scripts/build.ts`：
+
+```typescript
+import { execa } from 'execa';
+
+export interface BuildOptions {
+  entrypoint: string;
+  outDir: string;
+  external: string[];
+}
+
+export async function buildPkg(options: BuildOptions): Promise<void> {
+  const { entrypoint, outDir, external } = options;
+
+  // 1. Generate TypeScript declarations
+  await execa('bun', [
+    'x',
+    'tsc',
+    '--declaration',
+    '--emitDeclarationOnly',
+    '--outDir',
+    outDir,
+    '--project',
+    'tsconfig.json',
+  ]);
+
+  // 2. Build ESM
+  await execa('bun', [
+    'build',
+    entrypoint,
+    '--outdir',
+    outDir,
+    '--target',
+    'node',
+    '--format',
+    'esm',
+    '--external',
+    ...external,
+  ]);
+
+  // 3. Build CJS
+  await execa('bun', [
+    'build',
+    entrypoint,
+    '--outdir',
+    outDir,
+    '--target',
+    'node',
+    '--format',
+    'cjs',
+    '--external',
+    ...external,
+    '--outfile',
+    'index.cjs',
+  ]);
+}
+```
+
+**注意**：将构建目录命名为 `scripts/` 而不是 `build/`，避免与输出目录冲突。
+
+### .npmignore
+
+```
+node_modules/
+src/
+tests/
+*.ts
+!*.d.ts
+.git/
+.env
+```
