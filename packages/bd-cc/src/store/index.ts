@@ -23,3 +23,23 @@ export {
   activeTabAtom,
 } from './projects/primitives/projects-atom';
 export { projectNamesAtom, currentProjectSessionsAtom, hasActiveSessionAtom } from './projects/domain/project-derived';
+
+// Plugins
+export { usePlugins } from './plugins/actions/use-plugins';
+export { pluginsAtom, pluginsLoadingAtom, pluginsErrorAtom, type Plugin } from './plugins/primitives/plugins-atom';
+export {
+  enabledPluginsAtom,
+  disabledPluginsAtom,
+  pluginsCountAtom,
+  enabledPluginsCountAtom,
+} from './plugins/domain/plugins-derived';
+
+// Skills
+export { useSkills } from './skills/actions/use-skills';
+export { skillsAtom, skillsLoadingAtom, skillsErrorAtom, type Skill } from './skills/primitives/skills-atom';
+export {
+  enabledSkillsAtom,
+  disabledSkillsAtom,
+  skillsCountAtom,
+  enabledSkillsCountAtom,
+} from './skills/domain/skills-derived';

@@ -1,6 +1,6 @@
 import { Moon, Sun } from 'lucide-react';
-import { useTheme } from '../../../contexts/ThemeContext';
-import { cn } from '../../../lib/utils';
+import { useTheme } from '@/store';
+import { cn } from '@/lib/utils';
 
 type DarkModeToggleProps = {
   checked?: boolean;
@@ -8,11 +8,7 @@ type DarkModeToggleProps = {
   ariaLabel?: string;
 };
 
-function DarkModeToggle({
-  checked,
-  onToggle,
-  ariaLabel = 'Toggle dark mode',
-}: DarkModeToggleProps) {
+function DarkModeToggle({ checked, onToggle, ariaLabel = 'Toggle dark mode' }: DarkModeToggleProps) {
   const { isDarkMode, toggleDarkMode } = useTheme();
   const isControlled = typeof checked === 'boolean' && typeof onToggle === 'function';
   const isEnabled = isControlled ? checked : isDarkMode;
@@ -32,7 +28,7 @@ function DarkModeToggle({
       className={cn(
         'relative inline-flex h-7 w-12 flex-shrink-0 touch-manipulation cursor-pointer items-center rounded-full border-2 transition-colors duration-200',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-        isEnabled ? 'border-primary bg-primary' : 'border-border bg-muted',
+        isEnabled ? 'border-primary bg-primary' : 'border-border bg-muted'
       )}
       role="switch"
       aria-checked={isEnabled}
@@ -42,7 +38,7 @@ function DarkModeToggle({
       <span
         className={cn(
           'flex h-5 w-5 transform items-center justify-center rounded-full shadow-sm transition-transform duration-200',
-          isEnabled ? 'translate-x-[22px] bg-white' : 'translate-x-[2px] bg-foreground/60 dark:bg-foreground/80',
+          isEnabled ? 'translate-x-[22px] bg-white' : 'translate-x-[2px] bg-foreground/60 dark:bg-foreground/80'
         )}
       >
         {isEnabled ? (

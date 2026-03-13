@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme, usePlugins } from '@/store';
 import { authenticatedFetch } from '../../../utils/api';
-import { usePlugins } from '../../../contexts/PluginsContext';
 import type { Project, ProjectSession } from '../../../types/app';
 
 type PluginTabContentProps = {
@@ -19,30 +18,26 @@ type PluginContext = {
 function buildContext(
   isDarkMode: boolean,
   selectedProject: Project | null,
-  selectedSession: ProjectSession | null,
+  selectedSession: ProjectSession | null
 ): PluginContext {
   return {
     theme: isDarkMode ? 'dark' : 'light',
     project: selectedProject
       ? {
-        name: selectedProject.name,
-        path: selectedProject.fullPath || selectedProject.path || '',
-      }
+          name: selectedProject.name,
+          path: selectedProject.fullPath || selectedProject.path || '',
+        }
       : null,
     session: selectedSession
       ? {
-        id: selectedSession.id,
-        title: selectedSession.title || selectedSession.name || selectedSession.id,
-      }
+          id: selectedSession.id,
+          title: selectedSession.title || selectedSession.name || selectedSession.id,
+        }
       : null,
   };
 }
 
-export default function PluginTabContent({
-  pluginName,
-  selectedProject,
-  selectedSession,
-}: PluginTabContentProps) {
+export default function PluginTabContent({ pluginName, selectedProject, selectedSession }: PluginTabContentProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { isDarkMode } = useTheme();
   const { plugins } = usePlugins();
@@ -53,7 +48,7 @@ export default function PluginTabContent({
 
   const moduleRef = useRef<any>(null);
 
-  const plugin = plugins.find(p => p.name === pluginName);
+  const plugin = plugins.find((p) => p.name === pluginName);
 
   // Keep contextRef current and notify the mounted plugin on every context change
   useEffect(() => {
@@ -61,7 +56,11 @@ export default function PluginTabContent({
     contextRef.current = ctx;
 
     for (const cb of contextCallbacksRef.current) {
-      try { cb(ctx); } catch { /* plugin error — ignore */ }
+      try {
+        cb(ctx);
+      } catch {
+        /* plugin error — ignore */
+      }
     }
   }, [isDarkMode, selectedProject, selectedSession]);
 
@@ -90,7 +89,9 @@ export default function PluginTabContent({
         moduleRef.current = mod;
 
         const api = {
-          get context(): PluginContext { return contextRef.current; },
+          get context(): PluginContext {
+            return contextRef.current;
+          },
 
           onContextChange(cb: (ctx: PluginContext) => void): () => void {
             contextCallbacks.add(cb);
@@ -99,13 +100,10 @@ export default function PluginTabContent({
 
           async rpc(method: string, path: string, body?: unknown): Promise<unknown> {
             const cleanPath = String(path).replace(/^\//, '');
-            const res = await authenticatedFetch(
-              `/api/plugins/${encodeURIComponent(pluginName)}/rpc/${cleanPath}`,
-              {
-                method: method || 'GET',
-                ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-              },
-            );
+            const res = await authenticatedFetch(`/api/plugins/${encodeURIComponent(pluginName)}/rpc/${cleanPath}`, {
+              method: method || 'GET',
+              ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+            });
             if (!res.ok) throw new Error(`RPC error ${res.status}`);
             return res.json();
           },
@@ -113,7 +111,11 @@ export default function PluginTabContent({
 
         await mod.mount?.(container, api);
         if (!active) {
-          try { mod.unmount?.(container); } catch { /* ignore */ }
+          try {
+            mod.unmount?.(container);
+          } catch {
+            /* ignore */
+          }
           moduleRef.current = null;
           return;
         }
@@ -131,7 +133,11 @@ export default function PluginTabContent({
 
     return () => {
       active = false;
-      try { moduleRef.current?.unmount?.(container); } catch { /* ignore */ }
+      try {
+        moduleRef.current?.unmount?.(container);
+      } catch {
+        /* ignore */
+      }
       contextCallbacks.clear();
       moduleRef.current = null;
     };

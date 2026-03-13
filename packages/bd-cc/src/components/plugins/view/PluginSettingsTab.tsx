@@ -1,14 +1,32 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Trash2, RefreshCw, GitBranch, Loader2, ServerCrash, ShieldAlert, ExternalLink, BookOpen, Download, BarChart3 } from 'lucide-react';
-import { usePlugins } from '../../../contexts/PluginsContext';
-import type { Plugin } from '../../../contexts/PluginsContext';
+import {
+  Trash2,
+  RefreshCw,
+  GitBranch,
+  Loader2,
+  ServerCrash,
+  ShieldAlert,
+  ExternalLink,
+  BookOpen,
+  Download,
+  BarChart3,
+} from 'lucide-react';
+import { usePlugins, type Plugin } from '@/store';
 import PluginIcon from './PluginIcon';
 
 const STARTER_PLUGIN_URL = 'https://github.com/cloudcli-ai/cloudcli-plugin-starter';
 
 /* ─── Toggle Switch ─────────────────────────────────────────────────────── */
-function ToggleSwitch({ checked, onChange, ariaLabel }: { checked: boolean; onChange: (v: boolean) => void; ariaLabel: string }) {
+function ToggleSwitch({
+  checked,
+  onChange,
+  ariaLabel,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  ariaLabel: string;
+}) {
   return (
     <label className="relative inline-flex cursor-pointer select-none items-center">
       <input
@@ -73,9 +91,7 @@ function PluginCard({
   updateError,
 }: PluginCardProps) {
   const { t } = useTranslation('settings');
-  const accentColor = plugin.enabled
-    ? 'bg-emerald-500'
-    : 'bg-muted-foreground/20';
+  const accentColor = plugin.enabled ? 'bg-emerald-500' : 'bg-muted-foreground/20';
 
   return (
     <div
@@ -101,28 +117,18 @@ function PluginCard({
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm font-semibold leading-none text-foreground">
-                  {plugin.displayName}
-                </span>
+                <span className="text-sm font-semibold leading-none text-foreground">{plugin.displayName}</span>
                 <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
                   v{plugin.version}
                 </span>
-                <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                  {plugin.slot}
-                </span>
+                <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">{plugin.slot}</span>
                 <ServerDot running={!!plugin.serverRunning} t={t} />
               </div>
               {plugin.description && (
-                <p className="mt-1 text-sm leading-snug text-muted-foreground">
-                  {plugin.description}
-                </p>
+                <p className="mt-1 text-sm leading-snug text-muted-foreground">{plugin.description}</p>
               )}
               <div className="mt-1 flex items-center gap-3">
-                {plugin.author && (
-                  <span className="text-xs text-muted-foreground/60">
-                    {plugin.author}
-                  </span>
-                )}
+                {plugin.author && <span className="text-xs text-muted-foreground/60">{plugin.author}</span>}
                 {plugin.repoUrl && (
                   <a
                     href={plugin.repoUrl}
@@ -149,26 +155,27 @@ function PluginCard({
               aria-label={t('pluginSettings.pullLatest')}
               className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40"
             >
-              {updating ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <RefreshCw className="h-3.5 w-3.5" />
-              )}
+              {updating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
             </button>
 
             <button
               onClick={onUninstall}
               title={confirmingUninstall ? t('pluginSettings.confirmUninstall') : t('pluginSettings.uninstallPlugin')}
               aria-label={t('pluginSettings.uninstallPlugin')}
-              className={`rounded p-1.5 transition-colors ${confirmingUninstall
-                ? 'bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30'
-                : 'text-muted-foreground hover:bg-muted hover:text-red-500'
-                }`}
+              className={`rounded p-1.5 transition-colors ${
+                confirmingUninstall
+                  ? 'bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30'
+                  : 'text-muted-foreground hover:bg-muted hover:text-red-500'
+              }`}
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
 
-            <ToggleSwitch checked={plugin.enabled} onChange={onToggle} ariaLabel={`${plugin.enabled ? t('pluginSettings.disable') : t('pluginSettings.enable')} ${plugin.displayName}`} />
+            <ToggleSwitch
+              checked={plugin.enabled}
+              onChange={onToggle}
+              ariaLabel={`${plugin.enabled ? t('pluginSettings.disable') : t('pluginSettings.enable')} ${plugin.displayName}`}
+            />
           </div>
         </div>
 
@@ -251,11 +258,7 @@ function StarterPluginCard({ onInstall, installing }: { onInstall: () => void; i
             disabled={installing}
             className="flex flex-shrink-0 items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
           >
-            {installing ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Download className="h-3.5 w-3.5" />
-            )}
+            {installing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
             {installing ? t('pluginSettings.installing') : t('pluginSettings.starterPlugin.install')}
           </button>
         </div>
@@ -267,8 +270,7 @@ function StarterPluginCard({ onInstall, installing }: { onInstall: () => void; i
 /* ─── Main Component ────────────────────────────────────────────────────── */
 export default function PluginSettingsTab() {
   const { t } = useTranslation('settings');
-  const { plugins, loading, installPlugin, uninstallPlugin, updatePlugin, togglePlugin } =
-    usePlugins();
+  const { plugins, loading, installPlugin, uninstallPlugin, updatePlugin, togglePlugin } = usePlugins();
 
   const [gitUrl, setGitUrl] = useState('');
   const [installing, setInstalling] = useState(false);
@@ -280,12 +282,20 @@ export default function PluginSettingsTab() {
 
   const handleUpdate = async (name: string) => {
     setUpdatingPlugins((prev) => new Set(prev).add(name));
-    setUpdateErrors((prev) => { const next = { ...prev }; delete next[name]; return next; });
+    setUpdateErrors((prev) => {
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
     const result = await updatePlugin(name);
     if (!result.success) {
       setUpdateErrors((prev) => ({ ...prev, [name]: result.error || t('pluginSettings.updateFailed') }));
     }
-    setUpdatingPlugins((prev) => { const next = new Set(prev); next.delete(name); return next; });
+    setUpdatingPlugins((prev) => {
+      const next = new Set(prev);
+      next.delete(name);
+      return next;
+    });
   };
 
   const handleInstall = async () => {
@@ -331,12 +341,8 @@ export default function PluginSettingsTab() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h3 className="mb-1 text-base font-semibold text-foreground">
-          {t('pluginSettings.title')}
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          {t('pluginSettings.description')}
-        </p>
+        <h3 className="mb-1 text-base font-semibold text-foreground">{t('pluginSettings.title')}</h3>
+        <p className="text-sm text-muted-foreground">{t('pluginSettings.description')}</p>
       </div>
 
       {/* Install from Git — compact */}
@@ -363,23 +369,15 @@ export default function PluginSettingsTab() {
           disabled={installing || !gitUrl.trim()}
           className="flex-shrink-0 border-l border-border bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-30"
         >
-          {installing ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            t('pluginSettings.installButton')
-          )}
+          {installing ? <Loader2 className="h-4 w-4 animate-spin" /> : t('pluginSettings.installButton')}
         </button>
       </div>
 
-      {installError && (
-        <p className="-mt-4 text-sm text-red-500">{installError}</p>
-      )}
+      {installError && <p className="-mt-4 text-sm text-red-500">{installError}</p>}
 
       <p className="-mt-4 flex items-start gap-1.5 text-xs leading-snug text-muted-foreground/50">
         <ShieldAlert className="mt-px h-3 w-3 flex-shrink-0" />
-        <span>
-          {t('pluginSettings.securityWarning')}
-        </span>
+        <span>{t('pluginSettings.securityWarning')}</span>
       </p>
 
       {/* Starter plugin suggestion — above the list */}
@@ -427,9 +425,7 @@ export default function PluginSettingsTab() {
       <div className="flex items-center justify-between gap-4 border-t border-border/50 pt-2">
         <div className="flex min-w-0 items-center gap-2">
           <BookOpen className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/40" />
-          <span className="text-xs text-muted-foreground/60">
-            {t('pluginSettings.buildYourOwn')}
-          </span>
+          <span className="text-xs text-muted-foreground/60">{t('pluginSettings.buildYourOwn')}</span>
         </div>
         <div className="flex flex-shrink-0 items-center gap-3">
           <a

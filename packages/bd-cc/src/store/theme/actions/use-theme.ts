@@ -62,6 +62,7 @@ export function useTheme() {
     theme,
     isDarkMode,
     toggleTheme,
+    toggleDarkMode: toggleTheme, // 向后兼容别名
     setTheme,
   };
 }

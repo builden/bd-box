@@ -6,7 +6,7 @@ import MainContent from '../main-content/view/MainContent';
 import { useWebSocket } from '../../contexts/WebSocketContext';
 import { useDeviceSettings } from '../../hooks/useDeviceSettings';
 import { useSessionProtection } from '../../hooks/useSessionProtection';
-import { useProjectsState } from '../../hooks/useProjectsState';
+import { useProjects } from '@/store';
 import MobileNav from './MobileNav';
 
 export default function AppContent() {
@@ -35,20 +35,44 @@ export default function AppContent() {
     isLoadingProjects,
     isInputFocused,
     externalMessageUpdate,
+    showSettings,
+    settingsInitialTab,
     setActiveTab,
     setSidebarOpen,
     setIsInputFocused,
     setShowSettings,
     openSettings,
     refreshProjectsSilently,
-    sidebarSharedProps,
-  } = useProjectsState({
-    sessionId,
-    navigate,
-    latestMessage,
+    projects,
+    loadingProgress,
+    onRefresh,
+    onProjectSelect,
+    onSessionSelect,
+    onNewSession,
+    onSessionDelete,
+    onProjectDelete,
+    onCloseSettings,
+  } = useProjects();
+
+  // 构建 sidebarSharedProps 兼容旧接口
+  const sidebarSharedProps = {
+    projects,
+    selectedProject,
+    selectedSession,
+    onProjectSelect,
+    onSessionSelect,
+    onNewSession,
+    onSessionDelete,
+    onProjectDelete,
+    isLoading: isLoadingProjects,
+    loadingProgress,
+    onRefresh,
+    onShowSettings: openSettings,
+    showSettings,
+    settingsInitialTab,
+    onCloseSettings,
     isMobile,
-    activeSessions,
-  });
+  };
 
   useEffect(() => {
     // Expose a non-blocking refresh for chat/session flows.
@@ -85,7 +109,7 @@ export default function AppContent() {
     if (isConnected && selectedSession?.id) {
       sendMessage({
         type: 'get-pending-permissions',
-        sessionId: selectedSession.id
+        sessionId: selectedSession.id,
       });
     }
   }, [isConnected, selectedSession?.id, sendMessage]);
@@ -98,8 +122,9 @@ export default function AppContent() {
         </div>
       ) : (
         <div
-          className={`fixed inset-0 z-50 flex transition-all duration-150 ease-out ${sidebarOpen ? 'visible opacity-100' : 'invisible opacity-0'
-            }`}
+          className={`fixed inset-0 z-50 flex transition-all duration-150 ease-out ${
+            sidebarOpen ? 'visible opacity-100' : 'invisible opacity-0'
+          }`}
         >
           <button
             className="fixed inset-0 bg-background/60 backdrop-blur-sm transition-opacity duration-150 ease-out"
@@ -115,8 +140,9 @@ export default function AppContent() {
             aria-label={t('versionUpdate.ariaLabels.closeSidebar')}
           />
           <div
-            className={`relative h-full w-[85vw] max-w-sm transform border-r border-border/40 bg-card transition-transform duration-150 ease-out sm:w-80 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-              }`}
+            className={`relative h-full w-[85vw] max-w-sm transform border-r border-border/40 bg-card transition-transform duration-150 ease-out sm:w-80 ${
+              sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}
             onClick={(event) => event.stopPropagation()}
             onTouchStart={(event) => event.stopPropagation()}
           >
@@ -150,14 +176,7 @@ export default function AppContent() {
         />
       </div>
 
-      {isMobile && (
-        <MobileNav
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          isInputFocused={isInputFocused}
-        />
-      )}
-
+      {isMobile && <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} isInputFocused={isInputFocused} />}
     </div>
   );
 }

@@ -1,26 +1,26 @@
-import js from "@eslint/js";
-import pluginReact from "eslint-plugin-react";
-import pluginReactHooks from "eslint-plugin-react-hooks";
-import { defineConfig } from "eslint/config";
-import globals from "globals";
-import tseslint from "typescript-eslint";
+import js from '@eslint/js';
+import pluginReact from 'eslint-plugin-react';
+import pluginReactHooks from 'eslint-plugin-react-hooks';
+import { defineConfig } from 'eslint/config';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
-const jsFiles = ["**/src/**/*.{js,mjs}"];
-const tsFiles = ["**/src/**/*.{ts,tsx}"];
-const jsxFiles = ["**/src/**/*.{tsx,jsx}"];
+const jsFiles = ['**/src/**/*.{js,mjs}'];
+const tsFiles = ['**/src/**/*.{ts,tsx}'];
+const jsxFiles = ['**/src/**/*.{tsx,jsx}'];
 
 const ignorePatterns = [
-  "**/.dumi/**",
-  "**/.dumi/**/*",
-  "**/docs/examples/**",
-  "**/dist/**",
-  "**/node_modules/**",
-  "**/*.d.ts",
-  "**/tests/**",
-  "**/__tests__/**",
-  "**/*.test.ts",
-  "**/*.test.tsx",
-  "**/build/**",
+  '**/.dumi/**',
+  '**/.dumi/**/*',
+  '**/docs/examples/**',
+  '**/dist/**',
+  '**/node_modules/**',
+  '**/*.d.ts',
+  '**/tests/**',
+  '**/__tests__/**',
+  '**/*.test.ts',
+  '**/*.test.tsx',
+  '**/build/**',
 ];
 
 export default defineConfig([
@@ -30,58 +30,61 @@ export default defineConfig([
   {
     files: jsFiles,
     plugins: { js },
-    extends: ["js/recommended"],
+    extends: ['js/recommended'],
     languageOptions: {
-      globals: { ...globals.browser, ...globals.node, tinycolor: "readonly" },
+      globals: { ...globals.browser, ...globals.node, tinycolor: 'readonly' },
       parser: tseslint.parser,
       parserOptions: {
-        ecmaVersion: "latest",
-        sourceType: "module",
+        ecmaVersion: 'latest',
+        sourceType: 'module',
       },
     },
     rules: {
-      "no-console": "off",
-      "no-undef": "off",
-      "no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+      'no-console': 'off',
+      'no-undef': 'off',
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
   {
     files: tsFiles,
-    plugins: { "@typescript-eslint": tseslint.plugin },
+    plugins: { '@typescript-eslint': tseslint.plugin },
     extends: [tseslint.configs.strict],
     languageOptions: {
       parser: tseslint.parser,
+      parserOptions: {
+        tsconfigRootDir: process.cwd(),
+      },
     },
     rules: {
       // Custom overrides
-      "@typescript-eslint/no-explicit-any": ["error", { ignoreRestArgs: true }],
-      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
-      "@typescript-eslint/ban-ts-comment": "off",
-      "@typescript-eslint/no-non-null-assertion": "off",
-      "@typescript-eslint/no-dynamic-delete": "off",
+      '@typescript-eslint/no-explicit-any': ['error', { ignoreRestArgs: true }],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-dynamic-delete': 'off',
     },
   },
   {
     files: jsxFiles,
     plugins: {
       react: pluginReact,
-      "react-hooks": pluginReactHooks,
+      'react-hooks': pluginReactHooks,
     },
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        ecmaVersion: "latest",
-        sourceType: "module",
+        ecmaVersion: 'latest',
+        sourceType: 'module',
         ecmaFeatures: { jsx: true },
       },
     },
     settings: {
       react: {
-        version: "detect",
+        version: 'detect',
       },
     },
     rules: {
-      "react-hooks/exhaustive-deps": "off",
+      'react-hooks/exhaustive-deps': 'off',
     },
   },
 ]);

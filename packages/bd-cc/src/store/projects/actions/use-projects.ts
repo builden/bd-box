@@ -1,8 +1,8 @@
 import { useAtom, useSetAtom } from 'jotai';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/utils/api';
-import type { AppSocketMessage, LoadingProgress, Project, ProjectSession } from '@/types';
+import type { AppSocketMessage, LoadingProgress, Project, ProjectSession, AppTab } from '@/types';
 import { projectsAtom, selectedProjectAtom, selectedSessionAtom, activeTabAtom } from '../primitives/projects-atom';
 import { projectNamesAtom, currentProjectSessionsAtom, hasActiveSessionAtom } from '../domain/project-derived';
 import { calcRemoveProject, calcUpdateProjectSession, calcProjectsHaveChanges } from '../operations/projects-ops';
@@ -208,6 +208,25 @@ export function useProjects() {
     [setActiveTab]
   );
 
+  // 关闭设置面板
+  const closeSettings = useCallback(() => {
+    setShowSettings(false);
+  }, [setShowSettings]);
+
+  // 兼容旧接口的 setActiveTab
+  const setActiveTabDispatch: Dispatch<SetStateAction<AppTab>> = useCallback(
+    (action: SetStateAction<AppTab>) => {
+      const newTab = typeof action === 'function' ? action(activeTab) : action;
+      setActiveTab(newTab);
+      try {
+        localStorage.setItem('activeTab', newTab);
+      } catch {
+        // Silently ignore storage errors
+      }
+    },
+    [activeTab, setActiveTab]
+  );
+
   return {
     // ========== 持久化状态 ==========
     projects,
@@ -230,16 +249,25 @@ export function useProjects() {
     setIsInputFocused,
     setShowSettings,
     setSettingsInitialTab,
-    // ========== 操作 ==========
-    setActiveTab: handleSetActiveTab,
+    // ========== 操作 (兼容旧接口) ==========
+    setActiveTab: setActiveTabDispatch,
     openSettings,
+    closeSettings,
+    onCloseSettings: closeSettings,
     fetchProjects,
     refreshProjectsSilently,
+    // 兼容旧接口别名
     selectProject,
+    onProjectSelect: selectProject,
     selectSession,
+    onSessionSelect: selectSession,
     createNewSession,
+    onNewSession: createNewSession,
     deleteSession,
+    onSessionDelete: deleteSession,
     deleteProject,
+    onProjectDelete: deleteProject,
     refreshSidebar,
+    onRefresh: refreshSidebar,
   };
 }

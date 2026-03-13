@@ -1,8 +1,7 @@
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Trash2, RefreshCw, GitBranch, Loader2, ShieldAlert, ExternalLink, BookOpen, Sparkles } from "lucide-react";
-import { useSkills } from "../../../../../contexts/SkillsContext";
-import type { Skill } from "../../../../../contexts/SkillsContext";
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Trash2, RefreshCw, GitBranch, Loader2, ShieldAlert, ExternalLink, BookOpen, Sparkles } from 'lucide-react';
+import { useSkills, type Skill } from '@/store';
 
 /* ─── Toggle Switch ─────────────────────────────────────────────────────── */
 function ToggleSwitch({
@@ -61,8 +60,8 @@ function SkillCard({
   onCancelUninstall,
   updateError,
 }: SkillCardProps) {
-  const { t } = useTranslation("settings");
-  const accentColor = skill.enabled ? "bg-violet-500" : "bg-muted-foreground/20";
+  const { t } = useTranslation('settings');
+  const accentColor = skill.enabled ? 'bg-violet-500' : 'bg-muted-foreground/20';
 
   return (
     <div
@@ -87,7 +86,7 @@ function SkillCard({
                 <span className="text-sm font-semibold leading-none text-foreground">{skill.displayName}</span>
                 {skill.isSymlink && (
                   <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
-                    {t("skillSettings.symlink")}
+                    {t('skillSettings.symlink')}
                   </span>
                 )}
               </div>
@@ -104,7 +103,7 @@ function SkillCard({
                   >
                     <GitBranch className="h-3 w-3" />
                     <span className="max-w-[200px] truncate">
-                      {skill.repoUrl.replace(/^https?:\/\/(www\.)?github\.com\//, "")}
+                      {skill.repoUrl.replace(/^https?:\/\/(www\.)?github\.com\//, '')}
                     </span>
                   </a>
                 )}
@@ -117,8 +116,8 @@ function SkillCard({
             <button
               onClick={onUpdate}
               disabled={updating || !skill.repoUrl}
-              title={skill.repoUrl ? t("skillSettings.pullLatest") : t("skillSettings.noGitRemote")}
-              aria-label={t("skillSettings.pullLatest")}
+              title={skill.repoUrl ? t('skillSettings.pullLatest') : t('skillSettings.noGitRemote')}
+              aria-label={t('skillSettings.pullLatest')}
               className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40"
             >
               {updating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
@@ -126,12 +125,12 @@ function SkillCard({
 
             <button
               onClick={onUninstall}
-              title={confirmingUninstall ? t("skillSettings.confirmUninstall") : t("skillSettings.uninstallSkill")}
-              aria-label={t("skillSettings.uninstallSkill")}
+              title={confirmingUninstall ? t('skillSettings.confirmUninstall') : t('skillSettings.uninstallSkill')}
+              aria-label={t('skillSettings.uninstallSkill')}
               className={`rounded p-1.5 transition-colors ${
                 confirmingUninstall
-                  ? "bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30"
-                  : "text-muted-foreground hover:bg-muted hover:text-red-500"
+                  ? 'bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30'
+                  : 'text-muted-foreground hover:bg-muted hover:text-red-500'
               }`}
             >
               <Trash2 className="h-3.5 w-3.5" />
@@ -140,7 +139,7 @@ function SkillCard({
             <ToggleSwitch
               checked={skill.enabled}
               onChange={onToggle}
-              ariaLabel={`${skill.enabled ? t("skillSettings.disable") : t("skillSettings.enable")} ${skill.displayName}`}
+              ariaLabel={`${skill.enabled ? t('skillSettings.disable') : t('skillSettings.enable')} ${skill.displayName}`}
             />
           </div>
         </div>
@@ -149,20 +148,20 @@ function SkillCard({
         {confirmingUninstall && (
           <div className="mt-3 flex items-center justify-between gap-3 rounded border border-red-200 bg-red-50 px-3 py-2 dark:border-red-800/50 dark:bg-red-950/30">
             <span className="text-sm text-red-600 dark:text-red-400">
-              {t("skillSettings.confirmUninstallMessage", { name: skill.displayName })}
+              {t('skillSettings.confirmUninstallMessage', { name: skill.displayName })}
             </span>
             <div className="flex gap-1.5">
               <button
                 onClick={onCancelUninstall}
                 className="rounded border border-border px-2.5 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
-                {t("skillSettings.cancel")}
+                {t('skillSettings.cancel')}
               </button>
               <button
                 onClick={onUninstall}
                 className="rounded border border-red-300 px-2.5 py-1 text-sm font-medium text-red-600 transition-colors hover:bg-red-100 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/30"
               >
-                {t("skillSettings.remove")}
+                {t('skillSettings.remove')}
               </button>
             </div>
           </div>
@@ -182,10 +181,10 @@ function SkillCard({
 
 /* ─── Main Component ────────────────────────────────────────────────────── */
 export default function SkillsSettingsTab() {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation('settings');
   const { skills, loading, installSkill, uninstallSkill, updateSkill, toggleSkill } = useSkills();
 
-  const [gitUrl, setGitUrl] = useState("");
+  const [gitUrl, setGitUrl] = useState('');
   const [installing, setInstalling] = useState(false);
   const [installError, setInstallError] = useState<string | null>(null);
   const [confirmUninstall, setConfirmUninstall] = useState<string | null>(null);
@@ -203,7 +202,7 @@ export default function SkillsSettingsTab() {
     if (!result.success) {
       setUpdateErrors((prev) => ({
         ...prev,
-        [name]: result.error || t("skillSettings.updateFailed"),
+        [name]: result.error || t('skillSettings.updateFailed'),
       }));
     }
     setUpdatingSkills((prev) => {
@@ -219,9 +218,9 @@ export default function SkillsSettingsTab() {
     setInstallError(null);
     const result = await installSkill(gitUrl.trim());
     if (result.success) {
-      setGitUrl("");
+      setGitUrl('');
     } else {
-      setInstallError(result.error || t("skillSettings.installFailed"));
+      setInstallError(result.error || t('skillSettings.installFailed'));
     }
     setInstalling(false);
   };
@@ -235,7 +234,7 @@ export default function SkillsSettingsTab() {
     if (result.success) {
       setConfirmUninstall(null);
     } else {
-      setInstallError(result.error || t("skillSettings.uninstallFailed"));
+      setInstallError(result.error || t('skillSettings.uninstallFailed'));
       setConfirmUninstall(null);
     }
   };
@@ -244,8 +243,8 @@ export default function SkillsSettingsTab() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h3 className="mb-1 text-base font-semibold text-foreground">{t("skillSettings.title")}</h3>
-        <p className="text-sm text-muted-foreground">{t("skillSettings.description")}</p>
+        <h3 className="mb-1 text-base font-semibold text-foreground">{t('skillSettings.title')}</h3>
+        <p className="text-sm text-muted-foreground">{t('skillSettings.description')}</p>
       </div>
 
       {/* Install from Git — compact */}
@@ -260,11 +259,11 @@ export default function SkillsSettingsTab() {
             setGitUrl(e.target.value);
             setInstallError(null);
           }}
-          placeholder={t("skillSettings.installPlaceholder")}
-          aria-label={t("skillSettings.installAriaLabel")}
+          placeholder={t('skillSettings.installPlaceholder')}
+          aria-label={t('skillSettings.installAriaLabel')}
           className="flex-1 bg-transparent px-2 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none"
           onKeyDown={(e) => {
-            if (e.key === "Enter") void handleInstall();
+            if (e.key === 'Enter') void handleInstall();
           }}
         />
         <button
@@ -272,7 +271,7 @@ export default function SkillsSettingsTab() {
           disabled={installing || !gitUrl.trim()}
           className="flex-shrink-0 border-l border-border bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-30"
         >
-          {installing ? <Loader2 className="h-4 w-4 animate-spin" /> : t("skillSettings.installButton")}
+          {installing ? <Loader2 className="h-4 w-4 animate-spin" /> : t('skillSettings.installButton')}
         </button>
       </div>
 
@@ -280,24 +279,24 @@ export default function SkillsSettingsTab() {
 
       <p className="-mt-4 flex items-start gap-1.5 text-xs leading-snug text-muted-foreground/50">
         <ShieldAlert className="mt-px h-3 w-3 flex-shrink-0" />
-        <span>{t("skillSettings.securityWarning")}</span>
+        <span>{t('skillSettings.securityWarning')}</span>
       </p>
 
       {/* Skills List */}
       {loading ? (
         <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
-          {t("skillSettings.scanningSkills")}
+          {t('skillSettings.scanningSkills')}
         </div>
       ) : skills.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">{t("skillSettings.noSkillsInstalled")}</p>
+        <p className="py-8 text-center text-sm text-muted-foreground">{t('skillSettings.noSkillsInstalled')}</p>
       ) : (
         <div className="space-y-2">
           {skills.map((skill, index) => {
             const handleToggle = async (enabled: boolean) => {
               const r = await toggleSkill(skill.name, enabled);
               if (!r.success) {
-                setInstallError(r.error || t("skillSettings.toggleFailed"));
+                setInstallError(r.error || t('skillSettings.toggleFailed'));
               }
             };
 
@@ -323,7 +322,7 @@ export default function SkillsSettingsTab() {
       <div className="flex items-center justify-between gap-4 border-t border-border/50 pt-2">
         <div className="flex min-w-0 items-center gap-2">
           <BookOpen className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/40" />
-          <span className="text-xs text-muted-foreground/60">{t("skillSettings.learnMore")}</span>
+          <span className="text-xs text-muted-foreground/60">{t('skillSettings.learnMore')}</span>
         </div>
         <div className="flex flex-shrink-0 items-center gap-3">
           <a
@@ -332,7 +331,7 @@ export default function SkillsSettingsTab() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-xs text-muted-foreground/60 transition-colors hover:text-foreground"
           >
-            {t("skillSettings.docs")} <ExternalLink className="h-2.5 w-2.5" />
+            {t('skillSettings.docs')} <ExternalLink className="h-2.5 w-2.5" />
           </a>
         </div>
       </div>

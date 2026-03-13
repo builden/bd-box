@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import SessionProviderLogo from '../../../llm-logo-provider/SessionProviderLogo';
 import type { AppTab, Project, ProjectSession } from '../../../../types/app';
-import { usePlugins } from '../../../../contexts/PluginsContext';
+import { usePlugins } from '@/store';
 
 type MainContentTitleProps = {
   activeTab: AppTab;
@@ -10,7 +10,12 @@ type MainContentTitleProps = {
   shouldShowTasksTab: boolean;
 };
 
-function getTabTitle(activeTab: AppTab, shouldShowTasksTab: boolean, t: (key: string) => string, pluginDisplayName?: string) {
+function getTabTitle(
+  activeTab: AppTab,
+  shouldShowTasksTab: boolean,
+  t: (key: string) => string,
+  pluginDisplayName?: string
+) {
   if (activeTab.startsWith('plugin:') && pluginDisplayName) {
     return pluginDisplayName;
   }
@@ -68,7 +73,9 @@ export default function MainContentTitle({
             <h2 className="scrollbar-hide overflow-x-auto whitespace-nowrap text-sm font-semibold leading-tight text-foreground">
               {getSessionTitle(selectedSession)}
             </h2>
-            <div className="truncate text-[11px] leading-tight text-muted-foreground">{selectedProject.displayName}</div>
+            <div className="truncate text-[11px] leading-tight text-muted-foreground">
+              {selectedProject.displayName}
+            </div>
           </div>
         ) : showChatNewSession ? (
           <div className="min-w-0">
@@ -80,7 +87,9 @@ export default function MainContentTitle({
             <h2 className="text-sm font-semibold leading-tight text-foreground">
               {getTabTitle(activeTab, shouldShowTasksTab, t, pluginDisplayName)}
             </h2>
-            <div className="truncate text-[11px] leading-tight text-muted-foreground">{selectedProject.displayName}</div>
+            <div className="truncate text-[11px] leading-tight text-muted-foreground">
+              {selectedProject.displayName}
+            </div>
           </div>
         )}
       </div>

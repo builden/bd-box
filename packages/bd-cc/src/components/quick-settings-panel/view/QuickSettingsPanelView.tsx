@@ -1,8 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import { useDeviceSettings } from '../../../hooks/useDeviceSettings';
-import { useUiPreferences } from '../../../hooks/useUiPreferences';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useUiPreferences, useTheme } from '@/store';
 import { useQuickSettingsDrag } from '../hooks/useQuickSettingsDrag';
 import type { PreferenceToggleKey, QuickSettingsPreferences } from '../types';
 import QuickSettingsContent from './QuickSettingsContent';
@@ -14,32 +13,30 @@ export default function QuickSettingsPanelView() {
   const { isMobile } = useDeviceSettings({ trackPWA: false });
   const { isDarkMode } = useTheme();
   const { preferences, setPreference } = useUiPreferences();
-  const {
-    isDragging,
-    handleStyle,
-    startDrag,
-    consumeSuppressedClick,
-  } = useQuickSettingsDrag({ isMobile });
+  const { isDragging, handleStyle, startDrag, consumeSuppressedClick } = useQuickSettingsDrag({ isMobile });
 
-  const quickSettingsPreferences = useMemo<QuickSettingsPreferences>(() => ({
-    autoExpandTools: preferences.autoExpandTools,
-    showRawParameters: preferences.showRawParameters,
-    showThinking: preferences.showThinking,
-    autoScrollToBottom: preferences.autoScrollToBottom,
-    sendByCtrlEnter: preferences.sendByCtrlEnter,
-  }), [
-    preferences.autoExpandTools,
-    preferences.autoScrollToBottom,
-    preferences.sendByCtrlEnter,
-    preferences.showRawParameters,
-    preferences.showThinking,
-  ]);
+  const quickSettingsPreferences = useMemo<QuickSettingsPreferences>(
+    () => ({
+      autoExpandTools: preferences.autoExpandTools,
+      showRawParameters: preferences.showRawParameters,
+      showThinking: preferences.showThinking,
+      autoScrollToBottom: preferences.autoScrollToBottom,
+      sendByCtrlEnter: preferences.sendByCtrlEnter,
+    }),
+    [
+      preferences.autoExpandTools,
+      preferences.autoScrollToBottom,
+      preferences.sendByCtrlEnter,
+      preferences.showRawParameters,
+      preferences.showThinking,
+    ]
+  );
 
   const handlePreferenceChange = useCallback(
     (key: PreferenceToggleKey, value: boolean) => {
       setPreference(key, value);
     },
-    [setPreference],
+    [setPreference]
   );
 
   const handleToggleFromHandle = useCallback(
@@ -52,7 +49,7 @@ export default function QuickSettingsPanelView() {
 
       setIsOpen((previous) => !previous);
     },
-    [consumeSuppressedClick],
+    [consumeSuppressedClick]
   );
 
   return (

@@ -3,7 +3,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Tooltip, PillBar, Pill } from '../../../../shared/view/ui';
 import type { AppTab } from '../../../../types/app';
-import { usePlugins } from '../../../../contexts/PluginsContext';
+import { usePlugins } from '@/store';
 import PluginIcon from '../../../plugins/view/PluginIcon';
 
 type MainContentTabSwitcherProps = {
@@ -30,10 +30,10 @@ type PluginTab = {
 type TabDefinition = BuiltInTab | PluginTab;
 
 const BASE_TABS: BuiltInTab[] = [
-  { kind: 'builtin', id: 'chat',  labelKey: 'tabs.chat',  icon: MessageSquare },
+  { kind: 'builtin', id: 'chat', labelKey: 'tabs.chat', icon: MessageSquare },
   { kind: 'builtin', id: 'shell', labelKey: 'tabs.shell', icon: Terminal },
   { kind: 'builtin', id: 'files', labelKey: 'tabs.files', icon: Folder },
-  { kind: 'builtin', id: 'git',   labelKey: 'tabs.git',   icon: GitBranch },
+  { kind: 'builtin', id: 'git', labelKey: 'tabs.git', icon: GitBranch },
 ];
 
 const TASKS_TAB: BuiltInTab = {
@@ -73,11 +73,7 @@ export default function MainContentTabSwitcher({
 
         return (
           <Tooltip key={tab.id} content={displayLabel} position="bottom">
-            <Pill
-              isActive={isActive}
-              onClick={() => setActiveTab(tab.id)}
-              className="px-2.5 py-[5px]"
-            >
+            <Pill isActive={isActive} onClick={() => setActiveTab(tab.id)} className="px-2.5 py-[5px]">
               {tab.kind === 'builtin' ? (
                 <tab.icon className="h-3.5 w-3.5" strokeWidth={isActive ? 2.2 : 1.8} />
               ) : (
