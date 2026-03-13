@@ -1,9 +1,7 @@
 /**
  * Shared spawn utility for running child processes
- * Used to reduce duplicate code across routes
+ * Built on top of Bun.$ for native Bun compatibility
  */
-
-import { spawn, SpawnOptions } from 'child_process';
 
 export interface SpawnResult {
   stdout: string;
@@ -21,96 +19,100 @@ export interface SpawnError extends Error {
  * Run a command and collect stdout/stderr
  * Resolves on success (code 0), rejects on failure
  */
-export async function runCommand(command: string, args: string[], options: SpawnOptions = {}): Promise<SpawnResult> {
-  const result = await runCommandRaw(command, args, options);
-  if (result.code === 0) {
-    return result;
+export async function runCommand(
+  command: string,
+  args: string[],
+  options: { cwd?: string } = {}
+): Promise<SpawnResult> {
+  const proc = Bun.spawn([command, ...args], {
+    cwd: options.cwd,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  });
+
+  const [stdout, stderr] = await Promise.all([new Response(proc.stdout).text(), new Response(proc.stderr).text()]);
+
+  const code = await proc.exited;
+  if (code === 0) {
+    return { stdout, stderr, code };
   }
+
   const error = new Error(`Command failed: ${command} ${args.join(' ')}`) as SpawnError;
-  error.code = result.code;
-  error.stdout = result.stdout;
-  error.stderr = result.stderr;
+  error.code = code;
+  error.stdout = stdout;
+  error.stderr = stderr;
   throw error;
 }
 
 /**
  * Run a command and collect stdout/stderr (raw, doesn't throw)
  */
-export function runCommandRaw(command: string, args: string[], options: SpawnOptions = {}): Promise<SpawnResult> {
-  return new Promise((resolve) => {
-    let stdout = '';
-    let stderr = '';
-
-    const proc = spawn(command, args, {
-      ...options,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-
-    proc.stdout?.on('data', (data) => {
-      stdout += data.toString();
-    });
-
-    proc.stderr?.on('data', (data) => {
-      stderr += data.toString();
-    });
-
-    proc.on('close', (code) => {
-      resolve({ stdout, stderr, code });
-    });
-
-    proc.on('error', (err) => {
-      // On error, resolve with empty result
-      resolve({ stdout, stderr, code: -1 });
-    });
+export async function runCommandRaw(
+  command: string,
+  args: string[],
+  options: { cwd?: string } = {}
+): Promise<SpawnResult> {
+  const proc = Bun.spawn([command, ...args], {
+    cwd: options.cwd,
+    stdout: 'pipe',
+    stderr: 'pipe',
   });
+
+  const [stdout, stderr] = await Promise.all([new Response(proc.stdout).text(), new Response(proc.stderr).text()]);
+
+  const code = await proc.exited;
+  return { stdout, stderr, code };
+}
+
+/**
+ * Run a command using Bun.$ template string (simplest syntax)
+ */
+export async function $(strings: TemplateStringsArray, ...values: unknown[]): Promise<SpawnResult> {
+  // Build command from template string
+  let cmd = '';
+  for (let i = 0; i < strings.length; i++) {
+    cmd += strings[i];
+    if (i < values.length) {
+      cmd += typeof values[i] === 'string' ? values[i] : String(values[i]);
+    }
+  }
+
+  const proc = Bun.spawn(['sh', '-c', cmd], {
+    stdout: 'pipe',
+    stderr: 'pipe',
+  });
+
+  const [stdout, stderr] = await Promise.all([new Response(proc.stdout).text(), new Response(proc.stderr).text()]);
+
+  const code = await proc.exited;
+  return { stdout, stderr, code };
 }
 
 /**
  * Run a command synchronously (for simple use cases)
  */
-export function runCommandSync(command: string, args: string[], options: SpawnOptions = {}): SpawnResult {
-  const proc = spawn(command, args, {
-    ...options,
-    stdio: ['ignore', 'pipe', 'pipe'],
+export function runCommandSync(command: string, args: string[], options: { cwd?: string } = {}): SpawnResult {
+  const proc = Bun.spawnSync([command, ...args], {
+    cwd: options.cwd,
+    stdout: 'pipe',
+    stderr: 'pipe',
   });
 
-  let stdout = '';
-  let stderr = '';
+  const stdout = proc.stdout ? new TextDecoder().decode(proc.stdout) : '';
+  const stderr = proc.stderr ? new TextDecoder().decode(proc.stderr) : '';
 
-  proc.stdout?.on('data', (data) => {
-    stdout += data.toString();
-  });
-
-  proc.stderr?.on('data', (data) => {
-    stderr += data.toString();
-  });
-
-  // Wait for process to exit synchronously
-  // Note: This blocks the event loop - use sparingly
-  const { promisify } = require('util');
-  const execSync = promisify(require('child_process').execFile);
-
-  try {
-    const result = require('child_process').execFileSync(command, args, {
-      ...options,
-      encoding: 'utf8',
-    });
-    return { stdout: result, stderr: '', code: 0 };
-  } catch (err: unknown) {
-    const error = err as { stdout?: string; stderr?: string; status?: number; message?: string };
-    return {
-      stdout: error.stdout || '',
-      stderr: error.stderr || error.message || '',
-      code: error.status ?? -1,
-    };
-  }
+  return {
+    stdout,
+    stderr,
+    code: proc.exitCode,
+  };
 }
 
 /**
  * Run multiple commands in parallel
  */
 export async function runCommands(
-  commands: Array<{ command: string; args: string[]; options?: SpawnOptions }>
+  commands: Array<{ command: string; args: string[]; options?: { cwd?: string } }>
 ): Promise<SpawnResult[]> {
   return Promise.all(commands.map(({ command, args, options }) => runCommandRaw(command, args, options)));
 }

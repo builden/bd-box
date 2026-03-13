@@ -3,6 +3,7 @@ import { userDb } from '../database/index.ts';
 import { authenticateToken } from '../middleware/auth.ts';
 import { getSystemGitConfig } from '../utils/gitConfig.ts';
 import { runCommand } from '../utils/spawn.ts';
+import { validateGitConfig } from '../utils/validation.ts';
 
 const router = express.Router();
 
@@ -42,14 +43,11 @@ router.post('/git-config', authenticateToken, async (req, res) => {
     const userId = req.user.id;
     const { gitName, gitEmail } = req.body;
 
-    if (!gitName || !gitEmail) {
+    // Validate with Zod
+    try {
+      validateGitConfig({ gitName, gitEmail });
+    } catch {
       return res.status(400).json({ error: 'Git name and email are required' });
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(gitEmail)) {
-      return res.status(400).json({ error: 'Invalid email format' });
     }
 
     userDb.updateGitConfig(userId, gitName, gitEmail);

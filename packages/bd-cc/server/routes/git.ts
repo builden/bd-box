@@ -5,6 +5,7 @@ import { extractProjectDirectory } from '../projects.ts';
 import { queryClaudeSDK } from '../claude-sdk.ts';
 import { spawnCursor } from '../cursor-cli.ts';
 import { runCommand } from '../utils/spawn.ts';
+import { validateCommitRef, validateBranchName, validateFilePath } from '../utils/validation.ts';
 
 const router = express.Router();
 const COMMIT_DIFF_CHARACTER_LIMIT = 500_000;
@@ -15,38 +16,7 @@ const spawnAsync = async (command: string, args: string[], options = {}) => {
   return { stdout: result.stdout, stderr: result.stderr };
 };
 
-// Input validation helpers (defense-in-depth)
-function validateCommitRef(commit) {
-  // Allow hex hashes, HEAD, HEAD~N, HEAD^N, tag names, branch names
-  if (!/^[a-zA-Z0-9._~^{}@\/-]+$/.test(commit)) {
-    throw new Error('Invalid commit reference');
-  }
-  return commit;
-}
-
-function validateBranchName(branch) {
-  if (!/^[a-zA-Z0-9._\/-]+$/.test(branch)) {
-    throw new Error('Invalid branch name');
-  }
-  return branch;
-}
-
-function validateFilePath(file, projectPath) {
-  if (!file || file.includes('\0')) {
-    throw new Error('Invalid file path');
-  }
-  // Prevent path traversal: resolve the file relative to the project root
-  // and ensure the result stays within the project directory
-  if (projectPath) {
-    const resolved = path.resolve(projectPath, file);
-    const normalizedRoot = path.resolve(projectPath) + path.sep;
-    if (!resolved.startsWith(normalizedRoot) && resolved !== path.resolve(projectPath)) {
-      throw new Error('Invalid file path: path traversal detected');
-    }
-  }
-  return file;
-}
-
+// Additional validation helpers (not in shared module)
 function validateRemoteName(remote) {
   if (!/^[a-zA-Z0-9._-]+$/.test(remote)) {
     throw new Error('Invalid remote name');

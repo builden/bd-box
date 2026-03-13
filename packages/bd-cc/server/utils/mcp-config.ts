@@ -3,7 +3,6 @@
  * Used by mcp-detector.ts and routes/mcp.ts
  */
 
-import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 
@@ -22,8 +21,7 @@ export async function readMcpConfig(): Promise<{
 }> {
   for (const filepath of MCP_CONFIG_PATHS) {
     try {
-      const fileContent = await fs.readFile(filepath, 'utf8');
-      const configData = JSON.parse(fileContent);
+      const configData = await Bun.file(filepath).json();
       return { configData, configPath: filepath };
     } catch {
       // File doesn't exist or is not valid JSON, try next
