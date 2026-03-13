@@ -16,7 +16,7 @@ import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import os from 'os';
-import { extractProjectDirectory } from '../projects.ts';
+import { extractProjectDirectory } from '../project-service.ts';
 import { detectTaskMasterMCPServer } from '../utils/mcp-detector.ts';
 import { detectTaskMasterFolder } from '../utils/taskmaster-detector.ts';
 import { broadcastTaskMasterProjectUpdate, broadcastTaskMasterTasksUpdate } from '../utils/taskmaster-ws.ts';

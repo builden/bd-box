@@ -4,7 +4,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 import TOML from '@iarna/toml';
-import { getCodexSessions, getCodexSessionMessages, deleteCodexSession } from '../projects.ts';
+import { getCodexSessions, getCodexSessionMessages, deleteCodexSession } from '../project-service.ts';
 import { applyCustomSessionNames, sessionNamesDb } from '../database/index.ts';
 
 const router = express.Router();

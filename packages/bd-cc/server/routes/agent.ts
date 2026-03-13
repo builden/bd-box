@@ -5,14 +5,14 @@ import os from 'os';
 import { promises as fs } from 'fs';
 import crypto from 'crypto';
 import { userDb, apiKeysDb, githubTokensDb } from '../database/index.ts';
-import { addProjectManually } from '../projects.ts';
+import { addProjectManually } from '../project-service.ts';
 import { queryClaudeSDK } from '../providers/claude.ts';
-import { spawnCursor } from '../cursor-cli.ts';
-import { queryCodex } from '../openai-codex.ts';
-import { spawnGemini } from '../gemini-cli.ts';
+import { spawnCursor } from '../providers/cursor.ts';
+import { queryCodex } from '../providers/codex.ts';
+import { spawnGemini } from '../providers/gemini.ts';
 import { Octokit } from '@octokit/rest';
 import { CLAUDE_MODELS, CURSOR_MODELS, CODEX_MODELS } from '../../shared/modelConstants.ts';
-import { IS_PLATFORM } from '../constants/config.ts';
+import { IS_PLATFORM } from '../env.ts';
 
 const router = express.Router();
 

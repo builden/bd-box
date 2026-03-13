@@ -1,7 +1,7 @@
 import express from 'express';
 import sessionManager from '../sessionManager.ts';
 import { sessionNamesDb } from '../database/index.ts';
-import { getGeminiCliSessionMessages } from '../projects.ts';
+import { getGeminiCliSessionMessages } from '../project-service.ts';
 
 const router = express.Router();
 

@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { userDb, appConfigDb } from '../database/index.ts';
-import { IS_PLATFORM } from '../constants/config.ts';
+import { IS_PLATFORM } from '../env.ts';
 
 // Use env var if set, otherwise auto-generate a unique secret per installation
 const JWT_SECRET = process.env.JWT_SECRET || appConfigDb.getOrCreateJwtSecret();

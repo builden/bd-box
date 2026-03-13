@@ -7,7 +7,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 import { getSessions, getSessionMessages } from './project-service.ts';
-import sessionManager from './sessionManager.ts';
+import sessionManager from '../sessionManager.ts';
 
 // ============================================================================
 // Gemini Response Handler - JSON Stream processing
