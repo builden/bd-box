@@ -1,8 +1,9 @@
 # bun test configuration for bd-cc
+# Note: Server unit tests (server/tests-unit/) should be run separately with: bun test:unit
 
 [test]
 preload = ["./tests/setup.ts"]
-# Include non-standard test file patterns, but exclude e2e (uses Playwright)
+# Include non-standard test file patterns, but exclude e2e and server unit tests
 testPatterns = [
   "**/*.test.ts",
   "**/*.api.ts",
@@ -10,5 +11,7 @@ testPatterns = [
   "tests/integration/*.spec.ts",
   "**/*.bench.ts"
 ]
-# Exclude e2e tests from bun test (they use Playwright)
-ignore = ["tests/e2e/**"]
+# Exclude e2e tests and server unit tests from bun test
+# - e2e uses Playwright
+# - server unit tests need no DOM and should be run with: bun test:unit
+ignore = ["tests/e2e/**", "server/tests-unit/**"]

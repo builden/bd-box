@@ -136,6 +136,7 @@
         "rehype-katex": "^7.0.1",
         "remark-gfm": "^4.0.1",
         "remark-math": "^6.0.0",
+        "shell-quote": "^1.8.3",
         "sqlite": "^5.1.1",
         "sqlite3": "^5.1.7",
         "tailwind-merge": "^3.5.0",
