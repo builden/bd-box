@@ -10,7 +10,7 @@ import {
   getGitRemoteUrl,
   validateDirName,
   parseYamlFrontmatter,
-} from './base-loader';
+} from './git-loader';
 
 describe('base-loader utilities', () => {
   const testDir = path.join(os.tmpdir(), `base-loader-test-${Date.now()}`);

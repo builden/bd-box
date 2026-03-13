@@ -13,7 +13,7 @@ import {
   removeDir,
   npmInstall,
   mkTempDir,
-} from './base-loader';
+} from './git-loader';
 
 const PLUGINS_DIR = path.join(os.homedir(), '.claude-code-ui', 'plugins');
 const PLUGINS_CONFIG_PATH = path.join(os.homedir(), '.claude-code-ui', 'plugins.json');

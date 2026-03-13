@@ -19,7 +19,7 @@ import os from 'os';
 import { extractProjectDirectory } from '../projects.ts';
 import { detectTaskMasterMCPServer } from '../utils/mcp-detector.ts';
 import { detectTaskMasterFolder } from '../utils/taskmaster-detector.ts';
-import { broadcastTaskMasterProjectUpdate, broadcastTaskMasterTasksUpdate } from '../utils/taskmaster-websocket.ts';
+import { broadcastTaskMasterProjectUpdate, broadcastTaskMasterTasksUpdate } from '../utils/taskmaster-ws.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

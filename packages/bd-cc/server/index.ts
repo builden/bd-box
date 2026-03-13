@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Load environment variables before other imports execute
-import './load-env.ts';
+import './env.ts';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -54,7 +54,7 @@ import {
   extractProjectDirectory,
   clearProjectDirectoryCache,
   searchConversations,
-} from './projects.ts';
+} from './project-service.ts';
 import {
   queryClaudeSDK,
   abortClaudeSDKSession,
@@ -72,14 +72,14 @@ import gitRoutes from './routes/git.ts';
 import authRoutes from './routes/auth.ts';
 import mcpRoutes from './routes/mcp.ts';
 import cursorRoutes from './routes/cursor.ts';
-import taskmasterRoutes from './routes/taskmaster.ts';
+import taskmasterRoutes from './routes/taskmasters.ts';
 import mcpUtilsRoutes from './routes/mcp-utils.ts';
 import commandsRoutes from './routes/commands.ts';
 import settingsRoutes from './routes/settings.ts';
 import agentRoutes from './routes/agent.ts';
 import projectsRoutes, { WORKSPACES_ROOT, validateWorkspacePath } from './routes/projects.ts';
 import cliAuthRoutes from './routes/cli-auth.ts';
-import userRoutes from './routes/user.ts';
+import userRoutes from './routes/users.ts';
 import codexRoutes from './routes/codex.ts';
 import geminiRoutes from './routes/gemini.ts';
 import pluginsRoutes from './routes/plugins.ts';

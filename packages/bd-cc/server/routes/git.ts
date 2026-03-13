@@ -1,7 +1,7 @@
 import express from 'express';
 import path from 'path';
 import { promises as fs } from 'fs';
-import { extractProjectDirectory } from '../projects.ts';
+import { extractProjectDirectory } from '../project-service.ts';
 import { queryClaudeSDK } from '../claude-sdk.ts';
 import { spawnCursor } from '../cursor-cli.ts';
 import { runCommand } from '../utils/spawn.ts';
