@@ -43,3 +43,14 @@ export {
   skillsCountAtom,
   enabledSkillsCountAtom,
 } from './skills/domain/skills-derived';
+
+// Tasks Settings
+export { useTasksSettings } from './tasks-settings/actions/use-tasks-settings';
+export {
+  tasksEnabledAtom,
+  isTaskMasterInstalledAtom,
+  isTaskMasterReadyAtom,
+  installationStatusAtom,
+  isCheckingInstallationAtom,
+} from './tasks-settings/primitives/tasks-settings-atom';
+export type { InstallationStatus, TasksSettingsState } from './tasks-settings/primitives/tasks-settings-atom';

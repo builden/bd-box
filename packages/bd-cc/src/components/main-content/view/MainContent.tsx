@@ -6,7 +6,7 @@ import GitPanel from '../../git-panel/view/GitPanel';
 import PluginTabContent from '../../plugins/view/PluginTabContent';
 import type { MainContentProps } from '../types/types';
 import { useTaskMaster } from '../../../contexts/TaskMasterContext';
-import { useTasksSettings } from '../../../contexts/TasksSettingsContext';
+import { useTasksSettings } from '@/store';
 import { useUiPreferences } from '../../../hooks/useUiPreferences';
 import { useEditorSidebar } from '../../code-editor/hooks/useEditorSidebar';
 import EditorSidebar from '../../code-editor/view/EditorSidebar';
@@ -19,12 +19,6 @@ import ErrorBoundary from './ErrorBoundary';
 type TaskMasterContextValue = {
   currentProject?: Project | null;
   setCurrentProject?: ((project: Project) => void) | null;
-};
-
-type TasksSettingsContextValue = {
-  tasksEnabled: boolean;
-  isTaskMasterInstalled: boolean | null;
-  isTaskMasterReady: boolean | null;
 };
 
 function MainContent({
@@ -53,7 +47,7 @@ function MainContent({
   const { autoExpandTools, showRawParameters, showThinking, autoScrollToBottom, sendByCtrlEnter } = preferences;
 
   const { currentProject, setCurrentProject } = useTaskMaster() as TaskMasterContextValue;
-  const { tasksEnabled, isTaskMasterInstalled } = useTasksSettings() as TasksSettingsContextValue;
+  const { tasksEnabled, isTaskMasterInstalled } = useTasksSettings();
 
   const shouldShowTasksTab = Boolean(tasksEnabled && isTaskMasterInstalled);
 

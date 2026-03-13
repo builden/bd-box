@@ -11,6 +11,7 @@ export const STORAGE_KEYS = {
   ACTIVE_TAB: 'bd-cc:active-tab',
   PLUGINS: 'bd-cc:plugins',
   SKILLS: 'bd-cc:skills',
+  TASKS_ENABLED: 'bd-cc:tasks-enabled',
 } as const;
 
 // ============================================

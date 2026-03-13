@@ -5,7 +5,7 @@ import { useVersionCheck } from '../../../hooks/useVersionCheck';
 import { useUiPreferences } from '../../../hooks/useUiPreferences';
 import { useSidebarController } from '../hooks/useSidebarController';
 import { useTaskMaster } from '../../../contexts/TaskMasterContext';
-import { useTasksSettings } from '../../../contexts/TasksSettingsContext';
+import { useTasksSettings } from '@/store';
 import type { Project, SessionProvider } from '../../../types/app';
 import type { MCPServerStatus, SidebarProps } from '../types/types';
 import SidebarCollapsed from './subcomponents/SidebarCollapsed';
@@ -40,7 +40,7 @@ function Sidebar({
   const { isPWA } = useDeviceSettings({ trackMobile: false });
   const { updateAvailable, latestVersion, currentVersion, releaseInfo, installMode } = useVersionCheck(
     'siteboon',
-    'claudecodeui',
+    'claudecodeui'
   );
   const { preferences, setPreference } = useUiPreferences();
   const { sidebarVisible } = preferences;
@@ -234,10 +234,19 @@ function Sidebar({
             conversationResults={conversationResults}
             isSearching={isSearching}
             searchProgress={searchProgress}
-            onConversationResultClick={(projectName: string, sessionId: string, provider: string, messageTimestamp?: string | null, messageSnippet?: string | null) => {
+            onConversationResultClick={(
+              projectName: string,
+              sessionId: string,
+              provider: string,
+              messageTimestamp?: string | null,
+              messageSnippet?: string | null
+            ) => {
               const resolvedProvider = (provider || 'claude') as SessionProvider;
-              const project = projects.find(p => p.name === projectName);
-              const searchTarget = { __searchTargetTimestamp: messageTimestamp || null, __searchTargetSnippet: messageSnippet || null };
+              const project = projects.find((p) => p.name === projectName);
+              const searchTarget = {
+                __searchTargetTimestamp: messageTimestamp || null,
+                __searchTargetSnippet: messageSnippet || null,
+              };
               const sessionObj = {
                 id: sessionId,
                 __provider: resolvedProvider,
@@ -247,7 +256,7 @@ function Sidebar({
               if (project) {
                 handleProjectSelect(project);
                 const sessions = getProjectSessions(project);
-                const existing = sessions.find(s => s.id === sessionId);
+                const existing = sessions.find((s) => s.id === sessionId);
                 if (existing) {
                   handleSessionClick({ ...existing, ...searchTarget }, projectName);
                 } else {
@@ -273,7 +282,6 @@ function Sidebar({
           />
         </>
       )}
-
     </>
   );
 }

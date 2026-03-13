@@ -1,15 +1,14 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useTasksSettings } from '../../../contexts/TasksSettingsContext';
+import { useTasksSettings } from '@/store';
 import { QuickSettingsPanel } from '../../quick-settings-panel';
-import type { ChatInterfaceProps, Provider  } from '../types/types';
+import type { ChatInterfaceProps, Provider } from '../types/types';
 import { useChatProviderState } from '../hooks/useChatProviderState';
 import { useChatSessionState } from '../hooks/useChatSessionState';
 import { useChatRealtimeHandlers } from '../hooks/useChatRealtimeHandlers';
 import { useChatComposerState } from '../hooks/useChatComposerState';
 import ChatMessagesPane from './subcomponents/ChatMessagesPane';
 import ChatComposer from './subcomponents/ChatComposer';
-
 
 type PendingViewSession = {
   sessionId: string | null;
@@ -363,9 +362,7 @@ function ChatInterface({
           isDragActive={isDragActive}
           attachedImages={attachedImages}
           onRemoveImage={(index) =>
-            setAttachedImages((previous) =>
-              previous.filter((_, currentIndex) => currentIndex !== index),
-            )
+            setAttachedImages((previous) => previous.filter((_, currentIndex) => currentIndex !== index))
           }
           uploadingImages={uploadingImages}
           imageErrors={imageErrors}

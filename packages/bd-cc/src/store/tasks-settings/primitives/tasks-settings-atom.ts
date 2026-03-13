@@ -1,0 +1,47 @@
+import { atom } from 'jotai';
+
+/**
+ * TaskMaster 安装状态
+ */
+export type InstallationStatus = {
+  installation?: {
+    isInstalled: boolean;
+  };
+  isReady: boolean;
+};
+
+/**
+ * Tasks 设置状态
+ */
+export type TasksSettingsState = {
+  tasksEnabled: boolean;
+  isTaskMasterInstalled: boolean | null;
+  isTaskMasterReady: boolean | null;
+  installationStatus: InstallationStatus | null;
+  isCheckingInstallation: boolean;
+};
+
+/**
+ * tasksEnabled 持久化 atom
+ */
+export const tasksEnabledAtom = atom<boolean>(true);
+
+/**
+ * TaskMaster 安装状态
+ */
+export const isTaskMasterInstalledAtom = atom<boolean | null>(null);
+
+/**
+ * TaskMaster 就绪状态
+ */
+export const isTaskMasterReadyAtom = atom<boolean | null>(null);
+
+/**
+ * 安装状态详情
+ */
+export const installationStatusAtom = atom<InstallationStatus | null>(null);
+
+/**
+ * 正在检查安装状态
+ */
+export const isCheckingInstallationAtom = atom<boolean>(true);

@@ -16,7 +16,7 @@ import {
   BarChart3,
   type LucideIcon,
 } from 'lucide-react';
-import { useTasksSettings } from '../../contexts/TasksSettingsContext';
+import { useTasksSettings } from '@/store';
 import { usePlugins } from '@/store';
 import { AppTab } from '../../types/app';
 
