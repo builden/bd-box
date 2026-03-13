@@ -28,9 +28,6 @@ bun run test:mermaid   # vscode-md-diagram
 cd packages/bd-color && bun test
 cd packages/bd-lunar && bun test
 cd packages/vscode-md-diagram && bun run test
-
-# Run docs dev server
-bun run docs:dev
 ```
 
 ## Package-Specific Commands
@@ -98,7 +95,3 @@ bun run build
 ### bd-lunar
 
 使用 tsc 编译，输出到 dist/ 目录。
-
-## Documentation
-
-使用 Mintlify 作为文档框架。运行 `bun run docs:dev` 启动本地文档服务器。文档位于 `docs/` 目录下。
