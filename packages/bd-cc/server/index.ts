@@ -86,7 +86,7 @@ import pluginsRoutes from './routes/plugins.ts';
 import { startEnabledPluginServers, stopAllPlugins } from './utils/plugin-process-manager.ts';
 import { initializeDatabase, sessionNamesDb, applyCustomSessionNames } from './database/db.ts';
 import { validateApiKey, authenticateToken, authenticateWebSocket } from './middleware/auth.ts';
-import { IS_PLATFORM } from './constants/config.ts';
+import { IS_PLATFORM } from './env.ts';
 
 const VALID_PROVIDERS = ['claude', 'codex', 'cursor', 'gemini'];
 

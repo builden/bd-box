@@ -37,7 +37,7 @@ export function useUiPreferences() {
   return {
     preferences,
     setPreference,
-    setPreferencesBulk,
+    setPreferences: setPreferencesBulk, // 向后兼容别名
     resetPreferences,
   };
 }
