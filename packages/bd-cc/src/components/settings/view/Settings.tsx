@@ -11,9 +11,9 @@ import CredentialsSettingsTab from "../view/tabs/api-settings/CredentialsSetting
 import GitSettingsTab from "../view/tabs/git-settings/GitSettingsTab";
 import TasksSettingsTab from "../view/tabs/tasks-settings/TasksSettingsTab";
 import PluginSettingsTab from "../../plugins/view/PluginSettingsTab";
-import SkillsSettingsTab from "./tabs/skills-settings/SkillsSettingsTab";
 import { useSettingsController } from "../hooks/useSettingsController";
 import type { SettingsProps } from "../types/types";
+import SkillsSettingsTab from "./tabs/skills-settings/SkillsSettingsTab";
 
 function Settings({ isOpen, onClose, projects = [], initialTab = "agents" }: SettingsProps) {
   const { t } = useTranslation("settings");

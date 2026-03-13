@@ -5,10 +5,10 @@ export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
 
-export function safeJsonParse(value: unknown): unknown {
+export function safeJsonParse<T = unknown>(value: unknown): T | null {
   if (!value || typeof value !== "string") return null;
   try {
-    return JSON.parse(value);
+    return JSON.parse(value) as T;
   } catch {
     return null;
   }

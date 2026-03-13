@@ -1,15 +1,15 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import type { MutableRefObject } from 'react';
-import { api, authenticatedFetch } from '../../../utils/api';
-import type { ChatMessage, Provider } from '../types/types';
-import type { Project, ProjectSession } from '../../../types/app';
-import { safeLocalStorage } from '../utils/chatStorage';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import type { MutableRefObject } from "react";
+import { api, authenticatedFetch } from "../../../utils/api";
+import type { ChatMessage, Provider } from "../types/types";
+import type { Project, ProjectSession } from "../../../types/app";
+import { safeLocalStorage } from "../utils/chatStorage";
 import {
   convertCursorSessionMessages,
   convertSessionMessages,
   createCachedDiffCalculator,
   type DiffCalculator,
-} from '../utils/messageTransforms';
+} from "../utils/messageTransforms";
 
 const MESSAGES_PER_PAGE = 20;
 const INITIAL_VISIBLE_MESSAGES = 100;
@@ -48,13 +48,13 @@ export function useChatSessionState({
   pendingViewSessionRef,
 }: UseChatSessionStateArgs) {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(() => {
-    if (typeof window !== 'undefined' && selectedProject) {
+    if (typeof window !== "undefined" && selectedProject) {
       const saved = safeLocalStorage.getItem(`chat_messages_${selectedProject.name}`);
       if (saved) {
         try {
           return JSON.parse(saved) as ChatMessage[];
         } catch {
-          console.error('Failed to parse saved chat messages, resetting');
+          console.error("Failed to parse saved chat messages, resetting");
           safeLocalStorage.removeItem(`chat_messages_${selectedProject.name}`);
           return [];
         }
@@ -75,14 +75,18 @@ export function useChatSessionState({
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
   const [tokenBudget, setTokenBudget] = useState<Record<string, unknown> | null>(null);
   const [visibleMessageCount, setVisibleMessageCount] = useState(INITIAL_VISIBLE_MESSAGES);
-  const [claudeStatus, setClaudeStatus] = useState<{ text: string; tokens: number; can_interrupt: boolean } | null>(null);
+  const [claudeStatus, setClaudeStatus] = useState<{ text: string; tokens: number; can_interrupt: boolean } | null>(
+    null,
+  );
   const [allMessagesLoaded, setAllMessagesLoaded] = useState(false);
   const [isLoadingAllMessages, setIsLoadingAllMessages] = useState(false);
   const [loadAllJustFinished, setLoadAllJustFinished] = useState(false);
   const [showLoadAllOverlay, setShowLoadAllOverlay] = useState(false);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [searchTarget, setSearchTarget] = useState<{ timestamp?: string; uuid?: string; snippet?: string } | null>(null);
+  const [searchTarget, setSearchTarget] = useState<{ timestamp?: string; uuid?: string; snippet?: string } | null>(
+    null,
+  );
   const searchScrollActiveRef = useRef(false);
   const isLoadingSessionRef = useRef(false);
   const isLoadingMoreRef = useRef(false);
@@ -99,7 +103,7 @@ export function useChatSessionState({
   const createDiff = useMemo<DiffCalculator>(() => createCachedDiffCalculator(), []);
 
   const loadSessionMessages = useCallback(
-    async (projectName: string, sessionId: string, loadMore = false, provider: Provider | string = 'claude') => {
+    async (projectName: string, sessionId: string, loadMore = false, provider: Provider | string = "claude") => {
       if (!projectName || !sessionId) {
         return [] as any[];
       }
@@ -113,15 +117,9 @@ export function useChatSessionState({
 
       try {
         const currentOffset = loadMore ? messagesOffsetRef.current : 0;
-        const response = await (api.sessionMessages as any)(
-          projectName,
-          sessionId,
-          MESSAGES_PER_PAGE,
-          currentOffset,
-          provider,
-        );
+        const response = await api.sessionMessages(projectName, sessionId, MESSAGES_PER_PAGE, currentOffset, provider);
         if (!response.ok) {
-          throw new Error('Failed to load session messages');
+          throw new Error("Failed to load session messages");
         }
 
         const data = await response.json();
@@ -143,7 +141,7 @@ export function useChatSessionState({
         messagesOffsetRef.current = messages.length;
         return messages;
       } catch (error) {
-        console.error('Error loading session messages:', error);
+        console.error("Error loading session messages:", error);
         return [];
       } finally {
         if (isInitialLoad) {
@@ -173,7 +171,7 @@ export function useChatSessionState({
       const blobs = (data?.session?.messages || []) as any[];
       return convertCursorSessionMessages(blobs, projectPath);
     } catch (error) {
-      console.error('Error loading Cursor session messages:', error);
+      console.error("Error loading Cursor session messages:", error);
       return [];
     } finally {
       setIsLoadingSessionMessages(false);
@@ -220,8 +218,8 @@ export function useChatSessionState({
         return false;
       }
 
-      const sessionProvider = selectedSession.__provider || 'claude';
-      if (sessionProvider === 'cursor') {
+      const sessionProvider = selectedSession.__provider || "claude";
+      if (sessionProvider === "cursor") {
         return false;
       }
 
@@ -230,12 +228,7 @@ export function useChatSessionState({
       const previousScrollTop = container.scrollTop;
 
       try {
-        const moreMessages = await loadSessionMessages(
-          selectedProject.name,
-          selectedSession.id,
-          true,
-          sessionProvider,
-        );
+        const moreMessages = await loadSessionMessages(selectedProject.name, selectedSession.id, true, sessionProvider);
 
         if (moreMessages.length === 0) {
           return false;
@@ -335,7 +328,7 @@ export function useChatSessionState({
   useEffect(() => {
     const loadMessages = async () => {
       if (selectedSession && selectedProject) {
-        const provider = (localStorage.getItem('selected-provider') as Provider) || 'claude';
+        const provider = (localStorage.getItem("selected-provider") as Provider) || "claude";
         isLoadingSessionRef.current = true;
 
         const sessionChanged = currentSessionId !== null && currentSessionId !== selectedSession.id;
@@ -365,7 +358,7 @@ export function useChatSessionState({
 
           if (ws) {
             sendMessage({
-              type: 'check-session-status',
+              type: "check-session-status",
               sessionId: selectedSession.id,
               provider,
             });
@@ -377,7 +370,7 @@ export function useChatSessionState({
 
           if (ws) {
             sendMessage({
-              type: 'check-session-status',
+              type: "check-session-status",
               sessionId: selectedSession.id,
               provider,
             });
@@ -393,12 +386,12 @@ export function useChatSessionState({
           return;
         }
 
-        if (provider === 'cursor') {
+        if (provider === "cursor") {
           setCurrentSessionId(selectedSession.id);
-          sessionStorage.setItem('cursorSessionId', selectedSession.id);
+          sessionStorage.setItem("cursorSessionId", selectedSession.id);
 
           if (!isSystemSessionChange) {
-            const projectPath = selectedProject.fullPath || selectedProject.path || '';
+            const projectPath = selectedProject.fullPath || selectedProject.path || "";
             const converted = await loadCursorSessionMessages(projectPath, selectedSession.id);
             setSessionMessages([]);
             setChatMessages(converted);
@@ -413,7 +406,7 @@ export function useChatSessionState({
               selectedProject.name,
               selectedSession.id,
               false,
-              selectedSession.__provider || 'claude',
+              selectedSession.__provider || "claude",
             );
             setSessionMessages(messages);
           } else {
@@ -435,7 +428,7 @@ export function useChatSessionState({
         }
 
         setCurrentSessionId(null);
-        sessionStorage.removeItem('cursorSessionId');
+        sessionStorage.removeItem("cursorSessionId");
         messagesOffsetRef.current = 0;
         setHasMoreMessages(false);
         setTotalMessages(0);
@@ -469,10 +462,10 @@ export function useChatSessionState({
 
     const reloadExternalMessages = async () => {
       try {
-        const provider = (localStorage.getItem('selected-provider') as Provider) || 'claude';
+        const provider = (localStorage.getItem("selected-provider") as Provider) || "claude";
 
-        if (provider === 'cursor') {
-          const projectPath = selectedProject.fullPath || selectedProject.path || '';
+        if (provider === "cursor") {
+          const projectPath = selectedProject.fullPath || selectedProject.path || "";
           const converted = await loadCursorSessionMessages(projectPath, selectedSession.id);
           setSessionMessages([]);
           setChatMessages(converted);
@@ -483,7 +476,7 @@ export function useChatSessionState({
           selectedProject.name,
           selectedSession.id,
           false,
-          selectedSession.__provider || 'claude',
+          selectedSession.__provider || "claude",
         );
         setSessionMessages(messages);
 
@@ -492,7 +485,7 @@ export function useChatSessionState({
           setTimeout(() => scrollToBottom(), 200);
         }
       } catch (error) {
-        console.error('Error reloading messages from external update:', error);
+        console.error("Error reloading messages from external update:", error);
       }
     };
 
@@ -515,11 +508,11 @@ export function useChatSessionState({
     const session = selectedSession as Record<string, unknown> | null;
     const targetSnippet = session?.__searchTargetSnippet;
     const targetTimestamp = session?.__searchTargetTimestamp;
-    if (typeof targetSnippet === 'string' && targetSnippet) {
+    if (typeof targetSnippet === "string" && targetSnippet) {
       searchScrollActiveRef.current = true;
       setSearchTarget({
         snippet: targetSnippet,
-        timestamp: typeof targetTimestamp === 'string' ? targetTimestamp : undefined,
+        timestamp: typeof targetTimestamp === "string" ? targetTimestamp : undefined,
       });
     }
   }, [selectedSession]);
@@ -535,12 +528,13 @@ export function useChatSessionState({
     // 1. Not currently loading (to avoid overwriting user's just-sent message)
     // 2. SessionMessages actually changed (including from non-empty to empty)
     // 3. Either it's initial load OR sessionMessages increased (new messages from server)
-    if (
-      sessionMessages.length !== prevSessionMessagesLengthRef.current &&
-      !isLoading
-    ) {
+    if (sessionMessages.length !== prevSessionMessagesLengthRef.current && !isLoading) {
       // Only update if this is initial load, sessionMessages grew, or was cleared to empty
-      if (isInitialLoadRef.current || sessionMessages.length === 0 || sessionMessages.length > prevSessionMessagesLengthRef.current) {
+      if (
+        isInitialLoadRef.current ||
+        sessionMessages.length === 0 ||
+        sessionMessages.length > prevSessionMessagesLengthRef.current
+      ) {
         setChatMessages(convertedMessages);
         isInitialLoadRef.current = false;
       }
@@ -566,10 +560,10 @@ export function useChatSessionState({
       // Always load all messages when navigating from search
       // (hasMoreMessages may not be set yet due to race with loading effect)
       if (!allMessagesLoadedRef.current && selectedSession && selectedProject) {
-        const sessionProvider = selectedSession.__provider || 'claude';
-        if (sessionProvider !== 'cursor') {
+        const sessionProvider = selectedSession.__provider || "claude";
+        if (sessionProvider !== "cursor") {
           try {
-            const response = await (api.sessionMessages as any)(
+            const response = await api.sessionMessages(
               selectedProject.name,
               selectedSession.id,
               null,
@@ -587,7 +581,7 @@ export function useChatSessionState({
               setAllMessagesLoaded(true);
               allMessagesLoadedRef.current = true;
               // Wait for messages to render after state update
-              await new Promise(resolve => setTimeout(resolve, 300));
+              await new Promise((resolve) => setTimeout(resolve, 300));
             }
           } catch {
             // Fall through and scroll in current messages
@@ -605,14 +599,17 @@ export function useChatSessionState({
 
         // Match by snippet text content (most reliable)
         if (target.snippet) {
-          const cleanSnippet = target.snippet.replace(/^\.{3}/, '').replace(/\.{3}$/, '').trim();
+          const cleanSnippet = target.snippet
+            .replace(/^\.{3}/, "")
+            .replace(/\.{3}$/, "")
+            .trim();
           // Use a contiguous substring from the snippet (don't filter words, it breaks matching)
           const searchPhrase = cleanSnippet.slice(0, 80).toLowerCase().trim();
 
           if (searchPhrase.length >= 10) {
-            const messageElements = container.querySelectorAll('.chat-message');
+            const messageElements = container.querySelectorAll(".chat-message");
             for (const el of messageElements) {
-              const text = (el.textContent || '').toLowerCase();
+              const text = (el.textContent || "").toLowerCase();
               if (text.includes(searchPhrase)) {
                 targetElement = el;
                 break;
@@ -624,11 +621,11 @@ export function useChatSessionState({
         // Fallback to timestamp matching
         if (!targetElement && target.timestamp) {
           const targetDate = new Date(target.timestamp).getTime();
-          const messageElements = container.querySelectorAll('[data-message-timestamp]');
+          const messageElements = container.querySelectorAll("[data-message-timestamp]");
           let closestDiff = Infinity;
 
           for (const el of messageElements) {
-            const ts = el.getAttribute('data-message-timestamp');
+            const ts = el.getAttribute("data-message-timestamp");
             if (!ts) continue;
             const diff = Math.abs(new Date(ts).getTime() - targetDate);
             if (diff < closestDiff) {
@@ -639,9 +636,9 @@ export function useChatSessionState({
         }
 
         if (targetElement) {
-          targetElement.scrollIntoView({ block: 'center', behavior: 'smooth' });
-          targetElement.classList.add('search-highlight-flash');
-          setTimeout(() => targetElement?.classList.remove('search-highlight-flash'), 4000);
+          targetElement.scrollIntoView({ block: "center", behavior: "smooth" });
+          targetElement.classList.add("search-highlight-flash");
+          setTimeout(() => targetElement?.classList.remove("search-highlight-flash"), 4000);
           searchScrollActiveRef.current = false;
         } else if (retriesLeft > 0) {
           setTimeout(() => findAndScroll(retriesLeft - 1), 200);
@@ -655,17 +652,17 @@ export function useChatSessionState({
     };
 
     scrollToTarget();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatMessages.length, isLoadingSessionMessages, searchTarget]);
 
   useEffect(() => {
-    if (!selectedProject || !selectedSession?.id || selectedSession.id.startsWith('new-session-')) {
+    if (!selectedProject || !selectedSession?.id || selectedSession.id.startsWith("new-session-")) {
       setTokenBudget(null);
       return;
     }
 
-    const sessionProvider = selectedSession.__provider || 'claude';
-    if (sessionProvider !== 'claude') {
+    const sessionProvider = selectedSession.__provider || "claude";
+    if (sessionProvider !== "claude") {
       return;
     }
 
@@ -680,7 +677,7 @@ export function useChatSessionState({
           setTokenBudget(null);
         }
       } catch (error) {
-        console.error('Failed to fetch initial token usage:', error);
+        console.error("Failed to fetch initial token usage:", error);
       }
     };
 
@@ -741,8 +738,8 @@ export function useChatSessionState({
       return;
     }
 
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
   useEffect(() => {
@@ -783,8 +780,8 @@ export function useChatSessionState({
   const loadAllMessages = useCallback(async () => {
     if (!selectedSession || !selectedProject) return;
     if (isLoadingAllMessages) return;
-    const sessionProvider = selectedSession.__provider || 'claude';
-    if (sessionProvider === 'cursor') {
+    const sessionProvider = selectedSession.__provider || "claude";
+    if (sessionProvider === "cursor") {
       setVisibleMessageCount(Infinity);
       setAllMessagesLoaded(true);
       allMessagesLoadedRef.current = true;
@@ -849,7 +846,7 @@ export function useChatSessionState({
         setShowLoadAllOverlay(false);
       }
     } catch (error) {
-      console.error('Error loading all messages:', error);
+      console.error("Error loading all messages:", error);
       allMessagesLoadedRef.current = false;
       setShowLoadAllOverlay(false);
     } finally {

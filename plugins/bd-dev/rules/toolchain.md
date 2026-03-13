@@ -66,3 +66,15 @@
 - 使用 husky + lint-staged 自动检查
   - pre-commit: `bun lint && bun test`
 - 详细规范见 [lint.md](skills/bun-best-practices/references/setup/lint.md)
+
+## 重构规范
+
+大型重构（如 JS → TS 迁移）必须遵循以下原则：
+
+- **创建计划文件**：`REFACTORING_PLAN.md`（目标、阶段、验收标准）
+- **创建进度文件**：`REFACTORING_PROGRESS.md`，每完成一个小阶段就更新
+- **按阶段执行**：静态分析 → 单元测试 → 服务启动 → API 测试 → 集成测试 → E2E → 清理
+- **质量门禁**：测试通过 → 服务启动 → API 可用 → 功能验证
+- **清理规则**：所有测试通过后才能清理旧文件，先备份再删除
+
+详细规范见 [refactoring.md](skills/bun-best-practices/references/refactoring.md)

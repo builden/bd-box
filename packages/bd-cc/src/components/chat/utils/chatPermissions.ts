@@ -6,7 +6,7 @@ export function buildClaudeToolPermissionEntry(toolName?: string, toolInput?: un
   if (!toolName) return null;
   if (toolName !== "Bash") return toolName;
 
-  const parsed = safeJsonParse(toolInput);
+  const parsed = safeJsonParse<{ command?: unknown }>(toolInput);
   const command = typeof parsed?.command === "string" ? parsed.command.trim() : "";
   if (!command) return toolName;
 

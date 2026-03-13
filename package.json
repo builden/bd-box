@@ -1,10 +1,8 @@
 {
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@eslint/js": "^9.0.0",
     "@types/bun": "^1.3.10",
-    "eslint": "^10.0.3",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint": "^9.0.0",
     "execa": "^9.6.1",
     "globals": "^17.4.0",
     "husky": "^9.1.7",
@@ -34,7 +32,7 @@
     "plugin:install": "claude plugin install bd-dev@bd-plugins && claude plugin install bd@bd-plugins",
     "plugin:link-rules": "cp -r plugins/bd-dev/rules/* ~/.claude/rules/",
     "prepare": "husky",
-    "test": "AGENT=1 bun run --parallel --workspaces --if-present test",
+    "test": "AGENT=1 bun run --parallel --workspaces test",
     "test:color": "cd packages/bd-color && bun test",
     "test:diagram": "cd packages/vscode-md-diagram && bun test",
     "test:lunar": "cd packages/bd-lunar && bun test",
@@ -43,5 +41,9 @@
   },
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "pino": "^10.3.1",
+    "pino-pretty": "^13.1.3"
+  }
 }

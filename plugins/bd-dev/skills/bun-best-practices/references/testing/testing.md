@@ -17,14 +17,48 @@
 
 ## 测试分类
 
-| 类型     | 工具       | 文件后缀    | 说明                                         |
-| -------- | ---------- | ----------- | -------------------------------------------- |
-| 单元测试 | bun test   | `.test.ts`  | 源码同级，快速，量大                         |
-| API 测试 | bun test   | `.api.ts`   | `tests/api/`，API 端点验证                   |
-| 集成测试 | bun test   | `.spec.ts`  | `tests/integration/`，业务逻辑               |
-| 冒烟测试 | bun test   | `.smoke.ts` | `tests/smoke/`，核心用户流程，console 无警告 |
-| 性能测试 | Mitata     | `.bench.ts` | `tests/bench/`，基准测试                     |
-| E2E 测试 | Playwright | `.e2e.ts`   | `tests/e2e/`，浏览器端到端                   |
+| 类型     | 工具       | 文件后缀        | 说明                                           |
+| -------- | ---------- | --------------- | ---------------------------------------------- |
+| 单元测试 | bun test   | `.test.ts`      | 源码同级，快速，量大                           |
+| API 测试 | bun test   | `.api.ts`       | `tests/api/`，API 端点验证                     |
+| 集成测试 | bun test   | `.spec.ts`      | `tests/integration/`，业务逻辑                 |
+| 冒烟测试 | Playwright | `.smoke.e2e.ts` | `tests/e2e/`，核心用户流程，带 UI 方便人工确认 |
+| 性能测试 | Mitata     | `.bench.ts`     | `tests/bench/`，基准测试                       |
+| E2E 测试 | Playwright | `.e2e.ts`       | `tests/e2e/`，浏览器端到端                     |
+
+### 测试覆盖原则
+
+**必须覆盖真实用户场景**，而不是简化版：
+
+- ❌ 错误：测试 plain shell 模式就认为终端功能正常
+- ✅ 正确：测试真正的 Claude CLI 交互模式
+
+```typescript
+// ❌ 不完整的测试
+it("should connect to terminal", () => {
+  ws.send({ type: "init", isPlainShell: true }); // 只测试了 plain shell
+});
+
+// ✅ 完整的测试
+it("should connect to Claude CLI", () => {
+  ws.send({ type: "init", provider: "claude", isPlainShell: false });
+});
+```
+
+### 验证进程状态
+
+集成测试应验证后台进程是否真正运行：
+
+```typescript
+// ✅ 验证 PTY 进程是否启动
+it("should keep PTY process alive", async () => {
+  const before = countProcesses("spawn-helper");
+  await connectToTerminal();
+  await waitForOutput("Starting new Claude session");
+  const after = countProcesses("spawn-helper");
+  expect(after).toBeGreaterThan(before);
+});
+```
 
 ## 测试优先级
 
@@ -60,15 +94,21 @@ tests/
   api/               # API 端点测试
     *.api.ts
   integration/       # 集成测试
-  smoke/            # 冒烟测试
-    *.smoke.ts
-  bench/            # 性能测试
+    *.spec.ts
+  e2e/               # Playwright 测试（E2E + 冒烟）
+    *.e2e.ts         # 普通 E2E 测试
+    *.smoke.e2e.ts   # 冒烟测试（带 UI，方便人工确认）
+  bench/             # 性能测试
     *.bench.ts
-  e2e/              # Playwright E2E 测试
-    *.e2e.ts
+  setup.ts           # 测试全局配置
+  test-results/      # Playwright 输出目录（已加入 .gitignore）
   playwright.config.ts
-  test-results/     # Playwright 输出目录
 ```
+
+**重要约束**：
+
+- E2E 测试**禁止使用 `.test.ts` 后缀**，否则会被 bun test 误识别导致冲突
+- 冒烟测试使用 `.smoke.e2e.ts` 后缀，与普通 E2E 测试放同一目录
 
 ---
 
@@ -76,10 +116,15 @@ tests/
 
 ```bash
 bun test              # 单元测试 + API 测试 + 集成测试
-bun run test:smoke   # 冒烟测试
+bun run test:e2e     # Playwright E2E 测试（无 UI，CI/CD 用）
+bun run test:smoke   # 冒烟测试（带 UI，人工确认用）
 bun run test:bench   # 性能测试（Mitata）
-bun run test:e2e     # Playwright E2E 测试
 ```
+
+| 命令         | UI  | 用途                   |
+| ------------ | --- | ---------------------- |
+| `test:e2e`   | 无  | CI/CD、自动化流水线    |
+| `test:smoke` | 有  | 本地提交前人工二次确认 |
 
 ### API 测试示例
 
@@ -110,11 +155,20 @@ describe("Users API", () => {
 
 ## 运行时机
 
-| 时机        | 必须通过的测试                             |
-| ----------- | ------------------------------------------ |
-| commit 之前 | 单元测试 + 集成测试（`bun test`）          |
-| push 之前   | 冒烟测试（`bun run test:smoke`）           |
-| 提 PR 之前  | 全部测试（单元 + 集成 + 冒烟 + API + E2E） |
+| 时机        | 必须通过的测试                                   |
+| ----------- | ------------------------------------------------ |
+| commit 之前 | 单元测试 + 集成测试（`bun test`）                |
+| push 之前   | 冒烟测试（`bun run test:smoke`，带 UI 人工确认） |
+| 提 PR 之前  | 全部测试（单元 + 集成 + E2E + 冒烟）             |
+
+### 功能正常验证标准
+
+| 功能     | 验证方式               | 成功标准                        |
+| -------- | ---------------------- | ------------------------------- |
+| 服务启动 | HTTP 请求              | 返回 200                        |
+| 认证状态 | API `/api/auth/status` | 返回 needsSetup/isAuthenticated |
+| 项目列表 | API `/api/projects`    | 返回数组                        |
+| 终端连接 | WebSocket `/ws`        | 连接成功，接收消息              |
 
 ### 说明
 
@@ -141,11 +195,32 @@ preload = ["./tests/setup.ts"]
 {
   "scripts": {
     "test": "bun test",
-    "test:api": "bun test tests/api",
-    "test:smoke": "bun test tests/smoke",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test tests/e2e/",
+    "test:e2e:ui": "playwright test tests/e2e/ --ui",
+    "test:smoke": "playwright test tests/e2e/ --test-match \"*.smoke.e2e.ts\" --ui"
   }
 }
+```
+
+### playwright.config.ts
+
+```typescript
+import { defineConfig, devices } from "@playwright/test";
+
+export default defineConfig({
+  testDir: "./tests/e2e",
+  testMatch: ["**/*.e2e.ts"], // 匹配所有 .e2e.ts 和 .smoke.e2e.ts
+  reporter: [["html", { outputFolder: "tests/test-results/playwright-report" }]],
+  use: {
+    trace: "on-first-retry",
+  },
+  projects: [
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+    },
+  ],
+});
 ```
 
 ### setup.ts

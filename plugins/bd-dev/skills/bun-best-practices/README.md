@@ -30,6 +30,8 @@ bun-best-practices/
     │   └── gitignore.md         # 测试输出忽略
     ├── publishing/              # 发布阶段
     │   └── package-publishing.md # npm 包发布
+    ├── refactoring/            # 重构规范
+    │   └── refactoring.md     # 重构规范
     └── troubleshooting/         # 避坑指南
         └── common-mistakes.md   # 常见错误
 ```
@@ -57,6 +59,7 @@ bun-best-practices/
 | **搭建** | setup/concurrently.md              | 多进程并行管理工具                 | 同时运行多命令时  |
 | **搭建** | setup/gitignore.md                 | 测试输出目录忽略                   | 配置 gitignore 时 |
 | **发布** | publishing/package-publishing.md   | npm 包发布                         | 发布包时          |
+| **重构** | refactoring/refactoring.md         | 大型重构规范：计划、进度、验证     | 大型重构时        |
 | **避坑** | troubleshooting/common-mistakes.md | 常见错误及方案                     | 遇到问题时        |
 
 ---

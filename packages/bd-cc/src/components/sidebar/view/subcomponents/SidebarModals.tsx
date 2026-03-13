@@ -1,16 +1,16 @@
-import { useMemo } from 'react';
-import ReactDOM from 'react-dom';
-import { AlertTriangle, Trash2 } from 'lucide-react';
-import type { TFunction } from 'i18next';
-import { Button } from '../../../../shared/view/ui';
-import Settings from '../../../settings/view/Settings';
-import VersionUpgradeModal from '../../../version-upgrade/view';
-import type { Project } from '../../../../types/app';
-import type { ReleaseInfo } from '../../../../types/sharedTypes';
-import type { InstallMode } from '../../../../hooks/useVersionCheck';
-import { normalizeProjectForSettings } from '../../utils/utils';
-import type { DeleteProjectConfirmation, SessionDeleteConfirmation, SettingsProject } from '../../types/types';
-import ProjectCreationWizard from '../../../project-creation-wizard';
+import React, { useMemo } from "react";
+import ReactDOM from "react-dom";
+import { AlertTriangle, Trash2 } from "lucide-react";
+import type { TFunction } from "i18next";
+import { Button } from "../../../../shared/view/ui";
+import Settings from "../../../settings/view/Settings";
+import VersionUpgradeModal from "../../../version-upgrade/view";
+import type { Project } from "../../../../types/app";
+import type { ReleaseInfo } from "../../../../types/sharedTypes";
+import type { InstallMode } from "../../../../hooks/useVersionCheck";
+import { normalizeProjectForSettings } from "../../utils/utils";
+import type { DeleteProjectConfirmation, SessionDeleteConfirmation, SettingsProject } from "../../types/types";
+import ProjectCreationWizard from "../../../project-creation-wizard";
 
 type SidebarModalsProps = {
   projects: Project[];
@@ -42,7 +42,7 @@ type TypedSettingsProps = {
   initialTab: string;
 };
 
-const SettingsComponent = Settings as (props: TypedSettingsProps) => JSX.Element;
+const SettingsComponent = Settings as (props: TypedSettingsProps) => React.ReactElement;
 
 function TypedSettings(props: TypedSettingsProps) {
   return <SettingsComponent {...props} />;
@@ -71,19 +71,13 @@ export default function SidebarModals({
   t,
 }: SidebarModalsProps) {
   // Settings expects project identity/path fields to be present for dropdown labels and local-scope MCP config.
-  const settingsProjects = useMemo(
-    () => projects.map(normalizeProjectForSettings),
-    [projects],
-  );
+  const settingsProjects = useMemo(() => projects.map(normalizeProjectForSettings), [projects]);
 
   return (
     <>
       {showNewProject &&
         ReactDOM.createPortal(
-          <ProjectCreationWizard
-            onClose={onCloseNewProject}
-            onProjectCreated={onProjectCreated}
-          />,
+          <ProjectCreationWizard onClose={onCloseNewProject} onProjectCreated={onProjectCreated} />,
           document.body,
         )}
 
@@ -109,10 +103,10 @@ export default function SidebarModals({
                   </div>
                   <div className="min-w-0 flex-1">
                     <h3 className="mb-2 text-lg font-semibold text-foreground">
-                      {t('deleteConfirmation.deleteProject')}
+                      {t("deleteConfirmation.deleteProject")}
                     </h3>
                     <p className="mb-1 text-sm text-muted-foreground">
-                      {t('deleteConfirmation.confirmDelete')}{' '}
+                      {t("deleteConfirmation.confirmDelete")}{" "}
                       <span className="font-medium text-foreground">
                         {deleteConfirmation.project.displayName || deleteConfirmation.project.name}
                       </span>
@@ -121,22 +115,20 @@ export default function SidebarModals({
                     {deleteConfirmation.sessionCount > 0 && (
                       <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
                         <p className="text-sm font-medium text-red-700 dark:text-red-300">
-                          {t('deleteConfirmation.sessionCount', { count: deleteConfirmation.sessionCount })}
+                          {t("deleteConfirmation.sessionCount", { count: deleteConfirmation.sessionCount })}
                         </p>
                         <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-                          {t('deleteConfirmation.allConversationsDeleted')}
+                          {t("deleteConfirmation.allConversationsDeleted")}
                         </p>
                       </div>
                     )}
-                    <p className="mt-3 text-xs text-muted-foreground">
-                      {t('deleteConfirmation.cannotUndo')}
-                    </p>
+                    <p className="mt-3 text-xs text-muted-foreground">{t("deleteConfirmation.cannotUndo")}</p>
                   </div>
                 </div>
               </div>
               <div className="flex gap-3 border-t border-border bg-muted/30 p-4">
                 <Button variant="outline" className="flex-1" onClick={onCancelDeleteProject}>
-                  {t('actions.cancel')}
+                  {t("actions.cancel")}
                 </Button>
                 <Button
                   variant="destructive"
@@ -144,7 +136,7 @@ export default function SidebarModals({
                   onClick={onConfirmDeleteProject}
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
-                  {t('actions.delete')}
+                  {t("actions.delete")}
                 </Button>
               </div>
             </div>
@@ -163,24 +155,22 @@ export default function SidebarModals({
                   </div>
                   <div className="min-w-0 flex-1">
                     <h3 className="mb-2 text-lg font-semibold text-foreground">
-                      {t('deleteConfirmation.deleteSession')}
+                      {t("deleteConfirmation.deleteSession")}
                     </h3>
                     <p className="mb-1 text-sm text-muted-foreground">
-                      {t('deleteConfirmation.confirmDelete')}{' '}
+                      {t("deleteConfirmation.confirmDelete")}{" "}
                       <span className="font-medium text-foreground">
-                        {sessionDeleteConfirmation.sessionTitle || t('sessions.unnamed')}
+                        {sessionDeleteConfirmation.sessionTitle || t("sessions.unnamed")}
                       </span>
                       ?
                     </p>
-                    <p className="mt-3 text-xs text-muted-foreground">
-                      {t('deleteConfirmation.cannotUndo')}
-                    </p>
+                    <p className="mt-3 text-xs text-muted-foreground">{t("deleteConfirmation.cannotUndo")}</p>
                   </div>
                 </div>
               </div>
               <div className="flex gap-3 border-t border-border bg-muted/30 p-4">
                 <Button variant="outline" className="flex-1" onClick={onCancelDeleteSession}>
-                  {t('actions.cancel')}
+                  {t("actions.cancel")}
                 </Button>
                 <Button
                   variant="destructive"
@@ -188,7 +178,7 @@ export default function SidebarModals({
                   onClick={onConfirmDeleteSession}
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
-                  {t('actions.delete')}
+                  {t("actions.delete")}
                 </Button>
               </div>
             </div>

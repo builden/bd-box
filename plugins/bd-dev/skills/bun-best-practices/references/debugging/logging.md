@@ -138,10 +138,183 @@ const logger = pino({
 ### 开发环境配置
 
 ```typescript
+const isDevelopment = process.env.NODE_ENV !== "production";
+
 const logger = pino({
-  transport:
-    process.env.NODE_ENV === "development" ? { target: "pino-pretty", options: { colorize: true } } : undefined,
+  level: process.env.LOG_LEVEL || (isDevelopment ? "debug" : "info"),
+  transport: isDevelopment
+    ? {
+        target: "pino-pretty",
+        options: {
+          colorize: true,
+          translateTime: "HH:MM:ss.l", // 只显示时间，无日期无时区
+          ignore: "pid,hostname", // 忽略冗余字段
+        },
+      }
+    : undefined,
 });
+```
+
+#### 开发环境格式优化
+
+提高信息密度，移除冗余信息：
+
+| 选项                          | 说明              | 示例           |
+| ----------------------------- | ----------------- | -------------- |
+| `translateTime: "HH:MM:ss.l"` | 只显示时间 + 毫秒 | `01:57:18.546` |
+| `translateTime: "HH:MM:ss"`   | 只显示时间        | `01:57:18`     |
+| `ignore: "pid,hostname"`      | 忽略进程信息      | -              |
+
+> 生产环境使用 pino-roll 进行日志轮转，详见下一节。
+
+---
+
+## 结构化日志写法
+
+### 基础写法
+
+```typescript
+import pino from "pino";
+
+const logger = pino();
+
+// ❌ 错误 - 不便于检索
+logger.info("User logged in: " + userId);
+
+// ✅ 正确 - 结构化日志
+logger.info({ userId }, "User logged in");
+```
+
+### 错误日志
+
+```typescript
+// ❌ 错误
+logger.error("Error reading file:", error);
+
+// ✅ 正确 - 将 error 作为对象传递
+logger.error({ error }, "Error reading file");
+
+// ✅ 正确 - 包含更多上下文
+logger.error({ error, filePath, operation }, "Failed to read file");
+```
+
+### Debug 日志
+
+```typescript
+// ❌ 错误 - 拼接字符串
+logger.debug("[DEBUG] User message: " + data.command);
+
+// ✅ 正确 - 对象 + 消息
+logger.debug({ command: data.command || "[Continue/Resume]" }, "User message");
+
+// ✅ 正确 - 多个上下文字段
+logger.debug({ command, sessionId, provider }, "Agent message received");
+```
+
+### 父子 Logger（请求追踪）
+
+```typescript
+// server/utils/logger.ts
+import pino from "pino";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const isDevelopment = process.env.NODE_ENV !== "production";
+
+export const logger = pino({
+  /* 配置 */
+});
+
+// 创建带 requestId 的子 logger
+export function createRequestLogger(requestId: string) {
+  return logger.child({ requestId });
+}
+
+// server/routes/api.ts
+import { createRequestLogger } from "../utils/logger.ts";
+
+app.get("/api/users", (req, res) => {
+  const log = createRequestLogger(req.headers["x-request-id"]);
+  log.info({ userId: 123 }, "Fetching users");
+});
+```
+
+---
+
+## 独立 Logger 模块
+
+推荐创建独立的 logger 模块，便于项目各处复用：
+
+```
+server/
+└── utils/
+    └── logger.ts    # 统一的日志配置
+```
+
+```typescript
+// server/utils/logger.ts
+import pino from "pino";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const isDevelopment = process.env.NODE_ENV !== "production";
+const logsDir = path.join(__dirname, "..", "logs");
+
+export const logger = pino({
+  level: process.env.LOG_LEVEL || (isDevelopment ? "debug" : "info"),
+  transport: isDevelopment
+    ? {
+        target: "pino-pretty",
+        options: {
+          colorize: true,
+          translateTime: "HH:MM:ss.l",
+          ignore: "pid,hostname",
+        },
+      }
+    : {
+        targets: [
+          {
+            target: "pino-roll",
+            options: {
+              file: path.join(logsDir, "app-%DATE%.log"),
+              dateFormat: "yyyy-MM-dd",
+              maxFiles: 7,
+              maxSize: "100m",
+            },
+          },
+          {
+            target: "pino-roll",
+            options: {
+              file: path.join(logsDir, "app-%DATE%-error.log"),
+              dateFormat: "yyyy-MM-dd",
+              maxFiles: 7,
+              maxSize: "50m",
+              level: "error",
+            },
+          },
+        ],
+      },
+});
+
+export function createRequestLogger(requestId: string) {
+  return logger.child({ requestId });
+}
+```
+
+**使用方式：**
+
+```typescript
+// server/index.ts
+import { logger } from "./utils/logger.ts";
+
+logger.info({ port: 3000 }, "Server starting");
+
+// server/routes/xxx.ts
+import { logger } from "../utils/logger.ts";
+
+logger.warn({ path: req.url }, "Deprecated endpoint");
 ```
 
 ---
@@ -276,11 +449,76 @@ NODE_ENV=production bun run start
 
 ---
 
+## 迁移指南
+
+### 步骤 1: 创建 logger 模块
+
+按上述章节创建 `server/utils/logger.ts`
+
+### 步骤 2: 批量替换
+
+使用编辑器的多光标功能或 sed 批量替换：
+
+```bash
+# 查找所有 console.log/console.error
+grep -rn "console\.log\|console\.error" server/
+```
+
+### 步骤 3: 逐个替换
+
+| 原写法                              | 新写法                                               |
+| ----------------------------------- | ---------------------------------------------------- |
+| `console.log("PORT:", value)`       | `logger.info({ PORT: value }, "PORT from env")`      |
+| `console.error("Error:", err)`      | `logger.error({ error: err }, "Error reading file")` |
+| `console.log("[DEBUG] msg:", data)` | `logger.debug({ data }, "User message")`             |
+| `console.warn("Warning:", msg)`     | `logger.warn({ msg }, "Warning message")`            |
+
+### 步骤 4: 验证
+
+```bash
+# 启动服务，确认日志正常输出
+bun run server
+```
+
+### 常见问题
+
+**Q: pino-pretty 不工作？**
+
+A: 确保 `isDevelopment = process.env.NODE_ENV !== "production"`，开发环境需要设置 `NODE_ENV=development`
+
+**Q: 日志没有颜色？**
+
+A: 检查 `colorize: true` 配置
+
+**Q: 时间格式不对？**
+
+A: 使用 `translateTime: "HH:MM:ss.l"` 格式
+
+---
+
+## Gitignore 配置
+
+确保日志目录不被提交到版本控制：
+
+```gitignore
+# 日志文件
+logs/
+*.log
+
+# pino-roll 生成的文件
+app-*.log
+app-*-error.log
+```
+
+---
+
 ## 实施检查清单
 
 - [ ] 安装依赖：`pino`, `pino-pretty`, `pino-roll`, `pino-sentry`
-- [ ] 配置 pino logger
-- [ ] 配置日志文件轮转
+- [ ] 创建 `server/utils/logger.ts` 模块
+- [ ] 配置开发环境格式（translateTime, ignore）
+- [ ] 配置生产环境日志轮转（pino-roll）
+- [ ] 替换所有 console.log/console.error 为 logger
 - [ ] 配置 Sentry（Node 端）
 - [ ] 配置 Sentry（Web 端）
 - [ ] 配置 Gitignore

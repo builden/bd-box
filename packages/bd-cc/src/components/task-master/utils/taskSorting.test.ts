@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
-import { sortTasks, toggleSortOrder } from "./taskSorting";
 import type { TaskMasterTask } from "../types";
+import { sortTasks, toggleSortOrder } from "./taskSorting";
 
 describe("taskSorting", () => {
   const createTask = (overrides: Partial<TaskMasterTask> = {}): TaskMasterTask => ({

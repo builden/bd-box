@@ -2,3 +2,13 @@
 
 [test]
 preload = ["./tests/setup.ts"]
+# Include non-standard test file patterns, but exclude e2e (uses Playwright)
+testPatterns = [
+  "**/*.test.ts",
+  "**/*.api.ts",
+  "**/*.smoke.ts",
+  "tests/integration/*.spec.ts",
+  "**/*.bench.ts"
+]
+# Exclude e2e tests from bun test (they use Playwright)
+ignore = ["tests/e2e/**"]

@@ -138,3 +138,6 @@ tasks/
 
 # Git worktrees
 .worktrees/
+
+# Test results
+tests/test-results/
