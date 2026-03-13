@@ -1,15 +1,8 @@
 import { promises as fs } from 'fs';
+import { debounce } from 'radash';
 import path from 'path';
 import os from 'os';
 
-// Debounce utility
-function debounce(fn: (sessionId: string) => void, delay: number) {
-  let timeoutId: ReturnType<typeof setTimeout> | null = null;
-  return (sessionId: string) => {
-    if (timeoutId) clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => fn(sessionId), delay);
-  };
-}
 
 interface Session {
   id: string;
