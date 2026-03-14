@@ -70,7 +70,7 @@ import inlineProjectsRoutes from './routes/inline-projects.ts';
 import inlineFilesRoutes from './routes/inline-files/index.ts';
 import mediaRoutes from './routes/media.ts';
 import authRoutes from './routes/auth.ts';
-import mcpRoutes from './routes/mcp.ts';
+import mcpRoutes from './routes/mcp/index.ts';
 import cursorRoutes from './routes/cursor/index.ts';
 import taskmasterRoutes from './routes/taskmasters/index.ts';
 import mcpUtilsRoutes from './routes/mcp-utils.ts';

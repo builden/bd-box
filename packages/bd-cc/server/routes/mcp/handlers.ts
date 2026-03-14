@@ -1,14 +1,19 @@
-import express from 'express';
+/**
+ * MCP Route Handlers
+ * Request handlers for MCP server management
+ */
+
+import { Router } from 'express';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
-import { spawnCli, spawnCliOrThrow } from '../utils/spawn-cli';
-import { createLogger } from '../lib/logger';
+import { spawnCli } from '../../utils/spawn-cli';
+import { createLogger } from '../../lib/logger';
+import { buildServerFromConfig, parseClaudeListOutput, parseClaudeGetOutput } from './utils.js';
 
-const router = express.Router();
-const logger = createLogger('mcp-routes');
+const logger = createLogger('routes/mcp/handlers');
 
-// Claude CLI command routes
+const router = Router();
 
 // GET /api/mcp/cli/list - List MCP servers using Claude CLI
 router.get('/cli/list', async (req, res) => {
@@ -270,7 +275,7 @@ router.get('/config/read', async (req, res) => {
       if (names.length > 0) {
         logger.debug('Found user-scoped MCP servers:', names);
         for (const [serverName, config] of Object.entries(configData.mcpServers)) {
-          servers.push(buildServerFromConfig(serverName, config, 'user'));
+          servers.push(buildServerFromConfig(serverName, config as any, 'user'));
         }
       }
     }
@@ -285,7 +290,7 @@ router.get('/config/read', async (req, res) => {
         if (names.length > 0) {
           logger.debug(`Found local-scoped MCP servers for ${currentProjectPath}:`, names);
           for (const [serverName, config] of Object.entries(projectConfig.mcpServers)) {
-            servers.push(buildServerFromConfig(serverName, config, 'local', currentProjectPath));
+            servers.push(buildServerFromConfig(serverName, config as any, 'local', currentProjectPath));
           }
         }
       }
@@ -306,118 +311,5 @@ router.get('/config/read', async (req, res) => {
     });
   }
 });
-
-// Helper functions
-
-function buildServerFromConfig(
-  name: string,
-  config: {
-    command?: string;
-    args?: string[];
-    env?: Record<string, string>;
-    url?: string;
-    transport?: string;
-    headers?: Record<string, string>;
-  },
-  scope: 'user' | 'local',
-  projectPath?: string
-) {
-  const server = {
-    id: scope === 'local' ? `local:${name}` : name,
-    name,
-    type: 'stdio' as const,
-    scope,
-    config: {} as Record<string, unknown>,
-    raw: config,
-  };
-
-  if (projectPath) {
-    server.config.projectPath = projectPath;
-  }
-
-  if (config.command) {
-    server.type = 'stdio';
-    server.config.command = config.command;
-    server.config.args = config.args || [];
-    server.config.env = config.env || {};
-  } else if (config.url) {
-    server.type = config.transport || 'http';
-    server.config.url = config.url;
-    server.config.headers = config.headers || {};
-  }
-
-  return server;
-}
-
-function parseClaudeListOutput(output: string) {
-  const servers = [];
-  const lines = output.split('\n').filter((line) => line.trim());
-
-  for (const line of lines) {
-    // Skip the header line
-    if (line.includes('Checking MCP server health')) continue;
-
-    // Parse lines like "test: test test - ✗ Failed to connect"
-    if (line.includes(':')) {
-      const colonIndex = line.indexOf(':');
-      const name = line.substring(0, colonIndex).trim();
-
-      if (!name) continue;
-
-      const rest = line.substring(colonIndex + 1).trim();
-      let description = rest;
-      let status = 'unknown';
-      let type = 'stdio';
-
-      // Check for status indicators
-      if (rest.includes('✓') || rest.includes('✗')) {
-        const statusMatch = rest.match(/(.*?)\s*-\s*([✓✗].*)$/);
-        if (statusMatch) {
-          description = statusMatch[1].trim();
-          status = statusMatch[2].includes('✓') ? 'connected' : 'failed';
-        }
-      }
-
-      if (description.startsWith('http://') || description.startsWith('https://')) {
-        type = 'http';
-      }
-
-      servers.push({ name, type, status: status || 'active', description });
-    }
-  }
-
-  logger.debug('Parsed Claude CLI servers:', servers);
-  return servers;
-}
-
-function parseClaudeGetOutput(output: string) {
-  try {
-    // Try to extract JSON if present
-    const jsonMatch = output.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
-
-    // Otherwise, parse as text
-    const server: Record<string, string> = { raw_output: output };
-    const lines = output.split('\n');
-
-    for (const line of lines) {
-      if (line.includes('Name:')) {
-        server.name = line.split(':')[1]?.trim();
-      } else if (line.includes('Type:')) {
-        server.type = line.split(':')[1]?.trim();
-      } else if (line.includes('Command:')) {
-        server.command = line.split(':')[1]?.trim();
-      } else if (line.includes('URL:')) {
-        server.url = line.split(':')[1]?.trim();
-      }
-    }
-
-    return server;
-  } catch (error) {
-    return { raw_output: output, parse_error: error instanceof Error ? error.message : String(error) };
-  }
-}
 
 export default router;
