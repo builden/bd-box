@@ -6,7 +6,6 @@ import GitPanel from '../../git-panel/view/GitPanel';
 import PluginTabContent from '../../../features/plugins/ui/PluginTabContent';
 import type { MainContentProps } from '../types/types';
 import { useTaskMaster } from '../../../contexts/TaskMasterContext';
-import { useTasksSettings, useUiPreferences } from '@/store';
 import { useEditorSidebar } from '../../code-editor/hooks/useEditorSidebar';
 import EditorSidebar from '../../code-editor/view/EditorSidebar';
 import type { Project } from '../../../types/app';
@@ -14,6 +13,7 @@ import { TaskMasterPanel } from '../../../features/task-master/ui';
 import MainContentHeader from './subcomponents/MainContentHeader';
 import MainContentStateView from './subcomponents/MainContentStateView';
 import ErrorBoundary from './ErrorBoundary';
+import { useTasksSettings, useUiPreferences } from '@/store';
 
 type TaskMasterContextValue = {
   currentProject?: Project | null;

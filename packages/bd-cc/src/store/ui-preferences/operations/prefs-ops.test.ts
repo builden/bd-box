@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'bun:test';
-import { calcUpdatePreference, calcUpdatePreferences } from './prefs-ops';
 import type { UiPreferences } from '../primitives/prefs-atom';
+import { calcUpdatePreference, calcUpdatePreferences } from './prefs-ops';
 
 describe('prefs-ops', () => {
   const basePrefs: UiPreferences = {

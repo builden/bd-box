@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
+import type { PrdFile } from '../types';
 import { createLogger } from '@/lib/logger';
 import { api } from '@/utils/api';
-import type { PrdFile } from '../types';
 
 const logger = createLogger('ProjectPrdFiles');
 

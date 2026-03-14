@@ -16,9 +16,8 @@ import {
   BarChart3,
   type LucideIcon,
 } from 'lucide-react';
-import { useTasksSettings } from '@/store';
-import { usePlugins } from '@/store';
 import { AppTab } from '../../types/app';
+import { useTasksSettings, usePlugins  } from '@/store';
 
 const PLUGIN_ICON_MAP: Record<string, LucideIcon> = {
   Puzzle,

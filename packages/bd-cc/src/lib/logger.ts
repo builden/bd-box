@@ -7,7 +7,6 @@
  * - 使用 Sentry 进行错误追踪
  */
 
-import { IS_PLATFORM } from '../constants/config';
 
 // 判断是否为生产环境
 const isProduction = import.meta.env.PROD;

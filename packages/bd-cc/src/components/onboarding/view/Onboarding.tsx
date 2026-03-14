@@ -1,7 +1,6 @@
 import { Check, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { authenticatedFetch } from '../../../utils/api';
-import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('Onboarding');
 import ProviderLoginModal from '../../provider-auth/view/ProviderLoginModal';
@@ -16,6 +15,7 @@ import {
   readErrorMessageFromResponse,
   selectedProject,
 } from './utils';
+import { createLogger } from '@/lib/logger';
 
 type OnboardingProps = {
   onComplete?: () => void | Promise<void>;

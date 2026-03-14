@@ -1,8 +1,8 @@
 import { memo } from 'react';
 import { AlertCircle, ArrowRight, CheckCircle, ChevronUp, Circle, Clock, Minus, Pause, X } from 'lucide-react';
+import type { TaskMasterTask } from '../types';
 import { cn } from '@/lib/utils';
 import { Tooltip } from '@/shared/view/ui';
-import type { TaskMasterTask } from '../types';
 
 type TaskCardProps = {
   task: TaskMasterTask;

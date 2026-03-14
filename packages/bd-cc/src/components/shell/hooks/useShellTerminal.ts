@@ -4,7 +4,6 @@ import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { WebglAddon } from '@xterm/addon-webgl';
 import { Terminal } from '@xterm/xterm';
-import { createLogger } from '@/lib/logger';
 import type { Project } from '../../../types/app';
 import {
   CODEX_DEVICE_AUTH_URL,
@@ -16,6 +15,7 @@ import { copyTextToClipboard } from '../../../utils/clipboard';
 import { isCodexLoginCommand } from '../utils/auth';
 import { sendSocketMessage } from '../utils/socket';
 import { ensureXtermFocusStyles } from '../utils/terminalStyles';
+import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('ShellTerminal');
 

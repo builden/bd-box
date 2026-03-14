@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, Columns, FileText, Filter, Grid, HelpCircle, List, Plus, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { cn } from '@/lib/utils';
 import type { PrdFile, TaskBoardSortField, TaskBoardSortOrder, TaskBoardView } from '../types';
 import TaskFiltersPanel from './shared/TaskFiltersPanel';
 import TaskQuickSortBar from './shared/TaskQuickSortBar';
+import { cn } from '@/lib/utils';
 
 type TaskBoardToolbarProps = {
   hasProject: boolean;

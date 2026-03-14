@@ -1,7 +1,4 @@
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
-import { createLogger } from '@/lib/logger';
-import { api } from '@/utils/api';
 import { useTaskMaster } from '../context/TaskMasterContext';
 import { useTaskBoardState } from '../hooks/useTaskBoardState';
 import type { PrdFile, TaskBoardView, TaskMasterProject, TaskMasterTask, TaskSelection } from '../types';
@@ -11,6 +8,9 @@ import TaskEmptyState from './TaskEmptyState';
 import CreateTaskModal from './modals/CreateTaskModal';
 import TaskHelpModal from './modals/TaskHelpModal';
 import TaskMasterSetupModal from './modals/TaskMasterSetupModal';
+import { api } from '@/utils/api';
+import { createLogger } from '@/lib/logger';
+import { cn } from '@/lib/utils';
 
 const logger = createLogger('TaskBoard');
 

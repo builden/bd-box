@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { CheckCircle, Circle, Eye, Flag, List, Play, Settings, Target, Terminal, Zap } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useTaskMaster } from '../context/TaskMasterContext';
 import TaskDetailModal from './TaskDetailModal';
 import TaskMasterSetupModal from './modals/TaskMasterSetupModal';
+import { cn } from '@/lib/utils';
 
 type NextTaskBannerProps = {
   onShowAllTasks?: (() => void) | null;

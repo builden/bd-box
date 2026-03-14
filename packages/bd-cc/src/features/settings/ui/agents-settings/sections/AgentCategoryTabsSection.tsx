@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
+import type { AgentCategoryTabsSectionProps } from '../types';
 import { cn } from '@/lib/utils';
 import type { AgentCategory } from '@/components/settings/types/types';
-import type { AgentCategoryTabsSectionProps } from '../types';
 
 const AGENT_CATEGORIES: AgentCategory[] = ['account', 'permissions', 'mcp'];
 

@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { DarkModeToggle } from '@/shared/view/ui';
-import type { CodeEditorSettingsState, ProjectSortOrder } from '@/components/settings/types/types';
-import LanguageSelector from '@/shared/view/ui/LanguageSelector';
 import SettingsCard from './SettingsCard';
 import SettingsRow from './SettingsRow';
 import SettingsSection from './SettingsSection';
 import SettingsToggle from './SettingsToggle';
+import LanguageSelector from '@/shared/view/ui/LanguageSelector';
+import type { CodeEditorSettingsState, ProjectSortOrder } from '@/components/settings/types/types';
+import { DarkModeToggle } from '@/shared/view/ui';
 
 type AppearanceSettingsTabProps = {
   projectSortOrder: ProjectSortOrder;

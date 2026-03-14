@@ -1,6 +1,6 @@
 import { atom } from 'jotai';
 import { projectsAtom, selectedProjectAtom, selectedSessionAtom } from '../primitives/projects-atom';
-import type { Project, ProjectSession } from '@/types';
+import type { ProjectSession } from '@/types';
 
 /**
  * 项目名称列表

@@ -1,12 +1,12 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import { useDeviceSettings } from '../../../hooks/useDeviceSettings';
-import { useUiPreferences, useTheme } from '@/store';
 import { useQuickSettingsDrag } from '../hooks/useQuickSettingsDrag';
 import type { PreferenceToggleKey, QuickSettingsPreferences } from '../types';
 import QuickSettingsContent from './QuickSettingsContent';
 import QuickSettingsHandle from './QuickSettingsHandle';
 import QuickSettingsPanelHeader from './QuickSettingsPanelHeader';
+import { useUiPreferences, useTheme } from '@/store';
 
 export default function QuickSettingsPanelView() {
   const [isOpen, setIsOpen] = useState(false);

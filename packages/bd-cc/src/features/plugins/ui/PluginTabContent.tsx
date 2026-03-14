@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { useTheme } from '@/store';
-import { createLogger } from '@/lib/logger';
 import { usePlugins } from '../store';
 import { authenticatedFetch } from '../../../utils/api';
 import type { Project, ProjectSession } from '../../../types/app';
+import { createLogger } from '@/lib/logger';
+import { useTheme } from '@/store';
 
 const logger = createLogger('PluginTabContent');
 

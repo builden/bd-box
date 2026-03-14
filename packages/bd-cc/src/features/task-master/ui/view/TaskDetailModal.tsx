@@ -13,12 +13,12 @@ import {
   Save,
   X,
 } from 'lucide-react';
+import { useTaskMaster } from '../context/TaskMasterContext';
+import type { TaskId, TaskMasterTask, TaskReference } from '../types';
 import { cn } from '@/lib/utils';
 import { createLogger } from '@/lib/logger';
 import { copyTextToClipboard } from '@/utils/clipboard';
 import { api } from '@/utils/api';
-import { useTaskMaster } from '../context/TaskMasterContext';
-import type { TaskId, TaskMasterTask, TaskReference } from '../types';
 
 const logger = createLogger('TaskDetailModal');
 

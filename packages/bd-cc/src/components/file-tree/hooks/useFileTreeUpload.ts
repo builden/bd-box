@@ -1,7 +1,7 @@
 import { useCallback, useState, useRef } from 'react';
 import type { Project } from '../../../types/app';
-import { createLogger } from '@/lib/logger';
 import { api } from '../../../utils/api';
+import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('FileTreeUpload');
 

@@ -1,7 +1,6 @@
 import { useAtom, useSetAtom } from 'jotai';
 import { useCallback, useEffect } from 'react';
 import { authenticatedFetch } from '../../../../utils/api';
-import { createLogger } from '@/lib/logger';
 import { skillsAtom, skillsLoadingAtom, skillsErrorAtom } from '../primitives/skills-atom';
 import {
   enabledSkillsAtom,
@@ -9,6 +8,7 @@ import {
   skillsCountAtom,
   enabledSkillsCountAtom,
 } from '../domain/skills-derived';
+import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('useSkills');
 

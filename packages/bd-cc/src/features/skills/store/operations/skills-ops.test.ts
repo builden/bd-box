@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'bun:test';
-import { calcFilterSkills, calcFindSkill, calcToggleSkill, calcUpdateSkill, calcRemoveSkill } from './skills-ops';
 import type { Skill } from '../primitives/skills-atom';
+import { calcFilterSkills, calcFindSkill, calcToggleSkill, calcUpdateSkill, calcRemoveSkill } from './skills-ops';
 
 const mockSkill: Skill = {
   name: 'test-skill',

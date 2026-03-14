@@ -10,7 +10,6 @@ import type {
   TouchEvent,
 } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { createLogger } from '@/lib/logger';
 import { authenticatedFetch } from '../../../utils/api';
 import { thinkingModes } from '../constants/thinkingModes';
 import { grantClaudeToolPermission } from '../utils/chatPermissions';
@@ -20,6 +19,7 @@ import type { Project, ProjectSession, SessionProvider } from '../../../types/ap
 import { escapeRegExp } from '../utils/chatFormatting';
 import { useFileMentions } from './useFileMentions';
 import { type SlashCommand, useSlashCommands } from './useSlashCommands';
+import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('ChatComposerState');
 

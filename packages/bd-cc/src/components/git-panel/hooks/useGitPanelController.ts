@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { createLogger } from '@/lib/logger';
 import { authenticatedFetch } from '../../../utils/api';
 import { DEFAULT_BRANCH, RECENT_COMMITS_LIMIT } from '../constants/constants';
 import type {
@@ -19,6 +18,7 @@ import type {
 } from '../types/types';
 import { getAllChangedFiles } from '../utils/gitPanelUtils';
 import { useSelectedProvider } from './useSelectedProvider';
+import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('GitPanelController');
 

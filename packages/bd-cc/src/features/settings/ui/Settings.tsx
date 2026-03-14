@@ -1,7 +1,5 @@
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import ProviderLoginModal from '@/components/provider-auth/view/ProviderLoginModal';
-import { Button } from '@/shared/view/ui';
 import ClaudeMcpFormModal from './modals/ClaudeMcpFormModal';
 import CodexMcpFormModal from './modals/CodexMcpFormModal';
 import SettingsSidebar from './SettingsSidebar';
@@ -10,6 +8,8 @@ import AppearanceSettingsTab from './AppearanceSettingsTab';
 import CredentialsSettingsTab from './api-settings/CredentialsSettingsTab';
 import GitSettingsTab from './git-settings/GitSettingsTab';
 import TasksSettingsTab from './TasksSettingsTab';
+import { Button } from '@/shared/view/ui';
+import ProviderLoginModal from '@/components/provider-auth/view/ProviderLoginModal';
 import PluginSettingsTab from '@/features/plugins/ui/PluginSettingsTab';
 import { useSettingsController } from '@/components/settings/hooks/useSettingsController';
 import type { SettingsProps } from '@/components/settings/types/types';

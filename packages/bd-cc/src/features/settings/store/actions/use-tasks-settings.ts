@@ -1,7 +1,6 @@
 import { useAtom, useSetAtom } from 'jotai';
 import { useCallback, useEffect } from 'react';
 import { authenticatedFetch } from '../../../../utils/api';
-import { createLogger } from '@/lib/logger';
 import {
   tasksEnabledAtom,
   isTaskMasterInstalledAtom,
@@ -9,6 +8,7 @@ import {
   installationStatusAtom,
   isCheckingInstallationAtom,
 } from '../primitives/tasks-settings-atom';
+import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('useTasksSettings');
 

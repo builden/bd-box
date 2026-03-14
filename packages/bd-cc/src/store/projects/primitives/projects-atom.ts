@@ -1,6 +1,6 @@
 import { atomWithStorage } from 'jotai/utils';
-import type { Project, ProjectSession, AppTab } from '@/types';
 import { STORAGE_KEYS } from '../../constants';
+import type { Project, ProjectSession, AppTab } from '@/types';
 
 /**
  * 项目列表 atom

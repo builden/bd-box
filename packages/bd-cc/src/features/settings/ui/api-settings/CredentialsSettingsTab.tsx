@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import { useVersionCheck } from '@/hooks/useVersionCheck';
-import { useCredentialsSettings } from '@/components/settings/hooks/useCredentialsSettings';
 import ApiKeysSection from './sections/ApiKeysSection';
 import GithubCredentialsSection from './sections/GithubCredentialsSection';
 import NewApiKeyAlert from './sections/NewApiKeyAlert';
 import VersionInfoSection from './sections/VersionInfoSection';
+import { useCredentialsSettings } from '@/components/settings/hooks/useCredentialsSettings';
+import { useVersionCheck } from '@/hooks/useVersionCheck';
 
 export default function CredentialsSettingsTab() {
   const { t } = useTranslation('settings');

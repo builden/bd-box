@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
-import type { AgentCategory, AgentProvider } from '@/components/settings/types/types';
 import AgentCategoryContentSection from './sections/AgentCategoryContentSection';
 import AgentCategoryTabsSection from './sections/AgentCategoryTabsSection';
 import AgentSelectorSection from './sections/AgentSelectorSection';
 import type { AgentContext, AgentsSettingsTabProps } from './types';
+import type { AgentCategory, AgentProvider } from '@/components/settings/types/types';
 
 export default function AgentsSettingsTab({
   claudeAuthStatus,

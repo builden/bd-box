@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
-import { createLogger } from '@/lib/logger';
 import { authenticatedFetch } from '../../../utils/api';
 import type { GitOperationResponse } from '../types/types';
+import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('RevertLocalCommit');
 

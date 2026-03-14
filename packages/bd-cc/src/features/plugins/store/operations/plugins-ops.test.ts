@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'bun:test';
-import { calcFilterPlugins, calcFindPlugin, calcTogglePlugin, calcUpdatePlugin, calcRemovePlugin } from './plugins-ops';
 import type { Plugin } from '../primitives/plugins-atom';
+import { calcFilterPlugins, calcFindPlugin, calcTogglePlugin, calcUpdatePlugin, calcRemovePlugin } from './plugins-ops';
 
 const mockPlugin: Plugin = {
   name: 'test-plugin',

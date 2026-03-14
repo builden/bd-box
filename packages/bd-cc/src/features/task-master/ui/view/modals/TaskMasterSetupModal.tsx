@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Plus, Terminal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import type { TaskMasterProject } from '../../types';
 import { cn } from '@/lib/utils';
 import Shell from '@/components/shell/view/Shell';
-import type { TaskMasterProject } from '../../types';
 
 type TaskMasterSetupModalProps = {
   isOpen: boolean;

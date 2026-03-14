@@ -3,8 +3,8 @@ import type { Dispatch, SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Tooltip, PillBar, Pill } from '../../../../shared/view/ui';
 import type { AppTab } from '../../../../types/app';
-import { usePlugins } from '@/store';
 import PluginIcon from '../../../../features/plugins/ui/PluginIcon';
+import { usePlugins } from '@/store';
 
 type MainContentTabSwitcherProps = {
   activeTab: AppTab;

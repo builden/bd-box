@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import PRDEditor from '@/components/prd-editor';
 import { useTaskMaster } from '../context/TaskMasterContext';
 import { useProjectPrdFiles } from '../hooks/useProjectPrdFiles';
 import type { PrdFile, TaskMasterTask, TaskSelection } from '../types';
 import TaskBoard from './TaskBoard';
 import TaskDetailModal from './TaskDetailModal';
+import PRDEditor from '@/components/prd-editor';
 
 type TaskMasterPanelProps = {
   isVisible: boolean;

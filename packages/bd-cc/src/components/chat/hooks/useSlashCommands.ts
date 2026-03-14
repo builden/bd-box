@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Dispatch, KeyboardEvent, RefObject, SetStateAction } from 'react';
 import Fuse from 'fuse.js';
-import { createLogger } from '@/lib/logger';
 import { authenticatedFetch } from '../../../utils/api';
 import { safeLocalStorage } from '../utils/chatStorage';
 import type { Project } from '../../../types/app';
+import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('SlashCommands');
 

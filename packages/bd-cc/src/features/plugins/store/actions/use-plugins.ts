@@ -1,8 +1,6 @@
 import { useAtom, useSetAtom } from 'jotai';
 import { useCallback, useEffect } from 'react';
 import { authenticatedFetch } from '../../../../utils/api';
-import { createLogger } from '@/lib/logger';
-import type { Plugin } from '../primitives/plugins-atom';
 import { pluginsAtom, pluginsLoadingAtom, pluginsErrorAtom } from '../primitives/plugins-atom';
 import {
   enabledPluginsAtom,
@@ -10,6 +8,7 @@ import {
   pluginsCountAtom,
   enabledPluginsCountAtom,
 } from '../domain/plugins-derived';
+import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('usePlugins');
 
