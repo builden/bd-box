@@ -85,7 +85,7 @@ import geminiRoutes from './routes/gemini.ts';
 import pluginsRoutes from './routes/plugins.ts';
 import skillsRoutes from './routes/skills.ts';
 import { startEnabledPluginServers, stopAllPlugins } from './utils/plugins';
-import { initializeDatabase, sessionNamesDb, applyCustomSessionNames } from './database/db.ts';
+import { initializeDatabase } from './database/db.ts';
 import { validateApiKey, authenticateToken, authenticateWebSocket } from './middleware/auth.ts';
 import { requestLogger } from './middleware/request-logger.ts';
 import { IS_PLATFORM } from './env.ts';
