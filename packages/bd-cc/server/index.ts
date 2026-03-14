@@ -8,6 +8,19 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { createLogger } from './lib/logger';
+import {
+  VALID_PROVIDERS,
+  PROVIDER_WATCH_PATHS,
+  WATCHER_IGNORED_PATTERNS,
+  WATCHER_DEBOUNCE_MS,
+} from './constants/providers';
+import {
+  stripAnsiSequences,
+  normalizeDetectedUrl,
+  extractUrlsFromText,
+  shouldAutoOpenUrlFromOutput,
+} from './utils/url-parser';
+import { permToRwx } from './utils/file-permissions';
 
 const logger = createLogger('server/index');
 
@@ -107,26 +120,6 @@ import { IS_PLATFORM } from './env.ts';
 // ============================================================================
 // region: app initialization
 // ============================================================================
-const VALID_PROVIDERS = ['claude', 'codex', 'cursor', 'gemini'];
-
-// File system watchers for provider project/session folders
-const PROVIDER_WATCH_PATHS = [
-  { provider: 'claude', rootPath: path.join(os.homedir(), '.claude', 'projects') },
-  { provider: 'cursor', rootPath: path.join(os.homedir(), '.cursor', 'chats') },
-  { provider: 'codex', rootPath: path.join(os.homedir(), '.codex', 'sessions') },
-  { provider: 'gemini', rootPath: path.join(os.homedir(), '.gemini', 'projects') },
-  { provider: 'gemini_sessions', rootPath: path.join(os.homedir(), '.gemini', 'sessions') },
-];
-const WATCHER_IGNORED_PATTERNS = [
-  '**/node_modules/**',
-  '**/.git/**',
-  '**/dist/**',
-  '**/build/**',
-  '**/*.tmp',
-  '**/*.swp',
-  '**/.DS_Store',
-];
-const WATCHER_DEBOUNCE_MS = 300;
 let projectsWatchers = [];
 let projectsWatcherDebounceTimer = null;
 const connectedClients = new Set();
@@ -262,68 +255,6 @@ const server = http.createServer(app);
 const ptySessionsMap = new Map();
 const PTY_SESSION_TIMEOUT = 30 * 60 * 1000;
 const SHELL_URL_PARSE_BUFFER_LIMIT = 32768;
-const ANSI_ESCAPE_SEQUENCE_REGEX = /\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~]|\][^\x07]*(?:\x07|\x1B\\))/g;
-const TRAILING_URL_PUNCTUATION_REGEX = /[)\]}>.,;:!?]+$/;
-
-function stripAnsiSequences(value = '') {
-  return value.replace(ANSI_ESCAPE_SEQUENCE_REGEX, '');
-}
-
-function normalizeDetectedUrl(url) {
-  if (!url || typeof url !== 'string') return null;
-
-  const cleaned = url.trim().replace(TRAILING_URL_PUNCTUATION_REGEX, '');
-  if (!cleaned) return null;
-
-  try {
-    const parsed = new URL(cleaned);
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-      return null;
-    }
-    return parsed.toString();
-  } catch {
-    return null;
-  }
-}
-
-function extractUrlsFromText(value = '') {
-  const directMatches = value.match(/https?:\/\/[^\s<>"'`\\\x1b\x07]+/gi) || [];
-
-  // Handle wrapped terminal URLs split across lines by terminal width.
-  const wrappedMatches = [];
-  const continuationRegex = /^[A-Za-z0-9\-._~:/?#\[\]@!$&'()*+,;=%]+$/;
-  const lines = value.split(/\r?\n/);
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    const startMatch = line.match(/https?:\/\/[^\s<>"'`\\\x1b\x07]+/i);
-    if (!startMatch) continue;
-
-    let combined = startMatch[0];
-    let j = i + 1;
-    while (j < lines.length) {
-      const continuation = lines[j].trim();
-      if (!continuation) break;
-      if (!continuationRegex.test(continuation)) break;
-      combined += continuation;
-      j++;
-    }
-
-    wrappedMatches.push(combined.replace(/\r?\n\s*/g, ''));
-  }
-
-  return Array.from(new Set([...directMatches, ...wrappedMatches]));
-}
-
-function shouldAutoOpenUrlFromOutput(value = '') {
-  const normalized = value.toLowerCase();
-  return (
-    normalized.includes("browser didn't open") ||
-    normalized.includes('open this url') ||
-    normalized.includes('continue in your browser') ||
-    normalized.includes('press enter to open') ||
-    normalized.includes('open_url:')
-  );
-}
 
 // Single WebSocket server that handles both paths
 const wss = new WebSocketServer({
@@ -1108,15 +1039,6 @@ app.get('{*splat}', (req, res) => {
     res.redirect(`http://localhost:${process.env.VITE_PORT || 5173}`);
   }
 });
-
-// Helper function to convert permissions to rwx format
-function permToRwx(perm) {
-  const r = perm & 4 ? 'r' : '-';
-  const w = perm & 2 ? 'w' : '-';
-  const x = perm & 1 ? 'x' : '-';
-  return r + w + x;
-}
-
 
 const PORT = process.env.PORT || 3001;
 const HOST = process.env.HOST || '0.0.0.0';
