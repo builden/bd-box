@@ -14,7 +14,7 @@ import inlineFilesRoutes from './inline-files.ts';
 import mediaRoutes from './media.ts';
 import authRoutes from './auth.ts';
 import mcpRoutes from './mcp.ts';
-import cursorRoutes from './cursor.ts';
+import cursorRoutes from './cursor/index.ts';
 import taskmasterRoutes from './taskmasters/index.ts';
 import mcpUtilsRoutes from './mcp-utils.ts';
 import commandsRoutes from './commands.ts';
