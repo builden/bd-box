@@ -151,7 +151,7 @@
     "release:major": "bunx release-it major",
     "server": "bun run server/index.ts",
     "start": "bun run build && bun run server",
-    "test": "bun test",
+    "test": "bun test && bun test ./server/**/*.test.ts",
     "test:unit": "bun test tests/unit/server/",
     "test:api": "bun test ./tests/api/*.api.ts",
     "test:coverage": "bun test --coverage",

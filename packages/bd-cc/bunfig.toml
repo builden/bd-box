@@ -1,11 +1,11 @@
 # bun test configuration for bd-cc
-# Note: Server unit tests (server/tests-unit/) should be run separately with: bun test:unit
 
 [test]
+# 前端测试需要 DOM 环境
 preload = ["./tests/setup.ts"]
 # 覆盖率阈值 - 80% 为目标，允许个别文件例外
 coverageThreshold = { "**": { functions = 80, lines = 80 } }
-# Include non-standard test file patterns, but exclude e2e and server unit tests
+# Include test file patterns
 testPatterns = [
   "**/*.test.ts",
   "**/*.api.ts",
@@ -13,7 +13,5 @@ testPatterns = [
   "tests/integration/*.spec.ts",
   "**/*.bench.ts"
 ]
-# Exclude e2e tests and server unit tests from bun test
-# - e2e uses Playwright
-# - server unit tests need no DOM and should be run with: bun test:unit
-ignore = ["tests/e2e/**", "server/tests-unit/**"]
+# Exclude e2e tests from bun test (uses Playwright)
+ignore = ["tests/e2e/**"]

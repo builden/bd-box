@@ -1,10 +1,10 @@
 // tests/setup.ts - Global test setup for happy-dom
-import { GlobalRegistrator } from "@happy-dom/global-registrator";
+import { GlobalRegistrator } from '@happy-dom/global-registrator';
 
 // Register happy-dom as global DOM
 GlobalRegistrator.register();
 
-// Mock localStorage with working implementation
+// Mock localStorage with working implementation (only if not already defined)
 const localStorageMock = {
   _data: new Map<string, string>(),
   getItem(key: string): string | null {
@@ -21,15 +21,19 @@ const localStorageMock = {
   },
 };
 
-Object.defineProperty(globalThis, "localStorage", {
-  value: localStorageMock,
-  writable: true,
-});
+if (!globalThis.localStorage) {
+  Object.defineProperty(globalThis, 'localStorage', {
+    value: localStorageMock,
+    writable: true,
+  });
+}
 
-// Mock navigator
-Object.defineProperty(globalThis, "navigator", {
-  value: {
-    userAgent: "node.js",
-  },
-  writable: true,
-});
+// Mock navigator (only if not already defined)
+if (!globalThis.navigator) {
+  Object.defineProperty(globalThis, 'navigator', {
+    value: {
+      userAgent: 'node.js',
+    },
+    writable: true,
+  });
+}
