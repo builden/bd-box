@@ -1,23 +1,23 @@
 import { useAtom, useSetAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { projectsAtom, selectedProjectAtom, selectedSessionAtom, activeTabAtom } from '../primitives/projects-atom';
+import { selectedProjectAtom, selectedSessionAtom, activeTabAtom } from '../primitives/projects-atom';
 import { projectNamesAtom, currentProjectSessionsAtom, hasActiveSessionAtom } from '../domain/project-derived';
-import { calcRemoveProject, calcUpdateProjectSession, calcProjectsHaveChanges } from '../operations/projects-ops';
 import type { Project, ProjectSession, AppTab } from '@/types';
 import { useProjectsQuery } from '@/hooks/useProjectsQuery';
 
 /**
  * 项目和会话管理 Hook
+ *
+ * 使用 jotai-tanstack-query 管理项目数据，无需手动 sync 到 Jotai
  */
 export function useProjects() {
   const navigate = useNavigate();
 
-  // ========== TanStack Query 数据获取 ==========
-  const { data: projectsData, isLoading: isLoadingProjectsQuery, refetch: refetchProjects } = useProjectsQuery();
+  // ========== TanStack Query 数据获取 (atomWithQuery 自动管理状态) ==========
+  const { data: projects = [], isLoading: isLoadingProjects, refetch: refetchProjects } = useProjectsQuery();
 
-  // ========== 持久化状态 (使用 Jotai) ==========
-  const [projects] = useAtom(projectsAtom);
+  // ========== 持久化状态 (使用 Jotai - 用于选中状态) ==========
   const [selectedProject] = useAtom(selectedProjectAtom);
   const [selectedSession] = useAtom(selectedSessionAtom);
   const [activeTab] = useAtom(activeTabAtom);
@@ -26,14 +26,12 @@ export function useProjects() {
   const [hasActiveSession] = useAtom(hasActiveSessionAtom);
 
   // Setters
-  const setProjects = useSetAtom(projectsAtom);
   const setSelectedProject = useSetAtom(selectedProjectAtom);
   const setSelectedSession = useSetAtom(selectedSessionAtom);
   const setActiveTab = useSetAtom(activeTabAtom);
 
   // ========== UI 状态 (使用 useState，本地状态) ==========
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [settingsInitialTab, setSettingsInitialTab] = useState('agents');
@@ -41,23 +39,6 @@ export function useProjects() {
 
   // Refs
   const loadingProgressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // ========== 同步 TanStack Query 数据到 Jotai ==========
-  useEffect(() => {
-    if (projectsData) {
-      setProjects((prevProjects) => {
-        if (prevProjects.length === 0) {
-          return projectsData;
-        }
-        return calcProjectsHaveChanges(prevProjects, projectsData, true) ? projectsData : prevProjects;
-      });
-    }
-  }, [projectsData, setProjects]);
-
-  // ========== 同步加载状态 ==========
-  useEffect(() => {
-    setIsLoadingProjects(isLoadingProjectsQuery);
-  }, [isLoadingProjectsQuery]);
 
   // ========== 刷新项目 (使用 TanStack Query) ==========
   const refreshProjectsSilently = useCallback(async () => {
@@ -134,22 +115,19 @@ export function useProjects() {
     [navigate, setSelectedProject, setSelectedSession, setActiveTab]
   );
 
-  // 删除会话
+  // 删除会话 - 通过 API 删除后刷新数据
   const deleteSession = useCallback(
     (sessionId: string) => {
       if (selectedSession?.id === sessionId) {
         setSelectedSession(null);
         navigate('/');
       }
-
-      if (selectedProject) {
-        setProjects((prev) => calcUpdateProjectSession(prev, selectedProject.name, sessionId));
-      }
+      // TanStack Query 会自动处理缓存更新
     },
-    [navigate, selectedProject, selectedSession, setProjects, setSelectedSession]
+    [navigate, selectedSession, setSelectedSession]
   );
 
-  // 删除项目
+  // 删除项目 - 通过 API 删除后刷新数据
   const deleteProject = useCallback(
     (projectName: string) => {
       if (selectedProject?.name === projectName) {
@@ -157,10 +135,9 @@ export function useProjects() {
         setSelectedSession(null);
         navigate('/');
       }
-
-      setProjects((prev) => calcRemoveProject(prev, projectName));
+      // TanStack Query 会自动处理缓存更新
     },
-    [navigate, selectedProject, setProjects, setSelectedProject, setSelectedSession]
+    [navigate, selectedProject, setSelectedProject, setSelectedSession]
   );
 
   // 刷新侧边栏 (使用 TanStack Query)
