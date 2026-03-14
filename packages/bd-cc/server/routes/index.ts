@@ -7,7 +7,7 @@ import { Application } from 'express';
 import { authenticateToken, validateApiKey } from '../middleware/auth.ts';
 
 // Route imports
-import gitRoutes from './git.ts';
+import gitRoutes from './git/index.ts';
 import systemRoutes from './system.ts';
 import inlineProjectsRoutes from './inline-projects.ts';
 import inlineFilesRoutes from './inline-files.ts';

@@ -1,118 +1,67 @@
 /**
  * Frontend Logger Module
  *
- * 基于 bun-best-practices 日志规范:
+ * 基于 pino，美化开发环境输出
  * - 开发环境: debug + info + warn + error
  * - 生产环境: warn + error
- * - 使用 Sentry 进行错误追踪
  */
 
+import pino from 'pino';
 
 // 判断是否为生产环境
 const isProduction = import.meta.env.PROD;
 
-// 日志级别
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+// 创建 pino 实例（浏览器环境）
+const pinoLogger = pino({
+  level: isProduction ? 'warn' : 'debug',
+  browser: {
+    asObject: true,
+  },
+  serializers: {
+    err: (error: Error) => ({
+      message: error.message,
+      stack: error.stack,
+    }),
+  },
+});
 
-// 日志级别数值
-const LOG_LEVELS: Record<LogLevel, number> = {
-  debug: 20,
-  info: 30,
-  warn: 40,
-  error: 50,
-};
-
-// 当前日志级别（生产环境默认 warn，开发环境默认 debug）
-const currentLevel = isProduction ? LOG_LEVELS.warn : LOG_LEVELS.debug;
-
-/**
- * 判断指定级别是否应该被记录
- */
-const shouldLog = (level: LogLevel): boolean => {
-  return LOG_LEVELS[level] >= currentLevel;
-};
-
-/**
- * 格式化日志上下文
- */
-const formatContext = (context?: Record<string, unknown>): string => {
-  if (!context || Object.keys(context).length === 0) {
-    return '';
+// 过滤敏感信息
+const redactSensitive = (data: Record<string, unknown>): Record<string, unknown> => {
+  const sensitiveKeys = ['password', 'token', 'secret', 'apiKey', 'Authorization'];
+  const redacted = { ...data };
+  for (const key of Object.keys(redacted)) {
+    if (sensitiveKeys.some((k) => key.toLowerCase().includes(k.toLowerCase()))) {
+      redacted[key] = '[REDACTED]';
+    } else if (typeof redacted[key] === 'object' && redacted[key] !== null) {
+      redacted[key] = '[Object]';
+    }
   }
-  try {
-    const filtered = Object.entries(context).reduce(
-      (acc, [key, value]) => {
-        // 过滤敏感信息
-        if (
-          key.toLowerCase().includes('password') ||
-          key.toLowerCase().includes('token') ||
-          key.toLowerCase().includes('secret')
-        ) {
-          acc[key] = '[REDACTED]';
-        } else if (typeof value === 'object') {
-          // 只记录对象类型的关键字段，避免打印完整大对象
-          acc[key] = '[Object]';
-        } else {
-          acc[key] = value;
-        }
-        return acc;
-      },
-      {} as Record<string, unknown>
-    );
-    return JSON.stringify(filtered);
-  } catch {
-    return '';
-  }
+  return redacted;
 };
 
 /**
- * Debug 日志 - 开发调试，详细流程
+ * 统一日志接口
  */
 export const logger = {
   debug: (message: string, context?: Record<string, unknown>): void => {
-    if (!shouldLog('debug')) return;
-
-    const contextStr = formatContext(context);
-    if (contextStr) {
-      console.debug(`[DEBUG] ${message} ${contextStr}`);
-    } else {
-      console.debug(`[DEBUG] ${message}`);
-    }
+    pinoLogger.debug(redactSensitive(context || {}), message);
   },
 
   info: (message: string, context?: Record<string, unknown>): void => {
-    if (!shouldLog('info')) return;
-
-    const contextStr = formatContext(context);
-    if (contextStr) {
-      console.info(`[INFO] ${message} ${contextStr}`);
-    } else {
-      console.info(`[INFO] ${message}`);
-    }
+    pinoLogger.info(redactSensitive(context || {}), message);
   },
 
   warn: (message: string, context?: Record<string, unknown>): void => {
-    if (!shouldLog('warn')) return;
-
-    const contextStr = formatContext(context);
-    const fullMessage = contextStr ? `${message} ${contextStr}` : message;
-    console.warn(`[WARN] ${fullMessage}`);
+    pinoLogger.warn(redactSensitive(context || {}), message);
   },
 
   error: (message: string, error?: Error | unknown, context?: Record<string, unknown>): void => {
-    if (!shouldLog('error')) return;
-
     const errorInfo = error
       ? error instanceof Error
-        ? { message: error.message, stack: error.stack }
+        ? { err: { message: error.message, stack: error.stack } }
         : { error: String(error) }
-      : undefined;
-
-    const fullContext = { ...context, ...errorInfo };
-    const contextStr = formatContext(fullContext);
-    const fullMessage = contextStr ? `${message} ${contextStr}` : message;
-
-    console.error(`[ERROR] ${fullMessage}`);
+      : {};
+    pinoLogger.error({ ...redactSensitive(context || {}), ...errorInfo }, message);
   },
 };
 
@@ -121,11 +70,20 @@ export const logger = {
  */
 export const createLogger = (module: string) => {
   return {
-    debug: (message: string, context?: Record<string, unknown>) => logger.debug(message, { module, ...context }),
-    info: (message: string, context?: Record<string, unknown>) => logger.info(message, { module, ...context }),
-    warn: (message: string, context?: Record<string, unknown>) => logger.warn(message, { module, ...context }),
-    error: (message: string, error?: Error | unknown, context?: Record<string, unknown>) =>
-      logger.error(message, error, { module, ...context }),
+    debug: (message: string, context?: Record<string, unknown>) =>
+      pinoLogger.debug({ module, ...redactSensitive(context || {}) }, message),
+    info: (message: string, context?: Record<string, unknown>) =>
+      pinoLogger.info({ module, ...redactSensitive(context || {}) }, message),
+    warn: (message: string, context?: Record<string, unknown>) =>
+      pinoLogger.warn({ module, ...redactSensitive(context || {}) }, message),
+    error: (message: string, error?: Error | unknown, context?: Record<string, unknown>) => {
+      const errorInfo = error
+        ? error instanceof Error
+          ? { err: { message: error.message, stack: error.stack } }
+          : { error: String(error) }
+        : {};
+      pinoLogger.error({ module, ...redactSensitive(context || {}), ...errorInfo }, message);
+    },
   };
 };
 
@@ -133,20 +91,20 @@ export const createLogger = (module: string) => {
  * 便捷方法：记录 API 请求
  */
 export const logApiRequest = (method: string, url: string, context?: Record<string, unknown>) => {
-  logger.debug(`${method} ${url}`, context);
+  pinoLogger.debug({ ...context, method, url }, `${method} ${url}`);
 };
 
 /**
  * 便捷方法：记录 API 响应
  */
 export const logApiResponse = (url: string, status: number, duration: number, context?: Record<string, unknown>) => {
-  const level = status >= 400 ? 'warn' : 'info';
-  logger[level](`API Response: ${status} (${duration}ms)`, { url, status, duration, ...context });
+  const log = status >= 400 ? pinoLogger.warn : pinoLogger.info;
+  log({ ...context, url, status, duration }, `API Response: ${status} (${duration}ms)`);
 };
 
 /**
  * 便捷方法：记录用户操作
  */
 export const logUserAction = (action: string, context?: Record<string, unknown>) => {
-  logger.info(`User Action: ${action}`, context);
+  pinoLogger.info({ ...context }, `User Action: ${action}`);
 };
