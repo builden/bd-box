@@ -1,17 +1,21 @@
 import { IS_PLATFORM } from '../constants/config';
+import { notificationService } from '../components/app/GlobalNotifications';
 
 interface FetchOptions extends RequestInit {
   body?: BodyInit | null;
+  /** 跳过默认错误通知 */
+  skipErrorNotification?: boolean;
 }
 
 // Utility function for authenticated API calls
 export const authenticatedFetch = (url: string, options: FetchOptions = {}): Promise<Response> => {
+  const { skipErrorNotification, ...fetchOptions } = options;
   const token = localStorage.getItem('auth-token');
 
   const defaultHeaders: Record<string, string> = {};
 
   // Only set Content-Type for non-FormData requests
-  if (!(options.body instanceof FormData)) {
+  if (!(fetchOptions.body instanceof FormData)) {
     defaultHeaders['Content-Type'] = 'application/json';
   }
 
@@ -20,16 +24,38 @@ export const authenticatedFetch = (url: string, options: FetchOptions = {}): Pro
   }
 
   return fetch(url, {
-    ...options,
+    ...fetchOptions,
     headers: {
       ...defaultHeaders,
-      ...options.headers,
+      ...fetchOptions.headers,
     },
-  }).then((response) => {
+  }).then(async (response) => {
     const refreshedToken = response.headers.get('X-Refreshed-Token');
     if (refreshedToken) {
       localStorage.setItem('auth-token', refreshedToken);
     }
+
+    // API 错误处理 - 显示全局通知
+    if (!response.ok && !skipErrorNotification) {
+      const statusText = response.statusText || 'Request failed';
+      const path = new URL(url, window.location.origin).pathname;
+      const title = `API 错误: ${response.status}`;
+      const message = `${path} - ${statusText}`;
+
+      // 尝试解析错误消息
+      try {
+        const contentType = response.headers.get('content-type');
+        if (contentType?.includes('application/json')) {
+          const errorData = await response.clone().json();
+          notificationService.error(title, errorData.error || errorData.message || message);
+        } else {
+          notificationService.error(title, message);
+        }
+      } catch {
+        notificationService.error(title, message);
+      }
+    }
+
     return response;
   });
 };

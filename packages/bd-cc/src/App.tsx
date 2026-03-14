@@ -4,6 +4,7 @@ import { AuthProvider, ProtectedRoute } from './components/auth';
 import { TaskMasterProvider } from './contexts/TaskMasterContext';
 import { WebSocketProvider } from './contexts/WebSocketContext';
 import AppContent from './components/app/AppContent';
+import GlobalNotifications from './components/app/GlobalNotifications';
 import i18n from './i18n/config';
 
 function AppProviders({ children }: { children: React.ReactNode }) {
@@ -21,6 +22,7 @@ function AppProviders({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <AppProviders>
+      <GlobalNotifications />
       <ProtectedRoute>
         <Router basename={window.__ROUTER_BASENAME__ || ''}>
           <Routes>
