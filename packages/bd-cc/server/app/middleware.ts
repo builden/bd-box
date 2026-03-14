@@ -7,6 +7,9 @@ import cors from 'cors';
 import express from 'express';
 import { validateApiKey, authenticateToken } from '../middleware/auth.js';
 import { IS_PLATFORM } from '../env.js';
+import { createLogger } from '../lib/logger';
+
+const logger = createLogger('middleware');
 
 export function setupMiddleware(app: express.Application): void {
   // CORS
@@ -17,7 +20,7 @@ export function setupMiddleware(app: express.Application): void {
     const start = Date.now();
     res.on('finish', () => {
       const duration = Date.now() - start;
-      console.log(`${req.method} ${req.url} ${res.statusCode} (${duration}ms)`);
+      logger.info(`${req.method} ${req.url} ${res.statusCode} (${duration}ms)`);
     });
     next();
   });

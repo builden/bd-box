@@ -8,8 +8,10 @@
 import { Router } from 'express';
 import { checkClaudeCredentials, checkCursorStatus, checkCodexCredentials, checkGeminiCredentials } from './utils.js';
 import { success, serverError } from '../../utils/api-response.js';
+import { createLogger } from '../../lib/logger';
 
 const router = Router();
+const logger = createLogger('cli-auth-handlers');
 
 router.get('/claude/status', async (req, res) => {
   try {
@@ -30,7 +32,7 @@ router.get('/claude/status', async (req, res) => {
       error: credentialsResult.error || 'Not authenticated',
     });
   } catch (error: any) {
-    console.error('Error checking Claude auth status:', error);
+    logger.error('Error checking Claude auth status:', error);
     return serverError(res, error.message);
   }
 });
@@ -45,7 +47,7 @@ router.get('/cursor/status', async (req, res) => {
       error: result.error,
     });
   } catch (error: any) {
-    console.error('Error checking Cursor auth status:', error);
+    logger.error('Error checking Cursor auth status:', error);
     return serverError(res, error.message);
   }
 });
@@ -60,7 +62,7 @@ router.get('/codex/status', async (req, res) => {
       error: result.error,
     });
   } catch (error: any) {
-    console.error('Error checking Codex auth status:', error);
+    logger.error('Error checking Codex auth status:', error);
     return serverError(res, error.message);
   }
 });
@@ -75,7 +77,7 @@ router.get('/gemini/status', async (req, res) => {
       error: result.error,
     });
   } catch (error: any) {
-    console.error('Error checking Gemini auth status:', error);
+    logger.error('Error checking Gemini auth status:', error);
     return serverError(res, error.message);
   }
 });

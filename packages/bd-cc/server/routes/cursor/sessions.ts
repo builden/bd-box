@@ -4,14 +4,17 @@
  */
 
 import { Router } from 'express';
+import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 import crypto from 'crypto';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import { applyCustomSessionNames } from '../../database/index.ts';
+import { createLogger } from '../../lib/logger';
 
 const router = Router();
+const logger = createLogger('cursor-sessions');
 
 // GET /api/cursor/sessions
 router.get('/sessions', async (req, res) => {
@@ -96,7 +99,7 @@ router.get('/sessions', async (req, res) => {
         if (!sessionData.createdAt && dbStatMtimeMs) sessionData.createdAt = new Date(dbStatMtimeMs).toISOString();
         sessions.push(sessionData);
       } catch (error) {
-        console.log(`Could not read session ${sessionId}:`, error.message);
+        logger.warn(`Could not read session ${sessionId}:`, error.message);
       }
     }
 
@@ -206,7 +209,5 @@ router.get('/sessions/:sessionId', async (req, res) => {
     res.status(500).json({ error: 'Failed to read Cursor session', details: error.message });
   }
 });
-
-import { promises as fs } from 'fs';
 
 export default router;

@@ -36,11 +36,15 @@ const projectsAtom = atomWithQuery(() => ({
     }
     const json = await response.json();
 
-    return validateResponse(ProjectListResponseSchema, json, {
+    // 响应拦截器已展开 data 字段，直接使用
+    const validated = validateResponse(ProjectListResponseSchema, json, {
       endpoint: '/api/projects',
       status: response.status,
-      fallbackValue: [],
+      fallbackValue: { data: [] },
     });
+
+    // 返回 data 数组
+    return validated?.data || [];
   }),
   // 项目列表变化较慢，可以设置较长的 staleTime
   staleTime: 1000 * 60 * 5, // 5 minutes
@@ -71,13 +75,15 @@ function getSessionsAtom(projectName: string) {
           }
           const json = await response.json();
 
+          // 响应拦截器已展开 data 字段
           const result = validateResponse(SessionsListResponseSchema, json, {
             endpoint: `/api/projects/${projectName}/sessions`,
             status: response.status,
-            fallbackValue: null,
+            fallbackValue: { data: [] },
           });
 
-          return result?.sessions || [];
+          // 返回 data 数组 (兼容新旧格式)
+          return result?.data || result?.sessions || [];
         }),
         // 会话数据相对稳定，设置较长的 staleTime
         staleTime: 1000 * 60 * 2, // 2 minutes

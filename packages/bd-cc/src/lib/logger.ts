@@ -44,10 +44,21 @@ const browserWrite = (log: pino.LogDescriptor) => {
     }
   }
 
+  // 构建堆栈信息（warn 和 error 级别）
+  let stackStr = '';
+  if ((levelNum === 40 || levelNum === 50) && log.err) {
+    const err = log.err as { stack?: string; message?: string };
+    if (err.stack) {
+      stackStr = '\n' + err.stack;
+    } else if (err.message) {
+      stackStr = '\n' + err.message;
+    }
+  }
+
   // 输出格式: [HH:MM:ss.l] LEVEL: [module] message context
   // 模块名使用独立颜色
   console.log(
-    `%c[${time}]%c ${level}:%c %c${moduleName}%c ${log.msg}${contextStr}`,
+    `%c[${time}]%c ${level}:%c %c${moduleName}%c ${log.msg}${contextStr}${stackStr}`,
     'color:#6c757d', // 时间：灰色
     `color:${levelColor};font-weight:bold`, // 级别：级别颜色
     'color:inherit', // 冒号后空格

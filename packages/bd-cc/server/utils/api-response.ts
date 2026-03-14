@@ -159,6 +159,13 @@ export function notFound(res: Response, resource: string): Response {
 }
 
 /**
+ * 便捷方法: 409 Conflict
+ */
+export function conflict(res: Response, message: string): Response {
+  return error(res, { code: 'conflict', message, statusCode: 409 });
+}
+
+/**
  * 便捷方法: 422 Unprocessable Entity (验证错误)
  */
 export function unprocessable(res: Response, message: string, details?: ErrorDetail[]): Response {

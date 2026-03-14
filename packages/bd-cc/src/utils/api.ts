@@ -8,7 +8,7 @@ interface FetchOptions extends RequestInit {
 }
 
 /**
- * API 响应拦截器
+ * 处理 API 响应
  *
  * 遵循 api.md 规范:
  * - 成功响应: { data: ... }
@@ -16,46 +16,34 @@ interface FetchOptions extends RequestInit {
  *
  * 此函数自动展开 data 字段，使前端可以直接访问 response.data
  */
-async function processResponse(response: Response, url: string, skipErrorNotification?: boolean): Promise<Response> {
+async function processJsonResponse(
+  jsonData: unknown,
+  response: Response,
+  url: string,
+  skipErrorNotification?: boolean
+): Promise<unknown> {
   const refreshedToken = response.headers.get('X-Refreshed-Token');
   if (refreshedToken) {
     localStorage.setItem('auth-token', refreshedToken);
   }
 
-  // API 错误处理 - 显示全局通知
+  // 错误处理 - 显示全局通知
   if (!response.ok && !skipErrorNotification) {
     const statusText = response.statusText || 'Request failed';
     const path = new URL(url, window.location.origin).pathname;
     const title = `API 错误: ${response.status}`;
     const message = `${path} - ${statusText}`;
 
-    // 尝试解析错误消息 (RFC 7807 格式)
-    try {
-      const contentType = response.headers.get('content-type');
-      if (contentType?.includes('application/json')) {
-        const errorData = await response.clone().json();
-        // 优先使用 RFC 7807 格式
-        if (errorData.error) {
-          const errorMsg = errorData.error.message || errorData.error.code || message;
-          notificationService.error(title, errorMsg, {
-            url: path,
-            status: response.status,
-            context: { originalUrl: url, error: errorData.error },
-          });
-        } else {
-          notificationService.error(title, errorData.error || errorData.message || message, {
-            url: path,
-            status: response.status,
-            context: { originalUrl: url },
-          });
-        }
-      } else {
-        notificationService.error(title, message, {
-          url: path,
-          status: response.status,
-        });
-      }
-    } catch {
+    // 优先使用 RFC 7807 格式
+    if (jsonData && typeof jsonData === 'object' && 'error' in jsonData) {
+      const errorObj = (jsonData as { error: { message?: string; code?: string } }).error;
+      const errorMsg = errorObj?.message || errorObj?.code || message;
+      notificationService.error(title, errorMsg, {
+        url: path,
+        status: response.status,
+        context: { originalUrl: url, error: jsonData },
+      });
+    } else {
       notificationService.error(title, message, {
         url: path,
         status: response.status,
@@ -64,30 +52,12 @@ async function processResponse(response: Response, url: string, skipErrorNotific
   }
 
   // 成功响应: 展开 data 字段 (遵循 api.md 规范)
-  if (response.ok) {
-    try {
-      const contentType = response.headers.get('content-type');
-      if (contentType?.includes('application/json')) {
-        const jsonData = await response.clone().json();
-        // 如果响应有 data 字段，创建新响应展开它
-        if (jsonData && typeof jsonData === 'object' && 'data' in jsonData) {
-          const { data, meta, ...rest } = jsonData;
-          // 返回一个新的 Response，包含展开的 data
-          const newBody = JSON.stringify({ data, meta, ...rest });
-          const newResponse = new Response(newBody, {
-            status: response.status,
-            statusText: response.statusText,
-            headers: response.headers,
-          });
-          return newResponse;
-        }
-      }
-    } catch {
-      // 如果解析失败，返回原始响应
-    }
+  if (response.ok && jsonData && typeof jsonData === 'object' && 'data' in jsonData) {
+    const { data, meta, ...rest } = jsonData as { data: unknown; meta?: unknown; [key: string]: unknown };
+    return { data, meta, ...rest };
   }
 
-  return response;
+  return jsonData;
 }
 
 // Utility function for authenticated API calls
@@ -112,7 +82,28 @@ export const authenticatedFetch = (url: string, options: FetchOptions = {}): Pro
       ...defaultHeaders,
       ...fetchOptions.headers,
     },
-  }).then((response) => processResponse(response, url, skipErrorNotification));
+  }).then(async (response) => {
+    // 处理 JSON 响应
+    try {
+      const contentType = response.headers.get('content-type');
+      if (contentType?.includes('application/json')) {
+        const jsonData = await response.clone().json();
+        const processedData = await processJsonResponse(jsonData, response, url, skipErrorNotification);
+
+        // 返回处理后的 JSON 作为新响应
+        const newBody = JSON.stringify(processedData);
+        return new Response(newBody, {
+          status: response.status,
+          statusText: response.statusText,
+          headers: response.headers,
+        });
+      }
+    } catch {
+      // 如果不是 JSON，直接返回原始响应
+    }
+
+    return response;
+  });
 };
 
 // API endpoints
