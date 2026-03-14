@@ -14,6 +14,7 @@ import { authenticatedFetch } from '../../../utils/api';
 import { thinkingModes } from '../constants/thinkingModes';
 import { grantClaudeToolPermission } from '../utils/chatPermissions';
 import { safeLocalStorage } from '../utils/chatStorage';
+import { createFakeSubmitEvent, isTemporarySessionId } from '../utils/sessionId';
 import type { ChatMessage, PendingPermissionRequest, PermissionMode } from '../types/types';
 import type { Project, ProjectSession, SessionProvider } from '../../../types/app';
 import { escapeRegExp } from '../utils/chatFormatting';
@@ -73,13 +74,6 @@ interface CommandExecutionResult {
   hasBashCommands?: boolean;
   hasFileIncludes?: boolean;
 }
-
-const createFakeSubmitEvent = () => {
-  return { preventDefault: () => undefined } as unknown as FormEvent<HTMLFormElement>;
-};
-
-const isTemporarySessionId = (sessionId: string | null | undefined) =>
-  Boolean(sessionId && sessionId.startsWith('new-session-'));
 
 export function useChatComposerState({
   selectedProject,

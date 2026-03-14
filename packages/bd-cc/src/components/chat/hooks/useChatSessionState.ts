@@ -11,11 +11,9 @@ import {
   type DiffCalculator,
 } from '../utils/messageTransforms';
 import { createLogger } from '@/lib/logger';
+import { MESSAGES_PER_PAGE, INITIAL_VISIBLE_MESSAGES } from '../utils/constants';
 
 const logger = createLogger('useChatSessionState');
-
-const MESSAGES_PER_PAGE = 20;
-const INITIAL_VISIBLE_MESSAGES = 100;
 
 type PendingViewSession = {
   sessionId: string | null;
