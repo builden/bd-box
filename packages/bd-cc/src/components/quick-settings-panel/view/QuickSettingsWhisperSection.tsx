@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { TOGGLE_ROW_CLASS, WHISPER_OPTIONS } from '../constants';
-import { useWhisperMode } from '../hooks/useWhisperMode';
+import { useWhisperMode } from '@/store/ui-modes';
 import QuickSettingsSection from './QuickSettingsSection';
 
 export default function QuickSettingsWhisperSection() {
@@ -9,16 +9,10 @@ export default function QuickSettingsWhisperSection() {
 
   return (
     // This section stays hidden intentionally until dictation modes are reintroduced.
-    <QuickSettingsSection
-      title={t('quickSettings.sections.whisperDictation')}
-      className="hidden"
-    >
+    <QuickSettingsSection title={t('quickSettings.sections.whisperDictation')} className="hidden">
       <div className="space-y-2">
         {WHISPER_OPTIONS.map(({ value, icon: Icon, titleKey, descriptionKey }) => (
-          <label
-            key={value}
-            className={`${TOGGLE_ROW_CLASS} flex items-start`}
-          >
+          <label key={value} className={`${TOGGLE_ROW_CLASS} flex items-start`}>
             <input
               type="radio"
               name="whisperMode"
@@ -32,9 +26,7 @@ export default function QuickSettingsWhisperSection() {
                 <Icon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                 {t(titleKey)}
               </span>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {t(descriptionKey)}
-              </p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t(descriptionKey)}</p>
             </div>
           </label>
         ))}

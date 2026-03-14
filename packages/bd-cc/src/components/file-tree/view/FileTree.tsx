@@ -7,7 +7,7 @@ import { useExpandedDirectories } from '../hooks/useExpandedDirectories';
 import { useFileTreeData } from '../hooks/useFileTreeData';
 import { useFileTreeOperations } from '../hooks/useFileTreeOperations';
 import { useFileTreeSearch } from '../hooks/useFileTreeSearch';
-import { useFileTreeViewMode } from '../hooks/useFileTreeViewMode';
+import { useFileTreeViewMode } from '@/store/ui-modes';
 import { useFileTreeUpload } from '../hooks/useFileTreeUpload';
 import type { FileTreeImageSelection, FileTreeNode } from '../types/types';
 import { formatFileSize, formatRelativeTime, isImageFile } from '../utils/fileTreeUtils';
@@ -18,7 +18,6 @@ import FileTreeDetailedColumns from './FileTreeDetailedColumns';
 import FileTreeHeader from './FileTreeHeader';
 import FileTreeLoadingState from './FileTreeLoadingState';
 import ImageViewer from './ImageViewer';
-
 
 type FileTreeProps = {
   selectedProject: Project | null;
@@ -108,13 +107,10 @@ export default function FileTree({ selectedProject, onFileOpen }: FileTreeProps)
 
       onFileOpen?.(item.path);
     },
-    [onFileOpen, selectedProject, toggleDirectory],
+    [onFileOpen, selectedProject, toggleDirectory]
   );
 
-  const formatRelativeTimeLabel = useCallback(
-    (date?: string) => formatRelativeTime(date, t),
-    [t],
-  );
+  const formatRelativeTimeLabel = useCallback((date?: string) => formatRelativeTime(date, t), [t]);
 
   if (loading) {
     return <FileTreeLoadingState />;
@@ -215,12 +211,7 @@ export default function FileTree({ selectedProject, onFileOpen }: FileTreeProps)
         />
       </ScrollArea>
 
-      {selectedImage && (
-        <ImageViewer
-          file={selectedImage}
-          onClose={() => setSelectedImage(null)}
-        />
-      )}
+      {selectedImage && <ImageViewer file={selectedImage} onClose={() => setSelectedImage(null)} />}
 
       {/* Delete Confirmation Dialog */}
       {operations.deleteConfirmation.isOpen && operations.deleteConfirmation.item && (
@@ -233,12 +224,10 @@ export default function FileTree({ selectedProject, onFileOpen }: FileTreeProps)
               <div>
                 <h3 className="font-medium text-foreground">
                   {t('fileTree.delete.title', 'Delete {{type}}', {
-                    type: operations.deleteConfirmation.item.type === 'directory' ? 'Folder' : 'File'
+                    type: operations.deleteConfirmation.item.type === 'directory' ? 'Folder' : 'File',
                   })}
                 </h3>
-                <p className="text-sm text-muted-foreground">
-                  {operations.deleteConfirmation.item.name}
-                </p>
+                <p className="text-sm text-muted-foreground">{operations.deleteConfirmation.item.name}</p>
               </div>
             </div>
             <p className="mb-4 text-sm text-muted-foreground">
@@ -272,16 +261,10 @@ export default function FileTree({ selectedProject, onFileOpen }: FileTreeProps)
         <div
           className={cn(
             'fixed bottom-4 right-4 z-[9999] px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-in slide-in-from-bottom-2',
-            toast.type === 'success'
-              ? 'bg-green-600 text-white'
-              : 'bg-red-600 text-white'
+            toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
           )}
         >
-          {toast.type === 'success' ? (
-            <Check className="h-4 w-4" />
-          ) : (
-            <X className="h-4 w-4" />
-          )}
+          {toast.type === 'success' ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
           <span className="text-sm">{toast.message}</span>
         </div>
       )}

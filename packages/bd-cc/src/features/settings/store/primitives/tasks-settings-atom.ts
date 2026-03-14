@@ -1,4 +1,5 @@
 import { atom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
 
 /**
  * TaskMaster 安装状态
@@ -22,9 +23,9 @@ export type TasksSettingsState = {
 };
 
 /**
- * tasksEnabled 持久化 atom
+ * tasksEnabled 持久化 atom - 使用 atomWithStorage 自动持久化
  */
-export const tasksEnabledAtom = atom<boolean>(true);
+export const tasksEnabledAtom = atomWithStorage<boolean>('bd-cc:tasks-enabled', true);
 
 /**
  * TaskMaster 安装状态

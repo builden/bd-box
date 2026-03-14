@@ -13,7 +13,7 @@ import { createLogger } from '@/lib/logger';
 const logger = createLogger('useTasksSettings');
 
 /**
- * Tasks 设置管理 Hook
+ * Tasks 设置管理 Hook - 使用 atomWithStorage 自动持久化
  */
 export function useTasksSettings() {
   // Atoms
@@ -29,19 +29,6 @@ export function useTasksSettings() {
   const setInstallationStatus = useSetAtom(installationStatusAtom);
   const setIsCheckingInstallation = useSetAtom(isCheckingInstallationAtom);
 
-  // 持久化 tasksEnabled 到 localStorage
-  useEffect(() => {
-    localStorage.setItem('bd-cc:tasks-enabled', JSON.stringify(tasksEnabled));
-  }, [tasksEnabled]);
-
-  // 初始化时从 localStorage 加载 tasksEnabled
-  useEffect(() => {
-    const saved = localStorage.getItem('bd-cc:tasks-enabled');
-    if (saved !== null) {
-      setTasksEnabled(JSON.parse(saved));
-    }
-  }, [setTasksEnabled]);
-
   // 检查 TaskMaster 安装状态
   const checkInstallation = useCallback(async () => {
     try {
@@ -53,8 +40,7 @@ export function useTasksSettings() {
         setIsTaskMasterReady(data.isReady || false);
 
         // 如果 TaskMaster 未安装且用户未明确启用，则自动禁用
-        const userEnabledTasks = localStorage.getItem('bd-cc:tasks-enabled');
-        if (!data.installation?.isInstalled && !userEnabledTasks) {
+        if (!data.installation?.isInstalled) {
           setTasksEnabled(false);
         }
       } else {

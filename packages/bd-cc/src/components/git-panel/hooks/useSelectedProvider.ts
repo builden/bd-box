@@ -1,20 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useAtom } from 'jotai';
+import { selectedProviderAtom } from '@/store/projects';
 
+/**
+ * Git 面板提供商选择 Hook - 使用 atomWithStorage 自动持久化
+ */
 export function useSelectedProvider() {
-  const [provider, setProvider] = useState(() => {
-    return localStorage.getItem('selected-provider') || 'claude';
-  });
-
-  useEffect(() => {
-    // Keep provider in sync when another tab changes the selected provider.
-    const handleStorageChange = () => {
-      const nextProvider = localStorage.getItem('selected-provider') || 'claude';
-      setProvider(nextProvider);
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
-
+  const [provider] = useAtom(selectedProviderAtom);
   return provider;
 }

@@ -13,6 +13,8 @@ export const STORAGE_KEYS = {
   PLUGINS: 'bd-cc:plugins',
   SKILLS: 'bd-cc:skills',
   TASKS_ENABLED: 'bd-cc:tasks-enabled',
+  WHISPER_MODE: 'bd-cc:whisper-mode',
+  FILE_TREE_VIEW_MODE: 'bd-cc:file-tree-view-mode',
 } as const;
 
 // ============================================
