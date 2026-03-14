@@ -68,3 +68,6 @@ export {
   isCheckingInstallationAtom,
 } from '../features/settings/store/primitives/tasks-settings-atom';
 export type { InstallationStatus, TasksSettingsState } from '../features/settings/store/primitives/tasks-settings-atom';
+
+// Search (搜索防抖)
+export { useSidebarSearch, useFileTreeSearch } from './search/actions/use-search';
