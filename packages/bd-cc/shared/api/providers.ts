@@ -113,3 +113,15 @@ export const ProviderMessagesResponseSchema = z.object({
 });
 
 export type ProviderMessagesResponse = z.infer<typeof ProviderMessagesResponseSchema>;
+
+/**
+ * CLI 认证状态
+ */
+export const CliAuthStatusSchema = z.object({
+  authenticated: z.boolean(),
+  email: z.string().nullable(),
+  method: z.string().nullable(),
+  error: z.string().optional(),
+});
+
+export type CliAuthStatus = z.infer<typeof CliAuthStatusSchema>;

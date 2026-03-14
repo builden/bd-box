@@ -19,3 +19,4 @@ export * from './commands';
 export * from './providers';
 export * from './settings';
 export * from './media';
+export * from './workspace';
