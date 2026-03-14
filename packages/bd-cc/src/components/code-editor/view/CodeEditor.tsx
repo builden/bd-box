@@ -7,7 +7,11 @@ import { useCodeEditorDocument } from '../hooks/useCodeEditorDocument';
 import { useCodeEditorSettings } from '../hooks/useCodeEditorSettings';
 import { useEditorKeyboardShortcuts } from '../hooks/useEditorKeyboardShortcuts';
 import type { CodeEditorFile } from '../types/types';
-import { createMinimapExtension, createScrollToFirstChunkExtension, getLanguageExtensions } from '../utils/editorExtensions';
+import {
+  createMinimapExtension,
+  createScrollToFirstChunkExtension,
+  getLanguageExtensions,
+} from '../utils/editorExtensions';
 import { getEditorStyles } from '../utils/editorStyles';
 import { createEditorToolbarPanelExtension } from '../utils/editorToolbarPanel';
 import CodeEditorFooter from './subcomponents/CodeEditorFooter';
@@ -40,28 +44,13 @@ export default function CodeEditor({
   const [showDiff, setShowDiff] = useState(Boolean(file.diffInfo));
   const [markdownPreview, setMarkdownPreview] = useState(false);
 
-  const {
-    isDarkMode,
-    wordWrap,
-    minimapEnabled,
-    showLineNumbers,
-    fontSize,
-  } = useCodeEditorSettings();
+  const { isDarkMode, wordWrap, minimapEnabled, showLineNumbers, fontSize } = useCodeEditorSettings();
 
-  const {
-    content,
-    setContent,
-    loading,
-    saving,
-    saveSuccess,
-    saveError,
-    isBinary,
-    handleSave,
-    handleDownload,
-  } = useCodeEditorDocument({
-    file,
-    projectPath,
-  });
+  const { content, setContent, loading, saving, saveSuccess, saveError, isBinary, handleSave, handleDownload } =
+    useCodeEditorDocument({
+      file,
+      projectPath,
+    });
 
   const isMarkdownFile = useMemo(() => {
     const extension = file.name.split('.').pop()?.toLowerCase();
@@ -69,24 +58,23 @@ export default function CodeEditor({
   }, [file.name]);
 
   const minimapExtension = useMemo(
-    () => (
+    () =>
       createMinimapExtension({
         file,
         showDiff,
         minimapEnabled,
         isDarkMode,
-      })
-    ),
-    [file, isDarkMode, minimapEnabled, showDiff],
+      }),
+    [file, isDarkMode, minimapEnabled, showDiff]
   );
 
   const scrollToFirstChunkExtension = useMemo(
     () => createScrollToFirstChunkExtension({ file, showDiff }),
-    [file, showDiff],
+    [file, showDiff]
   );
 
   const toolbarPanelExtension = useMemo(
-    () => (
+    () =>
       createEditorToolbarPanelExtension({
         file,
         showDiff,
@@ -104,16 +92,12 @@ export default function CodeEditor({
           collapse: t('toolbar.collapse'),
           expand: t('toolbar.expand'),
         },
-      })
-    ),
-    [file, isExpanded, isSidebar, onPopOut, onToggleExpand, showDiff, t],
+      }),
+    [file, isExpanded, isSidebar, onPopOut, onToggleExpand, showDiff, t]
   );
 
   const extensions = useMemo(() => {
-    const allExtensions: Extension[] = [
-      ...getLanguageExtensions(file.name),
-      ...toolbarPanelExtension,
-    ];
+    const allExtensions: Extension[] = [...getLanguageExtensions(file.name), ...toolbarPanelExtension];
 
     if (file.diffInfo && showDiff && file.diffInfo.old_string !== undefined) {
       allExtensions.push(
@@ -123,7 +107,7 @@ export default function CodeEditor({
           highlightChanges: true,
           syntaxHighlightDeletions: false,
           gutter: true,
-        }),
+        })
       );
       allExtensions.push(...minimapExtension);
       allExtensions.push(...scrollToFirstChunkExtension);
@@ -170,7 +154,11 @@ export default function CodeEditor({
         onClose={onClose}
         onToggleFullscreen={() => setIsFullscreen((previous) => !previous)}
         title={t('binaryFile.title', 'Binary File')}
-        message={t('binaryFile.message', 'The file "{{fileName}}" cannot be displayed in the text editor because it is a binary file.', { fileName: file.name })}
+        message={t(
+          'binaryFile.message',
+          'The file "{{fileName}}" cannot be displayed in the text editor because it is a binary file.',
+          { fileName: file.name }
+        )}
       />
     );
   }
@@ -182,8 +170,8 @@ export default function CodeEditor({
   const innerContainerClassName = isSidebar
     ? 'bg-background flex flex-col w-full h-full'
     : `bg-background shadow-2xl flex flex-col w-full h-full md:rounded-lg md:shadow-2xl${
-      isFullscreen ? ' md:w-full md:h-full md:rounded-none' : ' md:w-full md:max-w-6xl md:h-[80vh] md:max-h-[80vh]'
-    }`;
+        isFullscreen ? ' md:w-full md:h-full md:rounded-none' : ' md:w-full md:max-w-6xl md:h-[80vh] md:max-h-[80vh]'
+      }`;
 
   return (
     <>
@@ -235,6 +223,7 @@ export default function CodeEditor({
               fontSize={fontSize}
               showLineNumbers={showLineNumbers}
               extensions={extensions}
+              filePath={file.path}
             />
           </div>
 

@@ -12,6 +12,7 @@ type CodeEditorSurfaceProps = {
   fontSize: number;
   showLineNumbers: boolean;
   extensions: Extension[];
+  filePath?: string;
 };
 
 export default function CodeEditorSurface({
@@ -23,6 +24,7 @@ export default function CodeEditorSurface({
   fontSize,
   showLineNumbers,
   extensions,
+  filePath,
 }: CodeEditorSurfaceProps) {
   if (markdownPreview && isMarkdownFile) {
     return (
@@ -36,6 +38,7 @@ export default function CodeEditorSurface({
 
   return (
     <CodeMirror
+      key={filePath}
       value={content}
       onChange={onChange}
       extensions={extensions}

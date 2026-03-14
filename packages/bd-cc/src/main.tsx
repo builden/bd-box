@@ -25,6 +25,14 @@ if ('serviceWorker' in navigator) {
     });
 }
 
+// 在渲染前初始化主题 class，避免闪烁
+const savedTheme = localStorage.getItem('bd-cc:theme');
+
+// 默认使用 Light 模式，只有明确保存为 dark 时才使用 dark
+if (savedTheme === 'dark') {
+  document.documentElement.classList.add('dark');
+}
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />

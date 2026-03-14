@@ -71,9 +71,9 @@ const getSavedLanguage = () => {
     if (saved && languages.some((lang) => lang.value === saved)) {
       return saved;
     }
-    return 'en';
+    return 'zh-CN';
   } catch {
-    return 'en';
+    return 'zh-CN';
   }
 };
 

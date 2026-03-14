@@ -5,29 +5,20 @@
  * - 开发环境: debug + info + warn + error
  * - 生产环境: warn + error
  * - 使用 pino + pino-pretty 进行日志输出
+ * - 颜色配置与前端保持一致 (shared/config/logger.ts)
  */
 
 import pino from 'pino';
 import { randomUUID } from 'crypto';
+import { PINO_PRETTY_CONFIG, PINO_PRETTY_CUSTOM_COLORS } from '../../shared/config';
 
 // 判断是否为生产环境
 const isProduction = process.env.NODE_ENV === 'production';
 
 // pino-pretty 配置
 const prettyConfig = {
-  colorize: true,
-  translateTime: 'HH:MM:ss.l',
-  ignore: 'pid,hostname',
-  levelFirst: false,
-  // 自定义格式化 - 根据重要程度区分颜色
-  customColors: {
-    trace: 'dim gray',
-    debug: 'dim', // 灰色 - 最不重要，开发调试用
-    info: 'green', // 绿色 - 一般信息
-    warn: 'yellow', // 黄色 - 警告
-    error: 'red', // 红色 - 错误
-    fatal: 'red bold', // 红色粗体 - 致命错误
-  },
+  ...PINO_PRETTY_CONFIG,
+  customColors: PINO_PRETTY_CUSTOM_COLORS,
 };
 
 // 创建 pino logger
