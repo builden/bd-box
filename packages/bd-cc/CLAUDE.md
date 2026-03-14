@@ -74,9 +74,9 @@ feature-name/                 # 功能模块目录
 │   └── pages/              # 页面级组件
 ├── hooks/                   # 功能专用 hooks
 ├── types.ts                 # 功能类型定义
-├── operations/             # 业务逻辑（纯函数，无 React 依赖）
+├── biz/                   # 业务逻辑（纯函数，无 React 依赖）
 │   ├── index.ts            # 聚合导出
-│   └── {domain}-ops.ts     # 按领域细分，如 projects-ops.ts
+│   └── {domain}-biz.ts    # 按领域细分，如 projects-biz.ts
 └── index.ts                 # 模块导出
 ```
 
@@ -89,10 +89,10 @@ feature-name/                 # 功能模块目录
 | containers | 有机体   | ChatPane, Sidebar        |
 | pages      | 页面     | ChatPage, SettingsPage   |
 
-### operations 命名规范
+### biz 命名规范
 
-- 目录名：`operations/`
-- 文件名：`*-ops.ts`（如 `projects-ops.ts`）
+- 目录名：`biz/`
+- 文件名：`*-biz.ts`（如 `projects-biz.ts`）
 - 函数前缀：`calc`（如 `calcFilterProjects`）
 
 ### store 结构（参考）

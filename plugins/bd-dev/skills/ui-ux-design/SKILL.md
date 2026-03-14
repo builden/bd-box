@@ -58,7 +58,7 @@ feature-name/
 │   └── pages/         # 页面级组件
 ├── hooks/              # 功能专用 hooks
 ├── types.ts
-├── operations/        # 纯业务逻辑
+├── biz/               # 纯业务逻辑
 └── index.ts
 ```
 
@@ -74,6 +74,6 @@ feature-name/
 ### 命名规范
 
 - 目录名：`ui/`
-- operations 目录：`operations/`
-- operations 文件：`*-ops.ts`（如 `projects-ops.ts`）
+- biz 目录：`biz/`
+- biz 文件：`*-biz.ts`（如 `projects-biz.ts`）
 - 函数前缀：`calc`（如 `calcFilterProjects`）
