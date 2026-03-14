@@ -2,9 +2,9 @@ import { useCallback, useMemo, useState } from 'react';
 import type { Project } from '../../types/app';
 import { usePrdDocument } from './hooks/usePrdDocument';
 import { usePrdKeyboardShortcuts } from './hooks/usePrdKeyboardShortcuts';
-import { usePrdRegistry } from './hooks/usePrdRegistry';
+import { usePrdRegistryQuery } from '@/hooks/usePrdQuery';
 import { usePrdSave } from './hooks/usePrdSave';
-import type { PrdFile } from './types';
+import type { PrdFile, ExistingPrdFile } from './types';
 import { ensurePrdExtension } from './utils/fileName';
 import OverwriteConfirmModal from './view/OverwriteConfirmModal';
 import PrdEditorLoadingState from './view/PrdEditorLoadingState';
@@ -39,9 +39,10 @@ export default function PRDEditor({
     projectPath,
   });
 
-  const { existingPrds, refreshExistingPrds } = usePrdRegistry({
-    projectName: project?.name,
-  });
+  const { data: existingPrds = [], refetch: refreshExistingPrds } = usePrdRegistryQuery(project?.name || '') as {
+    data: ExistingPrdFile[];
+    refetch: () => Promise<unknown>;
+  };
 
   const isExistingFile = useMemo(() => !isNewFile || Boolean(file?.isExisting), [file?.isExisting, isNewFile]);
 
@@ -87,7 +88,7 @@ export default function PRDEditor({
         alert(result.message);
       }
     },
-    [content, fileName, savePrd],
+    [content, fileName, savePrd]
   );
 
   const confirmOverwrite = useCallback(async () => {
