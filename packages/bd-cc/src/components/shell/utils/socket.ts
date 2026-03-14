@@ -1,23 +1,24 @@
-import { createLogger } from '@/lib/logger';
 import { IS_PLATFORM } from '../../../constants/config';
 import type { ShellIncomingMessage, ShellOutgoingMessage } from '../types/types';
 
-const logger = createLogger('ShellSocket');
-
 export function getShellWebSocketUrl(): string | null {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const host = window.location.host;
 
+  // In platform mode or development, allow WebSocket without token
+  // Backend will use default local user
   if (IS_PLATFORM) {
-    return `${protocol}//${window.location.host}/shell`;
+    return `${protocol}//${host}/shell`;
   }
 
+  // Development mode: try token, but allow connection without it
   const token = localStorage.getItem('auth-token');
-  if (!token) {
-    logger.error('No authentication token found for Shell WebSocket connection');
-    return null;
+  if (token) {
+    return `${protocol}//${host}/shell?token=${encodeURIComponent(token)}`;
   }
 
-  return `${protocol}//${window.location.host}/shell?token=${encodeURIComponent(token)}`;
+  // Allow connection without token in development
+  return `${protocol}//${host}/shell`;
 }
 
 export function parseShellMessage(payload: string): ShellIncomingMessage | null {

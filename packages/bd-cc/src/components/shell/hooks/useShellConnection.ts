@@ -2,10 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { MutableRefObject } from 'react';
 import type { FitAddon } from '@xterm/addon-fit';
 import type { Terminal } from '@xterm/xterm';
-import { createLogger } from '@/lib/logger';
 import type { Project, ProjectSession } from '../../../types/app';
 import { TERMINAL_INIT_DELAY_MS } from '../constants/constants';
 import { getShellWebSocketUrl, parseShellMessage, sendSocketMessage } from '../utils/socket';
+import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('ShellConnection');
 
@@ -113,17 +113,25 @@ export function useShellConnection({
   const connectWebSocket = useCallback(
     (isConnectionLocked = false) => {
       if ((connectingRef.current && !isConnectionLocked) || isConnecting || isConnected) {
+        logger.debug('[Shell] Skipping connection:', {
+          connecting: connectingRef.current,
+          isConnectionLocked,
+          isConnecting,
+          isConnected,
+        });
         return;
       }
 
       try {
         const wsUrl = getShellWebSocketUrl();
         if (!wsUrl) {
+          logger.error('[Shell] Failed to get WebSocket URL');
           connectingRef.current = false;
           setIsConnecting(false);
           return;
         }
 
+        logger.info('[Shell] Connecting to WebSocket:', wsUrl);
         connectingRef.current = true;
 
         const socket = new WebSocket(wsUrl);
@@ -141,6 +149,14 @@ export function useShellConnection({
             const currentFitAddon = fitAddonRef.current;
             const currentProject = selectedProjectRef.current;
             if (!currentTerminal || !currentFitAddon || !currentProject) {
+              logger.warn(
+                '[Shell] Missing refs for init, terminal:',
+                !!currentTerminal,
+                'fitAddon:',
+                !!currentFitAddon,
+                'project:',
+                !!currentProject
+              );
               return;
             }
 
@@ -169,19 +185,22 @@ export function useShellConnection({
           handleSocketMessage(rawPayload);
         };
 
-        socket.onclose = () => {
+        socket.onclose = (event) => {
+          logger.info('[Shell] WebSocket closed:', { code: event.code, reason: event.reason });
           setIsConnected(false);
           setIsConnecting(false);
           connectingRef.current = false;
           clearTerminalScreen();
         };
 
-        socket.onerror = () => {
+        socket.onerror = (error) => {
+          logger.error('[Shell] WebSocket error:', error);
           setIsConnected(false);
           setIsConnecting(false);
           connectingRef.current = false;
         };
-      } catch {
+      } catch (err) {
+        logger.error('[Shell] Exception in connectWebSocket:', err);
         setIsConnected(false);
         setIsConnecting(false);
         connectingRef.current = false;
@@ -204,7 +223,19 @@ export function useShellConnection({
   );
 
   const connectToShell = useCallback(() => {
+    logger.info('[Shell] connectToShell called:', {
+      isInitialized,
+      isConnected,
+      isConnecting,
+      connecting: connectingRef.current,
+    });
     if (!isInitialized || isConnected || isConnecting || connectingRef.current) {
+      logger.debug('[Shell] connectToShell skipped:', {
+        isInitialized,
+        isConnected,
+        isConnecting,
+        connecting: connectingRef.current,
+      });
       return;
     }
 
