@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { version } from '../../package.json';
 import { ReleaseInfo } from '../types/sharedTypes';
+import { HealthCheckResponseSchema } from '@shared/api/system';
+import { validateResponse } from '@shared/api/validation';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('useVersionCheck');
@@ -36,8 +38,14 @@ export const useVersionCheck = (owner: string, repo: string) => {
     const fetchInstallMode = async () => {
       try {
         const response = await fetch('/health');
-        const data = await response.json();
-        if (data.installMode === 'npm' || data.installMode === 'git') {
+        const json = await response.json();
+        const data = validateResponse(HealthCheckResponseSchema, json, {
+          endpoint: '/health',
+          status: response.status,
+          fallbackValue: null,
+        });
+
+        if (data?.installMode === 'npm' || data?.installMode === 'git') {
           setInstallMode(data.installMode);
         }
       } catch {

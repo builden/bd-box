@@ -30,14 +30,13 @@ export type TaskMasterMCPServer = z.infer<typeof TaskMasterMCPServerSchema>;
 /**
  * TaskMaster 安装状态响应
  */
-export const TaskMasterStatusResponseSchema = z.object({
-  success: z.boolean(),
-  installation: TaskMasterInstallationSchema.optional(),
-  mcpServer: TaskMasterMCPServerSchema.optional(),
-  isReady: z.boolean(),
+export const TaskMasterInstallationStatusSchema = z.object({
+  installed: z.boolean(),
+  path: z.string().nullable().optional(),
+  error: z.string().optional(),
 });
 
-export type TaskMasterStatusResponse = z.infer<typeof TaskMasterStatusResponseSchema>;
+export type TaskMasterInstallationStatus = z.infer<typeof TaskMasterInstallationStatusSchema>;
 
 /**
  * 任务看板列

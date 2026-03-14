@@ -1,14 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { authenticatedFetch } from '../../../utils/api';
+import { GitConfigSchema } from '@shared/api/users';
+import { validateResponse } from '@shared/api/validation';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('useGitSettings');
-
-type GitConfigResponse = {
-  gitName?: string;
-  gitEmail?: string;
-  error?: string;
-};
 
 type SaveStatus = 'success' | 'error' | null;
 
@@ -32,13 +28,18 @@ export function useGitSettings() {
     try {
       setIsLoading(true);
       const response = await authenticatedFetch('/api/users/git-config');
-      if (!response.ok) {
-        return;
-      }
 
-      const data = (await response.json()) as GitConfigResponse;
-      setGitName(data.gitName || '');
-      setGitEmail(data.gitEmail || '');
+      const json = await response.json();
+      const result = validateResponse(GitConfigSchema, json, {
+        endpoint: '/api/users/git-config',
+        status: response.status,
+        fallbackValue: null,
+      });
+
+      if (result) {
+        setGitName(result.gitName || '');
+        setGitEmail(result.gitEmail || '');
+      }
     } catch (error) {
       logger.error('Error loading git config', error);
     } finally {
@@ -51,7 +52,6 @@ export function useGitSettings() {
       setIsSaving(true);
       const response = await authenticatedFetch('/api/users/git-config', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gitName, gitEmail }),
       });
 
@@ -64,8 +64,6 @@ export function useGitSettings() {
         return;
       }
 
-      const data = (await response.json()) as GitConfigResponse;
-      logger.error('Failed to save git config', data.error);
       setSaveStatus('error');
     } catch (error) {
       logger.error('Error saving git config', error);

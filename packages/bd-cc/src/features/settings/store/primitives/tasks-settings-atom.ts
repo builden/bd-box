@@ -2,13 +2,12 @@ import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 
 /**
- * TaskMaster 安装状态
+ * TaskMaster 安装状态 - 匹配后端 API 响应格式
  */
 export type InstallationStatus = {
-  installation?: {
-    isInstalled: boolean;
-  };
-  isReady: boolean;
+  installed: boolean;
+  path: string | null;
+  error?: string;
 };
 
 /**

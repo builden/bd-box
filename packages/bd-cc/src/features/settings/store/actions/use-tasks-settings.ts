@@ -7,9 +7,9 @@ import {
   isTaskMasterReadyAtom,
   installationStatusAtom,
   isCheckingInstallationAtom,
+  type InstallationStatus,
 } from '../primitives/tasks-settings-atom';
-import { TaskMasterStatusResponseSchema } from '@shared/api/tasks';
-import { validateResponse } from '@shared/api/validation';
+import { TaskMasterInstallationStatusSchema } from '@shared/api/tasks';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('useTasksSettings');
@@ -37,25 +37,28 @@ export function useTasksSettings() {
       const res = await authenticatedFetch('/api/taskmasters/installation-status');
       if (res.ok) {
         const json = await res.json();
-        const data = validateResponse(TaskMasterStatusResponseSchema, json, {
-          endpoint: '/api/taskmasters/installation-status',
-          status: res.status,
-          fallbackValue: null,
-        });
+        const result = TaskMasterInstallationStatusSchema.safeParse(json);
 
-        if (!data) {
+        if (!result.success) {
+          logger.error('Invalid installation status response:', result.error);
           setIsTaskMasterInstalled(false);
           setIsTaskMasterReady(false);
           setIsCheckingInstallation(false);
           return;
         }
 
+        const data: InstallationStatus = {
+          installed: result.data.installed,
+          path: result.data.path || null,
+          error: result.data.error,
+        };
+
         setInstallationStatus(data);
-        setIsTaskMasterInstalled(data.installation?.isInstalled || false);
-        setIsTaskMasterReady(data.isReady || false);
+        setIsTaskMasterInstalled(data.installed || false);
+        setIsTaskMasterReady(data.installed || false);
 
         // 如果 TaskMaster 未安装且用户未明确启用，则自动禁用
-        if (!data.installation?.isInstalled) {
+        if (!data.installed) {
           setTasksEnabled(false);
         }
       } else {

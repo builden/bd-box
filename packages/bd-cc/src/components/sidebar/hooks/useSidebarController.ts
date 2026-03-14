@@ -127,11 +127,70 @@ export function useSidebarController({
     return () => clearInterval(timer);
   }, []);
 
+  // 持久化展开状态到 sessionStorage
+  const [persistedExpandedProjects, setPersistedExpandedProjects] = useState<Set<string>>(() => {
+    try {
+      const saved = sessionStorage.getItem('sidebar-expanded-projects');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
   useEffect(() => {
-    setAdditionalSessions({});
-    setInitialSessionsLoaded(new Set());
-    setProjectHasMoreOverrides({});
-  }, [projects]);
+    // 保存展开状态
+    try {
+      sessionStorage.setItem('sidebar-expanded-projects', JSON.stringify([...expandedProjects]));
+    } catch {
+      // ignore
+    }
+  }, [expandedProjects]);
+
+  useEffect(() => {
+    // 当项目列表加载完成且有之前展开的项目时，自动加载这些项目的会话
+    if (projects.length > 0 && !isLoading && persistedExpandedProjects.size > 0) {
+      const projectsToLoad = projects.filter(
+        (p) => persistedExpandedProjects.has(p.name) && !initialSessionsLoaded.has(p.name)
+      );
+
+      projectsToLoad.forEach((project) => {
+        const loadInitialSessions = async () => {
+          try {
+            const response = await api.sessions(project.name, 5, 0);
+            if (response.ok) {
+              const result = (await response.json()) as any[];
+              if (result && result.length > 0) {
+                const mappedSessions = result.map((session) => ({
+                  id: session.sessionId,
+                  name: session.customName || session.sessionId,
+                  summary: session.customName,
+                  createdAt: session.createdAt,
+                  lastActivity: session.lastMessage,
+                  messageCount: session.messageCount,
+                  updated_at: session.updatedAt,
+                }));
+                setAdditionalSessions((prev) => ({
+                  ...prev,
+                  [project.name]: mappedSessions,
+                }));
+              }
+              setInitialSessionsLoaded((prev) => {
+                const next = new Set(prev);
+                next.add(project.name);
+                return next;
+              });
+              if (result && result.length < 5) {
+                setProjectHasMoreOverrides((prev) => ({ ...prev, [project.name]: false }));
+              }
+            }
+          } catch (error) {
+            console.error('Error loading initial sessions:', error);
+          }
+        };
+        void loadInitialSessions();
+      });
+    }
+  }, [projects, isLoading, persistedExpandedProjects, initialSessionsLoaded]);
 
   // 当 selectedProject 变化时，自动展开并加载会话
   useEffect(() => {
@@ -187,16 +246,48 @@ export function useSidebarController({
   }, [selectedProject, initialSessionsLoaded]);
 
   useEffect(() => {
-    if (projects.length > 0 && !isLoading) {
-      const loadedProjects = new Set<string>();
+    // 当项目列表加载完成且之前没有加载过任何会话时，自动为所有项目加载会话
+    if (projects.length > 0 && !isLoading && initialSessionsLoaded.size === 0) {
       projects.forEach((project) => {
-        if (project.sessions) {
-          loadedProjects.add(project.name);
+        if (!initialSessionsLoaded.has(project.name)) {
+          const loadInitialSessions = async () => {
+            try {
+              const response = await api.sessions(project.name, 5, 0);
+              if (response.ok) {
+                const result = (await response.json()) as any[];
+                if (result && result.length > 0) {
+                  const mappedSessions = result.map((session) => ({
+                    id: session.sessionId,
+                    name: session.customName || session.sessionId,
+                    summary: session.customName,
+                    createdAt: session.createdAt,
+                    lastActivity: session.lastMessage,
+                    messageCount: session.messageCount,
+                    updated_at: session.updatedAt,
+                  }));
+                  setAdditionalSessions((prev) => ({
+                    ...prev,
+                    [project.name]: mappedSessions,
+                  }));
+                }
+                setInitialSessionsLoaded((prev) => {
+                  const next = new Set(prev);
+                  next.add(project.name);
+                  return next;
+                });
+                if (result && result.length < 5) {
+                  setProjectHasMoreOverrides((prev) => ({ ...prev, [project.name]: false }));
+                }
+              }
+            } catch (error) {
+              console.error('Error loading initial sessions:', error);
+            }
+          };
+          void loadInitialSessions();
         }
       });
-      setInitialSessionsLoaded(loadedProjects);
     }
-  }, [projects, isLoading]);
+  }, [projects, isLoading, initialSessionsLoaded]);
 
   useEffect(() => {
     const loadSortOrder = () => {

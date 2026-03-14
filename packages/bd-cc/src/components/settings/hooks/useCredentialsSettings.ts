@@ -1,12 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
+import { z } from 'zod';
 import { authenticatedFetch } from '../../../utils/api';
-import type {
-  ApiKeyItem,
-  ApiKeysResponse,
-  CreatedApiKey,
-  GithubCredentialItem,
-  GithubCredentialsResponse,
-} from '../../../features/settings/ui/api-settings/types';
+import type { ApiKeyItem, CreatedApiKey } from '../../../features/settings/ui/api-settings/types';
+import { ApiKeysListResponseSchema, CredentialsListResponseSchema, ApiKeySchema } from '@shared/api/settings';
+import { validateResponse } from '@shared/api/validation';
 import { copyTextToClipboard } from '../../../utils/clipboard';
 import { createLogger } from '@/lib/logger';
 
@@ -17,14 +14,14 @@ type UseCredentialsSettingsArgs = {
   confirmDeleteGithubCredentialText: string;
 };
 
-const getApiError = (payload: { error?: string } | undefined, fallback: string) => payload?.error || fallback;
-
 export function useCredentialsSettings({
   confirmDeleteApiKeyText,
   confirmDeleteGithubCredentialText,
 }: UseCredentialsSettingsArgs) {
   const [apiKeys, setApiKeys] = useState<ApiKeyItem[]>([]);
-  const [githubCredentials, setGithubCredentials] = useState<GithubCredentialItem[]>([]);
+  const [githubCredentials, setGithubCredentials] = useState<
+    ReturnType<typeof CredentialsListResponseSchema.parse>['credentials']
+  >([]);
   const [loading, setLoading] = useState(true);
 
   const [showNewKeyForm, setShowNewKeyForm] = useState(false);
@@ -48,13 +45,39 @@ export function useCredentialsSettings({
         authenticatedFetch('/api/settings/credentials?type=github_token'),
       ]);
 
-      const [apiKeysPayload, credentialsPayload] = await Promise.all([
-        apiKeysResponse.json() as Promise<ApiKeysResponse>,
-        credentialsResponse.json() as Promise<GithubCredentialsResponse>,
-      ]);
+      const [apiKeysJson, credentialsJson] = await Promise.all([apiKeysResponse.json(), credentialsResponse.json()]);
 
-      setApiKeys(apiKeysPayload.apiKeys || []);
-      setGithubCredentials(credentialsPayload.credentials || []);
+      const apiKeysResult = validateResponse(ApiKeysListResponseSchema, apiKeysJson, {
+        endpoint: '/api/settings/api-keys',
+        status: apiKeysResponse.status,
+        fallbackValue: null,
+      });
+
+      const credentialsResult = validateResponse(CredentialsListResponseSchema, credentialsJson, {
+        endpoint: '/api/settings/credentials',
+        status: credentialsResponse.status,
+        fallbackValue: null,
+      });
+
+      // Convert snake_case API response to camelCase frontend types
+      const convertApiKey = (key: {
+        id: string;
+        name: string;
+        created_at: string;
+        enabled: boolean;
+        api_key?: string;
+        last_used_at?: string;
+      }): ApiKeyItem => ({
+        id: key.id,
+        key_name: key.name,
+        api_key: key.api_key || '',
+        created_at: key.created_at,
+        last_used: key.last_used_at || null,
+        is_active: key.enabled,
+      });
+
+      setApiKeys((apiKeysResult?.apiKeys || []).map(convertApiKey));
+      setGithubCredentials(credentialsResult?.credentials || []);
     } catch (error) {
       logger.error('Error fetching settings:', error);
     } finally {
@@ -73,14 +96,26 @@ export function useCredentialsSettings({
         body: JSON.stringify({ keyName: newKeyName.trim() }),
       });
 
-      const payload = (await response.json()) as ApiKeysResponse;
-      if (!response.ok || !payload.success) {
-        logger.error('Error creating API key:', getApiError(payload, 'Failed to create API key'));
+      if (!response.ok) {
+        logger.error('Error creating API key: Failed to create');
         return;
       }
 
-      if (payload.apiKey) {
-        setNewlyCreatedKey(payload.apiKey);
+      const json = await response.json();
+      const result = validateResponse(z.object({ success: z.boolean(), apiKey: ApiKeySchema }), json, {
+        endpoint: '/api/settings/api-keys',
+        status: response.status,
+        fallbackValue: null,
+      });
+
+      if (result?.success && result.apiKey) {
+        // Convert snake_case from API to camelCase for CreatedApiKey
+        setNewlyCreatedKey({
+          id: result.apiKey.id,
+          keyName: result.apiKey.name,
+          apiKey: result.apiKey.api_key || '',
+          createdAt: result.apiKey.created_at,
+        });
       }
       setNewKeyName('');
       setShowNewKeyForm(false);
@@ -102,8 +137,7 @@ export function useCredentialsSettings({
         });
 
         if (!response.ok) {
-          const payload = (await response.json()) as ApiKeysResponse;
-          logger.error('Error deleting API key:', getApiError(payload, 'Failed to delete API key'));
+          logger.error('Error deleting API key: Failed to delete');
           return;
         }
 
@@ -124,8 +158,7 @@ export function useCredentialsSettings({
         });
 
         if (!response.ok) {
-          const payload = (await response.json()) as ApiKeysResponse;
-          logger.error('Error toggling API key:', getApiError(payload, 'Failed to toggle API key'));
+          logger.error('Error toggling API key: Failed to toggle');
           return;
         }
 
@@ -153,9 +186,8 @@ export function useCredentialsSettings({
         }),
       });
 
-      const payload = (await response.json()) as GithubCredentialsResponse;
-      if (!response.ok || !payload.success) {
-        logger.error('Error creating GitHub credential:', getApiError(payload, 'Failed to create GitHub credential'));
+      if (!response.ok) {
+        logger.error('Error creating GitHub credential: Failed to create');
         return;
       }
 
@@ -182,8 +214,7 @@ export function useCredentialsSettings({
         });
 
         if (!response.ok) {
-          const payload = (await response.json()) as GithubCredentialsResponse;
-          logger.error('Error deleting GitHub credential:', getApiError(payload, 'Failed to delete GitHub credential'));
+          logger.error('Error deleting GitHub credential: Failed to delete');
           return;
         }
 
@@ -204,8 +235,7 @@ export function useCredentialsSettings({
         });
 
         if (!response.ok) {
-          const payload = (await response.json()) as GithubCredentialsResponse;
-          logger.error('Error toggling GitHub credential:', getApiError(payload, 'Failed to toggle GitHub credential'));
+          logger.error('Error toggling GitHub credential: Failed to toggle');
           return;
         }
 
