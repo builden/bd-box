@@ -1,10 +1,14 @@
 /**
  * TASKMASTER WEBSOCKET UTILITIES
  * ==============================
- * 
+ *
  * Utilities for broadcasting TaskMaster state changes via WebSocket.
  * Integrates with the existing WebSocket system to provide real-time updates.
  */
+
+import { createLogger } from '../lib/logger.ts';
+
+const logger = createLogger('utils/taskmaster-ws');
 
 /**
  * Broadcast TaskMaster project update to all connected clients
@@ -13,59 +17,59 @@
  * @param {Object} taskMasterData - Updated TaskMaster data
  */
 export function broadcastTaskMasterProjectUpdate(wss, projectName, taskMasterData) {
-    if (!wss || !projectName) {
-        console.warn('TaskMaster WebSocket broadcast: Missing wss or projectName');
-        return;
+  if (!wss || !projectName) {
+    logger.warn('TaskMaster WebSocket broadcast: Missing wss or projectName');
+    return;
+  }
+
+  const message = {
+    type: 'taskmaster-project-updated',
+    projectName,
+    taskMasterData,
+    timestamp: new Date().toISOString(),
+  };
+
+  wss.clients.forEach((client) => {
+    if (client.readyState === 1) {
+      // WebSocket.OPEN
+      try {
+        client.send(JSON.stringify(message));
+      } catch (error) {
+        logger.error('Error sending TaskMaster project update:', error);
+      }
     }
-
-    const message = {
-        type: 'taskmaster-project-updated',
-        projectName,
-        taskMasterData,
-        timestamp: new Date().toISOString()
-    };
-
-    
-    wss.clients.forEach((client) => {
-        if (client.readyState === 1) { // WebSocket.OPEN
-            try {
-                client.send(JSON.stringify(message));
-            } catch (error) {
-                console.error('Error sending TaskMaster project update:', error);
-            }
-        }
-    });
+  });
 }
 
 /**
  * Broadcast TaskMaster tasks update for a specific project
- * @param {WebSocket.Server} wss - WebSocket server instance  
+ * @param {WebSocket.Server} wss - WebSocket server instance
  * @param {string} projectName - Name of the project with updated tasks
  * @param {Object} tasksData - Updated tasks data
  */
 export function broadcastTaskMasterTasksUpdate(wss, projectName, tasksData) {
-    if (!wss || !projectName) {
-        console.warn('TaskMaster WebSocket broadcast: Missing wss or projectName');
-        return;
+  if (!wss || !projectName) {
+    logger.warn('TaskMaster WebSocket broadcast: Missing wss or projectName');
+    return;
+  }
+
+  const message = {
+    type: 'taskmaster-tasks-updated',
+    projectName,
+    tasksData,
+    timestamp: new Date().toISOString(),
+  };
+
+  wss.clients.forEach((client) => {
+    if (client.readyState === 1) {
+      // WebSocket.OPEN
+      try {
+        client.send(JSON.stringify(message));
+      } catch (error) {
+        logger.error('Error sending TaskMaster tasks update:', error);
+      }
     }
-
-    const message = {
-        type: 'taskmaster-tasks-updated',
-        projectName,
-        tasksData,
-        timestamp: new Date().toISOString()
-    };
-
-    
-    wss.clients.forEach((client) => {
-        if (client.readyState === 1) { // WebSocket.OPEN
-            try {
-                client.send(JSON.stringify(message));
-            } catch (error) {
-                console.error('Error sending TaskMaster tasks update:', error);
-            }
-        }
-    });
+  });
 }
 
 /**
@@ -74,27 +78,27 @@ export function broadcastTaskMasterTasksUpdate(wss, projectName, tasksData) {
  * @param {Object} mcpStatus - Updated MCP server status
  */
 export function broadcastMCPStatusChange(wss, mcpStatus) {
-    if (!wss) {
-        console.warn('TaskMaster WebSocket broadcast: Missing wss');
-        return;
+  if (!wss) {
+    logger.warn('TaskMaster WebSocket broadcast: Missing wss');
+    return;
+  }
+
+  const message = {
+    type: 'taskmaster-mcp-status-changed',
+    mcpStatus,
+    timestamp: new Date().toISOString(),
+  };
+
+  wss.clients.forEach((client) => {
+    if (client.readyState === 1) {
+      // WebSocket.OPEN
+      try {
+        client.send(JSON.stringify(message));
+      } catch (error) {
+        logger.error('Error sending TaskMaster MCP status update:', error);
+      }
     }
-
-    const message = {
-        type: 'taskmaster-mcp-status-changed',
-        mcpStatus,
-        timestamp: new Date().toISOString()
-    };
-
-    
-    wss.clients.forEach((client) => {
-        if (client.readyState === 1) { // WebSocket.OPEN
-            try {
-                client.send(JSON.stringify(message));
-            } catch (error) {
-                console.error('Error sending TaskMaster MCP status update:', error);
-            }
-        }
-    });
+  });
 }
 
 /**
@@ -104,26 +108,26 @@ export function broadcastMCPStatusChange(wss, mcpStatus) {
  * @param {Object} data - Additional data about the update
  */
 export function broadcastTaskMasterUpdate(wss, updateType, data = {}) {
-    if (!wss || !updateType) {
-        console.warn('TaskMaster WebSocket broadcast: Missing wss or updateType');
-        return;
+  if (!wss || !updateType) {
+    logger.warn('TaskMaster WebSocket broadcast: Missing wss or updateType');
+    return;
+  }
+
+  const message = {
+    type: 'taskmaster-update',
+    updateType,
+    data,
+    timestamp: new Date().toISOString(),
+  };
+
+  wss.clients.forEach((client) => {
+    if (client.readyState === 1) {
+      // WebSocket.OPEN
+      try {
+        client.send(JSON.stringify(message));
+      } catch (error) {
+        logger.error('Error sending TaskMaster update:', error);
+      }
     }
-
-    const message = {
-        type: 'taskmaster-update',
-        updateType,
-        data,
-        timestamp: new Date().toISOString()
-    };
-
-    
-    wss.clients.forEach((client) => {
-        if (client.readyState === 1) { // WebSocket.OPEN
-            try {
-                client.send(JSON.stringify(message));
-            } catch (error) {
-                console.error('Error sending TaskMaster update:', error);
-            }
-        }
-    });
+  });
 }

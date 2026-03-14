@@ -24,7 +24,7 @@ describe('Integration Tests - Business Logic', () => {
     it('should handle auth correctly in platform mode', async () => {
       // In platform mode (IS_PLATFORM=true), protected routes use default user
       // and return 200 instead of 401
-      const protectedRoutes = ['/api/settings/api-keys', '/api/settings/credentials', '/api/user/git-config'];
+      const protectedRoutes = ['/api/settings/api-keys', '/api/settings/credentials', '/api/users/git-config'];
 
       for (const route of protectedRoutes) {
         const res = await fetch(`${BASE_URL}${route}`);

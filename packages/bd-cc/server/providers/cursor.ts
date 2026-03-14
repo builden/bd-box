@@ -1,5 +1,8 @@
 import { spawn } from 'child_process';
 import crossSpawn from 'cross-spawn';
+import { createLogger } from '../lib/logger.ts';
+
+const logger = createLogger('provider/cursor');
 
 // Use cross-spawn on Windows for better command execution
 const spawnFunction = process.platform === 'win32' ? crossSpawn : spawn;
@@ -10,7 +13,7 @@ const WORKSPACE_TRUST_PATTERNS = [
   /workspace trust required/i,
   /do you trust the contents of this directory/i,
   /working with untrusted contents/i,
-  /pass --trust,\s*--yolo,\s*or -f/i
+  /pass --trust,\s*--yolo,\s*or -f/i,
 ];
 
 function isWorkspaceTrustPrompt(text = '') {
@@ -32,7 +35,7 @@ async function spawnCursor(command, options = {}, ws) {
     // Use tools settings passed from frontend, or defaults
     const settings = toolsSettings || {
       allowedShellCommands: [],
-      skipPermissions: false
+      skipPermissions: false,
     };
 
     // Build Cursor CLI command
@@ -60,7 +63,7 @@ async function spawnCursor(command, options = {}, ws) {
     // Add skip permissions flag if enabled
     if (skipPermissions || settings.skipPermissions) {
       baseArgs.push('-f');
-      console.log('Using -f flag (skip permissions)');
+      logger.info('Using -f flag (skip permissions)');
     }
 
     // Use cwd (actual project directory) instead of projectPath
@@ -83,17 +86,15 @@ async function spawnCursor(command, options = {}, ws) {
       let stdoutLineBuffer = '';
 
       if (isTrustRetry) {
-        console.log('Retrying Cursor CLI with --trust after workspace trust prompt');
+        logger.info('Retrying Cursor CLI with --trust after workspace trust prompt');
       }
 
-      console.log('Spawning Cursor CLI:', 'cursor-agent', args.join(' '));
-      console.log('Working directory:', workingDir);
-      console.log('Session info - Input sessionId:', sessionId, 'Resume:', resume);
+      logger.info('Spawning Cursor CLI:', { command: 'cursor-agent', args, workingDir, sessionId, resume });
 
       const cursorProcess = spawnFunction('cursor-agent', args, {
         cwd: workingDir,
         stdio: ['pipe', 'pipe', 'pipe'],
-        env: { ...process.env } // Inherit all environment variables
+        env: { ...process.env }, // Inherit all environment variables
       });
 
       activeCursorProcesses.set(processKey, cursorProcess);
@@ -117,7 +118,7 @@ async function spawnCursor(command, options = {}, ws) {
 
         try {
           const response = JSON.parse(line);
-          console.log('Parsed JSON response:', response);
+          logger.debug('Parsed JSON response:', response);
 
           // Handle different message types
           switch (response.type) {
@@ -126,7 +127,7 @@ async function spawnCursor(command, options = {}, ws) {
                 // Capture session ID
                 if (response.session_id && !capturedSessionId) {
                   capturedSessionId = response.session_id;
-                  console.log('Captured session ID:', capturedSessionId);
+                  logger.info('Captured session ID:', { sessionId: capturedSessionId });
 
                   // Update process key with captured session ID
                   if (processKey !== capturedSessionId) {
@@ -146,7 +147,7 @@ async function spawnCursor(command, options = {}, ws) {
                       type: 'session-created',
                       sessionId: capturedSessionId,
                       model: response.model,
-                      cwd: response.cwd
+                      cwd: response.cwd,
                     });
                   }
                 }
@@ -155,7 +156,7 @@ async function spawnCursor(command, options = {}, ws) {
                 ws.send({
                   type: 'cursor-system',
                   data: response,
-                  sessionId: capturedSessionId || sessionId || null
+                  sessionId: capturedSessionId || sessionId || null,
                 });
               }
               break;
@@ -165,7 +166,7 @@ async function spawnCursor(command, options = {}, ws) {
               ws.send({
                 type: 'cursor-user',
                 data: response,
-                sessionId: capturedSessionId || sessionId || null
+                sessionId: capturedSessionId || sessionId || null,
               });
               break;
 
@@ -181,17 +182,17 @@ async function spawnCursor(command, options = {}, ws) {
                     type: 'content_block_delta',
                     delta: {
                       type: 'text_delta',
-                      text: textContent
-                    }
+                      text: textContent,
+                    },
                   },
-                  sessionId: capturedSessionId || sessionId || null
+                  sessionId: capturedSessionId || sessionId || null,
                 });
               }
               break;
 
             case 'result':
               // Session complete
-              console.log('Cursor session result:', response);
+              logger.debug('Cursor session result:', response);
 
               // Do not emit an extra content_block_stop here.
               // The UI already finalizes the streaming message in cursor-result handling,
@@ -200,7 +201,7 @@ async function spawnCursor(command, options = {}, ws) {
                 type: 'cursor-result',
                 sessionId: capturedSessionId || sessionId,
                 data: response,
-                success: response.subtype === 'success'
+                success: response.subtype === 'success',
               });
               break;
 
@@ -209,11 +210,11 @@ async function spawnCursor(command, options = {}, ws) {
               ws.send({
                 type: 'cursor-response',
                 data: response,
-                sessionId: capturedSessionId || sessionId || null
+                sessionId: capturedSessionId || sessionId || null,
               });
           }
         } catch (parseError) {
-          console.log('Non-JSON response:', line);
+          logger.debug('Non-JSON response:', { line });
 
           if (shouldSuppressForTrustRetry(line)) {
             return;
@@ -223,7 +224,7 @@ async function spawnCursor(command, options = {}, ws) {
           ws.send({
             type: 'cursor-output',
             data: line,
-            sessionId: capturedSessionId || sessionId || null
+            sessionId: capturedSessionId || sessionId || null,
           });
         }
       };
@@ -231,7 +232,7 @@ async function spawnCursor(command, options = {}, ws) {
       // Handle stdout (streaming JSON responses)
       cursorProcess.stdout.on('data', (data) => {
         const rawOutput = data.toString();
-        console.log('Cursor CLI stdout:', rawOutput);
+        logger.debug('Cursor CLI stdout:', { rawOutput });
 
         // Stream chunks can split JSON objects across packets; keep trailing partial line.
         stdoutLineBuffer += rawOutput;
@@ -246,7 +247,7 @@ async function spawnCursor(command, options = {}, ws) {
       // Handle stderr
       cursorProcess.stderr.on('data', (data) => {
         const stderrText = data.toString();
-        console.error('Cursor CLI stderr:', stderrText);
+        logger.error('Cursor CLI stderr:', { stderrText });
 
         if (shouldSuppressForTrustRetry(stderrText)) {
           return;
@@ -255,13 +256,13 @@ async function spawnCursor(command, options = {}, ws) {
         ws.send({
           type: 'cursor-error',
           error: stderrText,
-          sessionId: capturedSessionId || sessionId || null
+          sessionId: capturedSessionId || sessionId || null,
         });
       });
 
       // Handle process completion
       cursorProcess.on('close', async (code) => {
-        console.log(`Cursor CLI process exited with code ${code}`);
+        logger.info(`Cursor CLI process exited with code ${code}`);
 
         const finalSessionId = capturedSessionId || sessionId || processKey;
         activeCursorProcesses.delete(finalSessionId);
@@ -272,12 +273,7 @@ async function spawnCursor(command, options = {}, ws) {
           stdoutLineBuffer = '';
         }
 
-        if (
-          runSawWorkspaceTrustPrompt &&
-          code !== 0 &&
-          !hasRetriedWithTrust &&
-          !args.includes('--trust')
-        ) {
+        if (runSawWorkspaceTrustPrompt && code !== 0 && !hasRetriedWithTrust && !args.includes('--trust')) {
           hasRetriedWithTrust = true;
           runCursorProcess([...args, '--trust'], 'trust-retry');
           return;
@@ -287,7 +283,7 @@ async function spawnCursor(command, options = {}, ws) {
           type: 'claude-complete',
           sessionId: finalSessionId,
           exitCode: code,
-          isNewSession: !sessionId && !!command // Flag to indicate this was a new session
+          isNewSession: !sessionId && !!command, // Flag to indicate this was a new session
         });
 
         if (code === 0) {
@@ -299,7 +295,7 @@ async function spawnCursor(command, options = {}, ws) {
 
       // Handle process errors
       cursorProcess.on('error', (error) => {
-        console.error('Cursor CLI process error:', error);
+        logger.error('Cursor CLI process error:', error);
 
         // Clean up process reference on error
         const finalSessionId = capturedSessionId || sessionId || processKey;
@@ -308,7 +304,7 @@ async function spawnCursor(command, options = {}, ws) {
         ws.send({
           type: 'cursor-error',
           error: error.message,
-          sessionId: capturedSessionId || sessionId || null
+          sessionId: capturedSessionId || sessionId || null,
         });
 
         settleOnce(() => reject(error));
@@ -325,7 +321,7 @@ async function spawnCursor(command, options = {}, ws) {
 function abortCursorSession(sessionId) {
   const process = activeCursorProcesses.get(sessionId);
   if (process) {
-    console.log(`Aborting Cursor session: ${sessionId}`);
+    logger.info(`Aborting Cursor session: ${sessionId}`);
     process.kill('SIGTERM');
     activeCursorProcesses.delete(sessionId);
     return true;
@@ -341,9 +337,4 @@ function getActiveCursorSessions() {
   return Array.from(activeCursorProcesses.keys());
 }
 
-export {
-  spawnCursor,
-  abortCursorSession,
-  isCursorSessionActive,
-  getActiveCursorSessions
-};
+export { spawnCursor, abortCursorSession, isCursorSessionActive, getActiveCursorSessions };

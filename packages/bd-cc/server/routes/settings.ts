@@ -1,7 +1,9 @@
 import express from 'express';
 import { apiKeysDb, credentialsDb } from '../database/index.ts';
+import { createLogger } from '../lib/logger.ts';
 
 const router = express.Router();
+const logger = createLogger('settings');
 
 // ===============================
 // API Keys Management
@@ -18,7 +20,7 @@ router.get('/api-keys', async (req, res) => {
     }));
     res.json({ apiKeys: sanitizedKeys });
   } catch (error) {
-    console.error('Error fetching API keys:', error);
+    logger.error('Error fetching API keys:', error as Error);
     res.status(500).json({ error: 'Failed to fetch API keys' });
   }
 });
@@ -38,7 +40,7 @@ router.post('/api-keys', async (req, res) => {
       apiKey: result,
     });
   } catch (error) {
-    console.error('Error creating API key:', error);
+    logger.error('Error creating API key:', error as Error);
     res.status(500).json({ error: 'Failed to create API key' });
   }
 });
@@ -55,7 +57,7 @@ router.delete('/api-keys/:keyId', async (req, res) => {
       res.status(404).json({ error: 'API key not found' });
     }
   } catch (error) {
-    console.error('Error deleting API key:', error);
+    logger.error('Error deleting API key:', error as Error);
     res.status(500).json({ error: 'Failed to delete API key' });
   }
 });
@@ -78,7 +80,7 @@ router.patch('/api-keys/:keyId/toggle', async (req, res) => {
       res.status(404).json({ error: 'API key not found' });
     }
   } catch (error) {
-    console.error('Error toggling API key:', error);
+    logger.error('Error toggling API key:', error as Error);
     res.status(500).json({ error: 'Failed to toggle API key' });
   }
 });
@@ -95,7 +97,7 @@ router.get('/credentials', async (req, res) => {
     // Don't send the actual credential values for security
     res.json({ credentials });
   } catch (error) {
-    console.error('Error fetching credentials:', error);
+    logger.error('Error fetching credentials:', error as Error);
     res.status(500).json({ error: 'Failed to fetch credentials' });
   }
 });
@@ -130,7 +132,7 @@ router.post('/credentials', async (req, res) => {
       credential: result,
     });
   } catch (error) {
-    console.error('Error creating credential:', error);
+    logger.error('Error creating credential:', error as Error);
     res.status(500).json({ error: 'Failed to create credential' });
   }
 });
@@ -147,7 +149,7 @@ router.delete('/credentials/:credentialId', async (req, res) => {
       res.status(404).json({ error: 'Credential not found' });
     }
   } catch (error) {
-    console.error('Error deleting credential:', error);
+    logger.error('Error deleting credential:', error as Error);
     res.status(500).json({ error: 'Failed to delete credential' });
   }
 });
@@ -170,7 +172,7 @@ router.patch('/credentials/:credentialId/toggle', async (req, res) => {
       res.status(404).json({ error: 'Credential not found' });
     }
   } catch (error) {
-    console.error('Error toggling credential:', error);
+    logger.error('Error toggling credential:', error as Error);
     res.status(500).json({ error: 'Failed to toggle credential' });
   }
 });

@@ -1,4 +1,7 @@
 import type { ClaudeSettings } from '../types/types';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('chatStorage');
 
 export const CLAUDE_SETTINGS_KEY = 'claude-settings';
 
@@ -13,14 +16,14 @@ export const safeLocalStorage = {
             value = JSON.stringify(truncated);
           }
         } catch (parseError) {
-          console.warn('Could not parse chat messages for truncation:', parseError);
+          logger.warn('Could not parse chat messages for truncation:', parseError);
         }
       }
 
       localStorage.setItem(key, value);
     } catch (error: any) {
       if (error?.name === 'QuotaExceededError') {
-        console.warn('localStorage quota exceeded, clearing old data');
+        logger.warn('localStorage quota exceeded, clearing old data');
 
         const keys = Object.keys(localStorage);
         const chatKeys = keys.filter((k) => k.startsWith('chat_messages_')).sort();
@@ -39,7 +42,7 @@ export const safeLocalStorage = {
         try {
           localStorage.setItem(key, value);
         } catch (retryError) {
-          console.error('Failed to save to localStorage even after cleanup:', retryError);
+          logger.error('Failed to save to localStorage even after cleanup:', retryError);
           if (key.startsWith('chat_messages_') && typeof value === 'string') {
             try {
               const parsed = JSON.parse(value);
@@ -48,12 +51,12 @@ export const safeLocalStorage = {
                 localStorage.setItem(key, JSON.stringify(minimal));
               }
             } catch (finalError) {
-              console.error('Final save attempt failed:', finalError);
+              logger.error('Final save attempt failed:', finalError);
             }
           }
         }
       } else {
-        console.error('localStorage error:', error);
+        logger.error('localStorage error:', error);
       }
     }
   },
@@ -61,7 +64,7 @@ export const safeLocalStorage = {
     try {
       return localStorage.getItem(key);
     } catch (error) {
-      console.error('localStorage getItem error:', error);
+      logger.error('localStorage getItem error:', error);
       return null;
     }
   },
@@ -69,7 +72,7 @@ export const safeLocalStorage = {
     try {
       localStorage.removeItem(key);
     } catch (error) {
-      console.error('localStorage removeItem error:', error);
+      logger.error('localStorage removeItem error:', error);
     }
   },
 };

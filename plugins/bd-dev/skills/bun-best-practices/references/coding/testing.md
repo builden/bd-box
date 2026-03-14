@@ -151,6 +151,57 @@ describe('Users API', () => {
 });
 ```
 
+### API 测试必须验证数据正确性
+
+❌ **常见错误**：只验证 HTTP 状态码，不验证数据内容
+
+```typescript
+// ❌ 错误的测试 - 只检查状态码
+it('should return sessions', async () => {
+  const res = await fetch('/api/projects/xxx/sessions');
+  expect(res.ok).toBe(true); // 只验证 200
+  const data = await res.json();
+  expect(data.length).toBeGreaterThan(0); // 只验证有数据
+});
+```
+
+✅ **正确做法**：先验证实际数据格式，再编写代码，最后验证正确性
+
+```typescript
+// 1. 先查看实际数据格式
+// cat ~/.claude/projects/xxx/*.jsonl | head
+
+// 2. 定义 Zod schema 约束结构
+const SessionSchema = z.object({
+  sessionId: z.string().uuid(),
+  messageCount: z.number().min(0),
+  createdAt: z.string().datetime(),
+});
+
+// 3. 测试验证数据正确性
+it('should return valid sessions', async () => {
+  const res = await fetch('/api/projects/xxx/sessions');
+  expect(res.ok).toBe(true);
+  const data = await res.json();
+
+  // 验证数组非空
+  expect(data.length).toBeGreaterThan(0);
+
+  // 验证第一条数据的正确性（不只是结构）
+  const session = data[0];
+  expect(session.messageCount).toBeGreaterThan(0); // 验证值正确
+  expect(session.sessionId).toMatch(/^[0-9a-f-]{36}$/); // 验证格式
+});
+
+// 4. 端到端验证：curl + 浏览器确认
+```
+
+**血的教训**：bd-cc 侧边栏为空 Bug
+
+- 测试通过但页面显示为空
+- 原因：只验证了 `toHaveProperty('messageCount')`，没验证值是否正确
+- 根因：没有先确认实际数据格式就写了代码
+
 ---
 
 ## 运行时机

@@ -1,4 +1,8 @@
 import { api } from '../../../utils/api';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('workspaceApi');
+
 import type {
   BrowseFilesystemResponse,
   CloneProgressEvent,
@@ -104,10 +108,7 @@ const buildCloneProgressQuery = ({
   return query.toString();
 };
 
-export const cloneWorkspaceWithProgress = (
-  params: CloneWorkspaceParams,
-  handlers: CloneProgressHandlers,
-) =>
+export const cloneWorkspaceWithProgress = (params: CloneWorkspaceParams, handlers: CloneProgressHandlers) =>
   new Promise<Record<string, unknown> | undefined>((resolve, reject) => {
     const query = buildCloneProgressQuery(params);
     const eventSource = new EventSource(`/api/projects/clone-progress?${query}`);
@@ -140,7 +141,7 @@ export const cloneWorkspaceWithProgress = (
           settle(() => reject(new Error(payload.message || 'Failed to clone repository')));
         }
       } catch (error) {
-        console.error('Error parsing clone progress event:', error);
+        logger.error('Error parsing clone progress event:', error);
       }
     };
 

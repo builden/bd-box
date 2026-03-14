@@ -8,7 +8,7 @@
     "url": "https://github.com/siteboon/claudecodeui/issues"
   },
   "dependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.2.74",
+    "@anthropic-ai/claude-agent-sdk": "^0.2.75",
     "@codemirror/lang-css": "^6.3.1",
     "@codemirror/lang-html": "^6.4.11",
     "@codemirror/lang-javascript": "^6.2.5",
@@ -42,6 +42,7 @@
     "i18next": "^25.8.18",
     "i18next-browser-languagedetector": "^8.2.1",
     "jotai": "^2.18.1",
+    "jotai-tanstack-query": "^0.11.0",
     "jsonwebtoken": "^9.0.3",
     "jszip": "^3.10.1",
     "katex": "^0.16.38",

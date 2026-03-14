@@ -1,3 +1,3 @@
-export { default as PluginTabContent } from './view/PluginTabContent';
-export { default as PluginSettingsTab } from './view/PluginSettingsTab';
-export { default as PluginIcon } from './view/PluginIcon';
+export { default as PluginTabContent } from '../../features/plugins/ui/PluginTabContent';
+export { default as PluginSettingsTab } from '../../features/plugins/ui/PluginSettingsTab';
+export { default as PluginIcon } from '../../features/plugins/ui/PluginIcon';

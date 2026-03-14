@@ -2,6 +2,9 @@ import { History, RefreshCw } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import type { GitDiffMap, GitCommitSummary } from '../../types/types';
 import CommitHistoryItem from './CommitHistoryItem';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('HistoryView');
 
 type HistoryViewProps = {
   isMobile: boolean;
@@ -39,11 +42,11 @@ export default function HistoryView({
       // Load commit diff lazily only the first time a commit is expanded.
       if (isExpanding && !commitDiffs[commitHash]) {
         onFetchCommitDiff(commitHash).catch((err) => {
-          console.error('Failed to fetch commit diff:', err);
+          logger.error('Failed to fetch commit diff:', err);
         });
       }
     },
-    [commitDiffs, expandedCommits, onFetchCommitDiff, setExpandedCommits],
+    [commitDiffs, expandedCommits, onFetchCommitDiff, setExpandedCommits]
   );
 
   return (

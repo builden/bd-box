@@ -332,6 +332,47 @@ delete cleanEnv.CLAUDECODE;
 delete cleanEnv.HTTP_PROXY;
 ```
 
+### 问题 6: 外部数据格式变化导致功能异常
+
+**现象**: 测试通过但页面显示为空，API 返回数据与前端期望不匹配
+
+**原因**:
+
+- 重构时假设了外部数据的格式，没有先验证
+- 依赖旧文档或记忆中的格式，而不是实际的实时数据
+- 测试只验证 HTTP 状态码，不验证数据内容的正确性
+
+**解决**:
+
+1. **先验证再编码**：编写解析逻辑前，先查看实际数据格式
+
+```bash
+# 查看实际文件内容
+cat ~/.claude/projects/xxx/*.jsonl | head -10
+
+# 对比 API 返回
+curl http://localhost:3001/api/projects/xxx/sessions
+```
+
+2. **测试要验证值，不只是结构**
+
+```typescript
+// ❌ 错误：只验证字段存在
+expect(session).toHaveProperty('messageCount');
+
+// ✅ 正确：还要验证值正确
+expect(session.messageCount).toBeGreaterThan(0);
+```
+
+3. **端到端验证**：启动服务后用 curl 或浏览器确认整个流程工作
+
+**血的教训**：bd-cc 侧边栏 Bug
+
+- `project-sessions.ts` 是重构时新建的文件
+- 代码假设了新版 Claude Code 的 jsonl 格式，但实际格式已变
+- 测试通过（只检查字段存在）但页面为空（值不对）
+- 根因：没有先 `cat` 实际文件确认格式
+
 ---
 
 ## 检查清单

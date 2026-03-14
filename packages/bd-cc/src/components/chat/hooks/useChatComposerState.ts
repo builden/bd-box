@@ -10,19 +10,18 @@ import type {
   TouchEvent,
 } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { createLogger } from '@/lib/logger';
 import { authenticatedFetch } from '../../../utils/api';
 import { thinkingModes } from '../constants/thinkingModes';
 import { grantClaudeToolPermission } from '../utils/chatPermissions';
 import { safeLocalStorage } from '../utils/chatStorage';
-import type {
-  ChatMessage,
-  PendingPermissionRequest,
-  PermissionMode,
-} from '../types/types';
+import type { ChatMessage, PendingPermissionRequest, PermissionMode } from '../types/types';
 import type { Project, ProjectSession, SessionProvider } from '../../../types/app';
 import { escapeRegExp } from '../utils/chatFormatting';
 import { useFileMentions } from './useFileMentions';
 import { type SlashCommand, useSlashCommands } from './useSlashCommands';
+
+const logger = createLogger('ChatComposerState');
 
 type PendingViewSession = {
   sessionId: string | null;
@@ -128,7 +127,10 @@ export function useChatComposerState({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputHighlightRef = useRef<HTMLDivElement>(null);
   const handleSubmitRef = useRef<
-    ((event: FormEvent<HTMLFormElement> | MouseEvent | TouchEvent | KeyboardEvent<HTMLTextAreaElement>) => Promise<void>) | null
+    | ((
+        event: FormEvent<HTMLFormElement> | MouseEvent | TouchEvent | KeyboardEvent<HTMLTextAreaElement>
+      ) => Promise<void>)
+    | null
   >(null);
   const inputValueRef = useRef(input);
 
@@ -234,43 +236,46 @@ export function useChatComposerState({
           break;
 
         default:
-          console.warn('Unknown built-in command action:', action);
+          logger.warn('Unknown built-in command action', { action });
       }
     },
-    [onFileOpen, onShowSettings, setChatMessages, setSessionMessages],
+    [onFileOpen, onShowSettings, setChatMessages, setSessionMessages]
   );
 
-  const handleCustomCommand = useCallback(async (result: CommandExecutionResult) => {
-    const { content, hasBashCommands } = result;
+  const handleCustomCommand = useCallback(
+    async (result: CommandExecutionResult) => {
+      const { content, hasBashCommands } = result;
 
-    if (hasBashCommands) {
-      const confirmed = window.confirm(
-        'This command contains bash commands that will be executed. Do you want to proceed?',
-      );
-      if (!confirmed) {
-        setChatMessages((previous) => [
-          ...previous,
-          {
-            type: 'assistant',
-            content: '❌ Command execution cancelled',
-            timestamp: Date.now(),
-          },
-        ]);
-        return;
+      if (hasBashCommands) {
+        const confirmed = window.confirm(
+          'This command contains bash commands that will be executed. Do you want to proceed?'
+        );
+        if (!confirmed) {
+          setChatMessages((previous) => [
+            ...previous,
+            {
+              type: 'assistant',
+              content: '❌ Command execution cancelled',
+              timestamp: Date.now(),
+            },
+          ]);
+          return;
+        }
       }
-    }
 
-    const commandContent = content || '';
-    setInput(commandContent);
-    inputValueRef.current = commandContent;
+      const commandContent = content || '';
+      setInput(commandContent);
+      inputValueRef.current = commandContent;
 
-    // Defer submit to next tick so the command text is reflected in UI before dispatching.
-    setTimeout(() => {
-      if (handleSubmitRef.current) {
-        handleSubmitRef.current(createFakeSubmitEvent());
-      }
-    }, 0);
-  }, [setChatMessages]);
+      // Defer submit to next tick so the command text is reflected in UI before dispatching.
+      setTimeout(() => {
+        if (handleSubmitRef.current) {
+          handleSubmitRef.current(createFakeSubmitEvent());
+        }
+      }, 0);
+    },
+    [setChatMessages]
+  );
 
   const executeCommand = useCallback(
     async (command: SlashCommand, rawInput?: string) => {
@@ -281,15 +286,21 @@ export function useChatComposerState({
       try {
         const effectiveInput = rawInput ?? input;
         const commandMatch = effectiveInput.match(new RegExp(`${escapeRegExp(command.name)}\\s*(.*)`));
-        const args =
-          commandMatch && commandMatch[1] ? commandMatch[1].trim().split(/\s+/) : [];
+        const args = commandMatch && commandMatch[1] ? commandMatch[1].trim().split(/\s+/) : [];
 
         const context = {
           projectPath: selectedProject.fullPath || selectedProject.path,
           projectName: selectedProject.name,
           sessionId: currentSessionId,
           provider,
-          model: provider === 'cursor' ? cursorModel : provider === 'codex' ? codexModel : provider === 'gemini' ? geminiModel : claudeModel,
+          model:
+            provider === 'cursor'
+              ? cursorModel
+              : provider === 'codex'
+                ? codexModel
+                : provider === 'gemini'
+                  ? geminiModel
+                  : claudeModel,
           tokenUsage: tokenBudget,
         };
 
@@ -327,7 +338,7 @@ export function useChatComposerState({
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
-        console.error('Error executing command:', error);
+        logger.error('Error executing command', error);
         setChatMessages((previous) => [
           ...previous,
           {
@@ -351,7 +362,7 @@ export function useChatComposerState({
       selectedProject,
       setChatMessages,
       tokenBudget,
-    ],
+    ]
   );
 
   const {
@@ -402,7 +413,7 @@ export function useChatComposerState({
     const validFiles = files.filter((file) => {
       try {
         if (!file || typeof file !== 'object') {
-          console.warn('Invalid file object:', file);
+          logger.warn('Invalid file object', { file });
           return false;
         }
 
@@ -422,7 +433,7 @@ export function useChatComposerState({
 
         return true;
       } catch (error) {
-        console.error('Error validating file:', error, file);
+        logger.error('Error validating file', error, { file });
         return false;
       }
     });
@@ -454,7 +465,7 @@ export function useChatComposerState({
         }
       }
     },
-    [handleImageFiles],
+    [handleImageFiles]
   );
 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
@@ -469,9 +480,7 @@ export function useChatComposerState({
   });
 
   const handleSubmit = useCallback(
-    async (
-      event: FormEvent<HTMLFormElement> | MouseEvent | TouchEvent | KeyboardEvent<HTMLTextAreaElement>,
-    ) => {
+    async (event: FormEvent<HTMLFormElement> | MouseEvent | TouchEvent | KeyboardEvent<HTMLTextAreaElement>) => {
       event.preventDefault();
       const currentInput = inputValueRef.current;
       if (!currentInput.trim() || isLoading || !selectedProject) {
@@ -501,7 +510,9 @@ export function useChatComposerState({
       }
 
       let messageContent = currentInput;
-      const selectedThinkingMode = thinkingModes.find((mode: { id: string; prefix?: string }) => mode.id === thinkingMode);
+      const selectedThinkingMode = thinkingModes.find(
+        (mode: { id: string; prefix?: string }) => mode.id === thinkingMode
+      );
       if (selectedThinkingMode && selectedThinkingMode.prefix) {
         messageContent = `${selectedThinkingMode.prefix}: ${currentInput}`;
       }
@@ -528,7 +539,7 @@ export function useChatComposerState({
           uploadedImages = result.images;
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Unknown error';
-          console.error('Image upload failed:', error);
+          logger.error('Image upload failed', error);
           setChatMessages((previous) => [
             ...previous,
             {
@@ -560,8 +571,7 @@ export function useChatComposerState({
       setIsUserScrolledUp(false);
       setTimeout(() => scrollToBottom(), 100);
 
-      const effectiveSessionId =
-        currentSessionId || selectedSession?.id || sessionStorage.getItem('cursorSessionId');
+      const effectiveSessionId = currentSessionId || selectedSession?.id || sessionStorage.getItem('cursorSessionId');
       const sessionToActivate = effectiveSessionId || `new-session-${Date.now()}`;
 
       if (!effectiveSessionId && !selectedSession?.id) {
@@ -591,7 +601,7 @@ export function useChatComposerState({
             return JSON.parse(savedSettings);
           }
         } catch (error) {
-          console.error('Error loading tools settings:', error);
+          logger.error('Error loading tools settings', error);
         }
 
         return {
@@ -706,7 +716,7 @@ export function useChatComposerState({
       setIsUserScrolledUp,
       slashCommands,
       thinkingMode,
-    ],
+    ]
   );
 
   useEffect(() => {
@@ -778,7 +788,7 @@ export function useChatComposerState({
 
       handleCommandInputChange(newValue, cursorPos);
     },
-    [handleCommandInputChange, resetCommandMenuState, setCursorPosition],
+    [handleCommandInputChange, resetCommandMenuState, setCursorPosition]
   );
 
   const handleKeyDown = useCallback(
@@ -819,14 +829,14 @@ export function useChatComposerState({
       sendByCtrlEnter,
       showCommandMenu,
       showFileDropdown,
-    ],
+    ]
   );
 
   const handleTextareaClick = useCallback(
     (event: MouseEvent<HTMLTextAreaElement>) => {
       setCursorPosition(event.currentTarget.selectionStart);
     },
-    [setCursorPosition],
+    [setCursorPosition]
   );
 
   const handleTextareaInput = useCallback(
@@ -840,7 +850,7 @@ export function useChatComposerState({
       const lineHeight = parseInt(window.getComputedStyle(target).lineHeight);
       setIsTextareaExpanded(target.scrollHeight > lineHeight * 2);
     },
-    [setCursorPosition, syncInputOverlayScroll],
+    [setCursorPosition, syncInputOverlayScroll]
   );
 
   const handleClearInput = useCallback(() => {
@@ -859,10 +869,8 @@ export function useChatComposerState({
       return;
     }
 
-    const pendingSessionId =
-      typeof window !== 'undefined' ? sessionStorage.getItem('pendingSessionId') : null;
-    const cursorSessionId =
-      typeof window !== 'undefined' ? sessionStorage.getItem('cursorSessionId') : null;
+    const pendingSessionId = typeof window !== 'undefined' ? sessionStorage.getItem('pendingSessionId') : null;
+    const cursorSessionId = typeof window !== 'undefined' ? sessionStorage.getItem('cursorSessionId') : null;
 
     const candidateSessionIds = [
       currentSessionId,
@@ -876,7 +884,7 @@ export function useChatComposerState({
       candidateSessionIds.find((sessionId) => Boolean(sessionId) && !isTemporarySessionId(sessionId)) || null;
 
     if (!targetSessionId) {
-      console.warn('Abort requested but no concrete session ID is available yet.');
+      logger.warn('Abort requested but no concrete session ID is available yet');
       return;
     }
 
@@ -918,13 +926,13 @@ export function useChatComposerState({
       }
       return grantClaudeToolPermission(suggestion.entry);
     },
-    [provider],
+    [provider]
   );
 
   const handlePermissionDecision = useCallback(
     (
       requestIds: string | string[],
-      decision: { allow?: boolean; message?: string; rememberEntry?: string | null; updatedInput?: unknown },
+      decision: { allow?: boolean; message?: string; rememberEntry?: string | null; updatedInput?: unknown }
     ) => {
       const ids = Array.isArray(requestIds) ? requestIds : [requestIds];
       const validIds = ids.filter(Boolean);
@@ -951,7 +959,7 @@ export function useChatComposerState({
         return next;
       });
     },
-    [sendMessage, setClaudeStatus, setPendingPermissionRequests],
+    [sendMessage, setClaudeStatus, setPendingPermissionRequests]
   );
 
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -961,7 +969,7 @@ export function useChatComposerState({
       setIsInputFocused(focused);
       onInputFocusChange?.(focused);
     },
-    [onInputFocusChange],
+    [onInputFocusChange]
   );
 
   return {

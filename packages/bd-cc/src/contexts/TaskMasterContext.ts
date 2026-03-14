@@ -1,6 +1,3 @@
-export {
-  TaskMasterProvider,
-  useTaskMaster,
-} from '../components/task-master/context/TaskMasterContext';
+export { TaskMasterProvider, useTaskMaster } from '../features/task-master/ui/context/TaskMasterContext';
 
-export { default } from '../components/task-master/context/TaskMasterContext';
+export { default } from '../features/task-master/ui/context/TaskMasterContext';

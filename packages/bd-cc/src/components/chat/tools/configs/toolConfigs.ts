@@ -1,7 +1,11 @@
 /**
  * Centralized tool configuration registry
- * Defines display behavior for all tool types 
+ * Defines display behavior for all tool types
  */
+
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('toolConfigs');
 
 export interface ToolDisplayConfig {
   input: {
@@ -60,13 +64,13 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
         secondary: 'text-gray-400',
         background: '',
         border: 'border-green-500 dark:border-green-400',
-        icon: 'text-green-500 dark:text-green-400'
-      }
+        icon: 'text-green-500 dark:text-green-400',
+      },
     },
     result: {
       hideOnSuccess: true,
-      type: 'special'
-    }
+      type: 'special',
+    },
   },
 
   // ============================================================================
@@ -83,12 +87,12 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
         primary: 'text-gray-700 dark:text-gray-300',
         background: '',
         border: 'border-gray-300 dark:border-gray-600',
-        icon: 'text-gray-500 dark:text-gray-400'
-      }
+        icon: 'text-gray-500 dark:text-gray-400',
+      },
     },
     result: {
-      hidden: true
-    }
+      hidden: true,
+    },
   },
 
   Edit: {
@@ -106,12 +110,12 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
         newContent: input.new_string,
         filePath: input.file_path,
         badge: 'Edit',
-        badgeColor: 'gray'
-      })
+        badgeColor: 'gray',
+      }),
     },
     result: {
-      hideOnSuccess: true
-    }
+      hideOnSuccess: true,
+    },
   },
 
   Write: {
@@ -129,12 +133,12 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
         newContent: input.content,
         filePath: input.file_path,
         badge: 'New',
-        badgeColor: 'green'
-      })
+        badgeColor: 'green',
+      }),
     },
     result: {
-      hideOnSuccess: true
-    }
+      hideOnSuccess: true,
+    },
   },
 
   ApplyPatch: {
@@ -152,12 +156,12 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
         newContent: input.new_string,
         filePath: input.file_path,
         badge: 'Patch',
-        badgeColor: 'gray'
-      })
+        badgeColor: 'gray',
+      }),
     },
     result: {
-      hideOnSuccess: true
-    }
+      hideOnSuccess: true,
+    },
   },
 
   // ============================================================================
@@ -169,15 +173,15 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
       type: 'one-line',
       label: 'Grep',
       getValue: (input) => input.pattern,
-      getSecondary: (input) => input.path ? `in ${input.path}` : undefined,
+      getSecondary: (input) => (input.path ? `in ${input.path}` : undefined),
       action: 'jump-to-results',
       colorScheme: {
         primary: 'text-gray-700 dark:text-gray-300',
         secondary: 'text-gray-500 dark:text-gray-400',
         background: '',
         border: 'border-gray-400 dark:border-gray-500',
-        icon: 'text-gray-500 dark:text-gray-400'
-      }
+        icon: 'text-gray-500 dark:text-gray-400',
+      },
     },
     result: {
       type: 'collapsible',
@@ -191,10 +195,10 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
       getContentProps: (result) => {
         const toolData = result.toolUseResult || {};
         return {
-          files: toolData.filenames || []
+          files: toolData.filenames || [],
         };
-      }
-    }
+      },
+    },
   },
 
   Glob: {
@@ -202,15 +206,15 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
       type: 'one-line',
       label: 'Glob',
       getValue: (input) => input.pattern,
-      getSecondary: (input) => input.path ? `in ${input.path}` : undefined,
+      getSecondary: (input) => (input.path ? `in ${input.path}` : undefined),
       action: 'jump-to-results',
       colorScheme: {
         primary: 'text-gray-700 dark:text-gray-300',
         secondary: 'text-gray-500 dark:text-gray-400',
         background: '',
         border: 'border-gray-400 dark:border-gray-500',
-        icon: 'text-gray-500 dark:text-gray-400'
-      }
+        icon: 'text-gray-500 dark:text-gray-400',
+      },
     },
     result: {
       type: 'collapsible',
@@ -224,10 +228,10 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
       getContentProps: (result) => {
         const toolData = result.toolUseResult || {};
         return {
-          files: toolData.filenames || []
+          files: toolData.filenames || [],
         };
-      }
-    }
+      },
+    },
   },
 
   // ============================================================================
@@ -241,14 +245,14 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
       defaultOpen: false,
       contentType: 'todo-list',
       getContentProps: (input) => ({
-        todos: input.todos
-      })
+        todos: input.todos,
+      }),
     },
     result: {
       type: 'collapsible',
       contentType: 'success-message',
-      getMessage: () => 'Todo list updated'
-    }
+      getMessage: () => 'Todo list updated',
+    },
   },
 
   TodoRead: {
@@ -259,8 +263,8 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
       action: 'none',
       colorScheme: {
         primary: 'text-gray-500 dark:text-gray-400',
-        border: 'border-violet-400 dark:border-violet-500'
-      }
+        border: 'border-violet-400 dark:border-violet-500',
+      },
     },
     result: {
       type: 'collapsible',
@@ -274,11 +278,11 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
           }
           return { todos, isResult: true };
         } catch (e) {
-          console.warn('Failed to parse todo list content:', e);
+          logger.warn('Failed to parse todo list content:', e);
           return { todos: [], isResult: true };
         }
-      }
-    }
+      },
+    },
   },
 
   // ============================================================================
@@ -295,12 +299,12 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
       colorScheme: {
         primary: 'text-gray-700 dark:text-gray-300',
         border: 'border-violet-400 dark:border-violet-500',
-        icon: 'text-violet-500 dark:text-violet-400'
-      }
+        icon: 'text-violet-500 dark:text-violet-400',
+      },
     },
     result: {
-      hideOnSuccess: true
-    }
+      hideOnSuccess: true,
+    },
   },
 
   TaskUpdate: {
@@ -318,12 +322,12 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
       colorScheme: {
         primary: 'text-gray-700 dark:text-gray-300',
         border: 'border-violet-400 dark:border-violet-500',
-        icon: 'text-violet-500 dark:text-violet-400'
-      }
+        icon: 'text-violet-500 dark:text-violet-400',
+      },
     },
     result: {
-      hideOnSuccess: true
-    }
+      hideOnSuccess: true,
+    },
   },
 
   TaskList: {
@@ -335,8 +339,8 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
       colorScheme: {
         primary: 'text-gray-500 dark:text-gray-400',
         border: 'border-violet-400 dark:border-violet-500',
-        icon: 'text-violet-500 dark:text-violet-400'
-      }
+        icon: 'text-violet-500 dark:text-violet-400',
+      },
     },
     result: {
       type: 'collapsible',
@@ -344,22 +348,22 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
       title: 'Task list',
       contentType: 'task',
       getContentProps: (result) => ({
-        content: String(result?.content || '')
-      })
-    }
+        content: String(result?.content || ''),
+      }),
+    },
   },
 
   TaskGet: {
     input: {
       type: 'one-line',
       label: 'Task',
-      getValue: (input) => input.taskId ? `#${input.taskId}` : 'fetching',
+      getValue: (input) => (input.taskId ? `#${input.taskId}` : 'fetching'),
       action: 'none',
       colorScheme: {
         primary: 'text-gray-700 dark:text-gray-300',
         border: 'border-violet-400 dark:border-violet-500',
-        icon: 'text-violet-500 dark:text-violet-400'
-      }
+        icon: 'text-violet-500 dark:text-violet-400',
+      },
     },
     result: {
       type: 'collapsible',
@@ -367,9 +371,9 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
       title: 'Task details',
       contentType: 'task',
       getContentProps: (result) => ({
-        content: String(result?.content || '')
-      })
-    }
+        content: String(result?.content || ''),
+      }),
+    },
   },
 
   // ============================================================================
@@ -389,13 +393,11 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
       getContentProps: (input) => {
         // If only prompt exists (and required fields), show just the prompt
         // Otherwise show all available fields
-        const hasOnlyPrompt = input.prompt &&
-          !input.model &&
-          !input.resume;
+        const hasOnlyPrompt = input.prompt && !input.model && !input.resume;
 
         if (hasOnlyPrompt) {
           return {
-            content: input.prompt || ''
+            content: input.prompt || '',
           };
         }
 
@@ -415,13 +417,13 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
         }
 
         return {
-          content: parts.join('\n\n')
+          content: parts.join('\n\n'),
         };
       },
       colorScheme: {
         border: 'border-purple-500 dark:border-purple-400',
-        icon: 'text-purple-500 dark:text-purple-400'
-      }
+        icon: 'text-purple-500 dark:text-purple-400',
+      },
     },
     result: {
       type: 'collapsible',
@@ -456,8 +458,8 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
         }
         // Fallback to string representation
         return { content: String(result || 'No response') };
-      }
-    }
+      },
+    },
   },
 
   // ============================================================================
@@ -480,12 +482,12 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
       contentType: 'question-answer',
       getContentProps: (input: any) => ({
         questions: input.questions || [],
-        answers: input.answers || {}
+        answers: input.answers || {},
       }),
     },
     result: {
-      hideOnSuccess: true
-    }
+      hideOnSuccess: true,
+    },
   },
 
   // ============================================================================
@@ -499,8 +501,8 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
       defaultOpen: true,
       contentType: 'markdown',
       getContentProps: (input) => ({
-        content: input.plan?.replace(/\\n/g, '\n') || input.plan
-      })
+        content: input.plan?.replace(/\\n/g, '\n') || input.plan,
+      }),
     },
     result: {
       type: 'collapsible',
@@ -512,14 +514,14 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
             parsed = JSON.parse(parsed);
           }
           return {
-            content: parsed.plan?.replace(/\\n/g, '\n') || parsed.plan
+            content: parsed.plan?.replace(/\\n/g, '\n') || parsed.plan,
           };
         } catch (e) {
-          console.warn('Failed to parse plan content:', e);
+          logger.warn('Failed to parse plan content:', e);
           return { content: '' };
         }
-      }
-    }
+      },
+    },
   },
 
   // Also register as ExitPlanMode (the actual tool name used by Claude)
@@ -530,8 +532,8 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
       defaultOpen: true,
       contentType: 'markdown',
       getContentProps: (input) => ({
-        content: input.plan?.replace(/\\n/g, '\n') || input.plan
-      })
+        content: input.plan?.replace(/\\n/g, '\n') || input.plan,
+      }),
     },
     result: {
       type: 'collapsible',
@@ -543,14 +545,14 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
             parsed = JSON.parse(parsed);
           }
           return {
-            content: parsed.plan?.replace(/\\n/g, '\n') || parsed.plan
+            content: parsed.plan?.replace(/\\n/g, '\n') || parsed.plan,
           };
         } catch (e) {
-          console.warn('Failed to parse plan content:', e);
+          logger.warn('Failed to parse plan content:', e);
           return { content: '' };
         }
-      }
-    }
+      },
+    },
   },
 
   // ============================================================================
@@ -565,18 +567,18 @@ export const TOOL_CONFIGS: Record<string, ToolDisplayConfig> = {
       contentType: 'text',
       getContentProps: (input) => ({
         content: typeof input === 'string' ? input : JSON.stringify(input, null, 2),
-        format: 'code'
-      })
+        format: 'code',
+      }),
     },
     result: {
       type: 'collapsible',
       contentType: 'text',
       getContentProps: (result) => ({
         content: String(result?.content || ''),
-        format: 'plain'
-      })
-    }
-  }
+        format: 'plain',
+      }),
+    },
+  },
 };
 
 /**

@@ -14,6 +14,9 @@
  */
 
 import { Codex } from '@openai/codex-sdk';
+import { createLogger } from '../lib/logger.ts';
+
+const logger = createLogger('provider/codex');
 
 // Track active sessions
 const activeCodexSessions = new Map();
@@ -42,8 +45,8 @@ function transformCodexEvent(event) {
             itemType: 'agent_message',
             message: {
               role: 'assistant',
-              content: item.text
-            }
+              content: item.text,
+            },
           };
 
         case 'reasoning':
@@ -53,8 +56,8 @@ function transformCodexEvent(event) {
             message: {
               role: 'assistant',
               content: item.text,
-              isReasoning: true
-            }
+              isReasoning: true,
+            },
           };
 
         case 'command_execution':
@@ -64,7 +67,7 @@ function transformCodexEvent(event) {
             command: item.command,
             output: item.aggregated_output,
             exitCode: item.exit_code,
-            status: item.status
+            status: item.status,
           };
 
         case 'file_change':
@@ -72,7 +75,7 @@ function transformCodexEvent(event) {
             type: 'item',
             itemType: 'file_change',
             changes: item.changes,
-            status: item.status
+            status: item.status,
           };
 
         case 'mcp_tool_call':
@@ -84,21 +87,21 @@ function transformCodexEvent(event) {
             arguments: item.arguments,
             result: item.result,
             error: item.error,
-            status: item.status
+            status: item.status,
           };
 
         case 'web_search':
           return {
             type: 'item',
             itemType: 'web_search',
-            query: item.query
+            query: item.query,
           };
 
         case 'todo_list':
           return {
             type: 'item',
             itemType: 'todo_list',
-            items: item.items
+            items: item.items,
           };
 
         case 'error':
@@ -107,51 +110,51 @@ function transformCodexEvent(event) {
             itemType: 'error',
             message: {
               role: 'error',
-              content: item.message
-            }
+              content: item.message,
+            },
           };
 
         default:
           return {
             type: 'item',
             itemType: item.type,
-            item: item
+            item: item,
           };
       }
 
     case 'turn.started':
       return {
-        type: 'turn_started'
+        type: 'turn_started',
       };
 
     case 'turn.completed':
       return {
         type: 'turn_complete',
-        usage: event.usage
+        usage: event.usage,
       };
 
     case 'turn.failed':
       return {
         type: 'turn_failed',
-        error: event.error
+        error: event.error,
       };
 
     case 'thread.started':
       return {
         type: 'thread_started',
-        threadId: event.id
+        threadId: event.id,
       };
 
     case 'error':
       return {
         type: 'error',
-        message: event.message
+        message: event.message,
       };
 
     default:
       return {
         type: event.type,
-        data: event
+        data: event,
       };
   }
 }
@@ -166,18 +169,18 @@ function mapPermissionModeToCodexOptions(permissionMode) {
     case 'acceptEdits':
       return {
         sandboxMode: 'workspace-write',
-        approvalPolicy: 'never'
+        approvalPolicy: 'never',
       };
     case 'bypassPermissions':
       return {
         sandboxMode: 'danger-full-access',
-        approvalPolicy: 'never'
+        approvalPolicy: 'never',
       };
     case 'default':
     default:
       return {
         sandboxMode: 'workspace-write',
-        approvalPolicy: 'untrusted'
+        approvalPolicy: 'untrusted',
       };
   }
 }
@@ -189,13 +192,7 @@ function mapPermissionModeToCodexOptions(permissionMode) {
  * @param {WebSocket|object} ws - WebSocket connection or response writer
  */
 export async function queryCodex(command, options = {}, ws) {
-  const {
-    sessionId,
-    cwd,
-    projectPath,
-    model,
-    permissionMode = 'default'
-  } = options;
+  const { sessionId, cwd, projectPath, model, permissionMode = 'default' } = options;
 
   const workingDirectory = cwd || projectPath || process.cwd();
   const { sandboxMode, approvalPolicy } = mapPermissionModeToCodexOptions(permissionMode);
@@ -215,7 +212,7 @@ export async function queryCodex(command, options = {}, ws) {
       skipGitRepoCheck: true,
       sandboxMode,
       approvalPolicy,
-      model
+      model,
     };
 
     // Start or resume thread
@@ -234,19 +231,19 @@ export async function queryCodex(command, options = {}, ws) {
       codex,
       status: 'running',
       abortController,
-      startedAt: new Date().toISOString()
+      startedAt: new Date().toISOString(),
     });
 
     // Send session created event
     sendMessage(ws, {
       type: 'session-created',
       sessionId: currentSessionId,
-      provider: 'codex'
+      provider: 'codex',
     });
 
     // Execute with streaming
     const streamedTurn = await thread.runStreamed(command, {
-      signal: abortController.signal
+      signal: abortController.signal,
     });
 
     for await (const event of streamedTurn.events) {
@@ -265,7 +262,7 @@ export async function queryCodex(command, options = {}, ws) {
       sendMessage(ws, {
         type: 'codex-response',
         data: transformed,
-        sessionId: currentSessionId
+        sessionId: currentSessionId,
       });
 
       // Extract and send token usage if available (normalized to match Claude format)
@@ -275,9 +272,9 @@ export async function queryCodex(command, options = {}, ws) {
           type: 'token-budget',
           data: {
             used: totalTokens,
-            total: 200000 // Default context window for Codex models
+            total: 200000, // Default context window for Codex models
           },
-          sessionId: currentSessionId
+          sessionId: currentSessionId,
         });
       }
     }
@@ -286,25 +283,25 @@ export async function queryCodex(command, options = {}, ws) {
     sendMessage(ws, {
       type: 'codex-complete',
       sessionId: currentSessionId,
-      actualSessionId: thread.id
+      actualSessionId: thread.id,
     });
-
   } catch (error) {
     const session = currentSessionId ? activeCodexSessions.get(currentSessionId) : null;
     const wasAborted =
       session?.status === 'aborted' ||
       error?.name === 'AbortError' ||
-      String(error?.message || '').toLowerCase().includes('aborted');
+      String(error?.message || '')
+        .toLowerCase()
+        .includes('aborted');
 
     if (!wasAborted) {
-      console.error('[Codex] Error:', error);
+      logger.error('[Codex] Error:', error);
       sendMessage(ws, {
         type: 'codex-error',
         error: error.message,
-        sessionId: currentSessionId
+        sessionId: currentSessionId,
       });
     }
-
   } finally {
     // Update session status
     if (currentSessionId) {
@@ -332,7 +329,7 @@ export function abortCodexSession(sessionId) {
   try {
     session.abortController?.abort();
   } catch (error) {
-    console.warn(`[Codex] Failed to abort session ${sessionId}:`, error);
+    logger.warn(`[Codex] Failed to abort session ${sessionId}:`, error);
   }
 
   return true;
@@ -360,7 +357,7 @@ export function getActiveCodexSessions() {
       sessions.push({
         id,
         status: session.status,
-        startedAt: session.startedAt
+        startedAt: session.startedAt,
       });
     }
   }
@@ -383,21 +380,24 @@ function sendMessage(ws, data) {
       ws.send(JSON.stringify(data));
     }
   } catch (error) {
-    console.error('[Codex] Error sending message:', error);
+    logger.error('[Codex] Error sending message:', error);
   }
 }
 
 // Clean up old completed sessions periodically
-setInterval(() => {
-  const now = Date.now();
-  const maxAge = 30 * 60 * 1000; // 30 minutes
+setInterval(
+  () => {
+    const now = Date.now();
+    const maxAge = 30 * 60 * 1000; // 30 minutes
 
-  for (const [id, session] of activeCodexSessions.entries()) {
-    if (session.status !== 'running') {
-      const startedAt = new Date(session.startedAt).getTime();
-      if (now - startedAt > maxAge) {
-        activeCodexSessions.delete(id);
+    for (const [id, session] of activeCodexSessions.entries()) {
+      if (session.status !== 'running') {
+        const startedAt = new Date(session.startedAt).getTime();
+        if (now - startedAt > maxAge) {
+          activeCodexSessions.delete(id);
+        }
       }
     }
-  }
-}, 5 * 60 * 1000); // Every 5 minutes
+  },
+  5 * 60 * 1000
+); // Every 5 minutes

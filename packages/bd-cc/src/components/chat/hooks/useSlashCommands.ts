@@ -1,9 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Dispatch, KeyboardEvent, RefObject, SetStateAction } from "react";
-import Fuse from "fuse.js";
-import { authenticatedFetch } from "../../../utils/api";
-import { safeLocalStorage } from "../utils/chatStorage";
-import type { Project } from "../../../types/app";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { Dispatch, KeyboardEvent, RefObject, SetStateAction } from 'react';
+import Fuse from 'fuse.js';
+import { createLogger } from '@/lib/logger';
+import { authenticatedFetch } from '../../../utils/api';
+import { safeLocalStorage } from '../utils/chatStorage';
+import type { Project } from '../../../types/app';
+
+const logger = createLogger('SlashCommands');
 
 const COMMAND_QUERY_DEBOUNCE_MS = 150;
 
@@ -36,7 +39,7 @@ const readCommandHistory = (projectName: string): Record<string, number> => {
   try {
     return JSON.parse(history);
   } catch (error) {
-    console.error("Error parsing command history:", error);
+    logger.error('Error parsing command history', error);
     return {};
   }
 };
@@ -46,7 +49,7 @@ const saveCommandHistory = (projectName: string, history: Record<string, number>
 };
 
 const isPromiseLike = (value: unknown): value is Promise<unknown> =>
-  Boolean(value) && typeof (value as Promise<unknown>).then === "function";
+  Boolean(value) && typeof (value as Promise<unknown>).then === 'function';
 
 export function useSlashCommands({
   selectedProject,
@@ -58,7 +61,7 @@ export function useSlashCommands({
   const [slashCommands, setSlashCommands] = useState<SlashCommand[]>([]);
   const [filteredCommands, setFilteredCommands] = useState<SlashCommand[]>([]);
   const [showCommandMenu, setShowCommandMenu] = useState(false);
-  const [commandQuery, setCommandQuery] = useState("");
+  const [commandQuery, setCommandQuery] = useState('');
   const [selectedCommandIndex, setSelectedCommandIndex] = useState(-1);
   const [slashPosition, setSlashPosition] = useState(-1);
 
@@ -74,7 +77,7 @@ export function useSlashCommands({
   const resetCommandMenuState = useCallback(() => {
     setShowCommandMenu(false);
     setSlashPosition(-1);
-    setCommandQuery("");
+    setCommandQuery('');
     setSelectedCommandIndex(-1);
     clearCommandQueryTimer();
   }, [clearCommandQueryTimer]);
@@ -88,10 +91,10 @@ export function useSlashCommands({
       }
 
       try {
-        const response = await authenticatedFetch("/api/commands/list", {
-          method: "POST",
+        const response = await authenticatedFetch('/api/commands/list', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             projectPath: selectedProject.path,
@@ -99,18 +102,18 @@ export function useSlashCommands({
         });
 
         if (!response.ok) {
-          throw new Error("Failed to fetch commands");
+          throw new Error('Failed to fetch commands');
         }
 
         const data = await response.json();
         const allCommands: SlashCommand[] = [
           ...((data.builtIn || []) as SlashCommand[]).map((command) => ({
             ...command,
-            type: "built-in",
+            type: 'built-in',
           })),
           ...((data.custom || []) as SlashCommand[]).map((command) => ({
             ...command,
-            type: "custom",
+            type: 'custom',
           })),
         ];
 
@@ -123,7 +126,7 @@ export function useSlashCommands({
 
         setSlashCommands(sortedCommands);
       } catch (error) {
-        console.error("Error fetching slash commands:", error);
+        logger.error('Error fetching slash commands', error);
         setSlashCommands([]);
       }
     };
@@ -144,8 +147,8 @@ export function useSlashCommands({
 
     return new Fuse(slashCommands, {
       keys: [
-        { name: "name", weight: 2 },
-        { name: "description", weight: 1 },
+        { name: 'name', weight: 2 },
+        { name: 'description', weight: 1 },
       ],
       threshold: 0.4,
       includeScore: true,
@@ -195,15 +198,15 @@ export function useSlashCommands({
       parsedHistory[command.name] = (parsedHistory[command.name] || 0) + 1;
       saveCommandHistory(selectedProject.name, parsedHistory);
     },
-    [selectedProject],
+    [selectedProject]
   );
 
   const selectCommandFromKeyboard = useCallback(
     (command: SlashCommand) => {
       const textBeforeSlash = input.slice(0, slashPosition);
       const textAfterSlash = input.slice(slashPosition);
-      const spaceIndex = textAfterSlash.indexOf(" ");
-      const textAfterQuery = spaceIndex !== -1 ? textAfterSlash.slice(spaceIndex) : "";
+      const spaceIndex = textAfterSlash.indexOf(' ');
+      const textAfterQuery = spaceIndex !== -1 ? textAfterSlash.slice(spaceIndex) : '';
       const newInput = `${textBeforeSlash}${command.name} ${textAfterQuery}`;
 
       setInput(newInput);
@@ -216,7 +219,7 @@ export function useSlashCommands({
         });
       }
     },
-    [input, slashPosition, setInput, resetCommandMenuState, onExecuteCommand],
+    [input, slashPosition, setInput, resetCommandMenuState, onExecuteCommand]
   );
 
   const handleCommandSelect = useCallback(
@@ -244,13 +247,13 @@ export function useSlashCommands({
         resetCommandMenuState();
       }
     },
-    [selectedProject, trackCommandUsage, onExecuteCommand, resetCommandMenuState],
+    [selectedProject, trackCommandUsage, onExecuteCommand, resetCommandMenuState]
   );
 
   const handleToggleCommandMenu = useCallback(() => {
     const isOpening = !showCommandMenu;
     setShowCommandMenu(isOpening);
-    setCommandQuery("");
+    setCommandQuery('');
     setSelectedCommandIndex(-1);
 
     if (isOpening) {
@@ -296,7 +299,7 @@ export function useSlashCommands({
         setCommandQuery(query);
       }, COMMAND_QUERY_DEBOUNCE_MS);
     },
-    [resetCommandMenuState, clearCommandQueryTimer],
+    [resetCommandMenuState, clearCommandQueryTimer]
   );
 
   const handleCommandMenuKeyDown = useCallback(
@@ -306,7 +309,7 @@ export function useSlashCommands({
       }
 
       if (!filteredCommands.length) {
-        if (event.key === "Escape") {
+        if (event.key === 'Escape') {
           event.preventDefault();
           resetCommandMenuState();
           return true;
@@ -314,23 +317,23 @@ export function useSlashCommands({
         return false;
       }
 
-      if (event.key === "ArrowDown") {
+      if (event.key === 'ArrowDown') {
         event.preventDefault();
         setSelectedCommandIndex((previousIndex) =>
-          previousIndex < filteredCommands.length - 1 ? previousIndex + 1 : 0,
+          previousIndex < filteredCommands.length - 1 ? previousIndex + 1 : 0
         );
         return true;
       }
 
-      if (event.key === "ArrowUp") {
+      if (event.key === 'ArrowUp') {
         event.preventDefault();
         setSelectedCommandIndex((previousIndex) =>
-          previousIndex > 0 ? previousIndex - 1 : filteredCommands.length - 1,
+          previousIndex > 0 ? previousIndex - 1 : filteredCommands.length - 1
         );
         return true;
       }
 
-      if (event.key === "Tab" || event.key === "Enter") {
+      if (event.key === 'Tab' || event.key === 'Enter') {
         event.preventDefault();
         if (selectedCommandIndex >= 0) {
           selectCommandFromKeyboard(filteredCommands[selectedCommandIndex]);
@@ -340,7 +343,7 @@ export function useSlashCommands({
         return true;
       }
 
-      if (event.key === "Escape") {
+      if (event.key === 'Escape') {
         event.preventDefault();
         resetCommandMenuState();
         return true;
@@ -348,14 +351,14 @@ export function useSlashCommands({
 
       return false;
     },
-    [showCommandMenu, filteredCommands, resetCommandMenuState, selectCommandFromKeyboard, selectedCommandIndex],
+    [showCommandMenu, filteredCommands, resetCommandMenuState, selectCommandFromKeyboard, selectedCommandIndex]
   );
 
   useEffect(
     () => () => {
       clearCommandQueryTimer();
     },
-    [clearCommandQueryTimer],
+    [clearCommandQueryTimer]
   );
 
   return {

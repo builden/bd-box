@@ -2,10 +2,13 @@ import { useAtom, useSetAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/utils/api';
+import { createLogger } from '@/lib/logger';
 import type { AppSocketMessage, LoadingProgress, Project, ProjectSession, AppTab } from '@/types';
 import { projectsAtom, selectedProjectAtom, selectedSessionAtom, activeTabAtom } from '../primitives/projects-atom';
 import { projectNamesAtom, currentProjectSessionsAtom, hasActiveSessionAtom } from '../domain/project-derived';
 import { calcRemoveProject, calcUpdateProjectSession, calcProjectsHaveChanges } from '../operations/projects-ops';
+
+const logger = createLogger('useProjects');
 
 /**
  * 项目和会话管理 Hook
@@ -57,7 +60,7 @@ export function useProjects() {
           return calcProjectsHaveChanges(prevProjects, projectData, true) ? projectData : prevProjects;
         });
       } catch (error) {
-        console.error('Error fetching projects:', error);
+        logger.error('Error fetching projects', error);
       } finally {
         if (showLoadingState) {
           setIsLoadingProjects(false);
@@ -181,7 +184,7 @@ export function useProjects() {
         calcProjectsHaveChanges(prevProjects, freshProjects, true) ? freshProjects : prevProjects
       );
     } catch (error) {
-      console.error('Error refreshing sidebar:', error);
+      logger.error('Error refreshing sidebar', error);
     }
   }, [setProjects]);
 

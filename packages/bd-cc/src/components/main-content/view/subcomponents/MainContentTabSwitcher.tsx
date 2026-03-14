@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Tooltip, PillBar, Pill } from '../../../../shared/view/ui';
 import type { AppTab } from '../../../../types/app';
 import { usePlugins } from '@/store';
-import PluginIcon from '../../../plugins/view/PluginIcon';
+import PluginIcon from '../../../../features/plugins/ui/PluginIcon';
 
 type MainContentTabSwitcherProps = {
   activeTab: AppTab;

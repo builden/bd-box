@@ -4,12 +4,17 @@ import { authenticateToken } from '../middleware/auth.ts';
 import { getSystemGitConfig } from '../utils/gitConfig.ts';
 import { runCommand } from '../utils/spawn.ts';
 import { validateGitConfig } from '../utils/validation.ts';
+import { createLogger, logApiEntry, logApiExit, logUserAction } from '../lib/logger.ts';
 
 const router = express.Router();
+const logger = createLogger('users');
 
 router.get('/git-config', authenticateToken, async (req, res) => {
+  const startTime = Date.now();
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id;
+    logApiEntry('GET', '/api/users/git-config', { userId });
+
     let gitConfig = userDb.getGitConfig(userId);
 
     // If database is empty, try to get from system git config
@@ -20,33 +25,41 @@ router.get('/git-config', authenticateToken, async (req, res) => {
       if (systemConfig.git_name || systemConfig.git_email) {
         userDb.updateGitConfig(userId, systemConfig.git_name, systemConfig.git_email);
         gitConfig = systemConfig;
-        console.log(
-          `Auto-populated git config from system for user ${userId}: ${systemConfig.git_name} <${systemConfig.git_email}>`
-        );
+        logger.info('Auto-populated git config from system', {
+          userId,
+          gitName: systemConfig.git_name,
+          gitEmail: systemConfig.git_email,
+        });
       }
     }
 
+    logApiExit('GET', '/api/users/git-config', 200, Date.now() - startTime);
     res.json({
       success: true,
       gitName: gitConfig?.git_name || null,
       gitEmail: gitConfig?.git_email || null,
     });
   } catch (error) {
-    console.error('Error getting git config:', error);
+    logger.error('Error getting git config', error as Error);
+    logApiExit('GET', '/api/users/git-config', 500, Date.now() - startTime, error as Error);
     res.status(500).json({ error: 'Failed to get git configuration' });
   }
 });
 
 // Apply git config globally via git config --global
 router.post('/git-config', authenticateToken, async (req, res) => {
+  const startTime = Date.now();
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id;
     const { gitName, gitEmail } = req.body;
+
+    logApiEntry('POST', '/api/users/git-config', { userId, gitName });
 
     // Validate with Zod
     try {
       validateGitConfig({ gitName, gitEmail });
     } catch {
+      logApiExit('POST', '/api/users/git-config', 400, Date.now() - startTime);
       return res.status(400).json({ error: 'Git name and email are required' });
     }
 
@@ -55,48 +68,61 @@ router.post('/git-config', authenticateToken, async (req, res) => {
     try {
       await runCommand('git', ['config', '--global', 'user.name', gitName]);
       await runCommand('git', ['config', '--global', 'user.email', gitEmail]);
-      console.log(`Applied git config globally: ${gitName} <${gitEmail}>`);
+      logger.info('Applied git config globally', { userId, gitName, gitEmail });
     } catch (gitError) {
-      console.error('Error applying git config:', gitError);
+      logger.error('Error applying git config', gitError as Error);
     }
 
+    logApiExit('POST', '/api/users/git-config', 200, Date.now() - startTime);
     res.json({
       success: true,
       gitName,
       gitEmail,
     });
   } catch (error) {
-    console.error('Error updating git config:', error);
+    logger.error('Error updating git config', error as Error);
+    logApiExit('POST', '/api/users/git-config', 500, Date.now() - startTime, error as Error);
     res.status(500).json({ error: 'Failed to update git configuration' });
   }
 });
 
 router.post('/complete-onboarding', authenticateToken, async (req, res) => {
+  const startTime = Date.now();
   try {
-    const userId = req.user.id;
-    userDb.completeOnboarding(userId);
+    const userId = req.user?.id;
+    logApiEntry('POST', '/api/users/complete-onboarding', { userId });
 
+    userDb.completeOnboarding(userId);
+    logUserAction(userId, 'complete_onboarding');
+
+    logApiExit('POST', '/api/users/complete-onboarding', 200, Date.now() - startTime);
     res.json({
       success: true,
       message: 'Onboarding completed successfully',
     });
   } catch (error) {
-    console.error('Error completing onboarding:', error);
+    logger.error('Error completing onboarding', error as Error);
+    logApiExit('POST', '/api/users/complete-onboarding', 500, Date.now() - startTime, error as Error);
     res.status(500).json({ error: 'Failed to complete onboarding' });
   }
 });
 
 router.get('/onboarding-status', authenticateToken, async (req, res) => {
+  const startTime = Date.now();
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id;
+    logApiEntry('GET', '/api/users/onboarding-status', { userId });
+
     const hasCompleted = userDb.hasCompletedOnboarding(userId);
 
+    logApiExit('GET', '/api/users/onboarding-status', 200, Date.now() - startTime);
     res.json({
       success: true,
       hasCompletedOnboarding: hasCompleted,
     });
   } catch (error) {
-    console.error('Error checking onboarding status:', error);
+    logger.error('Error checking onboarding status', error as Error);
+    logApiExit('GET', '/api/users/onboarding-status', 500, Date.now() - startTime, error as Error);
     res.status(500).json({ error: 'Failed to check onboarding status' });
   }
 });

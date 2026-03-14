@@ -1,6 +1,9 @@
 import { Check, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { authenticatedFetch } from '../../../utils/api';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('Onboarding');
 import ProviderLoginModal from '../../provider-auth/view/ProviderLoginModal';
 import AgentConnectionsStep from './subcomponents/AgentConnectionsStep';
 import GitConfigurationStep from './subcomponents/GitConfigurationStep';
@@ -61,7 +64,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         },
       }));
     } catch (caughtError) {
-      console.error(`Error checking ${provider} auth status:`, caughtError);
+      logger.error(`Error checking ${provider} auth status:`, caughtError);
       setProviderStatuses((previous) => ({
         ...previous,
         [provider]: {
@@ -80,7 +83,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
 
   const loadGitConfig = useCallback(async () => {
     try {
-      const response = await authenticatedFetch('/api/user/git-config');
+      const response = await authenticatedFetch('/api/users/git-config');
       if (!response.ok) {
         return;
       }
@@ -93,7 +96,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         setGitEmail(payload.gitEmail);
       }
     } catch (caughtError) {
-      console.error('Error loading git config:', caughtError);
+      logger.error('Error loading git config:', caughtError);
     }
   }, []);
 
@@ -147,7 +150,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
 
     setIsSubmitting(true);
     try {
-      const response = await authenticatedFetch('/api/user/git-config', {
+      const response = await authenticatedFetch('/api/users/git-config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gitName, gitEmail }),
@@ -176,7 +179,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     setErrorMessage('');
 
     try {
-      const response = await authenticatedFetch('/api/user/complete-onboarding', { method: 'POST' });
+      const response = await authenticatedFetch('/api/users/complete-onboarding', { method: 'POST' });
       if (!response.ok) {
         const message = await readErrorMessageFromResponse(response, 'Failed to complete onboarding');
         throw new Error(message);
@@ -190,9 +193,8 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     }
   };
 
-  const isCurrentStepValid = currentStep === 0
-    ? Boolean(gitName.trim() && gitEmail.trim() && gitEmailPattern.test(gitEmail))
-    : true;
+  const isCurrentStepValid =
+    currentStep === 0 ? Boolean(gitName.trim() && gitEmail.trim() && gitEmailPattern.test(gitEmail)) : true;
 
   return (
     <>
@@ -210,10 +212,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                 onGitEmailChange={setGitEmail}
               />
             ) : (
-              <AgentConnectionsStep
-                providerStatuses={providerStatuses}
-                onOpenProviderLogin={handleProviderLoginOpen}
-              />
+              <AgentConnectionsStep providerStatuses={providerStatuses} onOpenProviderLogin={handleProviderLoginOpen} />
             )}
 
             {errorMessage && (

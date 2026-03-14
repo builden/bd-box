@@ -1,15 +1,18 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { IS_PLATFORM } from "../../../constants/config";
-import { api } from "../../../utils/api";
-import { AUTH_ERROR_MESSAGES, AUTH_TOKEN_STORAGE_KEY } from "../constants";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createLogger } from '@/lib/logger';
+import { IS_PLATFORM } from '../../../constants/config';
+
+const logger = createLogger('AuthContext');
+import { api } from '../../../utils/api';
+import { AUTH_ERROR_MESSAGES, AUTH_TOKEN_STORAGE_KEY } from '../constants';
 import type {
   AuthContextValue,
   AuthProviderProps,
   AuthSessionPayload,
   AuthUser,
   OnboardingStatusPayload,
-} from "../types";
-import { parseJsonSafely, resolveApiErrorMessage } from "../utils";
+} from '../types';
+import { parseJsonSafely, resolveApiErrorMessage } from '../utils';
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -24,7 +27,7 @@ const clearStoredToken = () => {
 export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
 
   return context;
@@ -33,10 +36,10 @@ export function useAuth(): AuthContextValue {
 export function AuthProvider({ children }: AuthProviderProps) {
   // 本地应用：默认自动登录，无需手动登录
   const [user, setUser] = useState<AuthUser | null>({
-    id: "local-user",
-    username: "local",
+    id: 'local-user',
+    username: 'local',
   });
-  const [token, setToken] = useState<string | null>("local-token");
+  const [token, setToken] = useState<string | null>('local-token');
   const [isLoading, setIsLoading] = useState(false);
   const [needsSetup, setNeedsSetup] = useState(false);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(true);
@@ -64,7 +67,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const payload = await parseJsonSafely<OnboardingStatusPayload>(response);
       setHasCompletedOnboarding(Boolean(payload?.hasCompletedOnboarding));
     } catch (caughtError) {
-      console.error("Error checking onboarding status:", caughtError);
+      logger.error('Error checking onboarding status:', caughtError);
       // Fail open to avoid blocking access on transient onboarding status errors.
       setHasCompletedOnboarding(true);
     }
@@ -78,7 +81,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // 仅在 IS_PLATFORM 模式下调用后端 API
   useEffect(() => {
     if (IS_PLATFORM) {
-      setUser({ username: "platform-user" });
+      setUser({ username: 'platform-user' });
       setNeedsSetup(false);
       void checkOnboardingStatus().finally(() => {
         setIsLoading(false);
@@ -87,7 +90,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [checkOnboardingStatus]);
 
-  const login = useCallback<AuthContextValue["login"]>(
+  const login = useCallback<AuthContextValue['login']>(
     async (username, password) => {
       try {
         setError(null);
@@ -105,15 +108,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         await checkOnboardingStatus();
         return { success: true };
       } catch (caughtError) {
-        console.error("Login error:", caughtError);
+        logger.error('Login error:', caughtError);
         setError(AUTH_ERROR_MESSAGES.networkError);
         return { success: false, error: AUTH_ERROR_MESSAGES.networkError };
       }
     },
-    [checkOnboardingStatus, setSession],
+    [checkOnboardingStatus, setSession]
   );
 
-  const register = useCallback<AuthContextValue["register"]>(
+  const register = useCallback<AuthContextValue['register']>(
     async (username, password) => {
       try {
         setError(null);
@@ -131,12 +134,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         await checkOnboardingStatus();
         return { success: true };
       } catch (caughtError) {
-        console.error("Registration error:", caughtError);
+        logger.error('Registration error:', caughtError);
         setError(AUTH_ERROR_MESSAGES.networkError);
         return { success: false, error: AUTH_ERROR_MESSAGES.networkError };
       }
     },
-    [checkOnboardingStatus, setSession],
+    [checkOnboardingStatus, setSession]
   );
 
   const logout = useCallback(() => {
@@ -145,7 +148,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     if (tokenToInvalidate) {
       void api.auth.logout().catch((caughtError: unknown) => {
-        console.error("Logout endpoint error:", caughtError);
+        logger.error('Logout endpoint error:', caughtError);
       });
     }
   }, [clearSession, token]);
@@ -174,7 +177,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       register,
       token,
       user,
-    ],
+    ]
   );
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;

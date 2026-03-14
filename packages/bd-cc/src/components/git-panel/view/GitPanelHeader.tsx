@@ -2,6 +2,9 @@ import { Check, ChevronDown, Download, GitBranch, Plus, RefreshCw, RotateCcw, Up
 import { useEffect, useRef, useState } from 'react';
 import type { ConfirmationRequest, GitRemoteStatus } from '../types/types';
 import NewBranchModal from './modals/NewBranchModal';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('GitPanelHeader');
 
 type GitPanelHeaderProps = {
   isMobile: boolean;
@@ -107,7 +110,7 @@ export default function GitPanelHeader({
         setShowBranchDropdown(false);
       }
     } catch (error) {
-      console.error('[GitPanelHeader] Failed to switch branch:', error);
+      logger.error('[GitPanelHeader] Failed to switch branch:', error);
     }
   };
 
@@ -115,13 +118,15 @@ export default function GitPanelHeader({
     try {
       await onFetch();
     } catch (error) {
-      console.error('[GitPanelHeader] Failed to fetch remote changes:', error);
+      logger.error('[GitPanelHeader] Failed to fetch remote changes:', error);
     }
   };
 
   return (
     <>
-      <div className={`flex items-center justify-between border-b border-border/60 ${isMobile ? 'px-3 py-2' : 'px-4 py-3'}`}>
+      <div
+        className={`flex items-center justify-between border-b border-border/60 ${isMobile ? 'px-3 py-2' : 'px-4 py-3'}`}
+      >
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setShowBranchDropdown((previous) => !previous)}
@@ -158,7 +163,9 @@ export default function GitPanelHeader({
                 </span>
               )}
             </span>
-            <ChevronDown className={`h-3 w-3 text-muted-foreground transition-transform ${showBranchDropdown ? 'rotate-180' : ''}`} />
+            <ChevronDown
+              className={`h-3 w-3 text-muted-foreground transition-transform ${showBranchDropdown ? 'rotate-180' : ''}`}
+            />
           </button>
 
           {showBranchDropdown && (
@@ -269,7 +276,9 @@ export default function GitPanelHeader({
             className={`rounded-lg transition-colors hover:bg-accent ${isMobile ? 'p-1' : 'p-1.5'}`}
             title="Refresh git status"
           >
-            <RefreshCw className={`text-muted-foreground ${isLoading ? 'animate-spin' : ''} ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+            <RefreshCw
+              className={`text-muted-foreground ${isLoading ? 'animate-spin' : ''} ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`}
+            />
           </button>
         </div>
       </div>

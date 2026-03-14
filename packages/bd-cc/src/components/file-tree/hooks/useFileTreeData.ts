@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createLogger } from '@/lib/logger';
 import { api } from '../../../utils/api';
 import type { Project } from '../../../types/app';
 import type { FileTreeNode } from '../types/types';
+
+const logger = createLogger('FileTreeData');
 
 type UseFileTreeDataResult = {
   files: FileTreeNode[];
@@ -46,7 +49,7 @@ export function useFileTreeData(selectedProject: Project | null): UseFileTreeDat
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error('File fetch failed:', response.status, errorText);
+          logger.error('File fetch failed:', response.status, errorText);
           if (isActive) {
             setFiles([]);
           }
@@ -62,7 +65,7 @@ export function useFileTreeData(selectedProject: Project | null): UseFileTreeDat
           return;
         }
 
-        console.error('Error fetching files:', error);
+        logger.error('Error fetching files:', error);
         if (isActive) {
           setFiles([]);
         }

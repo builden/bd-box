@@ -1,5 +1,8 @@
 import { spawn } from 'child_process';
 import crossSpawn from 'cross-spawn';
+import { createLogger } from '../lib/logger.ts';
+
+const logger = createLogger('provider/gemini');
 
 // Use cross-spawn on Windows for correct .cmd resolution (same pattern as cursor-cli.js)
 const spawnFunction = process.platform === 'win32' ? crossSpawn : spawn;
@@ -195,7 +198,7 @@ async function spawnGemini(command, options = {}, ws) {
         }
       }
     } catch (error) {
-      console.error('Error processing images for Gemini:', error);
+      logger.error('Error processing images for Gemini:', error);
     }
   }
 
@@ -258,8 +261,7 @@ async function spawnGemini(command, options = {}, ws) {
 
   // Try to find gemini in PATH first, then fall back to environment variable
   const geminiPath = process.env.GEMINI_PATH || 'gemini';
-  console.log('Spawning Gemini CLI:', geminiPath, args.join(' '));
-  console.log('Working directory:', workingDir);
+  logger.info('Spawning Gemini CLI:', { geminiPath, args, workingDir });
 
   let spawnCmd = geminiPath;
   let spawnArgs = args;

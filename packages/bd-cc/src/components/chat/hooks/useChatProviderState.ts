@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createLogger } from '@/lib/logger';
 import { authenticatedFetch } from '../../../utils/api';
 import { CLAUDE_MODELS, CODEX_MODELS, CURSOR_MODELS, GEMINI_MODELS } from '../../../../shared/modelConstants';
 import type { PendingPermissionRequest, PermissionMode } from '../types/types';
 import type { ProjectSession, SessionProvider } from '../../../types/app';
+
+const logger = createLogger('ChatProviderState');
 
 interface UseChatProviderStateArgs {
   selectedSession: ProjectSession | null;
@@ -57,7 +60,7 @@ export function useChatProviderState({ selectedSession }: UseChatProviderStateAr
 
   useEffect(() => {
     setPendingPermissionRequests((previous) =>
-      previous.filter((request) => !request.sessionId || request.sessionId === selectedSession?.id),
+      previous.filter((request) => !request.sessionId || request.sessionId === selectedSession?.id)
     );
   }, [selectedSession?.id]);
 
@@ -79,7 +82,7 @@ export function useChatProviderState({ selectedSession }: UseChatProviderStateAr
         }
       })
       .catch((error) => {
-        console.error('Error loading Cursor config:', error);
+        logger.error('Error loading Cursor config', error);
       });
   }, [provider]);
 

@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { authenticatedFetch } from '../../../utils/api';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('useGitSettings');
 
 type GitConfigResponse = {
   gitName?: string;
@@ -28,16 +31,16 @@ export function useGitSettings() {
   const loadGitConfig = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await authenticatedFetch('/api/user/git-config');
+      const response = await authenticatedFetch('/api/users/git-config');
       if (!response.ok) {
         return;
       }
 
-      const data = await response.json() as GitConfigResponse;
+      const data = (await response.json()) as GitConfigResponse;
       setGitName(data.gitName || '');
       setGitEmail(data.gitEmail || '');
     } catch (error) {
-      console.error('Error loading git config:', error);
+      logger.error('Error loading git config', error);
     } finally {
       setIsLoading(false);
     }
@@ -46,7 +49,7 @@ export function useGitSettings() {
   const saveGitConfig = useCallback(async () => {
     try {
       setIsSaving(true);
-      const response = await authenticatedFetch('/api/user/git-config', {
+      const response = await authenticatedFetch('/api/users/git-config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ gitName, gitEmail }),
@@ -61,11 +64,11 @@ export function useGitSettings() {
         return;
       }
 
-      const data = await response.json() as GitConfigResponse;
-      console.error('Failed to save git config:', data.error);
+      const data = (await response.json()) as GitConfigResponse;
+      logger.error('Failed to save git config', data.error);
       setSaveStatus('error');
     } catch (error) {
-      console.error('Error saving git config:', error);
+      logger.error('Error saving git config', error);
       setSaveStatus('error');
     } finally {
       setIsSaving(false);
@@ -76,11 +79,14 @@ export function useGitSettings() {
     void loadGitConfig();
   }, [loadGitConfig]);
 
-  useEffect(() => () => {
-    if (clearStatusTimerRef.current !== null) {
-      window.clearTimeout(clearStatusTimerRef.current);
-    }
-  }, []);
+  useEffect(
+    () => () => {
+      if (clearStatusTimerRef.current !== null) {
+        window.clearTimeout(clearStatusTimerRef.current);
+      }
+    },
+    []
+  );
 
   return {
     gitName,

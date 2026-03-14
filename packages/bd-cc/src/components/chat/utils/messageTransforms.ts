@@ -1,8 +1,11 @@
-import type { ChatMessage } from "../types/types";
-import { decodeHtmlEntities, unescapeWithMathProtection } from "./chatFormatting";
+import type { ChatMessage } from '../types/types';
+import { decodeHtmlEntities, unescapeWithMathProtection } from './chatFormatting';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('messageTransforms');
 
 export interface DiffLine {
-  type: "added" | "removed";
+  type: 'added' | 'removed';
   content: string;
   lineNum: number;
 }
@@ -19,11 +22,11 @@ type CursorBlob = {
 const asArray = <T>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);
 
 const normalizeToolInput = (value: unknown): string => {
-  if (value === null || value === undefined || value === "") {
-    return "";
+  if (value === null || value === undefined || value === '') {
+    return '';
   }
 
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     return value;
   }
 
@@ -45,20 +48,20 @@ const CURSOR_INTERNAL_USER_BLOCK_PATTERNS = [
 const extractCursorUserQuery = (rawText: string): string => {
   const userQueryMatches = [...rawText.matchAll(/<user_query>([\s\S]*?)<\/user_query>/gi)];
   if (userQueryMatches.length === 0) {
-    return "";
+    return '';
   }
 
   return userQueryMatches
-    .map((match) => (match[1] || "").trim())
+    .map((match) => (match[1] || '').trim())
     .filter(Boolean)
-    .join("\n")
+    .join('\n')
     .trim();
 };
 
 const sanitizeCursorUserMessageText = (rawText: string): string => {
-  const decodedText = decodeHtmlEntities(rawText || "").trim();
+  const decodedText = decodeHtmlEntities(rawText || '').trim();
   if (!decodedText) {
-    return "";
+    return '';
   }
 
   // Cursor stores user-visible text inside <user_query> and prepends hidden context blocks
@@ -70,7 +73,7 @@ const sanitizeCursorUserMessageText = (rawText: string): string => {
 
   let sanitizedText = decodedText;
   CURSOR_INTERNAL_USER_BLOCK_PATTERNS.forEach((pattern) => {
-    sanitizedText = sanitizedText.replace(pattern, "");
+    sanitizedText = sanitizedText.replace(pattern, '');
   });
 
   return sanitizedText.trim();
@@ -80,16 +83,16 @@ const toAbsolutePath = (projectPath: string, filePath?: string) => {
   if (!filePath) {
     return filePath;
   }
-  return filePath.startsWith("/") ? filePath : `${projectPath}/${filePath}`;
+  return filePath.startsWith('/') ? filePath : `${projectPath}/${filePath}`;
 };
 
 export const calculateDiff = (oldStr: string, newStr: string): DiffLine[] => {
-  const oldLines = oldStr.split("\n");
-  const newLines = newStr.split("\n");
+  const oldLines = oldStr.split('\n');
+  const newLines = newStr.split('\n');
 
   // Use LCS alignment so insertions/deletions don't cascade into a full-file "changed" diff.
   const lcsTable: number[][] = Array.from({ length: oldLines.length + 1 }, () =>
-    new Array<number>(newLines.length + 1).fill(0),
+    new Array<number>(newLines.length + 1).fill(0)
   );
   for (let oldIndex = oldLines.length - 1; oldIndex >= 0; oldIndex -= 1) {
     for (let newIndex = newLines.length - 1; newIndex >= 0; newIndex -= 1) {
@@ -116,22 +119,22 @@ export const calculateDiff = (oldStr: string, newStr: string): DiffLine[] => {
     }
 
     if (lcsTable[oldIndex + 1][newIndex] >= lcsTable[oldIndex][newIndex + 1]) {
-      diffLines.push({ type: "removed", content: oldLine, lineNum: oldIndex + 1 });
+      diffLines.push({ type: 'removed', content: oldLine, lineNum: oldIndex + 1 });
       oldIndex += 1;
       continue;
     }
 
-    diffLines.push({ type: "added", content: newLine, lineNum: newIndex + 1 });
+    diffLines.push({ type: 'added', content: newLine, lineNum: newIndex + 1 });
     newIndex += 1;
   }
 
   while (oldIndex < oldLines.length) {
-    diffLines.push({ type: "removed", content: oldLines[oldIndex], lineNum: oldIndex + 1 });
+    diffLines.push({ type: 'removed', content: oldLines[oldIndex], lineNum: oldIndex + 1 });
     oldIndex += 1;
   }
 
   while (newIndex < newLines.length) {
-    diffLines.push({ type: "added", content: newLines[newIndex], lineNum: newIndex + 1 });
+    diffLines.push({ type: 'added', content: newLines[newIndex], lineNum: newIndex + 1 });
     newIndex += 1;
   }
 
@@ -167,26 +170,26 @@ export const convertCursorSessionMessages = (blobs: CursorBlob[], projectPath: s
   for (let blobIdx = 0; blobIdx < blobs.length; blobIdx += 1) {
     const blob = blobs[blobIdx];
     const content = blob.content;
-    let text = "";
-    let role: ChatMessage["type"] = "assistant";
+    let text = '';
+    let role: ChatMessage['type'] = 'assistant';
     let reasoningText: string | null = null;
 
     try {
       if (content?.role && content?.content) {
-        if (content.role === "system") {
+        if (content.role === 'system') {
           continue;
         }
 
-        if (content.role === "tool") {
+        if (content.role === 'tool') {
           const toolItems = asArray<any>(content.content);
           for (const item of toolItems) {
-            if (item?.type !== "tool-result") {
+            if (item?.type !== 'tool-result') {
               continue;
             }
 
-            const toolName = item.toolName === "ApplyPatch" ? "Edit" : item.toolName || "Unknown Tool";
+            const toolName = item.toolName === 'ApplyPatch' ? 'Edit' : item.toolName || 'Unknown Tool';
             const toolCallId = item.toolCallId || content.id;
-            const result = item.result || "";
+            const result = item.result || '';
 
             if (toolCallId && toolUseMap[toolCallId]) {
               toolUseMap[toolCallId].toolResult = {
@@ -195,8 +198,8 @@ export const convertCursorSessionMessages = (blobs: CursorBlob[], projectPath: s
               };
             } else {
               converted.push({
-                type: "assistant",
-                content: "",
+                type: 'assistant',
+                content: '',
                 timestamp: new Date(Date.now() + blobIdx * 1000),
                 blobId: blob.id,
                 sequence: blob.sequence,
@@ -215,27 +218,27 @@ export const convertCursorSessionMessages = (blobs: CursorBlob[], projectPath: s
           continue;
         }
 
-        role = content.role === "user" ? "user" : "assistant";
+        role = content.role === 'user' ? 'user' : 'assistant';
 
         if (Array.isArray(content.content)) {
           const textParts: string[] = [];
 
           for (const part of content.content) {
-            if (part?.type === "text" && part?.text) {
+            if (part?.type === 'text' && part?.text) {
               textParts.push(decodeHtmlEntities(part.text));
               continue;
             }
 
-            if (part?.type === "reasoning" && part?.text) {
+            if (part?.type === 'reasoning' && part?.text) {
               reasoningText = decodeHtmlEntities(part.text);
               continue;
             }
 
-            if (part?.type === "tool-call" || part?.type === "tool_use") {
+            if (part?.type === 'tool-call' || part?.type === 'tool_use') {
               if (textParts.length > 0 || reasoningText) {
                 converted.push({
                   type: role,
-                  content: textParts.join("\n"),
+                  content: textParts.join('\n'),
                   reasoning: reasoningText ?? undefined,
                   timestamp: new Date(Date.now() + blobIdx * 1000),
                   blobId: blob.id,
@@ -246,20 +249,20 @@ export const convertCursorSessionMessages = (blobs: CursorBlob[], projectPath: s
                 reasoningText = null;
               }
 
-              const toolNameRaw = part.toolName || part.name || "Unknown Tool";
-              const toolName = toolNameRaw === "ApplyPatch" ? "Edit" : toolNameRaw;
+              const toolNameRaw = part.toolName || part.name || 'Unknown Tool';
+              const toolName = toolNameRaw === 'ApplyPatch' ? 'Edit' : toolNameRaw;
               const toolId = part.toolCallId || part.id || `tool_${blobIdx}`;
               let toolInput = part.args || part.input;
 
-              if (toolName === "Edit" && part.args) {
+              if (toolName === 'Edit' && part.args) {
                 if (part.args.patch) {
-                  const patchLines = String(part.args.patch).split("\n");
+                  const patchLines = String(part.args.patch).split('\n');
                   const oldLines: string[] = [];
                   const newLines: string[] = [];
                   let inPatch = false;
 
                   patchLines.forEach((line) => {
-                    if (line.startsWith("@@")) {
+                    if (line.startsWith('@@')) {
                       inPatch = true;
                       return;
                     }
@@ -267,11 +270,11 @@ export const convertCursorSessionMessages = (blobs: CursorBlob[], projectPath: s
                       return;
                     }
 
-                    if (line.startsWith("-")) {
+                    if (line.startsWith('-')) {
                       oldLines.push(line.slice(1));
-                    } else if (line.startsWith("+")) {
+                    } else if (line.startsWith('+')) {
                       newLines.push(line.slice(1));
-                    } else if (line.startsWith(" ")) {
+                    } else if (line.startsWith(' ')) {
                       oldLines.push(line.slice(1));
                       newLines.push(line.slice(1));
                     }
@@ -279,18 +282,18 @@ export const convertCursorSessionMessages = (blobs: CursorBlob[], projectPath: s
 
                   toolInput = {
                     file_path: toAbsolutePath(projectPath, part.args.file_path),
-                    old_string: oldLines.join("\n") || part.args.patch,
-                    new_string: newLines.join("\n") || part.args.patch,
+                    old_string: oldLines.join('\n') || part.args.patch,
+                    new_string: newLines.join('\n') || part.args.patch,
                   };
                 } else {
                   toolInput = part.args;
                 }
-              } else if (toolName === "Read" && part.args) {
+              } else if (toolName === 'Read' && part.args) {
                 const filePath = part.args.path || part.args.file_path;
                 toolInput = {
                   file_path: toAbsolutePath(projectPath, filePath),
                 };
-              } else if (toolName === "Write" && part.args) {
+              } else if (toolName === 'Write' && part.args) {
                 const filePath = part.args.path || part.args.file_path;
                 toolInput = {
                   file_path: toAbsolutePath(projectPath, filePath),
@@ -299,8 +302,8 @@ export const convertCursorSessionMessages = (blobs: CursorBlob[], projectPath: s
               }
 
               const toolMessage: ChatMessage = {
-                type: "assistant",
-                content: "",
+                type: 'assistant',
+                content: '',
                 timestamp: new Date(Date.now() + blobIdx * 1000),
                 blobId: blob.id,
                 sequence: blob.sequence,
@@ -316,51 +319,51 @@ export const convertCursorSessionMessages = (blobs: CursorBlob[], projectPath: s
               continue;
             }
 
-            if (typeof part === "string") {
+            if (typeof part === 'string') {
               textParts.push(part);
             }
           }
 
           if (textParts.length > 0) {
-            text = textParts.join("\n");
+            text = textParts.join('\n');
             if (reasoningText && !text) {
               converted.push({
                 type: role,
-                content: "",
+                content: '',
                 reasoning: reasoningText,
                 timestamp: new Date(Date.now() + blobIdx * 1000),
                 blobId: blob.id,
                 sequence: blob.sequence,
                 rowid: blob.rowid,
               });
-              text = "";
+              text = '';
             }
           } else {
-            text = "";
+            text = '';
           }
-        } else if (typeof content.content === "string") {
+        } else if (typeof content.content === 'string') {
           text = content.content;
         }
       } else if (content?.message?.role && content?.message?.content) {
-        if (content.message.role === "system") {
+        if (content.message.role === 'system') {
           continue;
         }
 
-        role = content.message.role === "user" ? "user" : "assistant";
+        role = content.message.role === 'user' ? 'user' : 'assistant';
         if (Array.isArray(content.message.content)) {
           text = content.message.content
-            .map((part: any) => (typeof part === "string" ? part : part?.text || ""))
+            .map((part: any) => (typeof part === 'string' ? part : part?.text || ''))
             .filter(Boolean)
-            .join("\n");
-        } else if (typeof content.message.content === "string") {
+            .join('\n');
+        } else if (typeof content.message.content === 'string') {
           text = content.message.content;
         }
       }
     } catch (error) {
-      console.log("Error parsing blob content:", error);
+      logger.error('Error parsing blob content:', error);
     }
 
-    if (role === "user") {
+    if (role === 'user') {
       text = sanitizeCursorUserMessageText(text);
     }
 
@@ -401,9 +404,9 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
   >();
 
   rawMessages.forEach((message) => {
-    if (message.message?.role === "user" && Array.isArray(message.message?.content)) {
+    if (message.message?.role === 'user' && Array.isArray(message.message?.content)) {
       message.message.content.forEach((part: any) => {
-        if (part.type !== "tool_result") {
+        if (part.type !== 'tool_result') {
           return;
         }
         toolResults.set(part.tool_use_id, {
@@ -418,17 +421,17 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
   });
 
   rawMessages.forEach((message) => {
-    if (message.message?.role === "user" && message.message?.content) {
+    if (message.message?.role === 'user' && message.message?.content) {
       let content: string;
       if (Array.isArray(message.message.content)) {
         const textParts: string[] = [];
         message.message.content.forEach((part: any) => {
-          if (part.type === "text") {
+          if (part.type === 'text') {
             textParts.push(decodeHtmlEntities(part.text));
           }
         });
-        content = textParts.join("\n");
-      } else if (typeof message.message.content === "string") {
+        content = textParts.join('\n');
+      } else if (typeof message.message.content === 'string') {
         content = decodeHtmlEntities(message.message.content);
       } else {
         content = decodeHtmlEntities(String(message.message.content));
@@ -436,14 +439,14 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
 
       const shouldSkip =
         !content ||
-        content.startsWith("<command-name>") ||
-        content.startsWith("<command-message>") ||
-        content.startsWith("<command-args>") ||
-        content.startsWith("<local-command-stdout>") ||
-        content.startsWith("<system-reminder>") ||
-        content.startsWith("Caveat:") ||
-        content.startsWith("This session is being continued from a previous") ||
-        content.startsWith("[Request interrupted");
+        content.startsWith('<command-name>') ||
+        content.startsWith('<command-message>') ||
+        content.startsWith('<command-args>') ||
+        content.startsWith('<local-command-stdout>') ||
+        content.startsWith('<system-reminder>') ||
+        content.startsWith('Caveat:') ||
+        content.startsWith('This session is being continued from a previous') ||
+        content.startsWith('[Request interrupted');
 
       if (!shouldSkip) {
         // Parse <task-notification> blocks into compact system messages
@@ -451,10 +454,10 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
           /<task-notification>\s*<task-id>[^<]*<\/task-id>\s*<output-file>[^<]*<\/output-file>\s*<status>([^<]*)<\/status>\s*<summary>([^<]*)<\/summary>\s*<\/task-notification>/g;
         const taskNotifMatch = taskNotifRegex.exec(content);
         if (taskNotifMatch) {
-          const status = taskNotifMatch[1]?.trim() || "completed";
-          const summary = taskNotifMatch[2]?.trim() || "Background task finished";
+          const status = taskNotifMatch[1]?.trim() || 'completed';
+          const summary = taskNotifMatch[2]?.trim() || 'Background task finished';
           converted.push({
-            type: "assistant",
+            type: 'assistant',
             content: summary,
             timestamp: message.timestamp || new Date().toISOString(),
             isTaskNotification: true,
@@ -462,7 +465,7 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
           });
         } else {
           converted.push({
-            type: "user",
+            type: 'user',
             content: unescapeWithMathProtection(content),
             timestamp: message.timestamp || new Date().toISOString(),
           });
@@ -471,9 +474,9 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
       return;
     }
 
-    if (message.type === "thinking" && message.message?.content) {
+    if (message.type === 'thinking' && message.message?.content) {
       converted.push({
-        type: "assistant",
+        type: 'assistant',
         content: unescapeWithMathProtection(message.message.content),
         timestamp: message.timestamp || new Date().toISOString(),
         isThinking: true,
@@ -481,10 +484,10 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
       return;
     }
 
-    if (message.type === "tool_use" && message.toolName) {
+    if (message.type === 'tool_use' && message.toolName) {
       converted.push({
-        type: "assistant",
-        content: "",
+        type: 'assistant',
+        content: '',
         timestamp: message.timestamp || new Date().toISOString(),
         isToolUse: true,
         toolName: message.toolName,
@@ -494,7 +497,7 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
       return;
     }
 
-    if (message.type === "tool_result") {
+    if (message.type === 'tool_result') {
       for (let index = converted.length - 1; index >= 0; index -= 1) {
         const convertedMessage = converted[index];
         if (!convertedMessage.isToolUse || convertedMessage.toolResult) {
@@ -502,7 +505,7 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
         }
         if (!message.toolCallId || convertedMessage.toolCallId === message.toolCallId) {
           convertedMessage.toolResult = {
-            content: message.output || "",
+            content: message.output || '',
             isError: false,
           };
           break;
@@ -511,28 +514,28 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
       return;
     }
 
-    if (message.message?.role === "assistant" && message.message?.content) {
+    if (message.message?.role === 'assistant' && message.message?.content) {
       if (Array.isArray(message.message.content)) {
         message.message.content.forEach((part: any) => {
-          if (part.type === "text") {
+          if (part.type === 'text') {
             let text = part.text;
-            if (typeof text === "string") {
+            if (typeof text === 'string') {
               text = unescapeWithMathProtection(text);
             }
             converted.push({
-              type: "assistant",
+              type: 'assistant',
               content: text,
               timestamp: message.timestamp || new Date().toISOString(),
             });
             return;
           }
 
-          if (part.type === "tool_use") {
+          if (part.type === 'tool_use') {
             const toolResult = toolResults.get(part.id);
-            const isSubagentContainer = part.name === "Task";
+            const isSubagentContainer = part.name === 'Task';
 
             // Build child tools from server-provided subagentTools data
-            const childTools: import("../types/types").SubagentChildTool[] = [];
+            const childTools: import('../types/types').SubagentChildTool[] = [];
             if (isSubagentContainer && toolResult?.subagentTools && Array.isArray(toolResult.subagentTools)) {
               for (const tool of toolResult.subagentTools as any[]) {
                 childTools.push({
@@ -546,8 +549,8 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
             }
 
             converted.push({
-              type: "assistant",
-              content: "",
+              type: 'assistant',
+              content: '',
               timestamp: message.timestamp || new Date().toISOString(),
               isToolUse: true,
               toolName: part.name,
@@ -556,7 +559,7 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
               toolResult: toolResult
                 ? {
                     content:
-                      typeof toolResult.content === "string" ? toolResult.content : JSON.stringify(toolResult.content),
+                      typeof toolResult.content === 'string' ? toolResult.content : JSON.stringify(toolResult.content),
                     isError: toolResult.isError,
                     toolUseResult: toolResult.toolUseResult,
                   }
@@ -577,9 +580,9 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
         return;
       }
 
-      if (typeof message.message.content === "string") {
+      if (typeof message.message.content === 'string') {
         converted.push({
-          type: "assistant",
+          type: 'assistant',
           content: unescapeWithMathProtection(message.message.content),
           timestamp: message.timestamp || new Date().toISOString(),
         });

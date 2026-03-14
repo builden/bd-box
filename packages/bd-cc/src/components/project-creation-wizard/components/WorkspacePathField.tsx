@@ -5,6 +5,9 @@ import { browseFilesystemFolders } from '../data/workspaceApi';
 import { getSuggestionRootPath } from '../utils/pathUtils';
 import type { FolderSuggestion, WorkspaceType } from '../types';
 import FolderBrowserModal from './FolderBrowserModal';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('WorkspacePathField');
 
 type WorkspacePathFieldProps = {
   workspaceType: WorkspaceType;
@@ -42,17 +45,14 @@ export default function WorkspacePathField({
         const matchingSuggestions = result.suggestions
           .filter((suggestion) => {
             const normalizedSuggestion = suggestion.path.toLowerCase();
-            return (
-              normalizedSuggestion.startsWith(normalizedInput) &&
-              normalizedSuggestion !== normalizedInput
-            );
+            return normalizedSuggestion.startsWith(normalizedInput) && normalizedSuggestion !== normalizedInput;
           })
           .slice(0, 5);
 
         setPathSuggestions(matchingSuggestions);
         setShowPathDropdown(matchingSuggestions.length > 0);
       } catch (error) {
-        console.error('Failed to load path suggestions:', error);
+        logger.error('Failed to load path suggestions:', error);
       }
     }, 200);
 
@@ -66,7 +66,7 @@ export default function WorkspacePathField({
       onChange(suggestion.path);
       setShowPathDropdown(false);
     },
-    [onChange],
+    [onChange]
   );
 
   const handleFolderSelected = useCallback(
@@ -77,7 +77,7 @@ export default function WorkspacePathField({
         onAdvanceToConfirm();
       }
     },
-    [onAdvanceToConfirm, onChange],
+    [onAdvanceToConfirm, onChange]
   );
 
   return (
@@ -88,11 +88,7 @@ export default function WorkspacePathField({
             type="text"
             value={value}
             onChange={(event) => onChange(event.target.value)}
-            placeholder={
-              workspaceType === 'existing'
-                ? '/path/to/existing/workspace'
-                : '/path/to/new/workspace'
-            }
+            placeholder={workspaceType === 'existing' ? '/path/to/existing/workspace' : '/path/to/new/workspace'}
             className="w-full"
             disabled={disabled}
           />

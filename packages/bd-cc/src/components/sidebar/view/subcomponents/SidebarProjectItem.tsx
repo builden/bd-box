@@ -49,7 +49,21 @@ type SidebarProjectItemProps = {
   t: TFunction;
 };
 
-const getSessionCountDisplay = (sessions: SessionWithProvider[], hasMoreSessions: boolean): string => {
+const getSessionCountDisplay = (
+  sessions: SessionWithProvider[], 
+  hasMoreSessions: boolean,
+  sessionMetaTotal?: number,
+  isExpanded?: boolean
+): string => {
+  // 如果有总数信息，显示总数
+  if (sessionMetaTotal !== undefined && sessionMetaTotal > 0) {
+    if (hasMoreSessions && sessions.length < sessionMetaTotal) {
+      return `${sessionMetaTotal}`;
+    }
+    return `${sessionMetaTotal}`;
+  }
+  
+  // 没有总数信息时，显示实际加载的数量
   const sessionCount = sessions.length;
   if (hasMoreSessions && sessionCount >= 5) {
     return `${sessionCount}+`;
@@ -96,7 +110,7 @@ export default function SidebarProjectItem({
   const isSelected = selectedProject?.name === project.name;
   const isEditing = editingProject === project.name;
   const hasMoreSessions = project.sessionMeta?.hasMore === true;
-  const sessionCountDisplay = getSessionCountDisplay(sessions, hasMoreSessions);
+  const sessionCountDisplay = getSessionCountDisplay(sessions, hasMoreSessions, project.sessionMeta?.total, isExpanded);
   const sessionCountLabel = `${sessionCountDisplay} session${sessions.length === 1 ? '' : 's'}`;
   const taskStatus = getTaskIndicatorStatus(project, mcpServerStatus);
 

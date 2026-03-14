@@ -1,7 +1,7 @@
-export { default as Settings } from './view/Settings';
-export { default as SettingsSidebar } from './view/SettingsSidebar';
-export { default as SettingsCard } from './view/SettingsCard';
-export { default as SettingsRow } from './view/SettingsRow';
-export { default as SettingsSection } from './view/SettingsSection';
-export { default as SettingsToggle } from './view/SettingsToggle';
-export { default as SettingsMainTabs } from './view/SettingsMainTabs';
+export { default as Settings } from '../../features/settings/ui/Settings';
+export { default as SettingsSidebar } from '../../features/settings/ui/SettingsSidebar';
+export { default as SettingsCard } from '../../features/settings/ui/SettingsCard';
+export { default as SettingsRow } from '../../features/settings/ui/SettingsRow';
+export { default as SettingsSection } from '../../features/settings/ui/SettingsSection';
+export { default as SettingsToggle } from '../../features/settings/ui/SettingsToggle';
+export { default as SettingsMainTabs } from '../../features/settings/ui/SettingsMainTabs';

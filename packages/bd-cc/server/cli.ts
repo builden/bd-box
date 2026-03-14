@@ -33,6 +33,9 @@ import path from 'path';
 import os from 'os';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { createLogger } from './lib/logger';
+
+const logger = createLogger('cli');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -247,7 +250,7 @@ async function updatePackage() {
     execSync('npm update -g @siteboon/claude-code-ui', { stdio: 'inherit' });
     console.log(`${c.ok('[OK]')} Update complete! Restart cloudcli to use the new version.`);
   } catch (e) {
-    console.error(`${c.error('[ERROR]')} Update failed: ${e.message}`);
+    logger.error(`Update failed: ${e.message}`);
     console.log(`${c.tip('[TIP]')} Try running manually: npm update -g @siteboon/claude-code-ui`);
   }
 }
@@ -323,7 +326,7 @@ async function main() {
       await updatePackage();
       break;
     default:
-      console.error(`\n❌ Unknown command: ${command}`);
+      logger.error(`Unknown command: ${command}`);
       console.log('   Run "cloudcli help" for usage information.\n');
       process.exit(1);
   }
@@ -332,7 +335,7 @@ async function main() {
 // Run the CLI only when executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch((error) => {
-    console.error('\n❌ Error:', error.message);
+    logger.error('Error:', error);
     process.exit(1);
   });
 }

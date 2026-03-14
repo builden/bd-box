@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTheme } from '@/store';
 import { authenticatedFetch } from '../../../utils/api';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('useSettingsController');
+
 import {
   AUTH_STATUS_ENDPOINTS,
   DEFAULT_AUTH_STATUS,
@@ -266,7 +270,7 @@ export function useSettingsController({ isOpen, initialTab, projects }: UseSetti
           method: data.method,
         });
       } catch (error) {
-        console.error(`Error checking ${provider} auth status:`, error);
+        logger.error(`Error checking ${provider} auth status:`, error);
         setAuthStatusByProvider(provider, {
           authenticated: false,
           email: null,
@@ -282,14 +286,14 @@ export function useSettingsController({ isOpen, initialTab, projects }: UseSetti
     try {
       const response = await authenticatedFetch('/api/cursor/mcp');
       if (!response.ok) {
-        console.error('Failed to fetch Cursor MCP servers');
+        logger.error('Failed to fetch Cursor MCP servers');
         return;
       }
 
       const data = await toResponseJson<{ servers?: McpServer[] }>(response);
       setCursorMcpServers(data.servers || []);
     } catch (error) {
-      console.error('Error fetching Cursor MCP servers:', error);
+      logger.error('Error fetching Cursor MCP servers:', error);
     }
   }, []);
 
@@ -317,7 +321,7 @@ export function useSettingsController({ isOpen, initialTab, projects }: UseSetti
 
       setCodexMcpServers(mapCliServersToMcpServers(cliData.servers));
     } catch (error) {
-      console.error('Error fetching Codex MCP servers:', error);
+      logger.error('Error fetching Codex MCP servers:', error);
     }
   }, []);
 
@@ -343,14 +347,14 @@ export function useSettingsController({ isOpen, initialTab, projects }: UseSetti
 
       const fallbackResponse = await authenticatedFetch('/api/mcp/servers?scope=user');
       if (!fallbackResponse.ok) {
-        console.error('Failed to fetch MCP servers');
+        logger.error('Failed to fetch MCP servers');
         return;
       }
 
       const fallbackData = await toResponseJson<{ servers?: McpServer[] }>(fallbackResponse);
       setMcpServers(fallbackData.servers || []);
     } catch (error) {
-      console.error('Error fetching MCP servers:', error);
+      logger.error('Error fetching MCP servers:', error);
     }
   }, []);
 
@@ -413,7 +417,7 @@ export function useSettingsController({ isOpen, initialTab, projects }: UseSetti
       try {
         await deleteMcpServer(editingServer.id, previousServerScope);
       } catch (error) {
-        console.warn('Saved MCP server update but failed to remove the previous server entry.', {
+        logger.warn('Saved MCP server update but failed to remove the previous server entry.', {
           previousServerId: editingServer.id,
           previousServerScope,
           error: getErrorMessage(error),
@@ -592,7 +596,7 @@ export function useSettingsController({ isOpen, initialTab, projects }: UseSetti
       try {
         await deleteCodexMcpServer(editingServer.name);
       } catch (error) {
-        console.warn('Saved Codex MCP server update but failed to remove the previous server entry.', {
+        logger.warn('Saved Codex MCP server update but failed to remove the previous server entry.', {
           previousServerName: editingServer.name,
           error: getErrorMessage(error),
         });
@@ -660,7 +664,7 @@ export function useSettingsController({ isOpen, initialTab, projects }: UseSetti
 
       await Promise.all([fetchMcpServers(), fetchCursorMcpServers(), fetchCodexMcpServers()]);
     } catch (error) {
-      console.error('Error loading settings:', error);
+      logger.error('Error loading settings:', error);
       setClaudePermissions(createEmptyClaudePermissions());
       setCursorPermissions(createEmptyCursorPermissions());
       setCodexPermissionMode('default');
@@ -731,7 +735,7 @@ export function useSettingsController({ isOpen, initialTab, projects }: UseSetti
 
       setSaveStatus('success');
     } catch (error) {
-      console.error('Error saving settings:', error);
+      logger.error('Error saving settings:', error);
       setSaveStatus('error');
     }
   }, [

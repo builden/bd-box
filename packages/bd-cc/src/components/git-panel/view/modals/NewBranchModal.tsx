@@ -1,5 +1,8 @@
 import { Plus, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('NewBranchModal');
 
 type NewBranchModalProps = {
   isOpen: boolean;
@@ -38,7 +41,7 @@ export default function NewBranchModal({
       }
       return success;
     } catch (error) {
-      console.error('Failed to create branch:', error);
+      logger.error('Failed to create branch:', error);
       return false;
     }
   };

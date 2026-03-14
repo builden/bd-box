@@ -1,6 +1,9 @@
 import jwt from 'jsonwebtoken';
 import { userDb, appConfigDb } from '../database/index.ts';
 import { IS_PLATFORM } from '../env.ts';
+import { createLogger } from '../lib/logger.ts';
+
+const logger = createLogger('auth');
 
 // Use env var if set, otherwise auto-generate a unique secret per installation
 const JWT_SECRET = process.env.JWT_SECRET || appConfigDb.getOrCreateJwtSecret();
@@ -37,7 +40,7 @@ const authenticateToken = async (req, res, next) => {
     req.user = user;
     return next();
   } catch (error) {
-    console.error('Platform mode error:', error);
+    logger.error('Platform mode error:', error);
     return res.status(500).json({ error: 'Platform mode: Failed to fetch user' });
   }
 };
@@ -69,7 +72,7 @@ const authenticateWebSocket = (token) => {
     }
     return null;
   } catch (error) {
-    console.error('Platform mode WebSocket error:', error);
+    logger.error('Platform mode WebSocket error:', error);
     return null;
   }
 };

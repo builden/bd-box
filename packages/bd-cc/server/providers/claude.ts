@@ -18,6 +18,9 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 import { CLAUDE_MODELS } from '../../shared/modelConstants.ts';
+import { createLogger } from '../lib/logger.ts';
+
+const logger = createLogger('provider/claude');
 
 const activeSessions = new Map();
 const pendingToolApprovals = new Map();
@@ -36,7 +39,7 @@ function createRequestId() {
 function waitForToolApproval(requestId, options = {}) {
   const { timeoutMs = TOOL_APPROVAL_TIMEOUT_MS, signal, onCancel, metadata } = options;
 
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     let settled = false;
 
     const finalize = (decision) => {
@@ -154,7 +157,7 @@ function mapCliOptionsToSDK(options = {}) {
   const settings = toolsSettings || {
     allowedTools: [],
     disallowedTools: [],
-    skipPermissions: false
+    skipPermissions: false,
   };
 
   // Handle tool permissions
@@ -194,12 +197,12 @@ function mapCliOptionsToSDK(options = {}) {
   // Map model (default to sonnet)
   // Valid models: sonnet, opus, haiku, opusplan, sonnet[1m]
   sdkOptions.model = options.model || CLAUDE_MODELS.DEFAULT;
-  console.log(`Using model: ${sdkOptions.model}`);
+  logger.info(`Using model: ${sdkOptions.model}`);
 
   // Map system prompt configuration
   sdkOptions.systemPrompt = {
     type: 'preset',
-    preset: 'claude_code'  // Required to use CLAUDE.md
+    preset: 'claude_code', // Required to use CLAUDE.md
   };
 
   // Map setting sources for CLAUDE.md loading
@@ -228,7 +231,7 @@ function addSession(sessionId, queryInstance, tempImagePaths = [], tempDir = nul
     status: 'active',
     tempImagePaths,
     tempDir,
-    writer
+    writer,
   });
 }
 
@@ -267,7 +270,7 @@ function transformMessage(sdkMessage) {
   if (sdkMessage.parent_tool_use_id) {
     return {
       ...sdkMessage,
-      parentToolUseId: sdkMessage.parent_tool_use_id
+      parentToolUseId: sdkMessage.parent_tool_use_id,
     };
   }
   return sdkMessage;
@@ -305,11 +308,13 @@ function extractTokenBudget(resultMessage) {
   // This is the user's budget limit, not the model's context window
   const contextWindow = parseInt(process.env.CONTEXT_WINDOW) || 160000;
 
-  console.log(`Token calculation: input=${inputTokens}, output=${outputTokens}, cache=${cacheReadTokens + cacheCreationTokens}, total=${totalUsed}/${contextWindow}`);
+  logger.info(
+    `Token calculation: input=${inputTokens}, output=${outputTokens}, cache=${cacheReadTokens + cacheCreationTokens}, total=${totalUsed}/${contextWindow}`
+  );
 
   return {
     used: totalUsed,
-    total: contextWindow
+    total: contextWindow,
   };
 }
 
@@ -340,7 +345,7 @@ async function handleImages(command, images, cwd) {
       // Extract base64 data and mime type
       const matches = image.data.match(/^data:([^;]+);base64,(.+)$/);
       if (!matches) {
-        console.error('Invalid image data format');
+        logger.error('Invalid image data format');
         continue;
       }
 
@@ -361,10 +366,10 @@ async function handleImages(command, images, cwd) {
       modifiedCommand = command + imageNote;
     }
 
-    console.log(`Processed ${tempImagePaths.length} images to temp directory: ${tempDir}`);
+    logger.info(`Processed ${tempImagePaths.length} images to temp directory: ${tempDir}`);
     return { modifiedCommand, tempImagePaths, tempDir };
   } catch (error) {
-    console.error('Error processing images for SDK:', error);
+    logger.error('Error processing images for SDK:', error);
     return { modifiedCommand: command, tempImagePaths, tempDir };
   }
 }
@@ -382,21 +387,19 @@ async function cleanupTempFiles(tempImagePaths, tempDir) {
   try {
     // Delete individual temp files
     for (const imagePath of tempImagePaths) {
-      await fs.unlink(imagePath).catch(err =>
-        console.error(`Failed to delete temp image ${imagePath}:`, err)
-      );
+      await fs.unlink(imagePath).catch((err) => logger.error(`Failed to delete temp image ${imagePath}:`, err));
     }
 
     // Delete temp directory
     if (tempDir) {
-      await fs.rm(tempDir, { recursive: true, force: true }).catch(err =>
-        console.error(`Failed to delete temp directory ${tempDir}:`, err)
-      );
+      await fs
+        .rm(tempDir, { recursive: true, force: true })
+        .catch((err) => logger.error(`Failed to delete temp directory ${tempDir}:`, err));
     }
 
-    console.log(`Cleaned up ${tempImagePaths.length} temp image files`);
+    logger.info(`Cleaned up ${tempImagePaths.length} temp image files`);
   } catch (error) {
-    console.error('Error during temp file cleanup:', error);
+    logger.error('Error during temp file cleanup:', error);
   }
 }
 
@@ -414,7 +417,7 @@ async function loadMcpConfig(cwd) {
       await fs.access(claudeConfigPath);
     } catch (error) {
       // File doesn't exist, return null
-      console.log('No ~/.claude.json found, proceeding without MCP servers');
+      logger.info('No ~/.claude.json found, proceeding without MCP servers');
       return null;
     }
 
@@ -424,7 +427,7 @@ async function loadMcpConfig(cwd) {
       const configContent = await fs.readFile(claudeConfigPath, 'utf8');
       claudeConfig = JSON.parse(configContent);
     } catch (error) {
-      console.error('Failed to parse ~/.claude.json:', error.message);
+      logger.error('Failed to parse ~/.claude.json:', error);
       return null;
     }
 
@@ -434,7 +437,7 @@ async function loadMcpConfig(cwd) {
     // Add global MCP servers
     if (claudeConfig.mcpServers && typeof claudeConfig.mcpServers === 'object') {
       mcpServers = { ...claudeConfig.mcpServers };
-      console.log(`Loaded ${Object.keys(mcpServers).length} global MCP servers`);
+      logger.info(`Loaded ${Object.keys(mcpServers).length} global MCP servers`);
     }
 
     // Add/override with project-specific MCP servers
@@ -442,20 +445,20 @@ async function loadMcpConfig(cwd) {
       const projectConfig = claudeConfig.claudeProjects[cwd];
       if (projectConfig && projectConfig.mcpServers && typeof projectConfig.mcpServers === 'object') {
         mcpServers = { ...mcpServers, ...projectConfig.mcpServers };
-        console.log(`Loaded ${Object.keys(projectConfig.mcpServers).length} project-specific MCP servers`);
+        logger.info(`Loaded ${Object.keys(projectConfig.mcpServers).length} project-specific MCP servers`);
       }
     }
 
     // Return null if no servers found
     if (Object.keys(mcpServers).length === 0) {
-      console.log('No MCP servers configured');
+      logger.info('No MCP servers configured');
       return null;
     }
 
-    console.log(`Total MCP servers loaded: ${Object.keys(mcpServers).length}`);
+    logger.info(`Total MCP servers loaded: ${Object.keys(mcpServers).length}`);
     return mcpServers;
   } catch (error) {
-    console.error('Error loading MCP config:', error.message);
+    logger.error('Error loading MCP config:', error);
     return null;
   }
 }
@@ -498,14 +501,14 @@ async function queryClaudeSDK(command, options = {}, ws) {
           return { behavior: 'allow', updatedInput: input };
         }
 
-        const isDisallowed = (sdkOptions.disallowedTools || []).some(entry =>
+        const isDisallowed = (sdkOptions.disallowedTools || []).some((entry) =>
           matchesToolPermission(entry, toolName, input)
         );
         if (isDisallowed) {
           return { behavior: 'deny', message: 'Tool disallowed by settings' };
         }
 
-        const isAllowed = (sdkOptions.allowedTools || []).some(entry =>
+        const isAllowed = (sdkOptions.allowedTools || []).some((entry) =>
           matchesToolPermission(entry, toolName, input)
         );
         if (isAllowed) {
@@ -519,7 +522,7 @@ async function queryClaudeSDK(command, options = {}, ws) {
         requestId,
         toolName,
         input,
-        sessionId: capturedSessionId || sessionId || null
+        sessionId: capturedSessionId || sessionId || null,
       });
 
       const decision = await waitForToolApproval(requestId, {
@@ -536,9 +539,9 @@ async function queryClaudeSDK(command, options = {}, ws) {
             type: 'claude-permission-cancelled',
             requestId,
             reason,
-            sessionId: capturedSessionId || sessionId || null
+            sessionId: capturedSessionId || sessionId || null,
           });
-        }
+        },
       });
       if (!decision) {
         return { behavior: 'deny', message: 'Permission request timed out' };
@@ -554,7 +557,7 @@ async function queryClaudeSDK(command, options = {}, ws) {
             sdkOptions.allowedTools.push(decision.rememberEntry);
           }
           if (Array.isArray(sdkOptions.disallowedTools)) {
-            sdkOptions.disallowedTools = sdkOptions.disallowedTools.filter(entry => entry !== decision.rememberEntry);
+            sdkOptions.disallowedTools = sdkOptions.disallowedTools.filter((entry) => entry !== decision.rememberEntry);
           }
         }
         return { behavior: 'allow', updatedInput: decision.updatedInput ?? input };
@@ -569,7 +572,7 @@ async function queryClaudeSDK(command, options = {}, ws) {
 
     const queryInstance = query({
       prompt: finalCommand,
-      options: sdkOptions
+      options: sdkOptions,
     });
 
     // Restore immediately — Query constructor already captured the value
@@ -585,11 +588,10 @@ async function queryClaudeSDK(command, options = {}, ws) {
     }
 
     // Process streaming messages
-    console.log('Starting async generator loop for session:', capturedSessionId || 'NEW');
+    logger.info('Starting async generator loop for session:', { sessionId: capturedSessionId || 'NEW' });
     for await (const message of queryInstance) {
       // Capture session ID from first message
       if (message.session_id && !capturedSessionId) {
-
         capturedSessionId = message.session_id;
         addSession(capturedSessionId, queryInstance, tempImagePaths, tempDir, ws);
 
@@ -603,13 +605,16 @@ async function queryClaudeSDK(command, options = {}, ws) {
           sessionCreatedSent = true;
           ws.send({
             type: 'session-created',
-            sessionId: capturedSessionId
+            sessionId: capturedSessionId,
           });
         } else {
-          console.log('Not sending session-created. sessionId:', sessionId, 'sessionCreatedSent:', sessionCreatedSent);
+          logger.debug('Not sending session-created', { sessionId, sessionCreatedSent });
         }
       } else {
-        console.log('No session_id in message or already captured. message.session_id:', message.session_id, 'capturedSessionId:', capturedSessionId);
+        logger.debug('No session_id in message or already captured', {
+          messageSessionId: message.session_id,
+          capturedSessionId,
+        });
       }
 
       // Transform and send message to WebSocket
@@ -617,22 +622,22 @@ async function queryClaudeSDK(command, options = {}, ws) {
       ws.send({
         type: 'claude-response',
         data: transformedMessage,
-        sessionId: capturedSessionId || sessionId || null
+        sessionId: capturedSessionId || sessionId || null,
       });
 
       // Extract and send token budget updates from result messages
       if (message.type === 'result') {
         const models = Object.keys(message.modelUsage || {});
         if (models.length > 0) {
-          console.log("---> Model was sent using:", models);
+          logger.debug('Model was sent using:', { models });
         }
         const tokenBudget = extractTokenBudget(message);
         if (tokenBudget) {
-          console.log('Token budget from modelUsage:', tokenBudget);
+          logger.debug('Token budget from modelUsage:', tokenBudget);
           ws.send({
             type: 'token-budget',
             data: tokenBudget,
-            sessionId: capturedSessionId || sessionId || null
+            sessionId: capturedSessionId || sessionId || null,
           });
         }
       }
@@ -647,17 +652,16 @@ async function queryClaudeSDK(command, options = {}, ws) {
     await cleanupTempFiles(tempImagePaths, tempDir);
 
     // Send completion event
-    console.log('Streaming complete, sending claude-complete event');
+    logger.info('Streaming complete, sending claude-complete event');
     ws.send({
       type: 'claude-complete',
       sessionId: capturedSessionId,
       exitCode: 0,
-      isNewSession: !sessionId && !!command
+      isNewSession: !sessionId && !!command,
     });
-    console.log('claude-complete event sent');
-
+    logger.debug('claude-complete event sent');
   } catch (error) {
-    console.error('SDK query error:', error);
+    logger.error('SDK query error:', error);
 
     // Clean up session on error
     if (capturedSessionId) {
@@ -671,7 +675,7 @@ async function queryClaudeSDK(command, options = {}, ws) {
     ws.send({
       type: 'claude-error',
       error: error.message,
-      sessionId: capturedSessionId || sessionId || null
+      sessionId: capturedSessionId || sessionId || null,
     });
 
     throw error;
@@ -687,12 +691,12 @@ async function abortClaudeSDKSession(sessionId) {
   const session = getSession(sessionId);
 
   if (!session) {
-    console.log(`Session ${sessionId} not found`);
+    logger.info(`Session ${sessionId} not found`);
     return false;
   }
 
   try {
-    console.log(`Aborting SDK session: ${sessionId}`);
+    logger.info(`Aborting SDK session: ${sessionId}`);
 
     // Call interrupt() on the query instance
     await session.instance.interrupt();
@@ -708,7 +712,7 @@ async function abortClaudeSDKSession(sessionId) {
 
     return true;
   } catch (error) {
-    console.error(`Error aborting session ${sessionId}:`, error);
+    logger.error(`Error aborting session ${sessionId}:`, error);
     return false;
   }
 }
@@ -764,7 +768,7 @@ function reconnectSessionWriter(sessionId, newRawWs) {
   const session = getSession(sessionId);
   if (!session?.writer?.updateWebSocket) return false;
   session.writer.updateWebSocket(newRawWs);
-  console.log(`[RECONNECT] Writer swapped for session ${sessionId}`);
+  logger.info(`[RECONNECT] Writer swapped for session ${sessionId}`);
   return true;
 }
 
@@ -776,5 +780,5 @@ export {
   getActiveClaudeSDKSessions,
   resolveToolApproval,
   getPendingApprovalsForSession,
-  reconnectSessionWriter
+  reconnectSessionWriter,
 };

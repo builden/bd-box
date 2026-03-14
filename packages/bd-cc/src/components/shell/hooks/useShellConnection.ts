@@ -2,9 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { MutableRefObject } from 'react';
 import type { FitAddon } from '@xterm/addon-fit';
 import type { Terminal } from '@xterm/xterm';
+import { createLogger } from '@/lib/logger';
 import type { Project, ProjectSession } from '../../../types/app';
 import { TERMINAL_INIT_DELAY_MS } from '../constants/constants';
 import { getShellWebSocketUrl, parseShellMessage, sendSocketMessage } from '../utils/socket';
+
+const logger = createLogger('ShellConnection');
 
 const ANSI_ESCAPE_REGEX =
   /(?:\u001B\[[0-?]*[ -/]*[@-~]|\u009B[0-?]*[ -/]*[@-~]|\u001B\][^\u0007\u001B]*(?:\u0007|\u001B\\)|\u009D[^\u0007\u009C]*(?:\u0007|\u009C)|\u001B[PX^_][^\u001B]*\u001B\\|[\u0090\u0098\u009E\u009F][^\u009C]*\u009C|\u001B[@-Z\\-_])/g;
@@ -85,7 +88,7 @@ export function useShellConnection({
     (rawPayload: string) => {
       const message = parseShellMessage(rawPayload);
       if (!message) {
-        console.error('[Shell] Error handling WebSocket message:', rawPayload);
+        logger.error('[Shell] Error handling WebSocket message:', rawPayload);
         return;
       }
 
@@ -127,7 +130,7 @@ export function useShellConnection({
         wsRef.current = socket;
 
         socket.onopen = () => {
-          console.log('[Shell] WebSocket connected, preparing init message...');
+          logger.info('[Shell] WebSocket connected, preparing init message...');
           setIsConnected(true);
           setIsConnecting(false);
           connectingRef.current = false;
@@ -156,7 +159,7 @@ export function useShellConnection({
               initialCommand: initialCommandRef.current,
               isPlainShell: isPlainShellRef.current,
             };
-            console.log('[Shell] Sending init message:', JSON.stringify(initMessage));
+            logger.info('[Shell] Sending init message:', JSON.stringify(initMessage));
             sendSocketMessage(socket, initMessage);
           }, TERMINAL_INIT_DELAY_MS);
         };

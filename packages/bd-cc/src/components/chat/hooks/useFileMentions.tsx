@@ -1,12 +1,15 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import type { Dispatch, KeyboardEvent, RefObject, SetStateAction } from "react";
-import { api } from "../../../utils/api";
-import { escapeRegExp } from "../utils/chatFormatting";
-import type { Project } from "../../../types/app";
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { Dispatch, KeyboardEvent, RefObject, SetStateAction } from 'react';
+import { createLogger } from '@/lib/logger';
+import { api } from '../../../utils/api';
+import { escapeRegExp } from '../utils/chatFormatting';
+import type { Project } from '../../../types/app';
+
+const logger = createLogger('FileMentions');
 
 interface ProjectFileNode {
   name: string;
-  type: "file" | "directory";
+  type: 'file' | 'directory';
   path?: string;
   children?: ProjectFileNode[];
 }
@@ -24,17 +27,17 @@ interface UseFileMentionsOptions {
   textareaRef: RefObject<HTMLTextAreaElement | null>;
 }
 
-const flattenFileTree = (files: ProjectFileNode[], basePath = ""): MentionableFile[] => {
+const flattenFileTree = (files: ProjectFileNode[], basePath = ''): MentionableFile[] => {
   let flattened: MentionableFile[] = [];
 
   files.forEach((file) => {
     const fullPath = basePath ? `${basePath}/${file.name}` : file.name;
-    if (file.type === "directory" && file.children) {
+    if (file.type === 'directory' && file.children) {
       flattened = flattened.concat(flattenFileTree(file.children, fullPath));
       return;
     }
 
-    if (file.type === "file") {
+    if (file.type === 'file') {
       flattened.push({
         name: file.name,
         path: fullPath,
@@ -76,10 +79,10 @@ export function useFileMentions({ selectedProject, input, setInput, textareaRef 
         setFileList(flattenFileTree(files));
       } catch (error) {
         // Ignore aborts from rapid project switches; we only care about the latest request.
-        if ((error as { name?: string })?.name === "AbortError") {
+        if ((error as { name?: string })?.name === 'AbortError') {
           return;
         }
-        console.error("Error fetching files:", error);
+        logger.error('Error fetching files', error);
       }
     };
 
@@ -91,7 +94,7 @@ export function useFileMentions({ selectedProject, input, setInput, textareaRef 
 
   useEffect(() => {
     const textBeforeCursor = input.slice(0, cursorPosition);
-    const lastAtIndex = textBeforeCursor.lastIndexOf("@");
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
 
     if (lastAtIndex === -1) {
       setShowFileDropdown(false);
@@ -100,7 +103,7 @@ export function useFileMentions({ selectedProject, input, setInput, textareaRef 
     }
 
     const textAfterAt = textBeforeCursor.slice(lastAtIndex + 1);
-    if (textAfterAt.includes(" ")) {
+    if (textAfterAt.includes(' ')) {
       setShowFileDropdown(false);
       setAtSymbolPosition(-1);
       return;
@@ -114,7 +117,7 @@ export function useFileMentions({ selectedProject, input, setInput, textareaRef 
       .filter(
         (file) =>
           file.name.toLowerCase().includes(textAfterAt.toLowerCase()) ||
-          file.path.toLowerCase().includes(textAfterAt.toLowerCase()),
+          file.path.toLowerCase().includes(textAfterAt.toLowerCase())
       )
       .slice(0, 10);
 
@@ -140,8 +143,8 @@ export function useFileMentions({ selectedProject, input, setInput, textareaRef 
     if (sortedFileMentions.length === 0) {
       return null;
     }
-    const pattern = sortedFileMentions.map(escapeRegExp).join("|");
-    return new RegExp(`(${pattern})`, "g");
+    const pattern = sortedFileMentions.map(escapeRegExp).join('|');
+    return new RegExp(`(${pattern})`, 'g');
   }, [sortedFileMentions]);
 
   const fileMentionSet = useMemo(() => new Set(sortedFileMentions), [sortedFileMentions]);
@@ -149,7 +152,7 @@ export function useFileMentions({ selectedProject, input, setInput, textareaRef 
   const renderInputWithMentions = useCallback(
     (text: string) => {
       if (!text) {
-        return "";
+        return '';
       }
       if (!fileMentionRegex) {
         return text;
@@ -166,30 +169,30 @@ export function useFileMentions({ selectedProject, input, setInput, textareaRef 
           </span>
         ) : (
           <span key={`text-${index}`}>{part}</span>
-        ),
+        )
       );
     },
-    [fileMentionRegex, fileMentionSet],
+    [fileMentionRegex, fileMentionSet]
   );
 
   const selectFile = useCallback(
     (file: MentionableFile) => {
       const textBeforeAt = input.slice(0, atSymbolPosition);
       const textAfterAtQuery = input.slice(atSymbolPosition);
-      const spaceIndex = textAfterAtQuery.indexOf(" ");
-      const textAfterQuery = spaceIndex !== -1 ? textAfterAtQuery.slice(spaceIndex) : "";
+      const spaceIndex = textAfterAtQuery.indexOf(' ');
+      const textAfterQuery = spaceIndex !== -1 ? textAfterAtQuery.slice(spaceIndex) : '';
 
       const newInput = `${textBeforeAt}${file.path} ${textAfterQuery}`;
       const newCursorPosition = textBeforeAt.length + file.path.length + 1;
 
-      if (textareaRef.current && !textareaRef.current.matches(":focus")) {
+      if (textareaRef.current && !textareaRef.current.matches(':focus')) {
         textareaRef.current.focus();
       }
 
       setInput(newInput);
       setCursorPosition(newCursorPosition);
       setFileMentions((previousMentions) =>
-        previousMentions.includes(file.path) ? previousMentions : [...previousMentions, file.path],
+        previousMentions.includes(file.path) ? previousMentions : [...previousMentions, file.path]
       );
 
       setShowFileDropdown(false);
@@ -204,12 +207,12 @@ export function useFileMentions({ selectedProject, input, setInput, textareaRef 
           return;
         }
         textareaRef.current.setSelectionRange(newCursorPosition, newCursorPosition);
-        if (!textareaRef.current.matches(":focus")) {
+        if (!textareaRef.current.matches(':focus')) {
           textareaRef.current.focus();
         }
       });
     },
-    [input, atSymbolPosition, textareaRef, setInput],
+    [input, atSymbolPosition, textareaRef, setInput]
   );
 
   const handleFileMentionsKeyDown = useCallback(
@@ -218,19 +221,19 @@ export function useFileMentions({ selectedProject, input, setInput, textareaRef 
         return false;
       }
 
-      if (event.key === "ArrowDown") {
+      if (event.key === 'ArrowDown') {
         event.preventDefault();
         setSelectedFileIndex((previousIndex) => (previousIndex < filteredFiles.length - 1 ? previousIndex + 1 : 0));
         return true;
       }
 
-      if (event.key === "ArrowUp") {
+      if (event.key === 'ArrowUp') {
         event.preventDefault();
         setSelectedFileIndex((previousIndex) => (previousIndex > 0 ? previousIndex - 1 : filteredFiles.length - 1));
         return true;
       }
 
-      if (event.key === "Tab" || event.key === "Enter") {
+      if (event.key === 'Tab' || event.key === 'Enter') {
         event.preventDefault();
         if (selectedFileIndex >= 0) {
           selectFile(filteredFiles[selectedFileIndex]);
@@ -240,7 +243,7 @@ export function useFileMentions({ selectedProject, input, setInput, textareaRef 
         return true;
       }
 
-      if (event.key === "Escape") {
+      if (event.key === 'Escape') {
         event.preventDefault();
         setShowFileDropdown(false);
         return true;
@@ -248,7 +251,7 @@ export function useFileMentions({ selectedProject, input, setInput, textareaRef 
 
       return false;
     },
-    [showFileDropdown, filteredFiles, selectedFileIndex, selectFile],
+    [showFileDropdown, filteredFiles, selectedFileIndex, selectFile]
   );
 
   return {

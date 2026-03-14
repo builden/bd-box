@@ -6,6 +6,9 @@
 
 import { promises as fs } from 'fs';
 import path from 'path';
+import { createLogger } from '../lib/logger.ts';
+
+const logger = createLogger('utils/taskmaster-detector');
 
 export interface TaskMasterDetectionResult {
   hasTaskmaster: boolean;
@@ -136,7 +139,7 @@ export async function detectTaskMasterFolder(projectPath: string): Promise<TaskM
           lastModified: (await fs.stat(tasksPath)).mtime.toISOString(),
         };
       } catch (parseError) {
-        console.warn('Failed to parse tasks.json:', (parseError as Error).message);
+        logger.warn('Failed to parse tasks.json:', parseError as Error);
         taskMetadata = { error: 'Failed to parse tasks.json' } as TaskMetadata;
       }
     }
@@ -149,7 +152,7 @@ export async function detectTaskMasterFolder(projectPath: string): Promise<TaskM
       path: taskMasterPath,
     };
   } catch (error) {
-    console.error('Error detecting TaskMaster folder:', error);
+    logger.error('Error detecting TaskMaster folder:', error);
     return {
       hasTaskmaster: false,
       reason: `Error checking directory: ${(error as Error).message}`,

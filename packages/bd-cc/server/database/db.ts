@@ -1,19 +1,22 @@
-import { Database } from "bun:sqlite";
-import path from "path";
-import fs from "fs";
-import crypto from "crypto";
-import { fileURLToPath } from "url";
-import { dirname } from "path";
+import { Database } from 'bun:sqlite';
+import path from 'path';
+import fs from 'fs';
+import crypto from 'crypto';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import { createLogger } from '../lib/logger';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+const logger = createLogger('database/db');
+
 // ANSI color codes for terminal output
 const colors = {
-  reset: "\x1b[0m",
-  bright: "\x1b[1m",
-  cyan: "\x1b[36m",
-  dim: "\x1b[2m",
+  reset: '\x1b[0m',
+  bright: '\x1b[1m',
+  cyan: '\x1b[36m',
+  dim: '\x1b[2m',
 };
 
 const c = {
@@ -23,8 +26,8 @@ const c = {
 };
 
 // Use DATABASE_PATH environment variable if set, otherwise use default location
-const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, "auth.db");
-const INIT_SQL_PATH = path.join(__dirname, "init.sql");
+const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, 'auth.db');
+const INIT_SQL_PATH = path.join(__dirname, 'init.sql');
 
 // Ensure database directory exists if custom path is provided
 if (process.env.DATABASE_PATH) {
@@ -32,27 +35,27 @@ if (process.env.DATABASE_PATH) {
   try {
     if (!fs.existsSync(dbDir)) {
       fs.mkdirSync(dbDir, { recursive: true });
-      console.log(`Created database directory: ${dbDir}`);
+      logger.info(`Created database directory: ${dbDir}`);
     }
   } catch (error) {
-    console.error(`Failed to create database directory ${dbDir}:`, error.message);
+    logger.error(`Failed to create database directory ${dbDir}:`, error);
     throw error;
   }
 }
 
 // As part of 1.19.2 we are introducing a new location for auth.db. The below handles exisitng moving legacy database from install directory to new location
-const LEGACY_DB_PATH = path.join(__dirname, "auth.db");
+const LEGACY_DB_PATH = path.join(__dirname, 'auth.db');
 if (DB_PATH !== LEGACY_DB_PATH && !fs.existsSync(DB_PATH) && fs.existsSync(LEGACY_DB_PATH)) {
   try {
     fs.copyFileSync(LEGACY_DB_PATH, DB_PATH);
-    console.log(`[MIGRATION] Copied database from ${LEGACY_DB_PATH} to ${DB_PATH}`);
-    for (const suffix of ["-wal", "-shm"]) {
+    logger.info(`[MIGRATION] Copied database from ${LEGACY_DB_PATH} to ${DB_PATH}`);
+    for (const suffix of ['-wal', '-shm']) {
       if (fs.existsSync(LEGACY_DB_PATH + suffix)) {
         fs.copyFileSync(LEGACY_DB_PATH + suffix, DB_PATH + suffix);
       }
     }
   } catch (err) {
-    console.warn(`[MIGRATION] Could not copy legacy database: ${err.message}`);
+    logger.warn(`[MIGRATION] Could not copy legacy database:`, err);
   }
 }
 
@@ -69,35 +72,35 @@ db.exec(`CREATE TABLE IF NOT EXISTS app_config (
 )`);
 
 // Show app installation path prominently
-const appInstallPath = path.join(__dirname, "../..");
-console.log("");
-console.log(c.dim("═".repeat(60)));
-console.log(`${c.info("[INFO]")} App Installation: ${c.bright(appInstallPath)}`);
-console.log(`${c.info("[INFO]")} Database: ${c.dim(path.relative(appInstallPath, DB_PATH))}`);
+const appInstallPath = path.join(__dirname, '../..');
+console.log('');
+console.log(c.dim('═'.repeat(60)));
+console.log(`${c.info('[INFO]')} App Installation: ${c.bright(appInstallPath)}`);
+console.log(`${c.info('[INFO]')} Database: ${c.dim(path.relative(appInstallPath, DB_PATH))}`);
 if (process.env.DATABASE_PATH) {
-  console.log(`       ${c.dim("(Using custom DATABASE_PATH from environment)")}`);
+  console.log(`       ${c.dim('(Using custom DATABASE_PATH from environment)')}`);
 }
-console.log(c.dim("═".repeat(60)));
-console.log("");
+console.log(c.dim('═'.repeat(60)));
+console.log('');
 
 const runMigrations = () => {
   try {
-    const tableInfo = db.query("PRAGMA table_info(users)").all();
+    const tableInfo = db.query('PRAGMA table_info(users)').all();
     const columnNames = tableInfo.map((col) => col.name);
 
-    if (!columnNames.includes("git_name")) {
-      console.log("Running migration: Adding git_name column");
-      db.exec("ALTER TABLE users ADD COLUMN git_name TEXT");
+    if (!columnNames.includes('git_name')) {
+      logger.info('Running migration: Adding git_name column');
+      db.exec('ALTER TABLE users ADD COLUMN git_name TEXT');
     }
 
-    if (!columnNames.includes("git_email")) {
-      console.log("Running migration: Adding git_email column");
-      db.exec("ALTER TABLE users ADD COLUMN git_email TEXT");
+    if (!columnNames.includes('git_email')) {
+      logger.info('Running migration: Adding git_email column');
+      db.exec('ALTER TABLE users ADD COLUMN git_email TEXT');
     }
 
-    if (!columnNames.includes("has_completed_onboarding")) {
-      console.log("Running migration: Adding has_completed_onboarding column");
-      db.exec("ALTER TABLE users ADD COLUMN has_completed_onboarding BOOLEAN DEFAULT 0");
+    if (!columnNames.includes('has_completed_onboarding')) {
+      logger.info('Running migration: Adding has_completed_onboarding column');
+      db.exec('ALTER TABLE users ADD COLUMN has_completed_onboarding BOOLEAN DEFAULT 0');
     }
 
     // Create app_config table if it doesn't exist (for existing installations)
@@ -117,11 +120,11 @@ const runMigrations = () => {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(session_id, provider)
     )`);
-    db.exec("CREATE INDEX IF NOT EXISTS idx_session_names_lookup ON session_names(session_id, provider)");
+    db.exec('CREATE INDEX IF NOT EXISTS idx_session_names_lookup ON session_names(session_id, provider)');
 
-    console.log("Database migrations completed successfully");
+    logger.info('Database migrations completed successfully');
   } catch (error) {
-    console.error("Error running migrations:", error.message);
+    logger.error('Error running migrations:', error);
     throw error;
   }
 };
@@ -129,12 +132,12 @@ const runMigrations = () => {
 // Initialize database with schema
 const initializeDatabase = async () => {
   try {
-    const initSQL = fs.readFileSync(INIT_SQL_PATH, "utf8");
+    const initSQL = fs.readFileSync(INIT_SQL_PATH, 'utf8');
     db.exec(initSQL);
-    console.log("Database initialized successfully");
+    logger.info('Database initialized successfully');
     runMigrations();
   } catch (error) {
-    console.error("Error initializing database:", error.message);
+    logger.error('Error initializing database:', error);
     throw error;
   }
 };
@@ -144,7 +147,7 @@ const userDb = {
   // Check if any users exist
   hasUsers: () => {
     try {
-      const row = db.query("SELECT COUNT(*) as count FROM users").get();
+      const row = db.query('SELECT COUNT(*) as count FROM users').get();
       return row.count > 0;
     } catch (err) {
       throw err;
@@ -154,7 +157,7 @@ const userDb = {
   // Create a new user
   createUser: (username, passwordHash) => {
     try {
-      const stmt = db.query("INSERT INTO users (username, password_hash) VALUES (?, ?)");
+      const stmt = db.query('INSERT INTO users (username, password_hash) VALUES (?, ?)');
       const result = stmt.run(username, passwordHash);
       return { id: result.lastInsertRowid, username };
     } catch (err) {
@@ -165,7 +168,7 @@ const userDb = {
   // Get user by username
   getUserByUsername: (username) => {
     try {
-      const row = db.query("SELECT * FROM users WHERE username = ? AND is_active = 1").get(username);
+      const row = db.query('SELECT * FROM users WHERE username = ? AND is_active = 1').get(username);
       return row;
     } catch (err) {
       throw err;
@@ -175,9 +178,9 @@ const userDb = {
   // Update last login time (non-fatal — logged but not thrown)
   updateLastLogin: (userId) => {
     try {
-      db.query("UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?").run(userId);
+      db.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?').run(userId);
     } catch (err) {
-      console.warn("Failed to update last login:", err.message);
+      logger.warn('Failed to update last login:', err);
     }
   },
 
@@ -185,7 +188,7 @@ const userDb = {
   getUserById: (userId) => {
     try {
       const row = db
-        .prepare("SELECT id, username, created_at, last_login FROM users WHERE id = ? AND is_active = 1")
+        .prepare('SELECT id, username, created_at, last_login FROM users WHERE id = ? AND is_active = 1')
         .get(userId);
       return row;
     } catch (err) {
@@ -196,7 +199,7 @@ const userDb = {
   getFirstUser: () => {
     try {
       const row = db
-        .prepare("SELECT id, username, created_at, last_login FROM users WHERE is_active = 1 LIMIT 1")
+        .prepare('SELECT id, username, created_at, last_login FROM users WHERE is_active = 1 LIMIT 1')
         .get();
       return row;
     } catch (err) {
@@ -206,7 +209,7 @@ const userDb = {
 
   updateGitConfig: (userId, gitName, gitEmail) => {
     try {
-      const stmt = db.query("UPDATE users SET git_name = ?, git_email = ? WHERE id = ?");
+      const stmt = db.query('UPDATE users SET git_name = ?, git_email = ? WHERE id = ?');
       stmt.run(gitName, gitEmail, userId);
     } catch (err) {
       throw err;
@@ -215,7 +218,7 @@ const userDb = {
 
   getGitConfig: (userId) => {
     try {
-      const row = db.query("SELECT git_name, git_email FROM users WHERE id = ?").get(userId);
+      const row = db.query('SELECT git_name, git_email FROM users WHERE id = ?').get(userId);
       return row;
     } catch (err) {
       throw err;
@@ -224,7 +227,7 @@ const userDb = {
 
   completeOnboarding: (userId) => {
     try {
-      const stmt = db.query("UPDATE users SET has_completed_onboarding = 1 WHERE id = ?");
+      const stmt = db.query('UPDATE users SET has_completed_onboarding = 1 WHERE id = ?');
       stmt.run(userId);
     } catch (err) {
       throw err;
@@ -233,7 +236,7 @@ const userDb = {
 
   hasCompletedOnboarding: (userId) => {
     try {
-      const row = db.query("SELECT has_completed_onboarding FROM users WHERE id = ?").get(userId);
+      const row = db.query('SELECT has_completed_onboarding FROM users WHERE id = ?').get(userId);
       return row?.has_completed_onboarding === 1;
     } catch (err) {
       throw err;
@@ -245,14 +248,14 @@ const userDb = {
 const apiKeysDb = {
   // Generate a new API key
   generateApiKey: () => {
-    return "ck_" + crypto.randomBytes(32).toString("hex");
+    return 'ck_' + crypto.randomBytes(32).toString('hex');
   },
 
   // Create a new API key
   createApiKey: (userId, keyName) => {
     try {
       const apiKey = apiKeysDb.generateApiKey();
-      const stmt = db.query("INSERT INTO api_keys (user_id, key_name, api_key) VALUES (?, ?, ?)");
+      const stmt = db.query('INSERT INTO api_keys (user_id, key_name, api_key) VALUES (?, ?, ?)');
       const result = stmt.run(userId, keyName, apiKey);
       return { id: result.lastInsertRowid, keyName, apiKey };
     } catch (err) {
@@ -265,7 +268,7 @@ const apiKeysDb = {
     try {
       const rows = db
         .prepare(
-          "SELECT id, key_name, api_key, created_at, last_used, is_active FROM api_keys WHERE user_id = ? ORDER BY created_at DESC",
+          'SELECT id, key_name, api_key, created_at, last_used, is_active FROM api_keys WHERE user_id = ? ORDER BY created_at DESC'
         )
         .all(userId);
       return rows;
@@ -284,13 +287,13 @@ const apiKeysDb = {
         FROM api_keys ak
         JOIN users u ON ak.user_id = u.id
         WHERE ak.api_key = ? AND ak.is_active = 1 AND u.is_active = 1
-      `,
+      `
         )
         .get(apiKey);
 
       if (row) {
         // Update last_used timestamp
-        db.query("UPDATE api_keys SET last_used = CURRENT_TIMESTAMP WHERE id = ?").run(row.api_key_id);
+        db.query('UPDATE api_keys SET last_used = CURRENT_TIMESTAMP WHERE id = ?').run(row.api_key_id);
       }
 
       return row;
@@ -302,7 +305,7 @@ const apiKeysDb = {
   // Delete an API key
   deleteApiKey: (userId, apiKeyId) => {
     try {
-      const stmt = db.query("DELETE FROM api_keys WHERE id = ? AND user_id = ?");
+      const stmt = db.query('DELETE FROM api_keys WHERE id = ? AND user_id = ?');
       const result = stmt.run(apiKeyId, userId);
       return result.changes > 0;
     } catch (err) {
@@ -313,7 +316,7 @@ const apiKeysDb = {
   // Toggle API key active status
   toggleApiKey: (userId, apiKeyId, isActive) => {
     try {
-      const stmt = db.query("UPDATE api_keys SET is_active = ? WHERE id = ? AND user_id = ?");
+      const stmt = db.query('UPDATE api_keys SET is_active = ? WHERE id = ? AND user_id = ?');
       const result = stmt.run(isActive ? 1 : 0, apiKeyId, userId);
       return result.changes > 0;
     } catch (err) {
@@ -328,7 +331,7 @@ const credentialsDb = {
   createCredential: (userId, credentialName, credentialType, credentialValue, description = null) => {
     try {
       const stmt = db.query(
-        "INSERT INTO user_credentials (user_id, credential_name, credential_type, credential_value, description) VALUES (?, ?, ?, ?, ?)",
+        'INSERT INTO user_credentials (user_id, credential_name, credential_type, credential_value, description) VALUES (?, ?, ?, ?, ?)'
       );
       const result = stmt.run(userId, credentialName, credentialType, credentialValue, description);
       return { id: result.lastInsertRowid, credentialName, credentialType };
@@ -341,15 +344,15 @@ const credentialsDb = {
   getCredentials: (userId, credentialType = null) => {
     try {
       let query =
-        "SELECT id, credential_name, credential_type, description, created_at, is_active FROM user_credentials WHERE user_id = ?";
+        'SELECT id, credential_name, credential_type, description, created_at, is_active FROM user_credentials WHERE user_id = ?';
       const params = [userId];
 
       if (credentialType) {
-        query += " AND credential_type = ?";
+        query += ' AND credential_type = ?';
         params.push(credentialType);
       }
 
-      query += " ORDER BY created_at DESC";
+      query += ' ORDER BY created_at DESC';
 
       const rows = db.query(query).all(...params);
       return rows;
@@ -363,7 +366,7 @@ const credentialsDb = {
     try {
       const row = db
         .prepare(
-          "SELECT credential_value FROM user_credentials WHERE user_id = ? AND credential_type = ? AND is_active = 1 ORDER BY created_at DESC LIMIT 1",
+          'SELECT credential_value FROM user_credentials WHERE user_id = ? AND credential_type = ? AND is_active = 1 ORDER BY created_at DESC LIMIT 1'
         )
         .get(userId, credentialType);
       return row?.credential_value || null;
@@ -375,7 +378,7 @@ const credentialsDb = {
   // Delete a credential
   deleteCredential: (userId, credentialId) => {
     try {
-      const stmt = db.query("DELETE FROM user_credentials WHERE id = ? AND user_id = ?");
+      const stmt = db.query('DELETE FROM user_credentials WHERE id = ? AND user_id = ?');
       const result = stmt.run(credentialId, userId);
       return result.changes > 0;
     } catch (err) {
@@ -386,7 +389,7 @@ const credentialsDb = {
   // Toggle credential active status
   toggleCredential: (userId, credentialId, isActive) => {
     try {
-      const stmt = db.query("UPDATE user_credentials SET is_active = ? WHERE id = ? AND user_id = ?");
+      const stmt = db.query('UPDATE user_credentials SET is_active = ? WHERE id = ? AND user_id = ?');
       const result = stmt.run(isActive ? 1 : 0, credentialId, userId);
       return result.changes > 0;
     } catch (err) {
@@ -405,14 +408,14 @@ const sessionNamesDb = {
       VALUES (?, ?, ?)
       ON CONFLICT(session_id, provider)
       DO UPDATE SET custom_name = excluded.custom_name, updated_at = CURRENT_TIMESTAMP
-    `,
+    `
     ).run(sessionId, provider, customName);
   },
 
   // Get a single custom session name
   getName: (sessionId, provider) => {
     const row = db
-      .prepare("SELECT custom_name FROM session_names WHERE session_id = ? AND provider = ?")
+      .prepare('SELECT custom_name FROM session_names WHERE session_id = ? AND provider = ?')
       .get(sessionId, provider);
     return row?.custom_name || null;
   },
@@ -420,11 +423,11 @@ const sessionNamesDb = {
   // Batch lookup — returns Map<sessionId, customName>
   getNames: (sessionIds, provider) => {
     if (!sessionIds.length) return new Map();
-    const placeholders = sessionIds.map(() => "?").join(",");
+    const placeholders = sessionIds.map(() => '?').join(',');
     const rows = db
       .prepare(
         `SELECT session_id, custom_name FROM session_names
-       WHERE session_id IN (${placeholders}) AND provider = ?`,
+       WHERE session_id IN (${placeholders}) AND provider = ?`
       )
       .all(...sessionIds, provider);
     return new Map(rows.map((r) => [r.session_id, r.custom_name]));
@@ -433,7 +436,7 @@ const sessionNamesDb = {
   // Delete a custom session name
   deleteName: (sessionId, provider) => {
     return (
-      db.query("DELETE FROM session_names WHERE session_id = ? AND provider = ?").run(sessionId, provider).changes > 0
+      db.query('DELETE FROM session_names WHERE session_id = ? AND provider = ?').run(sessionId, provider).changes > 0
     );
   },
 };
@@ -449,7 +452,7 @@ function applyCustomSessionNames(sessions, provider) {
       if (custom) session.summary = custom;
     }
   } catch (error) {
-    console.warn(`[DB] Failed to apply custom session names for ${provider}:`, error.message);
+    logger.warn(`[DB] Failed to apply custom session names for ${provider}:`, error);
   }
 }
 
@@ -457,7 +460,7 @@ function applyCustomSessionNames(sessions, provider) {
 const appConfigDb = {
   get: (key) => {
     try {
-      const row = db.query("SELECT value FROM app_config WHERE key = ?").get(key);
+      const row = db.query('SELECT value FROM app_config WHERE key = ?').get(key);
       return row?.value || null;
     } catch (err) {
       return null;
@@ -466,15 +469,15 @@ const appConfigDb = {
 
   set: (key, value) => {
     db.query(
-      "INSERT INTO app_config (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+      'INSERT INTO app_config (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value'
     ).run(key, value);
   },
 
   getOrCreateJwtSecret: () => {
-    let secret = appConfigDb.get("jwt_secret");
+    let secret = appConfigDb.get('jwt_secret');
     if (!secret) {
-      secret = crypto.randomBytes(64).toString("hex");
-      appConfigDb.set("jwt_secret", secret);
+      secret = crypto.randomBytes(64).toString('hex');
+      appConfigDb.set('jwt_secret', secret);
     }
     return secret;
   },
@@ -483,13 +486,13 @@ const appConfigDb = {
 // Backward compatibility - keep old names pointing to new system
 const githubTokensDb = {
   createGithubToken: (userId, tokenName, githubToken, description = null) => {
-    return credentialsDb.createCredential(userId, tokenName, "github_token", githubToken, description);
+    return credentialsDb.createCredential(userId, tokenName, 'github_token', githubToken, description);
   },
   getGithubTokens: (userId) => {
-    return credentialsDb.getCredentials(userId, "github_token");
+    return credentialsDb.getCredentials(userId, 'github_token');
   },
   getActiveGithubToken: (userId) => {
-    return credentialsDb.getActiveCredential(userId, "github_token");
+    return credentialsDb.getActiveCredential(userId, 'github_token');
   },
   deleteGithubToken: (userId, tokenId) => {
     return credentialsDb.deleteCredential(userId, tokenId);

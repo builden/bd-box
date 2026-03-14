@@ -7,6 +7,9 @@
  */
 
 import { readMcpConfig } from './mcp-config';
+import { createLogger } from '../lib/logger.ts';
+
+const logger = createLogger('utils/mcp-detector');
 
 /**
  * Check if task-master-ai MCP server is configured
@@ -126,7 +129,7 @@ export async function detectTaskMasterMCPServer() {
       };
     }
   } catch (error) {
-    console.error('Error detecting MCP server config:', error);
+    logger.error('Error detecting MCP server config:', error);
     return {
       hasMCPServer: false,
       reason: `Error checking MCP config: ${(error as Error).message}`,
@@ -157,7 +160,7 @@ export async function getAllMCPServers() {
       projectServers: configData.projects || {},
     };
   } catch (error) {
-    console.error('Error getting all MCP servers:', error);
+    logger.error('Error getting all MCP servers:', error);
     return {
       hasConfig: false,
       error: (error as Error).message,

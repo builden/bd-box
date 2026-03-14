@@ -1,6 +1,9 @@
 import { useCallback, useState } from 'react';
+import { createLogger } from '@/lib/logger';
 import { authenticatedFetch } from '../../../utils/api';
 import type { GitOperationResponse } from '../types/types';
+
+const logger = createLogger('RevertLocalCommit');
 
 type UseRevertLocalCommitOptions = {
   projectName: string | null;
@@ -29,13 +32,13 @@ export function useRevertLocalCommit({ projectName, onSuccess }: UseRevertLocalC
       const data = await readJson<GitOperationResponse>(response);
 
       if (!data.success) {
-        console.error('Revert local commit failed:', data.error || data.details || 'Unknown error');
+        logger.error('Revert local commit failed', null, { error: data.error || data.details });
         return;
       }
 
       onSuccess?.();
     } catch (error) {
-      console.error('Error reverting local commit:', error);
+      logger.error('Error reverting local commit', error);
     } finally {
       setIsRevertingLocalCommit(false);
     }

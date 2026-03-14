@@ -4,6 +4,7 @@ import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { WebglAddon } from '@xterm/addon-webgl';
 import { Terminal } from '@xterm/xterm';
+import { createLogger } from '@/lib/logger';
 import type { Project } from '../../../types/app';
 import {
   CODEX_DEVICE_AUTH_URL,
@@ -15,6 +16,8 @@ import { copyTextToClipboard } from '../../../utils/clipboard';
 import { isCodexLoginCommand } from '../utils/auth';
 import { sendSocketMessage } from '../utils/socket';
 import { ensureXtermFocusStyles } from '../utils/terminalStyles';
+
+const logger = createLogger('ShellTerminal');
 
 type UseShellTerminalOptions = {
   terminalContainerRef: RefObject<HTMLDivElement>;
@@ -99,7 +102,7 @@ export function useShellTerminal({
     try {
       nextTerminal.loadAddon(new WebglAddon());
     } catch {
-      console.warn('[Shell] WebGL renderer unavailable, using Canvas fallback');
+      logger.warn('[Shell] WebGL renderer unavailable, using Canvas fallback');
     }
 
     nextTerminal.open(terminalContainerRef.current);
@@ -136,9 +139,7 @@ export function useShellTerminal({
     terminalContainerRef.current.addEventListener('copy', handleTerminalCopy);
 
     nextTerminal.attachCustomKeyEventHandler((event) => {
-      const activeAuthUrl = isCodexLoginCommand(initialCommandRef.current)
-        ? CODEX_DEVICE_AUTH_URL
-        : authUrlRef.current;
+      const activeAuthUrl = isCodexLoginCommand(initialCommandRef.current) ? CODEX_DEVICE_AUTH_URL : authUrlRef.current;
 
       if (
         event.type === 'keydown' &&
@@ -168,11 +169,7 @@ export function useShellTerminal({
         return false;
       }
 
-      if (
-        event.type === 'keydown' &&
-        (event.ctrlKey || event.metaKey) &&
-        event.key?.toLowerCase() === 'v'
-      ) {
+      if (event.type === 'keydown' && (event.ctrlKey || event.metaKey) && event.key?.toLowerCase() === 'v') {
         // Block native paste so data is only injected after clipboard-read resolves.
         event.preventDefault();
         event.stopPropagation();

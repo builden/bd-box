@@ -2,8 +2,10 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import { userDb, db } from '../database/index.ts';
 import { generateToken, authenticateToken } from '../middleware/auth.ts';
+import { createLogger } from '../lib/logger.ts';
 
 const router = express.Router();
+const logger = createLogger('auth');
 
 // Check auth status and setup requirements
 router.get('/status', async (req, res) => {
@@ -14,7 +16,7 @@ router.get('/status', async (req, res) => {
       isAuthenticated: false, // Will be overridden by frontend if token exists
     });
   } catch (error) {
-    console.error('Auth status error:', error);
+    logger.error('Auth status error:', error as Error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -68,7 +70,7 @@ router.post('/register', async (req, res) => {
       throw error;
     }
   } catch (error) {
-    console.error('Registration error:', error);
+    logger.error('Registration error:', error as Error, { username });
     if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
       res.status(409).json({ error: 'Username already exists' });
     } else {
@@ -111,7 +113,7 @@ router.post('/login', async (req, res) => {
       token,
     });
   } catch (error) {
-    console.error('Login error:', error);
+    logger.error('Login error:', error as Error, { username });
     res.status(500).json({ error: 'Internal server error' });
   }
 });

@@ -5,6 +5,9 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { createLogger } from './lib/logger';
+
+const logger = createLogger('server/index');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -31,7 +34,7 @@ const c = {
   dim: (text) => `${colors.dim}${text}${colors.reset}`,
 };
 
-console.log('PORT from env:', process.env.PORT);
+logger.info('PORT from env:', { PORT: process.env.PORT });
 
 import express from 'express';
 import { WebSocketServer, WebSocket } from 'ws';
@@ -140,7 +143,7 @@ async function setupProjectsWatcher() {
       try {
         await watcher.close();
       } catch (error) {
-        console.error('[WARN] Failed to close watcher:', error);
+        logger.warn('Failed to close watcher:', error);
       }
     })
   );
@@ -182,7 +185,7 @@ async function setupProjectsWatcher() {
           }
         });
       } catch (error) {
-        console.error('[ERROR] Error handling project changes:', error);
+        logger.error('Error handling project changes:', error);
       } finally {
         isGetProjectsRunning = false;
       }
@@ -216,18 +219,18 @@ async function setupProjectsWatcher() {
         .on('addDir', (dirPath) => debouncedUpdate('addDir', dirPath, provider, rootPath))
         .on('unlinkDir', (dirPath) => debouncedUpdate('unlinkDir', dirPath, provider, rootPath))
         .on('error', (error) => {
-          console.error(`[ERROR] ${provider} watcher error:`, error);
+          logger.error(`${provider} watcher error:`, error);
         })
         .on('ready', () => {});
 
       projectsWatchers.push(watcher);
     } catch (error) {
-      console.error(`[ERROR] Failed to setup ${provider} watcher for ${rootPath}:`, error);
+      logger.error(`Failed to setup ${provider} watcher for ${rootPath}:`, error);
     }
   }
 
   if (projectsWatchers.length === 0) {
-    console.error('[ERROR] Failed to setup any provider watchers');
+    logger.error('Failed to setup any provider watchers');
   }
 }
 
@@ -304,17 +307,17 @@ function shouldAutoOpenUrlFromOutput(value = '') {
 const wss = new WebSocketServer({
   server,
   verifyClient: (info) => {
-    console.log('WebSocket connection attempt to:', info.req.url);
+    logger.debug('WebSocket connection attempt to:', { url: info.req.url });
 
     // Platform mode: always allow connection
     if (IS_PLATFORM) {
       const user = authenticateWebSocket(null); // Will return first user
       if (!user) {
-        console.log('[WARN] Platform mode: No user found in database');
+        logger.warn('Platform mode: No user found in database');
         return false;
       }
       info.req.user = user;
-      console.log('[OK] Platform mode WebSocket authenticated for user:', user.username);
+      logger.info('Platform mode WebSocket authenticated for user:', { username: user.username });
       return true;
     }
 
@@ -326,13 +329,13 @@ const wss = new WebSocketServer({
     // Verify token
     const user = authenticateWebSocket(token);
     if (!user) {
-      console.log('[WARN] WebSocket authentication failed');
+      logger.warn('WebSocket authentication failed');
       return false;
     }
 
     // Store user info in the request for later use
     info.req.user = user;
-    console.log('[OK] WebSocket authenticated for user:', user.username);
+    logger.info('WebSocket authenticated for user:', { username: user.username });
     return true;
   },
 });
@@ -341,6 +344,31 @@ const wss = new WebSocketServer({
 app.locals.wss = wss;
 
 app.use(cors({ exposedHeaders: ['X-Refreshed-Token'] }));
+
+// Global HTTP request logging middleware
+app.use((req, res, next) => {
+  const startTime = Date.now();
+  const requestId = req.headers['x-request-id'] || Math.random().toString(36).substring(2, 15);
+
+  // Log request
+  logger.debug(`→ ${req.method} ${req.url}`, { requestId, method: req.method, url: req.url });
+
+  // Log response when finished
+  res.on('finish', () => {
+    const duration = Date.now() - startTime;
+    const level = res.statusCode >= 400 ? 'warn' : 'debug';
+    logger[level](`← ${req.method} ${req.url} ${res.statusCode} (${duration}ms)`, {
+      requestId,
+      method: req.method,
+      url: req.url,
+      status: res.statusCode,
+      duration,
+    });
+  });
+
+  next();
+});
+
 app.use(
   express.json({
     limit: '50mb',
@@ -384,7 +412,7 @@ app.use('/api/mcp', authenticateToken, mcpRoutes);
 app.use('/api/cursor', authenticateToken, cursorRoutes);
 
 // TaskMaster API Routes (protected)
-app.use('/api/taskmaster', authenticateToken, taskmasterRoutes);
+app.use('/api/taskmasters', authenticateToken, taskmasterRoutes);
 
 // MCP utilities
 app.use('/api/mcp-utils', authenticateToken, mcpUtilsRoutes);
@@ -399,7 +427,7 @@ app.use('/api/settings', authenticateToken, settingsRoutes);
 app.use('/api/cli', authenticateToken, cliAuthRoutes);
 
 // User API Routes (protected)
-app.use('/api/user', authenticateToken, userRoutes);
+app.use('/api/users', authenticateToken, userRoutes);
 
 // Codex API Routes (protected)
 app.use('/api/codex', authenticateToken, codexRoutes);
@@ -444,7 +472,7 @@ app.post('/api/system/update', authenticateToken, async (req, res) => {
     // Get the project root directory (parent of server directory)
     const projectRoot = path.join(__dirname, '..');
 
-    console.log('Starting system update from directory:', projectRoot);
+    logger.info('Starting system update from directory:', { projectRoot });
 
     // Run the update command based on install mode
     const updateCommand =
@@ -463,13 +491,13 @@ app.post('/api/system/update', authenticateToken, async (req, res) => {
     child.stdout.on('data', (data) => {
       const text = data.toString();
       output += text;
-      console.log('Update output:', text);
+      logger.debug('Update output:', { text });
     });
 
     child.stderr.on('data', (data) => {
       const text = data.toString();
       errorOutput += text;
-      console.error('Update error:', text);
+      logger.error('Update error:', text);
     });
 
     child.on('close', (code) => {
@@ -490,14 +518,14 @@ app.post('/api/system/update', authenticateToken, async (req, res) => {
     });
 
     child.on('error', (error) => {
-      console.error('Update process error:', error);
+      logger.error('Update process error:', error);
       res.status(500).json({
         success: false,
         error: error.message,
       });
     });
   } catch (error) {
-    console.error('System update error:', error);
+    logger.error('System update error:', error);
     res.status(500).json({
       success: false,
       error: error.message,
@@ -565,13 +593,13 @@ app.put('/api/projects/:projectName/rename', authenticateToken, async (req, res)
 app.delete('/api/projects/:projectName/sessions/:sessionId', authenticateToken, async (req, res) => {
   try {
     const { projectName, sessionId } = req.params;
-    console.log(`[API] Deleting session: ${sessionId} from project: ${projectName}`);
+    logger.info(`Deleting session: ${sessionId} from project: ${projectName}`);
     await deleteSession(projectName, sessionId);
     sessionNamesDb.deleteName(sessionId, 'claude');
-    console.log(`[API] Session ${sessionId} deleted successfully`);
+    logger.info(`Session ${sessionId} deleted successfully`);
     res.json({ success: true });
   } catch (error) {
-    console.error(`[API] Error deleting session ${req.params.sessionId}:`, error);
+    logger.error(`Error deleting session ${req.params.sessionId}:`, error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -597,7 +625,7 @@ app.put('/api/sessions/:sessionId/rename', authenticateToken, async (req, res) =
     sessionNamesDb.setName(safeSessionId, provider, summary.trim());
     res.json({ success: true });
   } catch (error) {
-    console.error(`[API] Error renaming session ${req.params.sessionId}:`, error);
+    logger.error(`Error renaming session ${req.params.sessionId}:`, error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -626,7 +654,7 @@ app.post('/api/projects/create', authenticateToken, async (req, res) => {
     const project = await addProjectManually(projectPath.trim());
     res.json({ success: true, project });
   } catch (error) {
-    console.error('Error creating project:', error);
+    logger.error('Error creating project:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -675,7 +703,7 @@ app.get('/api/search/conversations', authenticateToken, async (req, res) => {
       res.write(`event: done\ndata: {}\n\n`);
     }
   } catch (error) {
-    console.error('Error searching conversations:', error);
+    logger.error('Error searching conversations:', error);
     if (!closed) {
       res.write(`event: error\ndata: ${JSON.stringify({ error: 'Search failed' })}\n\n`);
     }
@@ -702,8 +730,8 @@ app.get('/api/browse-filesystem', authenticateToken, async (req, res) => {
   try {
     const { path: dirPath } = req.query;
 
-    console.log('[API] Browse filesystem request for path:', dirPath);
-    console.log('[API] WORKSPACES_ROOT is:', WORKSPACES_ROOT);
+    logger.debug('Browse filesystem request for path:', { dirPath });
+    logger.debug('WORKSPACES_ROOT is:', { WORKSPACES_ROOT });
     // Default to home directory if no path provided
     const defaultRoot = WORKSPACES_ROOT;
     let targetPath = dirPath ? expandWorkspacePath(dirPath) : defaultRoot;
@@ -772,7 +800,7 @@ app.get('/api/browse-filesystem', authenticateToken, async (req, res) => {
       suggestions: suggestions,
     });
   } catch (error) {
-    console.error('Error browsing filesystem:', error);
+    logger.error('Error browsing filesystem:', error);
     res.status(500).json({ error: 'Failed to browse filesystem' });
   }
 });
@@ -812,7 +840,7 @@ app.post('/api/create-folder', authenticateToken, async (req, res) => {
       throw mkdirError;
     }
   } catch (error) {
-    console.error('Error creating folder:', error);
+    logger.error('Error creating folder:', error);
     res.status(500).json({ error: 'Failed to create folder' });
   }
 });
@@ -843,7 +871,7 @@ app.get('/api/projects/:projectName/file', authenticateToken, async (req, res) =
     const content = await fsPromises.readFile(resolved, 'utf8');
     res.json({ content, path: resolved });
   } catch (error) {
-    console.error('Error reading file:', error);
+    logger.error('Error reading file:', error);
     if (error.code === 'ENOENT') {
       res.status(404).json({ error: 'File not found' });
     } else if (error.code === 'EACCES') {
@@ -892,13 +920,13 @@ app.get('/api/projects/:projectName/files/content', authenticateToken, async (re
     fileStream.pipe(res);
 
     fileStream.on('error', (error) => {
-      console.error('Error streaming file:', error);
+      logger.error('Error streaming file:', error);
       if (!res.headersSent) {
         res.status(500).json({ error: 'Error reading file' });
       }
     });
   } catch (error) {
-    console.error('Error serving binary file:', error);
+    logger.error('Error serving binary file:', error);
     if (!res.headersSent) {
       res.status(500).json({ error: error.message });
     }
@@ -941,7 +969,7 @@ app.put('/api/projects/:projectName/file', authenticateToken, async (req, res) =
       message: 'File saved successfully',
     });
   } catch (error) {
-    console.error('Error saving file:', error);
+    logger.error('Error saving file:', error);
     if (error.code === 'ENOENT') {
       res.status(404).json({ error: 'File or directory not found' });
     } else if (error.code === 'EACCES') {
@@ -961,7 +989,7 @@ app.get('/api/projects/:projectName/files', authenticateToken, async (req, res) 
     try {
       actualPath = await extractProjectDirectory(req.params.projectName);
     } catch (error) {
-      console.error('Error extracting project directory:', error);
+      logger.error('Error extracting project directory:', error);
       // Fallback to simple dash replacement
       actualPath = req.params.projectName.replace(/-/g, '/');
     }
@@ -977,7 +1005,7 @@ app.get('/api/projects/:projectName/files', authenticateToken, async (req, res) 
     const hiddenFiles = files.filter((f) => f.name.startsWith('.'));
     res.json(files);
   } catch (error) {
-    console.error('[ERROR] File tree error:', error.message);
+    logger.error('File tree error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -1093,7 +1121,7 @@ app.post('/api/projects/:projectName/files/create', authenticateToken, async (re
       message: `${type === 'file' ? 'File' : 'Directory'} created successfully`,
     });
   } catch (error) {
-    console.error('Error creating file/directory:', error);
+    logger.error('Error creating file/directory:', error);
     if (error.code === 'EACCES') {
       res.status(403).json({ error: 'Permission denied' });
     } else if (error.code === 'ENOENT') {
@@ -1168,7 +1196,7 @@ app.put('/api/projects/:projectName/files/rename', authenticateToken, async (req
       message: 'Renamed successfully',
     });
   } catch (error) {
-    console.error('Error renaming file/directory:', error);
+    logger.error('Error renaming file/directory:', error);
     if (error.code === 'EACCES') {
       res.status(403).json({ error: 'Permission denied' });
     } else if (error.code === 'ENOENT') {
@@ -1233,7 +1261,7 @@ app.delete('/api/projects/:projectName/files', authenticateToken, async (req, re
       message: 'Deleted successfully',
     });
   } catch (error) {
-    console.error('Error deleting file/directory:', error);
+    logger.error('Error deleting file/directory:', error);
     if (error.code === 'EACCES') {
       res.status(403).json({ error: 'Permission denied' });
     } else if (error.code === 'ENOENT') {
@@ -1274,7 +1302,7 @@ const uploadFilesHandler = async (req, res) => {
   // Use multer middleware
   uploadMiddleware.array('files', 20)(req, res, async (err) => {
     if (err) {
-      console.error('Multer error:', err);
+      logger.error('Multer error:', err);
       if (err.code === 'LIMIT_FILE_SIZE') {
         return res.status(400).json({ error: 'File too large. Maximum size is 50MB.' });
       }
@@ -1294,11 +1322,11 @@ const uploadFilesHandler = async (req, res) => {
         try {
           filePaths = JSON.parse(relativePaths);
         } catch (e) {
-          console.log('[DEBUG] Failed to parse relativePaths:', relativePaths);
+          logger.debug('Failed to parse relativePaths:', { relativePaths });
         }
       }
 
-      console.log('[DEBUG] File upload request:', {
+      logger.debug('File upload request:', {
         projectName,
         targetPath: JSON.stringify(targetPath),
         targetPathType: typeof targetPath,
@@ -1316,27 +1344,27 @@ const uploadFilesHandler = async (req, res) => {
         return res.status(404).json({ error: 'Project not found' });
       }
 
-      console.log('[DEBUG] Project root:', projectRoot);
+      logger.debug('Project root:', { projectRoot });
 
       // Validate and resolve target path
       // If targetPath is empty or '.', use project root directly
       const targetDir = targetPath || '';
       let resolvedTargetDir;
 
-      console.log('[DEBUG] Target dir:', JSON.stringify(targetDir));
+      logger.debug('Target dir:', { targetDir });
 
       if (!targetDir || targetDir === '.' || targetDir === './') {
         // Empty path means upload to project root
         resolvedTargetDir = path.resolve(projectRoot);
-        console.log('[DEBUG] Using project root as target:', resolvedTargetDir);
+        logger.debug('Using project root as target:', { resolvedTargetDir });
       } else {
         const validation = validatePathInProject(projectRoot, targetDir);
         if (!validation.valid) {
-          console.log('[DEBUG] Path validation failed:', validation.error);
+          logger.debug('Path validation failed:', validation.error);
           return res.status(403).json({ error: validation.error });
         }
         resolvedTargetDir = validation.resolved;
-        console.log('[DEBUG] Resolved target dir:', resolvedTargetDir);
+        logger.debug('Resolved target dir:', { resolvedTargetDir });
       }
 
       // Ensure target directory exists
@@ -1348,21 +1376,20 @@ const uploadFilesHandler = async (req, res) => {
 
       // Move uploaded files from temp to target directory
       const uploadedFiles = [];
-      console.log(
-        '[DEBUG] Processing files:',
-        req.files.map((f) => ({ originalname: f.originalname, path: f.path }))
-      );
+      logger.debug('Processing files:', {
+        files: req.files.map((f) => ({ originalname: f.originalname, path: f.path })),
+      });
       for (let i = 0; i < req.files.length; i++) {
         const file = req.files[i];
         // Use relative path if provided (for folder uploads), otherwise use originalname
         const fileName = filePaths && filePaths[i] ? filePaths[i] : file.originalname;
-        console.log('[DEBUG] Processing file:', fileName, '(originalname:', file.originalname + ')');
+        logger.debug('Processing file:', { fileName, originalname: file.originalname });
         const destPath = path.join(resolvedTargetDir, fileName);
 
         // Validate destination path
         const destValidation = validatePathInProject(projectRoot, destPath);
         if (!destValidation.valid) {
-          console.log('[DEBUG] Destination validation failed for:', destPath);
+          logger.debug('Destination validation failed for:', { destPath });
           // Clean up temp file
           await fsPromises.unlink(file.path).catch(() => {});
           continue;
@@ -1395,7 +1422,7 @@ const uploadFilesHandler = async (req, res) => {
         message: `Uploaded ${uploadedFiles.length} file(s) successfully`,
       });
     } catch (error) {
-      console.error('Error uploading files:', error);
+      logger.error('Error uploading files:', error);
       // Clean up any remaining temp files
       if (req.files) {
         for (const file of req.files) {
@@ -1416,7 +1443,7 @@ app.post('/api/projects/:projectName/files/upload', authenticateToken, uploadFil
 // WebSocket connection handler that routes based on URL path
 wss.on('connection', (ws, request) => {
   const url = request.url;
-  console.log('[INFO] Client connected to:', url);
+  logger.info('Client connected to:', { url });
 
   // Parse URL to get pathname without query parameters
   const urlObj = new URL(url, 'http://localhost');
@@ -1427,7 +1454,7 @@ wss.on('connection', (ws, request) => {
   } else if (pathname === '/ws') {
     handleChatConnection(ws);
   } else {
-    console.log('[WARN] Unknown WebSocket path:', pathname);
+    logger.warn('Unknown WebSocket path:', pathname);
     ws.close();
   }
 });
@@ -1465,7 +1492,7 @@ class WebSocketWriter {
 
 // Handle chat WebSocket connections
 function handleChatConnection(ws) {
-  console.log('[INFO] Chat WebSocket connected');
+  logger.info('Chat WebSocket connected');
 
   // Add to connected clients for project updates
   connectedClients.add(ws);
@@ -1478,33 +1505,33 @@ function handleChatConnection(ws) {
       const data = JSON.parse(message);
 
       if (data.type === 'claude-command') {
-        console.log('[DEBUG] User message:', data.command || '[Continue/Resume]');
-        console.log('📁 Project:', data.options?.projectPath || 'Unknown');
-        console.log('🔄 Session:', data.options?.sessionId ? 'Resume' : 'New');
+        logger.debug('User message:', { command: data.command || '[Continue/Resume]' });
+        logger.debug('📁 Project:', { project: data.options?.projectPath || 'Unknown' });
+        logger.debug('🔄 Session:', { session: data.options?.sessionId ? 'Resume' : 'New' });
 
         // Use Claude Agents SDK
         await queryClaudeSDK(data.command, data.options, writer);
       } else if (data.type === 'cursor-command') {
-        console.log('[DEBUG] Cursor message:', data.command || '[Continue/Resume]');
-        console.log('📁 Project:', data.options?.cwd || 'Unknown');
-        console.log('🔄 Session:', data.options?.sessionId ? 'Resume' : 'New');
-        console.log('🤖 Model:', data.options?.model || 'default');
+        logger.debug('Cursor message:', { command: data.command || '[Continue/Resume]' });
+        logger.debug('📁 Project:', { project: data.options?.cwd || 'Unknown' });
+        logger.debug('🔄 Session:', { session: data.options?.sessionId ? 'Resume' : 'New' });
+        logger.debug('🤖 Model:', { model: data.options?.model || 'default' });
         await spawnCursor(data.command, data.options, writer);
       } else if (data.type === 'codex-command') {
-        console.log('[DEBUG] Codex message:', data.command || '[Continue/Resume]');
-        console.log('📁 Project:', data.options?.projectPath || data.options?.cwd || 'Unknown');
-        console.log('🔄 Session:', data.options?.sessionId ? 'Resume' : 'New');
-        console.log('🤖 Model:', data.options?.model || 'default');
+        logger.debug('Codex message:', { command: data.command || '[Continue/Resume]' });
+        logger.debug('📁 Project:', { project: data.options?.projectPath || data.options?.cwd || 'Unknown' });
+        logger.debug('🔄 Session:', { session: data.options?.sessionId ? 'Resume' : 'New' });
+        logger.debug('🤖 Model:', { model: data.options?.model || 'default' });
         await queryCodex(data.command, data.options, writer);
       } else if (data.type === 'gemini-command') {
-        console.log('[DEBUG] Gemini message:', data.command || '[Continue/Resume]');
-        console.log('📁 Project:', data.options?.projectPath || data.options?.cwd || 'Unknown');
-        console.log('🔄 Session:', data.options?.sessionId ? 'Resume' : 'New');
-        console.log('🤖 Model:', data.options?.model || 'default');
+        logger.debug('Gemini message:', { command: data.command || '[Continue/Resume]' });
+        logger.debug('📁 Project:', { project: data.options?.projectPath || data.options?.cwd || 'Unknown' });
+        logger.debug('🔄 Session:', { session: data.options?.sessionId ? 'Resume' : 'New' });
+        logger.debug('🤖 Model:', { model: data.options?.model || 'default' });
         await spawnGemini(data.command, data.options, writer);
       } else if (data.type === 'cursor-resume') {
         // Backward compatibility: treat as cursor-command with resume and no prompt
-        console.log('[DEBUG] Cursor resume session (compat):', data.sessionId);
+        logger.debug('Cursor resume session (compat):', { sessionId: data.sessionId });
         await spawnCursor(
           '',
           {
@@ -1515,7 +1542,7 @@ function handleChatConnection(ws) {
           writer
         );
       } else if (data.type === 'abort-session') {
-        console.log('[DEBUG] Abort session request:', data.sessionId);
+        logger.debug('Abort session request:', { sessionId: data.sessionId });
         const provider = data.provider || 'claude';
         let success;
 
@@ -1549,7 +1576,7 @@ function handleChatConnection(ws) {
           });
         }
       } else if (data.type === 'cursor-abort') {
-        console.log('[DEBUG] Abort Cursor session:', data.sessionId);
+        logger.debug('Abort Cursor session:', { sessionId: data.sessionId });
         const success = abortCursorSession(data.sessionId);
         writer.send({
           type: 'session-aborted',
@@ -1610,7 +1637,7 @@ function handleChatConnection(ws) {
         });
       }
     } catch (error) {
-      console.error('[ERROR] Chat WebSocket error:', error.message);
+      logger.error('Chat WebSocket error:', error);
       writer.send({
         type: 'error',
         error: error.message,
@@ -1619,7 +1646,7 @@ function handleChatConnection(ws) {
   });
 
   ws.on('close', () => {
-    console.log('🔌 Chat client disconnected');
+    logger.info('Chat client disconnected');
     // Remove from connected clients
     connectedClients.delete(ws);
   });
@@ -1627,7 +1654,7 @@ function handleChatConnection(ws) {
 
 // Handle shell WebSocket connections
 function handleShellConnection(ws) {
-  console.log('🐚 Shell client connected');
+  logger.info('Shell client connected');
   let shellProcess = null;
   let ptySessionKey = null;
   let urlDetectionBuffer = '';
@@ -1636,7 +1663,7 @@ function handleShellConnection(ws) {
   ws.on('message', async (message) => {
     try {
       const data = JSON.parse(message);
-      console.log('📨 Shell message received:', data.type);
+      logger.debug('Shell message received:', { type: data.type });
 
       if (data.type === 'init') {
         const projectPath = data.projectPath || process.cwd();
@@ -1664,7 +1691,7 @@ function handleShellConnection(ws) {
         if (isLoginCommand) {
           const oldSession = ptySessionsMap.get(ptySessionKey);
           if (oldSession) {
-            console.log('🧹 Cleaning up existing login session:', ptySessionKey);
+            logger.debug('Cleaning up existing login session:', { ptySessionKey });
             if (oldSession.timeoutId) clearTimeout(oldSession.timeoutId);
             if (oldSession.pty && oldSession.pty.kill) oldSession.pty.kill();
             ptySessionsMap.delete(ptySessionKey);
@@ -1673,7 +1700,7 @@ function handleShellConnection(ws) {
 
         const existingSession = isLoginCommand ? null : ptySessionsMap.get(ptySessionKey);
         if (existingSession) {
-          console.log('♻️  Reconnecting to existing PTY session:', ptySessionKey);
+          logger.debug('Reconnecting to existing PTY session:', { ptySessionKey });
           shellProcess = existingSession.pty;
 
           clearTimeout(existingSession.timeoutId);
@@ -1686,7 +1713,7 @@ function handleShellConnection(ws) {
           );
 
           if (existingSession.buffer && existingSession.buffer.length > 0) {
-            console.log(`📜 Sending ${existingSession.buffer.length} buffered messages`);
+            logger.debug(`Sending ${existingSession.buffer.length} buffered messages`);
             existingSession.buffer.forEach((bufferedData) => {
               ws.send(
                 JSON.stringify({
@@ -1702,14 +1729,13 @@ function handleShellConnection(ws) {
           return;
         }
 
-        console.log('[INFO] Starting shell in:', projectPath);
-        console.log(
-          '📋 Session info:',
-          hasSession ? `Resume session ${sessionId}` : isPlainShell ? 'Plain shell mode' : 'New session'
-        );
-        console.log('🤖 Provider:', isPlainShell ? 'plain-shell' : provider);
+        logger.info('Starting shell in:', { projectPath });
+        logger.debug('📋 Session info:', {
+          info: hasSession ? `Resume session ${sessionId}` : isPlainShell ? 'Plain shell mode' : 'New session',
+        });
+        logger.debug('Provider:', { provider: isPlainShell ? 'plain-shell' : provider });
         if (initialCommand) {
-          console.log('⚡ Initial command:', initialCommand);
+          logger.debug('Initial command:', { initialCommand });
         }
 
         // First send a welcome message
@@ -1797,7 +1823,7 @@ function handleShellConnection(ws) {
                   }
                 }
               } catch (err) {
-                console.error('Failed to get Gemini CLI session ID:', err);
+                logger.error('Failed to get Gemini CLI session ID:', err);
               }
             }
 
@@ -1820,7 +1846,7 @@ function handleShellConnection(ws) {
             }
           }
 
-          console.log('🔧 Executing shell command:', shellCommand);
+          logger.debug('Executing shell command:', { shellCommand });
 
           // Use appropriate shell based on platform
           const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash';
@@ -1829,7 +1855,7 @@ function handleShellConnection(ws) {
           // Use terminal dimensions from client if provided, otherwise use defaults
           const termCols = data.cols || 80;
           const termRows = data.rows || 24;
-          console.log('📐 Using terminal dimensions:', termCols, 'x', termRows);
+          logger.debug('Using terminal dimensions:', { cols: termCols, rows: termRows });
 
           // 使用 Bun 内置 PTY
           // 删除 CLAUDECODE 环境变量，避免嵌套 Claude 会话
@@ -1917,7 +1943,7 @@ function handleShellConnection(ws) {
             },
           });
 
-          console.log('🟢 Shell process started with Bun PTY');
+          logger.info('Shell process started with Bun PTY');
 
           ptySessionsMap.set(ptySessionKey, {
             pty: shellProcess,
@@ -1928,7 +1954,7 @@ function handleShellConnection(ws) {
             sessionId,
           });
         } catch (spawnError) {
-          console.error('[ERROR] Error spawning process:', spawnError);
+          logger.error('Error spawning process:', spawnError);
           ws.send(
             JSON.stringify({
               type: 'output',
@@ -1942,16 +1968,16 @@ function handleShellConnection(ws) {
           try {
             shellProcess.terminal.write(data.data);
           } catch (error) {
-            console.error('Error writing to shell:', error);
+            logger.error('Error writing to shell:', error);
           }
         } else {
-          console.warn('No active shell process to send input to');
+          logger.warn('No active shell process to send input to');
         }
       } else if (data.type === 'resize') {
         // Bun PTY 不支持 resize，跳过
       }
     } catch (error) {
-      console.error('[ERROR] Shell WebSocket error:', error.message);
+      logger.error('Shell WebSocket error:', error);
       if (ws.readyState === WebSocket.OPEN) {
         ws.send(
           JSON.stringify({
@@ -1964,16 +1990,16 @@ function handleShellConnection(ws) {
   });
 
   ws.on('close', () => {
-    console.log('🔌 Shell client disconnected');
+    logger.info('Shell client disconnected');
 
     if (ptySessionKey) {
       const session = ptySessionsMap.get(ptySessionKey);
       if (session) {
-        console.log('⏳ PTY session kept alive, will timeout in 30 minutes:', ptySessionKey);
+        logger.debug('PTY session kept alive, will timeout in 30 minutes:', { ptySessionKey });
         session.ws = null;
 
         session.timeoutId = setTimeout(() => {
-          console.log('⏰ PTY session timeout, killing process:', ptySessionKey);
+          logger.info('PTY session timeout, killing process:', { ptySessionKey });
           if (session.pty && session.pty.kill) {
             session.pty.kill();
           }
@@ -1984,7 +2010,7 @@ function handleShellConnection(ws) {
   });
 
   ws.on('error', (error) => {
-    console.error('[ERROR] Shell WebSocket error:', error);
+    logger.error('Shell WebSocket error:', error);
   });
 }
 // Audio transcription endpoint
@@ -2124,18 +2150,18 @@ Agent instructions:`;
             transcribedText = completion.choices[0].message.content || transcribedText;
           }
         } catch (gptError) {
-          console.error('GPT processing error:', gptError);
+          logger.error('GPT processing error:', gptError);
           // Fall back to original transcription if GPT fails
         }
 
         res.json({ text: transcribedText });
       } catch (error) {
-        console.error('Transcription error:', error);
+        logger.error('Transcription error:', error);
         res.status(500).json({ error: error.message });
       }
     });
   } catch (error) {
-    console.error('Endpoint error:', error);
+    logger.error('Endpoint error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -2213,14 +2239,14 @@ app.post('/api/projects/:projectName/upload-images', authenticateToken, async (r
 
         res.json({ images: processedImages });
       } catch (error) {
-        console.error('Error processing images:', error);
+        logger.error('Error processing images:', error);
         // Clean up any remaining files
         await Promise.all(req.files.map((f) => fs.unlink(f.path).catch(() => {})));
         res.status(500).json({ error: 'Failed to process images' });
       }
     });
   } catch (error) {
-    console.error('Error in image upload endpoint:', error);
+    logger.error('Error in image upload endpoint:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -2337,7 +2363,7 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
     try {
       projectPath = await extractProjectDirectory(projectName);
     } catch (error) {
-      console.error('Error extracting project directory:', error);
+      logger.error('Error extracting project directory:', error);
       return res.status(500).json({ error: 'Failed to determine project path' });
     }
 
@@ -2408,7 +2434,7 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
       },
     });
   } catch (error) {
-    console.error('Error reading session token usage:', error);
+    logger.error('Error reading session token usage:', error);
     res.status(500).json({ error: 'Failed to read session token usage' });
   }
 });
@@ -2511,7 +2537,7 @@ async function getFileTree(dirPath, maxDepth = 3, currentDepth = 0, showHidden =
   } catch (error) {
     // Only log non-permission errors to avoid spam
     if (error.code !== 'EACCES' && error.code !== 'EPERM') {
-      console.error('Error reading directory:', error);
+      logger.error('Error reading directory:', error);
     }
   }
 
@@ -2566,7 +2592,7 @@ async function startServer() {
 
       // Start server-side plugin processes for enabled plugins
       startEnabledPluginServers().catch((err) => {
-        console.error('[Plugins] Error during startup:', err.message);
+        logger.error('Error during startup:', err);
       });
     });
 
@@ -2578,7 +2604,7 @@ async function startServer() {
     process.on('SIGTERM', () => void shutdownPlugins());
     process.on('SIGINT', () => void shutdownPlugins());
   } catch (error) {
-    console.error('[ERROR] Failed to start server:', error);
+    logger.error('Failed to start server:', error);
     process.exit(1);
   }
 }

@@ -1,4 +1,7 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback } from 'react';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('useLocalStorage');
 
 /**
  * Custom hook to persist state in localStorage.
@@ -9,21 +12,21 @@ import { useState, useCallback } from "react";
  */
 function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((prev: T) => T)) => void] {
   const [storedValue, setStoredValue] = useState<T>(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === 'undefined') {
       return initialValue;
     }
     try {
       const item = window.localStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
-      console.log(error);
+      logger.error(error);
       return initialValue;
     }
   });
 
   const setValue = useCallback(
     (value: T | ((prev: T) => T)) => {
-      if (typeof window === "undefined") {
+      if (typeof window === 'undefined') {
         return;
       }
       try {
@@ -31,10 +34,10 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((pre
         window.localStorage.setItem(key, JSON.stringify(valueToStore));
         setStoredValue(valueToStore);
       } catch (error) {
-        console.log(error);
+        logger.error(error);
       }
     },
-    [key, storedValue],
+    [key, storedValue]
   );
 
   return [storedValue, setValue];

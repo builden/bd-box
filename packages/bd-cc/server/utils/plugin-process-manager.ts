@@ -1,6 +1,9 @@
 import { spawn } from 'child_process';
 import path from 'path';
 import { scanPlugins, getPluginsConfig, getPluginDir } from './plugin-loader.ts';
+import { createLogger } from '../lib/logger.ts';
+
+const logger = createLogger('utils/plugin-process-manager');
 
 // Map<pluginName, { process, port }>
 const runningPlugins = new Map();
@@ -23,7 +26,6 @@ export function startPluginServer(name, pluginDir, serverEntry) {
   }
 
   const startPromise = new Promise((resolve, reject) => {
-
     const serverPath = path.join(pluginDir, serverEntry);
 
     // Restricted env — only essentials, no host secrets
@@ -67,7 +69,7 @@ export function startPluginServer(name, pluginDir, serverEntry) {
               runningPlugins.delete(name);
             });
 
-            console.log(`[Plugins] Server started for "${name}" on port ${msg.port}`);
+            logger.info(`Server started for "${name}" on port ${msg.port}`);
             resolve(msg.port);
           }
         } catch {
@@ -77,7 +79,7 @@ export function startPluginServer(name, pluginDir, serverEntry) {
     });
 
     pluginProcess.stderr.on('data', (data) => {
-      console.warn(`[Plugin:${name}] ${data.toString().trim()}`);
+      logger.warn(`[Plugin:${name}] ${data.toString().trim()}`);
     });
 
     pluginProcess.on('error', (err) => {
@@ -131,7 +133,7 @@ export function stopPluginServer(name) {
       }
     }, 5000);
 
-    console.log(`[Plugins] Server stopped for "${name}"`);
+    logger.info(`Server stopped for "${name}"`);
   });
 }
 
@@ -178,7 +180,7 @@ export async function startEnabledPluginServers() {
     try {
       await startPluginServer(plugin.name, pluginDir, plugin.server);
     } catch (err) {
-      console.error(`[Plugins] Failed to start server for "${plugin.name}":`, err.message);
+      logger.error(`Failed to start server for "${plugin.name}":`, err);
     }
   }
 }

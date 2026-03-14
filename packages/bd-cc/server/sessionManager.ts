@@ -2,7 +2,9 @@ import { promises as fs } from 'fs';
 import { debounce } from 'radash';
 import path from 'path';
 import os from 'os';
+import { createLogger } from './lib/logger.ts';
 
+const logger = createLogger('sessionManager');
 
 interface Session {
   id: string;
@@ -39,7 +41,7 @@ class SessionManager {
     try {
       await fs.mkdir(this.sessionsDir, { recursive: true });
     } catch (error) {
-      // console.error('Error creating sessions directory:', error);
+      logger.error('Error creating sessions directory:', error);
     }
   }
 
@@ -105,7 +107,7 @@ class SessionManager {
       const filePath = this._safeFilePath(sessionId);
       await fs.writeFile(filePath, JSON.stringify(session, null, 2));
     } catch (error) {
-      // console.error('Error saving session:', error);
+      logger.error('Error saving session:', error);
     }
 
     this.pendingSaves.delete(sessionId);
@@ -196,7 +198,7 @@ class SessionManager {
       const filePath = this._safeFilePath(sessionId);
       await fs.writeFile(filePath, JSON.stringify(session, null, 2));
     } catch (error) {
-      // console.error('Error saving session:', error);
+      logger.error('Error saving session:', error);
     }
   }
 
@@ -221,7 +223,7 @@ class SessionManager {
 
             this.sessions.set(session.id, session);
           } catch (error) {
-            // console.error(`Error loading session ${file}:`, error);
+            logger.error(`Error loading session ${file}:`, error);
           }
         }
       }
@@ -232,7 +234,7 @@ class SessionManager {
         if (oldestKey) this.sessions.delete(oldestKey);
       }
     } catch (error) {
-      // console.error('Error loading sessions:', error);
+      logger.error('Error loading sessions:', error);
     }
   }
 
@@ -244,7 +246,7 @@ class SessionManager {
       const filePath = this._safeFilePath(sessionId);
       await fs.unlink(filePath);
     } catch (error) {
-      // console.error('Error deleting session file:', error);
+      logger.error('Error deleting session file:', error);
     }
   }
 
