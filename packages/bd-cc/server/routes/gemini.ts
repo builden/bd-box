@@ -2,8 +2,10 @@ import express from 'express';
 import sessionManager from '../sessionManager.ts';
 import { sessionNamesDb } from '../database/index.ts';
 import { getGeminiCliSessionMessages } from '../project-service.ts';
+import { createLogger } from '../lib/logger';
 
 const router = express.Router();
+const logger = createLogger('gemini-routes');
 
 router.get('/sessions/:sessionId/messages', async (req, res) => {
   try {
@@ -29,7 +31,7 @@ router.get('/sessions/:sessionId/messages', async (req, res) => {
       limit: messages.length,
     });
   } catch (error) {
-    console.error('Error fetching Gemini session messages:', error);
+    logger.error('Error fetching Gemini session messages:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -46,7 +48,7 @@ router.delete('/sessions/:sessionId', async (req, res) => {
     sessionNamesDb.deleteName(sessionId, 'gemini');
     res.json({ success: true });
   } catch (error) {
-    console.error(`Error deleting Gemini session ${req.params.sessionId}:`, error);
+    logger.error(`Error deleting Gemini session ${req.params.sessionId}:`, error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
