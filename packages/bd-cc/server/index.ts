@@ -8,15 +8,10 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { createLogger } from './lib/logger';
-import {
-  VALID_PROVIDERS,
-  PROVIDER_WATCH_PATHS,
-  WATCHER_IGNORED_PATTERNS,
-  WATCHER_DEBOUNCE_MS,
-} from './constants/providers';
 import { c } from './utils/terminal-colors';
 import { handleChatConnection } from './utils/chat-handler';
 import { createShellHandler } from './utils/shell-handler';
+import { setupProjectsWatcher, connectedClients } from './utils/project-watcher';
 import { PORT, HOST, DISPLAY_HOST } from './constants/server';
 
 const logger = createLogger('server/index');
@@ -30,7 +25,6 @@ import express from 'express';
 import { WebSocketServer, WebSocket } from 'ws';
 import http from 'http';
 import cors from 'cors';
-import { promises as fsPromises } from 'fs';
 
 import {
   getProjects,
@@ -76,128 +70,6 @@ import { IS_PLATFORM } from './env.ts';
 // ============================================================================
 // region: app initialization
 // ============================================================================
-let projectsWatchers = [];
-let projectsWatcherDebounceTimer = null;
-const connectedClients = new Set();
-let isGetProjectsRunning = false; // Flag to prevent reentrant calls
-
-// Broadcast progress to all connected WebSocket clients
-function broadcastProgress(progress) {
-  const message = JSON.stringify({
-    type: 'loading_progress',
-    ...progress,
-  });
-  connectedClients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(message);
-    }
-  });
-}
-
-// Setup file system watchers for Claude, Cursor, and Codex project/session folders
-async function setupProjectsWatcher() {
-  const chokidar = (await import('chokidar')).default;
-
-  if (projectsWatcherDebounceTimer) {
-    clearTimeout(projectsWatcherDebounceTimer);
-    projectsWatcherDebounceTimer = null;
-  }
-
-  await Promise.all(
-    projectsWatchers.map(async (watcher) => {
-      try {
-        await watcher.close();
-      } catch (error) {
-        logger.warn('Failed to close watcher:', error);
-      }
-    })
-  );
-  projectsWatchers = [];
-
-  const debouncedUpdate = (eventType, filePath, provider, rootPath) => {
-    if (projectsWatcherDebounceTimer) {
-      clearTimeout(projectsWatcherDebounceTimer);
-    }
-
-    projectsWatcherDebounceTimer = setTimeout(async () => {
-      // Prevent reentrant calls
-      if (isGetProjectsRunning) {
-        return;
-      }
-
-      try {
-        isGetProjectsRunning = true;
-
-        // Clear project directory cache when files change
-        clearProjectDirectoryCache();
-
-        // Get updated projects list
-        const updatedProjects = await getProjects(broadcastProgress);
-
-        // Notify all connected clients about the project changes
-        const updateMessage = JSON.stringify({
-          type: 'projects_updated',
-          projects: updatedProjects,
-          timestamp: new Date().toISOString(),
-          changeType: eventType,
-          changedFile: path.relative(rootPath, filePath),
-          watchProvider: provider,
-        });
-
-        connectedClients.forEach((client) => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(updateMessage);
-          }
-        });
-      } catch (error) {
-        logger.error('Error handling project changes:', error);
-      } finally {
-        isGetProjectsRunning = false;
-      }
-    }, WATCHER_DEBOUNCE_MS);
-  };
-
-  for (const { provider, rootPath } of PROVIDER_WATCH_PATHS) {
-    try {
-      // chokidar v4 emits ENOENT via the "error" event for missing roots and will not auto-recover.
-      // Ensure provider folders exist before creating the watcher so watching stays active.
-      await fsPromises.mkdir(rootPath, { recursive: true });
-
-      // Initialize chokidar watcher with optimized settings
-      const watcher = chokidar.watch(rootPath, {
-        ignored: WATCHER_IGNORED_PATTERNS,
-        persistent: true,
-        ignoreInitial: true, // Don't fire events for existing files on startup
-        followSymlinks: false,
-        depth: 10, // Reasonable depth limit
-        awaitWriteFinish: {
-          stabilityThreshold: 100, // Wait 100ms for file to stabilize
-          pollInterval: 50,
-        },
-      });
-
-      // Set up event listeners
-      watcher
-        .on('add', (filePath) => debouncedUpdate('add', filePath, provider, rootPath))
-        .on('change', (filePath) => debouncedUpdate('change', filePath, provider, rootPath))
-        .on('unlink', (filePath) => debouncedUpdate('unlink', filePath, provider, rootPath))
-        .on('addDir', (dirPath) => debouncedUpdate('addDir', dirPath, provider, rootPath))
-        .on('unlinkDir', (dirPath) => debouncedUpdate('unlinkDir', dirPath, provider, rootPath))
-        .on('error', (error) => {
-          logger.error(`${provider} watcher error:`, error);
-        })
-        .on('ready', () => {});
-
-      projectsWatchers.push(watcher);
-    } catch (error) {
-      logger.error(`Failed to setup ${provider} watcher for ${rootPath}:`, error);
-    }
-  }
-
-  if (projectsWatchers.length === 0) {
-    logger.error('Failed to setup any provider watchers');
-  }
-}
 
 const app = express();
 const server = http.createServer(app);
