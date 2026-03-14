@@ -75,8 +75,8 @@ export function useFileMentions({ selectedProject, input, setInput, textareaRef 
           return;
         }
 
-        const files = (await response.json()) as ProjectFileNode[];
-        setFileList(flattenFileTree(files));
+        const data = (await response.json()) as { files: ProjectFileNode[] };
+        setFileList(flattenFileTree(data.files));
       } catch (error) {
         // Ignore aborts from rapid project switches; we only care about the latest request.
         if ((error as { name?: string })?.name === 'AbortError') {

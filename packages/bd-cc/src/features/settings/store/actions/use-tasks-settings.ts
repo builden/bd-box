@@ -32,7 +32,7 @@ export function useTasksSettings() {
   // 检查 TaskMaster 安装状态
   const checkInstallation = useCallback(async () => {
     try {
-      const res = await authenticatedFetch('/taskmasters/installation-status');
+      const res = await authenticatedFetch('/api/taskmasters/installation-status');
       if (res.ok) {
         const data = await res.json();
         setInstallationStatus(data);

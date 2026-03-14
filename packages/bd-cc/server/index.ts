@@ -95,6 +95,7 @@ import userRoutes from './routes/users.ts';
 import codexRoutes from './routes/codex.ts';
 import geminiRoutes from './routes/gemini.ts';
 import pluginsRoutes from './routes/plugins.ts';
+import skillsRoutes from './routes/skills.ts';
 import { startEnabledPluginServers, stopAllPlugins } from './utils/plugins';
 import { initializeDatabase, sessionNamesDb, applyCustomSessionNames } from './database/db.ts';
 import { validateApiKey, authenticateToken, authenticateWebSocket } from './middleware/auth.ts';
@@ -470,6 +471,7 @@ app.use('/api/gemini', authenticateToken, geminiRoutes);
 
 // Plugins API Routes (protected)
 app.use('/api/plugins', authenticateToken, pluginsRoutes);
+app.use('/api/skills', authenticateToken, skillsRoutes);
 
 // Agent API Routes (uses API key authentication)
 app.use('/api/agent', agentRoutes);

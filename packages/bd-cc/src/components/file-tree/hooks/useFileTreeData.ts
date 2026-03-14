@@ -56,9 +56,9 @@ export function useFileTreeData(selectedProject: Project | null): UseFileTreeDat
           return;
         }
 
-        const data = (await response.json()) as FileTreeNode[];
+        const data = (await response.json()) as { files: FileTreeNode[] };
         if (isActive) {
-          setFiles(data);
+          setFiles(data.files);
         }
       } catch (error) {
         if ((error as { name?: string }).name === 'AbortError') {
