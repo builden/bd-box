@@ -26,38 +26,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import http from 'http';
 import cors from 'cors';
 
-import {
-  getProjects,
-  getSessions,
-  getSessionMessages,
-  renameProject,
-  deleteSession,
-  deleteProject,
-  addProjectManually,
-  extractProjectDirectory,
-  clearProjectDirectoryCache,
-  searchConversations,
-} from './project-service.ts';
-import gitRoutes from './routes/git.ts';
-import systemRoutes from './routes/system.ts';
-import inlineProjectsRoutes from './routes/inline-projects.ts';
-import inlineFilesRoutes from './routes/inline-files.ts';
-import mediaRoutes from './routes/media.ts';
-import authRoutes from './routes/auth.ts';
-import mcpRoutes from './routes/mcp.ts';
-import cursorRoutes from './routes/cursor.ts';
-import taskmasterRoutes from './routes/taskmasters.ts';
-import mcpUtilsRoutes from './routes/mcp-utils.ts';
-import commandsRoutes from './routes/commands.ts';
-import settingsRoutes from './routes/settings.ts';
-import agentRoutes from './routes/agent.ts';
-import projectsRoutes, { WORKSPACES_ROOT, validateWorkspacePath } from './routes/projects.ts';
-import cliAuthRoutes from './routes/cli-auth.ts';
-import userRoutes from './routes/users.ts';
-import codexRoutes from './routes/codex.ts';
-import geminiRoutes from './routes/gemini.ts';
-import pluginsRoutes from './routes/plugins.ts';
-import skillsRoutes from './routes/skills.ts';
+import { registerRoutes } from './routes/index.ts';
 import { startEnabledPluginServers, stopAllPlugins } from './utils/plugins';
 import { initializeDatabase } from './database/db.ts';
 import { validateApiKey, authenticateToken, authenticateWebSocket } from './middleware/auth.ts';
@@ -153,79 +122,19 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // ============================================================================
 // region: routes registration
 // ============================================================================
-// Public health check endpoint (no authentication required)
-// System routes (health, update)
-app.use('/', systemRoutes);
+// Register API routes
+registerRoutes(app);
 
-// Inline projects routes (extracted from index.ts)
-app.use('/', authenticateToken, inlineProjectsRoutes);
-app.use('/', authenticateToken, inlineFilesRoutes);
-app.use('/', authenticateToken, mediaRoutes);
-
-// Optional API key validation (if configured)
-app.use('/api', validateApiKey);
-
-// Authentication routes (public)
-app.use('/api/auth', authRoutes);
-
-// Projects API Routes (protected)
-app.use('/api/projects', authenticateToken, projectsRoutes);
-
-// Git API Routes (protected)
-app.use('/api/git', authenticateToken, gitRoutes);
-
-// MCP API Routes (protected)
-app.use('/api/mcp', authenticateToken, mcpRoutes);
-
-// Cursor API Routes (protected)
-app.use('/api/cursor', authenticateToken, cursorRoutes);
-
-// TaskMaster API Routes (protected)
-app.use('/api/taskmasters', authenticateToken, taskmasterRoutes);
-
-// MCP utilities
-app.use('/api/mcp-utils', authenticateToken, mcpUtilsRoutes);
-
-// Commands API Routes (protected)
-app.use('/api/commands', authenticateToken, commandsRoutes);
-
-// Settings API Routes (protected)
-app.use('/api/settings', authenticateToken, settingsRoutes);
-
-// CLI Authentication API Routes (protected)
-app.use('/api/cli', authenticateToken, cliAuthRoutes);
-
-// User API Routes (protected)
-app.use('/api/users', authenticateToken, userRoutes);
-
-// Codex API Routes (protected)
-app.use('/api/codex', authenticateToken, codexRoutes);
-
-// Gemini API Routes (protected)
-app.use('/api/gemini', authenticateToken, geminiRoutes);
-
-// Plugins API Routes (protected)
-app.use('/api/plugins', authenticateToken, pluginsRoutes);
-app.use('/api/skills', authenticateToken, skillsRoutes);
-
-// Agent API Routes (uses API key authentication)
-app.use('/api/agent', agentRoutes);
-
-// Serve public files (like api-docs.html)
+// Serve static files
 app.use(express.static(path.join(__dirname, '../public')));
-
-// Static files served after API routes
-// Add cache control: HTML files should not be cached, but assets can be cached
 app.use(
   express.static(path.join(__dirname, '../dist'), {
     setHeaders: (res, filePath) => {
       if (filePath.endsWith('.html')) {
-        // Prevent HTML caching to avoid service worker issues after builds
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
       } else if (filePath.match(/\.(js|css|woff2?|ttf|eot|svg|png|jpg|jpeg|gif|ico)$/)) {
-        // Cache static assets for 1 year (they have hashed names)
         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
       }
     },
