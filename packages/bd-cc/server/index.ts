@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-// Load environment variables before other imports execute
+// ============================================================================
+// region: imports & setup
+// ============================================================================
 import './env.ts';
 import fs from 'fs';
 import path from 'path';
@@ -14,6 +16,9 @@ const __dirname = dirname(__filename);
 
 const installMode = fs.existsSync(path.join(__dirname, '..', '.git')) ? 'git' : 'npm';
 
+// ============================================================================
+// region: constants
+// ============================================================================
 // ANSI color codes for terminal output
 const colors = {
   reset: '\x1b[0m',
@@ -91,6 +96,12 @@ import { initializeDatabase, sessionNamesDb, applyCustomSessionNames } from './d
 import { validateApiKey, authenticateToken, authenticateWebSocket } from './middleware/auth.ts';
 import { IS_PLATFORM } from './env.ts';
 
+// ============================================================================
+// endregion
+
+// ============================================================================
+// region: app initialization
+// ============================================================================
 const VALID_PROVIDERS = ['claude', 'codex', 'cursor', 'gemini'];
 
 // File system watchers for provider project/session folders
@@ -237,6 +248,12 @@ async function setupProjectsWatcher() {
 const app = express();
 const server = http.createServer(app);
 
+// ============================================================================
+// endregion
+
+// ============================================================================
+// region: PTY session constants
+// ============================================================================
 const ptySessionsMap = new Map();
 const PTY_SESSION_TIMEOUT = 30 * 60 * 1000;
 const SHELL_URL_PARSE_BUFFER_LIMIT = 32768;
@@ -345,6 +362,12 @@ app.locals.wss = wss;
 
 app.use(cors({ exposedHeaders: ['X-Refreshed-Token'] }));
 
+// ============================================================================
+// endregion
+
+// ============================================================================
+// region: middleware
+// ============================================================================
 // Global HTTP request logging middleware
 app.use((req, res, next) => {
   const startTime = Date.now();
@@ -384,6 +407,12 @@ app.use(
 );
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+// ============================================================================
+// endregion
+
+// ============================================================================
+// region: routes registration
+// ============================================================================
 // Public health check endpoint (no authentication required)
 app.get('/health', (req, res) => {
   res.json({
@@ -462,6 +491,12 @@ app.use(
   })
 );
 
+// ============================================================================
+// endregion
+
+// ============================================================================
+// region: inline API routes
+// ============================================================================
 // API Routes (protected)
 // /api/config endpoint removed - no longer needed
 // Frontend now uses window.location for WebSocket URLs
@@ -1011,6 +1046,11 @@ app.get('/api/projects/:projectName/files', authenticateToken, async (req, res) 
 });
 
 // ============================================================================
+// endregion
+
+// ============================================================================
+// region: file operations
+// ============================================================================
 // FILE OPERATIONS API ENDPOINTS
 // ============================================================================
 
@@ -1210,6 +1250,12 @@ app.put('/api/projects/:projectName/files/rename', authenticateToken, async (req
 });
 
 // DELETE /api/projects/:projectName/files - Delete file or directory
+// ============================================================================
+// endregion
+
+// ============================================================================
+// region: websocket handlers
+// ============================================================================
 app.delete('/api/projects/:projectName/files', authenticateToken, async (req, res) => {
   try {
     const { projectName } = req.params;
@@ -2013,6 +2059,12 @@ function handleShellConnection(ws) {
     logger.error('Shell WebSocket error:', error);
   });
 }
+// ============================================================================
+// endregion
+
+// ============================================================================
+// region: media endpoints
+// ============================================================================
 // Audio transcription endpoint
 app.post('/api/transcribe', authenticateToken, async (req, res) => {
   try {
@@ -2439,6 +2491,12 @@ app.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authentica
   }
 });
 
+// ============================================================================
+// endregion
+
+// ============================================================================
+// region: fallback
+// ============================================================================
 // Serve React app for all other routes (excluding static files)
 app.get('{*splat}', (req, res) => {
   // Skip requests for static assets (files with extensions)
@@ -2554,6 +2612,12 @@ const HOST = process.env.HOST || '0.0.0.0';
 // Show localhost in URL when binding to all interfaces (0.0.0.0 isn't a connectable address)
 const DISPLAY_HOST = HOST === '0.0.0.0' ? 'localhost' : HOST;
 
+// ============================================================================
+// endregion
+
+// ============================================================================
+// region: server startup
+// ============================================================================
 // Initialize database and start server
 async function startServer() {
   try {
@@ -2610,3 +2674,7 @@ async function startServer() {
 }
 
 startServer();
+
+// ============================================================================
+// endregion
+// ============================================================================
