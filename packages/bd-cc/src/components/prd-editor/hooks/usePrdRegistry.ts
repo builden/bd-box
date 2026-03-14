@@ -1,9 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { api } from '../../../utils/api';
-import type { ExistingPrdFile, PrdListResponse } from '../types';
-import { createLogger } from '@/lib/logger';
-
-const logger = createLogger('usePrdRegistry');
+import { usePrdRegistryQuery } from '@/hooks/usePrdQuery';
+import type { ExistingPrdFile } from '../types';
 
 type UsePrdRegistryArgs = {
   projectName?: string;
@@ -11,43 +7,21 @@ type UsePrdRegistryArgs = {
 
 type UsePrdRegistryResult = {
   existingPrds: ExistingPrdFile[];
-  refreshExistingPrds: () => Promise<void>;
+  isLoading: boolean;
+  error: Error | null;
+  refreshExistingPrds: () => Promise<unknown>;
 };
 
-function getPrdFiles(data: PrdListResponse): ExistingPrdFile[] {
-  return data.prdFiles || data.prds || [];
-}
-
+/**
+ * PRD 注册表 Hook - 使用 atomWithQuery 自动管理状态
+ */
 export function usePrdRegistry({ projectName }: UsePrdRegistryArgs): UsePrdRegistryResult {
-  const [existingPrds, setExistingPrds] = useState<ExistingPrdFile[]>([]);
-
-  const refreshExistingPrds = useCallback(async () => {
-    if (!projectName) {
-      setExistingPrds([]);
-      return;
-    }
-
-    try {
-      const response = await api.get(`/taskmaster/prd/${encodeURIComponent(projectName)}`);
-      if (!response.ok) {
-        setExistingPrds([]);
-        return;
-      }
-
-      const data = (await response.json()) as PrdListResponse;
-      setExistingPrds(getPrdFiles(data));
-    } catch (error) {
-      logger.error('Failed to fetch existing PRDs:', error);
-      setExistingPrds([]);
-    }
-  }, [projectName]);
-
-  useEffect(() => {
-    void refreshExistingPrds();
-  }, [refreshExistingPrds]);
+  const { data = [], isLoading, error, refetch } = usePrdRegistryQuery(projectName || '');
 
   return {
-    existingPrds,
-    refreshExistingPrds,
+    existingPrds: data as ExistingPrdFile[],
+    isLoading,
+    error: error as Error | null,
+    refreshExistingPrds: () => refetch(),
   };
 }

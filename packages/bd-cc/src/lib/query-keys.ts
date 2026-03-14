@@ -16,6 +16,9 @@ export const queryKeys = {
   // Plugins
   plugins: ['plugins'] as const,
 
+  // PRD
+  prds: (projectName: string) => ['prds', projectName] as const,
+
   // Skills
   skills: ['skills'] as const,
 
