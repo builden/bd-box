@@ -13,8 +13,8 @@ import {
   removeDir,
   npmInstall,
   mkTempDir,
-} from './git-loader';
-import { createLogger } from '../lib/logger.ts';
+} from '../git';
+import { createLogger } from '../../lib/logger';
 
 const logger = createLogger('utils/plugin-loader');
 

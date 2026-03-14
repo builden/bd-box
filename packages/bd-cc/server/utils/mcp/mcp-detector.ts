@@ -7,7 +7,7 @@
  */
 
 import { readMcpConfig } from './mcp-config';
-import { createLogger } from '../lib/logger.ts';
+import { createLogger } from '../../lib/logger';
 
 const logger = createLogger('utils/mcp-detector');
 

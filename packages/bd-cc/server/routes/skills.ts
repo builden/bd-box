@@ -6,7 +6,7 @@ import {
   installSkillFromGit,
   updateSkillFromGit,
   uninstallSkill,
-} from "../utils/skill-loader";
+} from "../utils/skills";
 
 const router = express.Router();
 

@@ -6,7 +6,7 @@
 
 import { promises as fs } from 'fs';
 import path from 'path';
-import { createLogger } from '../lib/logger.ts';
+import { createLogger } from '../../lib/logger';
 
 const logger = createLogger('utils/taskmaster-detector');
 

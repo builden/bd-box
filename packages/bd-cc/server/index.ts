@@ -86,7 +86,7 @@ import userRoutes from './routes/users.ts';
 import codexRoutes from './routes/codex.ts';
 import geminiRoutes from './routes/gemini.ts';
 import pluginsRoutes from './routes/plugins.ts';
-import { startEnabledPluginServers, stopAllPlugins } from './utils/plugin-process-manager.ts';
+import { startEnabledPluginServers, stopAllPlugins } from './utils/plugins';
 import { initializeDatabase, sessionNamesDb, applyCustomSessionNames } from './database/db.ts';
 import { validateApiKey, authenticateToken, authenticateWebSocket } from './middleware/auth.ts';
 import { IS_PLATFORM } from './env.ts';

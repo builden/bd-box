@@ -1,4 +1,4 @@
-import { runCommandRaw } from './spawn';
+import { runCommandRaw } from '../spawn';
 
 /**
  * Read git configuration from system's global git config

@@ -6,7 +6,7 @@
  * Integrates with the existing WebSocket system to provide real-time updates.
  */
 
-import { createLogger } from '../lib/logger.ts';
+import { createLogger } from '../../lib/logger';
 
 const logger = createLogger('utils/taskmaster-ws');
 

@@ -17,9 +17,9 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import os from 'os';
 import { extractProjectDirectory } from '../project-service.ts';
-import { detectTaskMasterMCPServer } from '../utils/mcp-detector.ts';
-import { detectTaskMasterFolder } from '../utils/taskmaster-detector.ts';
-import { broadcastTaskMasterProjectUpdate, broadcastTaskMasterTasksUpdate } from '../utils/taskmaster-ws.ts';
+import { detectTaskMasterMCPServer } from '../utils/mcp';
+import { detectTaskMasterFolder } from '../utils/taskmaster';
+import { broadcastTaskMasterProjectUpdate, broadcastTaskMasterTasksUpdate } from '../utils/taskmaster';
 import { createLogger } from '../lib/logger.ts';
 
 const __filename = fileURLToPath(import.meta.url);

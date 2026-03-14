@@ -1,7 +1,7 @@
 import { spawn } from 'child_process';
 import path from 'path';
-import { scanPlugins, getPluginsConfig, getPluginDir } from './plugin-loader.ts';
-import { createLogger } from '../lib/logger.ts';
+import { scanPlugins, getPluginsConfig, getPluginDir } from './plugin-loader';
+import { createLogger } from '../../lib/logger';
 
 const logger = createLogger('utils/plugin-process-manager');
 

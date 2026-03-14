@@ -11,7 +11,7 @@ import {
   removeDir,
   mkTempDir,
   parseYamlFrontmatter,
-} from './git-loader';
+} from '../git';
 
 const SKILLS_DIR = path.join(os.homedir(), '.claude', 'skills');
 const SKILLS_CONFIG_PATH = path.join(os.homedir(), '.claude-code-ui', 'skills.json');

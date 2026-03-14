@@ -1,7 +1,7 @@
 import express from 'express';
 import { userDb } from '../database/index.ts';
 import { authenticateToken } from '../middleware/auth.ts';
-import { getSystemGitConfig } from '../utils/gitConfig.ts';
+import { getSystemGitConfig } from '../utils/git';
 import { runCommand } from '../utils/spawn.ts';
 import { validateGitConfig } from '../utils/validation.ts';
 import { createLogger, logApiEntry, logApiExit, logUserAction } from '../lib/logger.ts';

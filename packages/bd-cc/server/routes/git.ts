@@ -37,7 +37,7 @@ import {
   gitCommit,
   gitRevertLocalCommit,
   cleanCommitMessage,
-} from '../utils/git-operations.ts';
+} from '../utils/git';
 
 const router = express.Router();
 const logger = createLogger('git');

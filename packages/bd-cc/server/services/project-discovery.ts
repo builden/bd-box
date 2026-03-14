@@ -9,7 +9,7 @@ import path from 'path';
 import readline from 'readline';
 import os from 'os';
 import { normalizeComparablePath } from '../utils/project-utils';
-import { detectTaskMasterFolder } from '../utils/taskmaster-detector';
+import { detectTaskMasterFolder } from '../utils/taskmaster';
 import { loadProjectConfig, saveProjectConfig } from './project-config';
 import { createLogger } from '../lib/logger';
 
