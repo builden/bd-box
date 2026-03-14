@@ -27,16 +27,28 @@ const CHECKS = [
   {
     name: 'WebSocket 连接',
     check: async () => {
-      return new Promise((resolve) => {
+      try {
+        // 使用 Bun 的 WebSocket API
         const ws = new WebSocket('ws://localhost:3001/shell');
-        ws.onopen = () => {
-          ws.close();
-          resolve(true);
-        };
-        ws.onerror = () => resolve(false);
-        ws.onclose = () => resolve(false);
-        setTimeout(() => resolve(false), 5000);
-      });
+        return new Promise((resolve) => {
+          const timeout = setTimeout(() => {
+            ws.close();
+            resolve(false);
+          }, 5000);
+
+          ws.onopen = () => {
+            clearTimeout(timeout);
+            ws.close();
+            resolve(true);
+          };
+          ws.onerror = () => {
+            clearTimeout(timeout);
+            resolve(false);
+          };
+        });
+      } catch {
+        return false;
+      }
     },
   },
   {
