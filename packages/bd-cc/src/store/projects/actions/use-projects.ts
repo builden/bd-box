@@ -20,7 +20,12 @@ export function useProjects() {
   const navigate = useNavigate();
 
   // ========== TanStack Query 数据获取 (atomWithQuery 自动管理状态) ==========
-  const { data: projects = [], isLoading: isLoadingProjects, refetch: refetchProjects } = useProjectsQuery();
+  const {
+    data: projects = [],
+    isLoading: isLoadingProjects,
+    error: projectsError,
+    refetch: refetchProjects,
+  } = useProjectsQuery();
 
   // ========== 持久化状态 (使用 Jotai - 用于选中状态) ==========
   const [selectedProject] = useAtom(selectedProjectAtom);
@@ -186,6 +191,7 @@ export function useProjects() {
     // ========== UI 状态 ==========
     sidebarOpen,
     isLoadingProjects,
+    projectsError,
     loadingProgress: null,
     isInputFocused,
     showSettings,

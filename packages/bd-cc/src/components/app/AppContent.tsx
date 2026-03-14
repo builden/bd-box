@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 import Sidebar from '../sidebar/view/Sidebar';
 import MainContent from '../main-content/view/MainContent';
 import { useWebSocket } from '../../contexts/WebSocketContext';
@@ -32,6 +33,7 @@ export default function AppContent() {
     activeTab,
     sidebarOpen,
     isLoadingProjects,
+    projectsError,
     isInputFocused,
     externalMessageUpdate,
     showSettings,
@@ -114,7 +116,24 @@ export default function AppContent() {
   }, [isConnected, selectedSession?.id, sendMessage]);
 
   return (
-    <div className="fixed inset-0 flex bg-background">
+    <div className={`fixed inset-0 flex bg-background ${projectsError ? 'pt-10' : ''}`}>
+      {/* Error Banner */}
+      {projectsError && (
+        <div className="fixed left-0 right-0 top-0 z-50 flex items-center justify-between bg-red-50 px-4 py-2 text-sm text-red-800 dark:bg-red-900/30 dark:text-red-200">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            <span>Failed to load projects: {projectsError.message}</span>
+          </div>
+          <button
+            onClick={() => refreshProjectsSilently()}
+            className="flex items-center gap-1 rounded px-2 py-1 hover:bg-red-100 dark:hover:bg-red-800/50"
+          >
+            <RefreshCw className="h-3 w-3" />
+            Retry
+          </button>
+        </div>
+      )}
+
       {!isMobile ? (
         <div className="h-full flex-shrink-0 border-r border-border/50">
           <Sidebar {...sidebarSharedProps} />
