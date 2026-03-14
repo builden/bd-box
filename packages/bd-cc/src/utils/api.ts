@@ -47,12 +47,22 @@ export const authenticatedFetch = (url: string, options: FetchOptions = {}): Pro
         const contentType = response.headers.get('content-type');
         if (contentType?.includes('application/json')) {
           const errorData = await response.clone().json();
-          notificationService.error(title, errorData.error || errorData.message || message);
+          notificationService.error(title, errorData.error || errorData.message || message, {
+            url: path,
+            status: response.status,
+            context: { originalUrl: url },
+          });
         } else {
-          notificationService.error(title, message);
+          notificationService.error(title, message, {
+            url: path,
+            status: response.status,
+          });
         }
       } catch {
-        notificationService.error(title, message);
+        notificationService.error(title, message, {
+          url: path,
+          status: response.status,
+        });
       }
     }
 

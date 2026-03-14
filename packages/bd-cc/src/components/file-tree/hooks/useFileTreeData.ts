@@ -65,7 +65,11 @@ export function useFileTreeData(selectedProject: Project | null): UseFileTreeDat
 
         if (!result.success) {
           logger.error('Invalid file tree response:', result.error);
-          notificationService.error('数据格式错误', '文件列表响应格式不正确');
+          notificationService.error('数据格式错误', '文件列表响应格式不正确', {
+            url: `/api/projects/${projectName}/files`,
+            status: 200,
+            context: { zodError: result.error.format() },
+          });
           if (isActive) {
             setFiles([]);
           }

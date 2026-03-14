@@ -6,3 +6,6 @@
  */
 export * from './files';
 export * from './projects';
+export * from './skills';
+export * from './sessions';
+export * from './tasks';

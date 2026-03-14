@@ -15,6 +15,7 @@ import { getSessions, getSessionMessages, deleteSession } from '../services/proj
 import { searchConversations } from '../services/project-search.js';
 
 import { WORKSPACES_ROOT, validateWorkspacePath } from './projects.js';
+import { VALID_PROVIDERS } from '../constants/providers.js';
 
 import type { Request, Response } from 'express';
 
@@ -133,7 +134,6 @@ router.put('/api/sessions/:sessionId/rename', authenticateToken, async (req: Req
     if (summary.trim().length > 500) {
       return res.status(400).json({ error: 'Summary must not exceed 500 characters' });
     }
-    const VALID_PROVIDERS = ['claude', 'codex', 'cursor', 'gemini'];
     if (!provider || !VALID_PROVIDERS.includes(provider)) {
       return res.status(400).json({ error: `Provider must be one of: ${VALID_PROVIDERS.join(', ')}` });
     }

@@ -8,6 +8,9 @@ import { useAtom } from 'jotai';
 import { atomWithQuery } from 'jotai-tanstack-query';
 import { api } from '@/utils/api';
 import { queryKeys } from '@/lib/query-keys';
+import { ProjectListResponseSchema } from '@shared/api/projects';
+import { SessionsListResponseSchema } from '@shared/api/sessions';
+import { notificationService } from '@/components/app/GlobalNotifications';
 import { createLogger } from '@/lib/logger';
 import type { Project, ProjectSession } from '@/types';
 
@@ -31,7 +34,20 @@ const projectsAtom = atomWithQuery(() => ({
     if (!response.ok) {
       throw new Error(`Failed to fetch projects: ${response.statusText}`);
     }
-    return (await response.json()) as Project[];
+    const json = await response.json();
+    const result = ProjectListResponseSchema.safeParse(json);
+
+    if (!result.success) {
+      logger.error('Invalid projects response:', result.error);
+      notificationService.error('数据格式错误', '项目列表响应格式不正确', {
+        url: '/api/projects',
+        status: 200,
+        context: { zodError: result.error.format() },
+      });
+      return [];
+    }
+
+    return result.data as Project[];
   }),
   // 项目列表变化较慢，可以设置较长的 staleTime
   staleTime: 1000 * 60 * 5, // 5 minutes
@@ -60,7 +76,20 @@ function getSessionsAtom(projectName: string) {
           if (!response.ok) {
             throw new Error(`Failed to fetch sessions: ${response.statusText}`);
           }
-          return (await response.json()) as ProjectSession[];
+          const json = await response.json();
+          const result = SessionsListResponseSchema.safeParse(json);
+
+          if (!result.success) {
+            logger.error('Invalid sessions response:', result.error);
+            notificationService.error('数据格式错误', '会话列表响应格式不正确', {
+              url: `/api/projects/${projectName}/sessions`,
+              status: 200,
+              context: { zodError: result.error.format() },
+            });
+            return [];
+          }
+
+          return result.data.sessions || [];
         }),
         // 会话数据相对稳定，设置较长的 staleTime
         staleTime: 1000 * 60 * 2, // 2 minutes

@@ -104,7 +104,8 @@ router.get('/diff', async (req, res) => {
 
     const resolved = await resolveRepositoryFilePath(projectPath, file as string);
     if (!resolved) {
-      return res.status(400).json({ error: 'File not found' });
+      // 文件不存在（可能已删除），返回空 diff 而非错误
+      return res.json({ diff: '' });
     }
     const { repositoryRootPath, repositoryRelativeFilePath } = resolved;
 
@@ -175,7 +176,8 @@ router.get('/file-with-diff', async (req, res) => {
 
     const resolved = await resolveRepositoryFilePath(projectPath, file as string);
     if (!resolved) {
-      return res.status(400).json({ error: 'File not found' });
+      // 文件不存在（可能已删除），返回空内容而非错误
+      return res.json({ currentContent: '', oldContent: '', isDeleted: true, isUntracked: false });
     }
     const { repositoryRootPath, repositoryRelativeFilePath } = resolved;
 
@@ -820,7 +822,7 @@ router.post('/discard', async (req, res) => {
     await validateGitRepository(projectPath);
     const resolved = await resolveRepositoryFilePath(projectPath, file);
     if (!resolved) {
-      return res.status(400).json({ error: 'File not found' });
+      return res.status(404).json({ error: 'File not found' });
     }
     const { repositoryRootPath, repositoryRelativeFilePath } = resolved;
 
@@ -871,7 +873,7 @@ router.post('/delete-untracked', async (req, res) => {
     await validateGitRepository(projectPath);
     const resolved = await resolveRepositoryFilePath(projectPath, file);
     if (!resolved) {
-      return res.status(400).json({ error: 'File not found' });
+      return res.status(404).json({ error: 'File not found' });
     }
     const { repositoryRootPath, repositoryRelativeFilePath } = resolved;
 

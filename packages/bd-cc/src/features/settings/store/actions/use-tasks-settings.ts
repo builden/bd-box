@@ -8,6 +8,8 @@ import {
   installationStatusAtom,
   isCheckingInstallationAtom,
 } from '../primitives/tasks-settings-atom';
+import { TaskMasterStatusResponseSchema } from '@shared/api/tasks';
+import { notificationService } from '@/components/app/GlobalNotifications';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('useTasksSettings');
@@ -34,7 +36,23 @@ export function useTasksSettings() {
     try {
       const res = await authenticatedFetch('/api/taskmasters/installation-status');
       if (res.ok) {
-        const data = await res.json();
+        const json = await res.json();
+        const result = TaskMasterStatusResponseSchema.safeParse(json);
+
+        if (!result.success) {
+          logger.error('Invalid TaskMaster status response:', result.error);
+          notificationService.error('数据格式错误', 'TaskMaster 状态响应格式不正确', {
+            url: '/api/taskmasters/installation-status',
+            status: 200,
+            context: { zodError: result.error.format() },
+          });
+          setIsTaskMasterInstalled(false);
+          setIsTaskMasterReady(false);
+          setIsCheckingInstallation(false);
+          return;
+        }
+
+        const data = result.data;
         setInstallationStatus(data);
         setIsTaskMasterInstalled(data.installation?.isInstalled || false);
         setIsTaskMasterReady(data.isReady || false);
