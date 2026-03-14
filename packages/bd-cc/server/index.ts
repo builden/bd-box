@@ -74,7 +74,7 @@ import mcpRoutes from './routes/mcp.ts';
 import cursorRoutes from './routes/cursor/index.ts';
 import taskmasterRoutes from './routes/taskmasters/index.ts';
 import mcpUtilsRoutes from './routes/mcp-utils.ts';
-import commandsRoutes from './routes/commands.ts';
+import commandsRoutes from './routes/commands/index.ts';
 import settingsRoutes from './routes/settings.ts';
 import agentRoutes from './routes/agent/index.ts';
 import projectsRoutes, { WORKSPACES_ROOT, validateWorkspacePath } from './routes/projects.ts';
