@@ -1,7 +1,12 @@
 import { useAtom, useSetAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { selectedProjectAtom, selectedSessionAtom, activeTabAtom } from '../primitives/projects-atom';
+import {
+  selectedProjectAtom,
+  selectedSessionAtom,
+  activeTabAtom,
+  selectedProviderAtom,
+} from '../primitives/projects-atom';
 import { projectNamesAtom, currentProjectSessionsAtom, hasActiveSessionAtom } from '../domain/project-derived';
 import type { Project, ProjectSession, AppTab } from '@/types';
 import { useProjectsQuery } from '@/hooks/useProjectsQuery';
@@ -21,6 +26,7 @@ export function useProjects() {
   const [selectedProject] = useAtom(selectedProjectAtom);
   const [selectedSession] = useAtom(selectedSessionAtom);
   const [activeTab] = useAtom(activeTabAtom);
+  const [selectedProvider] = useAtom(selectedProviderAtom);
   const [projectNames] = useAtom(projectNamesAtom);
   const [sessions] = useAtom(currentProjectSessionsAtom);
   const [hasActiveSession] = useAtom(hasActiveSessionAtom);
@@ -86,8 +92,7 @@ export function useProjects() {
         setActiveTab('chat');
       }
 
-      const provider = localStorage.getItem('selected-provider') || 'claude';
-      if (provider === 'cursor') {
+      if (selectedProvider === 'cursor') {
         sessionStorage.setItem('cursorSessionId', session.id);
       }
 
@@ -97,7 +102,7 @@ export function useProjects() {
 
       navigate(`/session/${session.id}`);
     },
-    [activeTab, navigate, selectedProject, setActiveTab, setSelectedSession]
+    [activeTab, navigate, selectedProject, selectedProvider, setActiveTab, setSelectedSession]
   );
 
   // 创建新会话

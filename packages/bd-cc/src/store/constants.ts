@@ -9,6 +9,7 @@ export const STORAGE_KEYS = {
   SELECTED_PROJECT: 'bd-cc:selected-project',
   SELECTED_SESSION: 'bd-cc:selected-session',
   ACTIVE_TAB: 'bd-cc:active-tab',
+  SELECTED_PROVIDER: 'bd-cc:selected-provider',
   PLUGINS: 'bd-cc:plugins',
   SKILLS: 'bd-cc:skills',
   TASKS_ENABLED: 'bd-cc:tasks-enabled',

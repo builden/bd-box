@@ -2,6 +2,8 @@ import { atomWithStorage } from 'jotai/utils';
 import { STORAGE_KEYS } from '../../constants';
 import type { Project, ProjectSession, AppTab } from '@/types';
 
+export type Provider = 'claude' | 'cursor' | 'codex' | 'gemini';
+
 /**
  * 项目列表 atom
  */
@@ -21,3 +23,8 @@ export const selectedSessionAtom = atomWithStorage<ProjectSession | null>(STORAG
  * 当前激活的 Tab
  */
 export const activeTabAtom = atomWithStorage<AppTab>(STORAGE_KEYS.ACTIVE_TAB, 'chat');
+
+/**
+ * 当前选中的 AI 提供商
+ */
+export const selectedProviderAtom = atomWithStorage<Provider>(STORAGE_KEYS.SELECTED_PROVIDER, 'claude');
