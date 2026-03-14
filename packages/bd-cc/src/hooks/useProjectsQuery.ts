@@ -13,19 +13,28 @@ import type { Project, ProjectSession } from '@/types';
 
 const logger = createLogger('useProjectsQuery');
 
+// 复用查询逻辑
+const createQueryFetcher =
+  <T>(key: string, fetcher: () => Promise<T>) =>
+  async (): Promise<T> => {
+    logger.debug(`Fetching ${key} via TanStack Query`);
+    const data = await fetcher();
+    logger.debug(`${key} fetched`, { count: Array.isArray(data) ? data.length : 0 });
+    return data;
+  };
+
 // ============ Projects Query Atom ============
 const projectsAtom = atomWithQuery(() => ({
   queryKey: queryKeys.projects,
-  queryFn: async (): Promise<Project[]> => {
-    logger.debug('Fetching projects via TanStack Query');
+  queryFn: createQueryFetcher('projects', async () => {
     const response = await api.projects();
     if (!response.ok) {
       throw new Error(`Failed to fetch projects: ${response.statusText}`);
     }
-    const data = (await response.json()) as Project[];
-    logger.debug('Projects fetched', { count: data.length });
-    return data;
-  },
+    return (await response.json()) as Project[];
+  }),
+  // 项目列表变化较慢，可以设置较长的 staleTime
+  staleTime: 1000 * 60 * 5, // 5 minutes
 }));
 
 /**
@@ -45,17 +54,16 @@ function getSessionsAtom(projectName: string) {
       projectName,
       atomWithQuery(() => ({
         queryKey: queryKeys.projectSessions(projectName),
-        queryFn: async (): Promise<ProjectSession[]> => {
+        queryFn: createQueryFetcher(`sessions/${projectName}`, async () => {
           if (!projectName) return [];
-          logger.debug('Fetching sessions via TanStack Query', { projectName });
           const response = await api.sessions(projectName);
           if (!response.ok) {
             throw new Error(`Failed to fetch sessions: ${response.statusText}`);
           }
-          const data = (await response.json()) as ProjectSession[];
-          logger.debug('Sessions fetched', { projectName, count: data.length });
-          return data;
-        },
+          return (await response.json()) as ProjectSession[];
+        }),
+        // 会话数据相对稳定，设置较长的 staleTime
+        staleTime: 1000 * 60 * 2, // 2 minutes
       }))
     );
   }
@@ -64,6 +72,9 @@ function getSessionsAtom(projectName: string) {
 
 /**
  * 获取项目会话列表
+ *
+ * @param projectName - 项目名称
+ * @returns TanStack Query 结果 { data, isLoading, error, refetch }
  */
 export function useProjectSessionsQuery(projectName: string) {
   const [result] = useAtom(getSessionsAtom(projectName));
