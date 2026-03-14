@@ -21,7 +21,7 @@ export const TextContent: React.FC<TextContentProps> = ({ content, format = 'pla
       formattedJson = JSON.stringify(parsed, null, 2);
     } catch (e) {
       // If parsing fails, use original content
-      logger.warn('Failed to parse JSON content:', e);
+      logger.error('Failed to parse JSON content', e);
     }
 
     return (

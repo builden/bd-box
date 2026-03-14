@@ -15,7 +15,8 @@ import { thinkingModes } from '../constants/thinkingModes';
 import { grantClaudeToolPermission } from '../utils/chatPermissions';
 import { safeLocalStorage } from '../utils/chatStorage';
 import { createFakeSubmitEvent, isTemporarySessionId } from '../utils/sessionId';
-import type { ChatMessage, PendingPermissionRequest, PermissionMode } from '../types/types';
+import type { ChatMessage, ChatImage, PendingPermissionRequest, PermissionMode } from '../types/types';
+import type { SessionMessage } from '@shared/api/sessions';
 import type { Project, ProjectSession, SessionProvider } from '../../../types/app';
 import { escapeRegExp } from '../utils/chatFormatting';
 import { useFileMentions } from './useFileMentions';
@@ -53,7 +54,7 @@ interface UseChatComposerStateArgs {
   pendingViewSessionRef: { current: PendingViewSession | null };
   scrollToBottom: () => void;
   setChatMessages: Dispatch<SetStateAction<ChatMessage[]>>;
-  setSessionMessages?: Dispatch<SetStateAction<any[]>>;
+  setSessionMessages?: Dispatch<SetStateAction<SessionMessage[]>>;
   setIsLoading: (loading: boolean) => void;
   setCanAbortSession: (canAbort: boolean) => void;
   setClaudeStatus: (status: { text: string; tokens: number; can_interrupt: boolean } | null) => void;
@@ -69,7 +70,7 @@ interface MentionableFile {
 interface CommandExecutionResult {
   type: 'builtin' | 'custom';
   action?: string;
-  data?: any;
+  data?: Record<string, unknown>;
   content?: string;
   hasBashCommands?: boolean;
   hasFileIncludes?: boolean;
@@ -131,6 +132,10 @@ export function useChatComposerState({
   const handleBuiltInCommand = useCallback(
     (result: CommandExecutionResult) => {
       const { action, data } = result;
+      if (!data) {
+        logger.warn('handleBuiltInCommand received no data', { action });
+        return;
+      }
       switch (action) {
         case 'clear':
           setChatMessages([]);
@@ -142,25 +147,35 @@ export function useChatComposerState({
             ...previous,
             {
               type: 'assistant',
-              content: data.content,
+              content: String(data.content ?? ''),
               timestamp: Date.now(),
             },
           ]);
           break;
 
-        case 'model':
+        case 'model': {
+          const modelData = data as {
+            current?: { model?: string };
+            available?: { claude?: string[]; cursor?: string[] };
+          };
           setChatMessages((previous) => [
             ...previous,
             {
               type: 'assistant',
-              content: `**Current Model**: ${data.current.model}\n\n**Available Models**:\n\nClaude: ${data.available.claude.join(', ')}\n\nCursor: ${data.available.cursor.join(', ')}`,
+              content: `**Current Model**: ${modelData.current?.model ?? 'unknown'}\n\n**Available Models**:\n\nClaude: ${modelData.available?.claude?.join(', ') ?? 'none'}\n\nCursor: ${modelData.available?.cursor?.join(', ') ?? 'none'}`,
               timestamp: Date.now(),
             },
           ]);
           break;
+        }
 
         case 'cost': {
-          const costMessage = `**Token Usage**: ${data.tokenUsage.used.toLocaleString()} / ${data.tokenUsage.total.toLocaleString()} (${data.tokenUsage.percentage}%)\n\n**Estimated Cost**:\n- Input: $${data.cost.input}\n- Output: $${data.cost.output}\n- **Total**: $${data.cost.total}\n\n**Model**: ${data.model}`;
+          const costData = data as {
+            tokenUsage?: { used?: number; total?: number; percentage?: number };
+            cost?: { input?: number; output?: number; total?: number };
+            model?: string;
+          };
+          const costMessage = `**Token Usage**: ${costData.tokenUsage?.used?.toLocaleString() ?? 0} / ${costData.tokenUsage?.total?.toLocaleString() ?? 0} (${costData.tokenUsage?.percentage ?? 0}%)\n\n**Estimated Cost**:\n- Input: $${costData.cost?.input ?? 0}\n- Output: $${costData.cost?.output ?? 0}\n- **Total**: $${costData.cost?.total ?? 0}\n\n**Model**: ${costData.model ?? 'unknown'}`;
           setChatMessages((previous) => [
             ...previous,
             { type: 'assistant', content: costMessage, timestamp: Date.now() },
@@ -169,7 +184,15 @@ export function useChatComposerState({
         }
 
         case 'status': {
-          const statusMessage = `**System Status**\n\n- Version: ${data.version}\n- Uptime: ${data.uptime}\n- Model: ${data.model}\n- Provider: ${data.provider}\n- Node.js: ${data.nodeVersion}\n- Platform: ${data.platform}`;
+          const statusData = data as {
+            version?: string;
+            uptime?: string;
+            model?: string;
+            provider?: string;
+            nodeVersion?: string;
+            platform?: string;
+          };
+          const statusMessage = `**System Status**\n\n- Version: ${statusData.version ?? 'unknown'}\n- Uptime: ${statusData.uptime ?? 'unknown'}\n- Model: ${statusData.model ?? 'unknown'}\n- Provider: ${statusData.provider ?? 'unknown'}\n- Node.js: ${statusData.nodeVersion ?? 'unknown'}\n- Platform: ${statusData.platform ?? 'unknown'}`;
           setChatMessages((previous) => [
             ...previous,
             { type: 'assistant', content: statusMessage, timestamp: Date.now() },
@@ -177,13 +200,14 @@ export function useChatComposerState({
           break;
         }
 
-        case 'memory':
-          if (data.error) {
+        case 'memory': {
+          const memoryData = data as { error?: boolean; message?: string; path?: string; exists?: boolean };
+          if (memoryData.error) {
             setChatMessages((previous) => [
               ...previous,
               {
                 type: 'assistant',
-                content: `⚠️ ${data.message}`,
+                content: `⚠️ ${memoryData.message ?? 'Unknown error'}`,
                 timestamp: Date.now(),
               },
             ]);
@@ -192,42 +216,45 @@ export function useChatComposerState({
               ...previous,
               {
                 type: 'assistant',
-                content: `📝 ${data.message}\n\nPath: \`${data.path}\``,
+                content: `📝 ${memoryData.message ?? 'Done'}\n\nPath: \`${memoryData.path ?? ''}\``,
                 timestamp: Date.now(),
               },
             ]);
-            if (data.exists && onFileOpen) {
-              onFileOpen(data.path);
+            if (memoryData.exists && onFileOpen && memoryData.path) {
+              onFileOpen(memoryData.path);
             }
           }
           break;
+        }
 
         case 'config':
           onShowSettings?.();
           break;
 
-        case 'rewind':
-          if (data.error) {
+        case 'rewind': {
+          const rewindData = data as { error?: boolean; message?: string; steps?: number };
+          if (rewindData.error) {
             setChatMessages((previous) => [
               ...previous,
               {
                 type: 'assistant',
-                content: `⚠️ ${data.message}`,
+                content: `⚠️ ${rewindData.message ?? 'Unknown error'}`,
                 timestamp: Date.now(),
               },
             ]);
           } else {
-            setChatMessages((previous) => previous.slice(0, -data.steps * 2));
+            setChatMessages((previous) => previous.slice(0, -((rewindData.steps ?? 1) * 2)));
             setChatMessages((previous) => [
               ...previous,
               {
                 type: 'assistant',
-                content: `⏪ ${data.message}`,
+                content: `⏪ ${rewindData.message ?? 'Rewound'}`,
                 timestamp: Date.now(),
               },
             ]);
           }
           break;
+        }
 
         default:
           logger.warn('Unknown built-in command action', { action });
@@ -530,7 +557,8 @@ export function useChatComposerState({
           }
 
           const result = await response.json();
-          uploadedImages = result.images;
+          // result.images 是字符串数组，需要转换为 ChatImage[] 格式
+          uploadedImages = (result.images || []) as string[];
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Unknown error';
           logger.error('Image upload failed', error);
@@ -546,10 +574,16 @@ export function useChatComposerState({
         }
       }
 
+      // 将字符串数组转换为 ChatImage[] 格式
+      const chatImages: ChatImage[] = (uploadedImages as string[]).map((data, index) => ({
+        data,
+        name: `image-${index}`,
+      }));
+
       const userMessage: ChatMessage = {
         type: 'user',
         content: currentInput,
-        images: uploadedImages as any,
+        images: chatImages,
         timestamp: new Date(),
       };
 

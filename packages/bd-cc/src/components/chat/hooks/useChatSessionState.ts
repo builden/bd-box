@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import type { MutableRefObject } from 'react';
 import { api, authenticatedFetch } from '../../../utils/api';
 import type { ChatMessage, Provider } from '../types/types';
+import type { SessionMessage } from '@shared/api/sessions';
 import type { Project, ProjectSession } from '../../../types/app';
 import { safeLocalStorage } from '../utils/chatStorage';
 import {
@@ -66,7 +67,7 @@ export function useChatSessionState({
   });
   const [isLoading, setIsLoading] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(selectedSession?.id || null);
-  const [sessionMessages, setSessionMessages] = useState<any[]>([]);
+  const [sessionMessages, setSessionMessages] = useState<SessionMessage[]>([]);
   const [isLoadingSessionMessages, setIsLoadingSessionMessages] = useState(false);
   const [isLoadingMoreMessages, setIsLoadingMoreMessages] = useState(false);
   const [hasMoreMessages, setHasMoreMessages] = useState(false);
@@ -106,7 +107,7 @@ export function useChatSessionState({
   const loadSessionMessages = useCallback(
     async (projectName: string, sessionId: string, loadMore = false, provider: Provider | string = 'claude') => {
       if (!projectName || !sessionId) {
-        return [] as any[];
+        return [] as SessionMessage[];
       }
 
       const isInitialLoad = !loadMore;
@@ -169,7 +170,7 @@ export function useChatSessionState({
       }
 
       const data = await response.json();
-      const blobs = (data?.session?.messages || []) as any[];
+      const blobs = data?.session?.messages || [];
       return convertCursorSessionMessages(blobs, projectPath);
     } catch (error) {
       logger.error('Error loading Cursor session messages', error);

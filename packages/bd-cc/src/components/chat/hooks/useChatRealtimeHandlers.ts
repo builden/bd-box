@@ -276,8 +276,8 @@ export function useChatRealtimeHandlers({
         break;
 
       case 'token-budget':
-        if (latestMessage.data) {
-          setTokenBudget(latestMessage.data);
+        if (latestMessage.data && typeof latestMessage.data === 'object') {
+          setTokenBudget(latestMessage.data as Record<string, unknown>);
         }
         break;
 
@@ -606,7 +606,7 @@ export function useChatRealtimeHandlers({
             }
           }
         } catch (error) {
-          logger.warn('Error handling cursor-system message', error);
+          logger.error('Error handling cursor-system message', error);
         }
         break;
 
@@ -692,7 +692,7 @@ export function useChatRealtimeHandlers({
             return updated;
           });
         } catch (error) {
-          logger.warn('Error handling cursor-result message', error);
+          logger.error('Error handling cursor-result message', error);
         }
 
         if (cursorCompletedSessionId && !currentSessionId && cursorCompletedSessionId === pendingCursorSessionId) {
@@ -725,7 +725,7 @@ export function useChatRealtimeHandlers({
             }
           }
         } catch (error) {
-          logger.warn('Error handling cursor-output message', error);
+          logger.error('Error handling cursor-output message', error);
         }
         break;
 

@@ -18,7 +18,7 @@ export type Provider = z.infer<typeof ProviderEnum>;
  * | 字段 | 类型 | 必填 | 说明 |
  * |------|------|------|------|
  * | id | string | 是 | 会话唯一标识符 |
- * | sessionId | string | 否 | 会话 ID (兼容字段) |
+ * | sessionId | string | 否 | 会话 ID  |
  * | projectName | string | 是 | 所属项目名称 |
  * | displayName | string | 否 | UI 显示名称 |
  * | customName | string | 否 | 用户自定义名称 |
@@ -29,7 +29,7 @@ export type Provider = z.infer<typeof ProviderEnum>;
  */
 export const SessionSchema = z.object({
   id: z.string().describe('会话唯一标识符'),
-  sessionId: z.string().optional().describe('会话 ID (兼容字段)'),
+  sessionId: z.string().optional().describe('会话 ID '),
   projectName: z.string().describe('所属项目名称'),
   displayName: z.string().optional().describe('UI 显示名称'),
   customName: z.string().optional().describe('用户自定义名称'),
@@ -103,7 +103,7 @@ export type MessageContentBlock = z.infer<typeof MessageContentBlockSchema>;
  * | timestamp | string | 否 | 时间戳 (ISO 8601) |
  */
 export const SessionMessageSchema = z.object({
-  id: z.string().optional().describe('消息 ID'),
+  id: z.string().describe('消息 ID'),
   type: z.string().describe('消息类型'),
   role: MessageRoleEnum.optional().describe('消息角色'),
   content: z.string().optional().describe('消息文本内容'),

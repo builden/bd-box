@@ -16,14 +16,14 @@ export const safeLocalStorage = {
             value = JSON.stringify(truncated);
           }
         } catch (parseError) {
-          logger.warn('Could not parse chat messages for truncation:', parseError);
+          logger.error('Could not parse chat messages for truncation', parseError);
         }
       }
 
       localStorage.setItem(key, value);
     } catch (error: any) {
       if (error?.name === 'QuotaExceededError') {
-        logger.warn('localStorage quota exceeded, clearing old data');
+        logger.error('localStorage quota exceeded, clearing old data');
 
         const keys = Object.keys(localStorage);
         const chatKeys = keys.filter((k) => k.startsWith('chat_messages_')).sort();

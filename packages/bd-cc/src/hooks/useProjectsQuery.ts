@@ -82,8 +82,8 @@ function getSessionsAtom(projectName: string) {
             fallbackValue: { data: [] },
           });
 
-          // 返回 data 数组 (兼容新旧格式)
-          return result?.data || result?.sessions || [];
+          // 返回 data 数组
+          return result?.data || [];
         }),
         // 会话数据相对稳定，设置较长的 staleTime
         staleTime: 1000 * 60 * 2, // 2 minutes

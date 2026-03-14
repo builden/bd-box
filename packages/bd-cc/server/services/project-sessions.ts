@@ -78,16 +78,21 @@ export async function parseJsonlSessions(
 
     // Each .jsonl file is one session
     if (createdAt || messageCount > 0) {
-      sessions.push({
-        sessionId,
-        projectId: projectName,
+      const session: Session = {
+        id: sessionId,
+        projectName: projectName,
+        provider: 'claude' as const,
         createdAt,
         updatedAt: lastMessage || createdAt,
         messageCount,
         firstMessage,
         lastMessage,
-        customName: customNames[sessionId] || null,
-      });
+      };
+      // Only include customName if user has set a custom name for this session
+      if (customNames[sessionId]) {
+        session.customName = customNames[sessionId];
+      }
+      sessions.push(session);
     }
   } catch (error) {
     logger.error(`Error parsing JSONL file ${filePath}`, error as Error);

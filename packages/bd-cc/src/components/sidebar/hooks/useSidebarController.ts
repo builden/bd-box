@@ -2,6 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { TFunction } from 'i18next';
 import { api } from '../../../utils/api';
 import type { Project, ProjectSession, SessionProvider } from '../../../types/app';
+import type { Session } from '@shared/api/sessions';
+import { SessionsListResponseSchema } from '@shared/api/sessions';
+import { validateResponse } from '@shared/api/validation';
 import type {
   AdditionalSessionsByProject,
   DeleteProjectConfirmation,
@@ -158,14 +161,20 @@ export function useSidebarController({
           try {
             const response = await api.sessions(project.name, 5, 0);
             if (response.ok) {
-              const result = (await response.json()) as any[];
-              if (result && result.length > 0) {
-                const mappedSessions = result.map((session) => ({
-                  id: session.sessionId,
-                  name: session.customName || session.sessionId,
+              const json = await response.json();
+              const result = validateResponse(SessionsListResponseSchema, json, {
+                endpoint: `/api/projects/${project.name}/sessions`,
+                status: response.status,
+                fallbackValue: { data: [] },
+              });
+              const sessions: Session[] = result?.data || [];
+              if (sessions.length > 0) {
+                const mappedSessions = sessions.map((session) => ({
+                  id: session.id,
+                  name: session.customName || session.id,
                   summary: session.customName,
                   createdAt: session.createdAt,
-                  lastActivity: session.lastMessage,
+                  lastActivity: session.updatedAt,
                   messageCount: session.messageCount,
                   updated_at: session.updatedAt,
                 }));
@@ -179,7 +188,7 @@ export function useSidebarController({
                 next.add(project.name);
                 return next;
               });
-              if (result && result.length < 5) {
+              if (sessions.length < 5) {
                 setProjectHasMoreOverrides((prev) => ({ ...prev, [project.name]: false }));
               }
             }
@@ -211,14 +220,20 @@ export function useSidebarController({
           try {
             const response = await api.sessions(selectedProject.name, 5, 0);
             if (response.ok) {
-              const result = (await response.json()) as any[];
-              if (result && result.length > 0) {
-                const mappedSessions = result.map((session) => ({
-                  id: session.sessionId,
-                  name: session.customName || session.sessionId,
+              const json = await response.json();
+              const result = validateResponse(SessionsListResponseSchema, json, {
+                endpoint: `/api/projects/${selectedProject.name}/sessions`,
+                status: response.status,
+                fallbackValue: { data: [] },
+              });
+              const sessions: Session[] = result?.data || [];
+              if (sessions.length > 0) {
+                const mappedSessions = sessions.map((session) => ({
+                  id: session.id,
+                  name: session.customName || session.id,
                   summary: session.customName,
                   createdAt: session.createdAt,
-                  lastActivity: session.lastMessage,
+                  lastActivity: session.updatedAt,
                   messageCount: session.messageCount,
                   updated_at: session.updatedAt,
                 }));
@@ -232,7 +247,7 @@ export function useSidebarController({
                 next.add(selectedProject.name);
                 return next;
               });
-              if (result && result.length < 5) {
+              if (sessions.length < 5) {
                 setProjectHasMoreOverrides((prev) => ({ ...prev, [selectedProject.name]: false }));
               }
             }
@@ -254,14 +269,20 @@ export function useSidebarController({
             try {
               const response = await api.sessions(project.name, 5, 0);
               if (response.ok) {
-                const result = (await response.json()) as any[];
-                if (result && result.length > 0) {
-                  const mappedSessions = result.map((session) => ({
-                    id: session.sessionId,
-                    name: session.customName || session.sessionId,
+                const json = await response.json();
+                const result = validateResponse(SessionsListResponseSchema, json, {
+                  endpoint: `/api/projects/${project.name}/sessions`,
+                  status: response.status,
+                  fallbackValue: { data: [] },
+                });
+                const sessions: Session[] = result?.data || [];
+                if (sessions.length > 0) {
+                  const mappedSessions = sessions.map((session) => ({
+                    id: session.id,
+                    name: session.customName || session.id,
                     summary: session.customName,
                     createdAt: session.createdAt,
-                    lastActivity: session.lastMessage,
+                    lastActivity: session.updatedAt,
                     messageCount: session.messageCount,
                     updated_at: session.updatedAt,
                   }));
@@ -275,7 +296,7 @@ export function useSidebarController({
                   next.add(project.name);
                   return next;
                 });
-                if (result && result.length < 5) {
+                if (sessions.length < 5) {
                   setProjectHasMoreOverrides((prev) => ({ ...prev, [project.name]: false }));
                 }
               }
@@ -435,14 +456,20 @@ export function useSidebarController({
           try {
             const response = await api.sessions(projectName, 5, 0);
             if (response.ok) {
-              const result = (await response.json()) as any[];
-              if (result && result.length > 0) {
-                const mappedSessions = result.map((session) => ({
-                  id: session.sessionId,
-                  name: session.customName || session.sessionId,
+              const json = await response.json();
+              const result = validateResponse(SessionsListResponseSchema, json, {
+                endpoint: `/api/projects/${projectName}/sessions`,
+                status: response.status,
+                fallbackValue: { data: [] },
+              });
+              const sessions: Session[] = result?.data || [];
+              if (sessions.length > 0) {
+                const mappedSessions = sessions.map((session) => ({
+                  id: session.id,
+                  name: session.customName || session.id,
                   summary: session.customName,
                   createdAt: session.createdAt,
-                  lastActivity: session.lastMessage,
+                  lastActivity: session.updatedAt,
                   messageCount: session.messageCount,
                   updated_at: session.updatedAt,
                 }));
@@ -456,7 +483,7 @@ export function useSidebarController({
                 next.add(projectName);
                 return next;
               });
-              if (result && result.length < 5) {
+              if (sessions.length < 5) {
                 setProjectHasMoreOverrides((prev) => ({ ...prev, [projectName]: false }));
               }
             }
@@ -660,13 +687,19 @@ export function useSidebarController({
           return;
         }
 
-        const result = (await response.json()) as any[];
-        const mappedSessions = (result || []).map((session) => ({
-          id: session.sessionId,
-          name: session.customName || session.sessionId,
+        const json = await response.json();
+        const result = validateResponse(SessionsListResponseSchema, json, {
+          endpoint: `/api/projects/${project.name}/sessions`,
+          status: response.status,
+          fallbackValue: { data: [] },
+        });
+        const sessions: Session[] = result?.data || [];
+        const mappedSessions = sessions.map((session) => ({
+          id: session.id,
+          name: session.customName || session.id,
           summary: session.customName,
           createdAt: session.createdAt,
-          lastActivity: session.lastMessage,
+          lastActivity: session.updatedAt,
           messageCount: session.messageCount,
           updated_at: session.updatedAt,
         }));
@@ -676,7 +709,7 @@ export function useSidebarController({
           [project.name]: [...(prev[project.name] || []), ...mappedSessions],
         }));
 
-        if (!result || result.length < 5) {
+        if (sessions.length < 5) {
           // Keep hasMore state in local hook state instead of mutating the project prop object.
           setProjectHasMoreOverrides((prev) => ({ ...prev, [project.name]: false }));
         }
