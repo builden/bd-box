@@ -54,7 +54,7 @@ export const OneLineDisplay: React.FC<OneLineDisplayProps> = ({
 
   const handleAction = async () => {
     if (action === 'copy' && value) {
-      const didCopy = await copyTextToClipboard(value);
+      const didCopy = copyTextToClipboard(value);
       if (!didCopy) {
         return;
       }

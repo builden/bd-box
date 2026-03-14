@@ -108,7 +108,7 @@ const MessageCopyControl = ({
 
   const handleCopyClick = async () => {
     if (!copyPayload.trim()) return;
-    const didCopy = await copyTextToClipboard(copyPayload);
+    const didCopy = copyTextToClipboard(copyPayload);
     if (!didCopy) return;
 
     setCopied(true);

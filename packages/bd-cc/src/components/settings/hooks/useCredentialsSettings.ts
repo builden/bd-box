@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import { authenticatedFetch } from '../../../utils/api';
-import { createLogger } from '@/lib/logger';
 import type {
   ApiKeyItem,
   ApiKeysResponse,
@@ -9,6 +8,7 @@ import type {
   GithubCredentialsResponse,
 } from '../../../features/settings/ui/api-settings/types';
 import { copyTextToClipboard } from '../../../utils/clipboard';
+import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('useCredentialsSettings');
 
@@ -219,7 +219,7 @@ export function useCredentialsSettings({
 
   const copyToClipboard = useCallback(async (text: string, id: string) => {
     try {
-      await copyTextToClipboard(text);
+      copyTextToClipboard(text);
       setCopiedKey(id);
       window.setTimeout(() => setCopiedKey(null), 2000);
     } catch (error) {
