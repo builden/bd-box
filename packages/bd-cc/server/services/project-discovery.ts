@@ -113,7 +113,7 @@ export async function extractProjectDirectory(projectName: string): Promise<stri
 /**
  * Get all projects from ~/.claude/projects/
  */
-export async function getProjects(progressCallback: ((info: any) => void) | null = null) {
+export async function getProjects(progressCallback: ((info: { project: string; count: number }) => void) | null = null) {
   const claudeProjectsDir = path.join(os.homedir(), '.claude', 'projects');
   const projects: Project[] = [];
   const config = await loadProjectConfig();

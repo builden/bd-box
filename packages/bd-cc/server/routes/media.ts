@@ -108,12 +108,12 @@ router.post('/api/transcribe', authenticateToken, async (req, res) => {
         }
 
         res.json({ text: transcribedText, mode });
-      } catch (error: any) {
+      } catch (error: Error) {
         logger.error('Transcription error:', error);
         res.status(500).json({ error: error.message });
       }
     });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error in transcribe endpoint:', error);
     res.status(500).json({ error: error.message });
   }
@@ -189,13 +189,13 @@ router.post('/api/projects/:projectName/upload-images', authenticateToken, async
         );
 
         res.json({ images: processedImages });
-      } catch (error: any) {
+      } catch (error: Error) {
         logger.error('Error processing images:', error);
         await Promise.all((req.files as any[]).map((f: any) => fsPromises.unlink(f.path).catch(() => {})));
         res.status(500).json({ error: 'Failed to process images' });
       }
     });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error in image upload endpoint:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -297,7 +297,7 @@ router.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authent
           total: 0,
           breakdown: { input: inputTokens, cacheCreation: 0, cacheRead: outputTokens },
         });
-      } catch (error: any) {
+      } catch (error: Error) {
         logger.error('Error reading Codex session file:', error);
         res.status(500).json({ error: error.message });
       }
@@ -351,7 +351,7 @@ router.get('/api/projects/:projectName/sessions/:sessionId/token-usage', authent
         cacheRead: usage.cache_read_input_tokens || 0,
       },
     });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error getting token usage:', error);
     res.status(500).json({ error: error.message });
   }

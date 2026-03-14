@@ -10,6 +10,7 @@ import os from 'os';
 import sessionManager from '../sessionManager';
 import { loadProjectConfig } from './project-config';
 import { createLogger } from '../lib/logger';
+import type { Session } from '../../shared/api/sessions';
 
 const logger = createLogger('services/project-sessions');
 
@@ -25,8 +26,8 @@ export async function parseJsonlSessions(
   projectName: string,
   limit: number | null = null,
   offset: number = 0
-): Promise<any[]> {
-  const sessions: any[] = [];
+): Promise<Session[]> {
+  const sessions: Session[] = [];
 
   try {
     const fileContent = await fs.readFile(filePath, 'utf8');
@@ -98,7 +99,7 @@ export async function parseJsonlSessions(
 /**
  * Get sessions for a project
  */
-export async function getSessions(projectName: string, limit: number = 5, offset: number = 0): Promise<any[]> {
+export async function getSessions(projectName: string, limit: number = 5, offset: number = 0): Promise<Session[]> {
   const claudeProjectsDir = path.join(os.homedir(), '.claude', 'projects');
   const projectDir = path.join(claudeProjectsDir, projectName);
 
@@ -108,7 +109,7 @@ export async function getSessions(projectName: string, limit: number = 5, offset
     return [];
   }
 
-  const allSessions: any[] = [];
+  const allSessions: Session[] = [];
 
   try {
     const files = await fs.readdir(projectDir);
@@ -144,7 +145,7 @@ export async function getSessionMessages(
   sessionId: string,
   limit: number | null = null,
   offset: number = 0
-): Promise<any[]> {
+): Promise<Session[]> {
   const claudeProjectsDir = path.join(os.homedir(), '.claude', 'projects');
   const projectDir = path.join(claudeProjectsDir, projectName);
 
@@ -154,7 +155,7 @@ export async function getSessionMessages(
     return [];
   }
 
-  const messages: any[] = [];
+  const messages: SessionMessage[] = [];
 
   try {
     const files = await fs.readdir(projectDir);

@@ -40,7 +40,7 @@ router.get('/next/:projectName', async (req, res) => {
     } else {
       res.json({ task: null, message: 'All tasks completed' });
     }
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error getting next task:', error);
     res.status(500).json({ error: error.message });
   }
@@ -62,7 +62,7 @@ router.get('/tasks/:projectName', async (req, res) => {
 
     const tasksData = JSON.parse(await fsPromises.readFile(tasksFile, 'utf-8'));
     res.json(tasksData);
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error getting tasks:', error);
     res.status(500).json({ error: error.message });
   }
@@ -109,7 +109,7 @@ router.post('/add-task/:projectName', async (req, res) => {
     broadcastTaskMasterTasksUpdate(projectName, tasksData);
 
     res.json({ success: true, task: newTask });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error adding task:', error);
     res.status(500).json({ error: error.message });
   }
@@ -151,7 +151,7 @@ router.put('/update-task/:projectName/:taskId', async (req, res) => {
     broadcastTaskMasterTasksUpdate(projectName, tasksData);
 
     res.json({ success: true, task: tasksData.tasks[taskIndex] });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error updating task:', error);
     res.status(500).json({ error: error.message });
   }

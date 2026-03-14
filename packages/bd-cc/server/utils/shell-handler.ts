@@ -240,7 +240,7 @@ export function createShellHandler(ws: WebSocket, options: ShellHandlerOptions) 
         projectPath,
         sessionId,
       });
-    } catch (spawnError: any) {
+    } catch (spawnError: Error) {
       logger.error('Error spawning process:', spawnError);
       handler.send({ type: 'output', data: `\r\n\x1b[31mError: ${spawnError.message}\x1b[0m\r\n` });
     }

@@ -31,7 +31,7 @@ router.get('/claude/status', async (req, res) => {
       method: null,
       error: credentialsResult.error || 'Not authenticated',
     });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error checking Claude auth status:', error);
     return serverError(res, error.message);
   }
@@ -46,7 +46,7 @@ router.get('/cursor/status', async (req, res) => {
       email: result.email,
       error: result.error,
     });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error checking Cursor auth status:', error);
     return serverError(res, error.message);
   }
@@ -61,7 +61,7 @@ router.get('/codex/status', async (req, res) => {
       email: result.email,
       error: result.error,
     });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error checking Codex auth status:', error);
     return serverError(res, error.message);
   }
@@ -76,7 +76,7 @@ router.get('/gemini/status', async (req, res) => {
       email: result.email,
       error: result.error,
     });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error checking Gemini auth status:', error);
     return serverError(res, error.message);
   }

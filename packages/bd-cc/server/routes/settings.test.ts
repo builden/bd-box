@@ -157,7 +157,7 @@ describe('settings routes - validateWorkspacePath', () => {
       let pathExists = true;
       try {
         await fs.access(nonExistentPath);
-      } catch (error: any) {
+      } catch (error: Error) {
         if (error.code === 'ENOENT') {
           pathExists = false;
         }
@@ -170,7 +170,7 @@ describe('settings routes - validateWorkspacePath', () => {
       let parentExists = true;
       try {
         await fs.access(parentPath);
-      } catch (error: any) {
+      } catch (error: Error) {
         parentExists = false;
       }
 

@@ -108,13 +108,13 @@ export async function getCodexSessions(projectPath: string, options: { forceRefr
  * Parse a Codex session file
  */
 export async function parseCodexSessionFile(filePath: string, projectPath: string): Promise<any[]> {
-  const sessions: any[] = [];
+  const sessions: Session[] = [];
 
   try {
     const content = await fs.readFile(filePath, 'utf8');
     const lines = content.trim().split('\n');
 
-    let currentSession: any = null;
+    let currentSession: Session | null = null;
 
     for (const line of lines) {
       if (!line.trim()) continue;
@@ -165,7 +165,7 @@ export async function getCodexSessionMessages(
     codexSessionsIndex = await buildCodexSessionsIndex();
   }
 
-  const messages: any[] = [];
+  const messages: MessageContentBlock[] = [];
 
   for (const [, sessions] of codexSessionsIndex) {
     for (const session of sessions) {
@@ -204,8 +204,8 @@ export async function getCodexSessionMessages(
                   content = entry.payload.content;
                 } else if (Array.isArray(entry.payload?.content)) {
                   content = entry.payload.content
-                    .filter((p: any) => p.text)
-                    .map((p: any) => p.text)
+                    .filter((p: MessageContentBlock) => p.text)
+                    .map((p: MessageContentBlock) => p.text)
                     .join('\n');
                 }
 

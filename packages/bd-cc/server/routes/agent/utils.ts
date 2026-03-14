@@ -246,7 +246,7 @@ export async function createGitHubBranch(
     });
 
     logger.info(`Created branch '${branchName}' on GitHub`);
-  } catch (error: any) {
+  } catch (error: Error) {
     if (error.status === 422 && error.message.includes('Reference already exists')) {
       logger.info(`Branch '${branchName}' already exists on GitHub`);
     } else {

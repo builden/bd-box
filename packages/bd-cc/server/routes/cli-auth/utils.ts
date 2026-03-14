@@ -240,7 +240,7 @@ export async function checkCodexCredentials(): Promise<{
       email: null,
       error: 'No valid tokens found',
     };
-  } catch (error: any) {
+  } catch (error: Error) {
     if (error.code === 'ENOENT') {
       return {
         authenticated: false,
@@ -324,7 +324,7 @@ export async function checkGeminiCredentials(): Promise<{
       email: null,
       error: 'No valid tokens found in oauth_creds',
     };
-  } catch (error: any) {
+  } catch (error: Error) {
     return {
       authenticated: false,
       email: null,

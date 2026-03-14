@@ -29,7 +29,7 @@ router.get('/prd/:projectName', async (req, res) => {
 
     const content = await fsPromises.readFile(prdFile, 'utf-8');
     res.json({ content });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error getting PRD:', error);
     res.status(500).json({ error: error.message });
   }
@@ -54,7 +54,7 @@ router.post('/prd/:projectName', async (req, res) => {
     await fsPromises.writeFile(prdFile, content || '');
 
     res.json({ success: true, path: prdFile });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error saving PRD:', error);
     res.status(500).json({ error: error.message });
   }
@@ -76,7 +76,7 @@ router.get('/prd/:projectName/:fileName', async (req, res) => {
 
     const content = await fsPromises.readFile(prdFile, 'utf-8');
     res.json({ content, fileName });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error getting PRD file:', error);
     res.status(500).json({ error: error.message });
   }
@@ -99,7 +99,7 @@ router.delete('/prd/:projectName/:fileName', async (req, res) => {
     await fsPromises.unlink(prdFile);
 
     res.json({ success: true, fileName });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error deleting PRD file:', error);
     res.status(500).json({ error: error.message });
   }

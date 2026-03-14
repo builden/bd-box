@@ -66,7 +66,7 @@ router.get('/detect/:projectName', async (req, res) => {
       hasTaskMaster,
       path: hasTaskMaster ? path.join(projectPath, '.taskmaster') : null,
     });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error detecting TaskMaster:', error);
     res.status(500).json({ error: error.message });
   }
@@ -98,7 +98,7 @@ router.get('/detect-all', async (req, res) => {
       projectsWithTaskMaster: projectsWithTaskMaster.length,
       projects: results,
     });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error detecting TaskMaster in all projects:', error);
     res.status(500).json({ error: error.message });
   }

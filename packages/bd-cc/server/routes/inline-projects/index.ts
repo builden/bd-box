@@ -323,7 +323,7 @@ router.post('/api/create-folder', authenticateToken, async (req: Request, res: R
     try {
       await require('fs').promises.mkdir(targetPath, { recursive: false });
       return success(res, { success: true, path: targetPath });
-    } catch (mkdirError: any) {
+    } catch (mkdirError: Error) {
       if (mkdirError.code === 'EEXIST') {
         return error(res, { code: 'filesystem.already_exists', message: 'Folder already exists', statusCode: 409 });
       }

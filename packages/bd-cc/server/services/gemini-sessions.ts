@@ -39,7 +39,7 @@ async function findGeminiSessionFiles(dir: string): Promise<string[]> {
  * Get Gemini CLI sessions
  */
 export async function getGeminiCliSessions(projectPath: string): Promise<any[]> {
-  const sessions: any[] = [];
+  const sessions: Session[] = [];
   const configDir = path.join(os.homedir(), '.gemini', 'cli', 'sessions');
 
   try {
@@ -56,7 +56,7 @@ export async function getGeminiCliSessions(projectPath: string): Promise<any[]> 
         const content = await fs.readFile(filePath, 'utf8');
         const lines = content.trim().split('\n');
 
-        let currentSession: any = null;
+        let currentSession: Session | null = null;
 
         for (const line of lines) {
           if (!line.trim()) continue;
@@ -108,7 +108,7 @@ export async function getGeminiCliSessionMessages(
   limit: number | null = null,
   offset: number = 0
 ): Promise<any[]> {
-  const messages: any[] = [];
+  const messages: MessageContentBlock[] = [];
   const configDir = path.join(os.homedir(), '.gemini', 'cli', 'sessions');
 
   try {
@@ -152,8 +152,8 @@ export async function getGeminiCliSessionMessages(
               content = entry.content;
             } else if (Array.isArray(entry.content)) {
               content = entry.content
-                .filter((p: any) => p.text)
-                .map((p: any) => p.text)
+                .filter((p: MessageContentBlock) => p.text)
+                .map((p: MessageContentBlock) => p.text)
                 .join('\n');
             }
 

@@ -190,7 +190,7 @@ Description of the business problem and expected insights.
     ];
 
     res.json({ templates, timestamp: new Date().toISOString() });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('PRD templates error:', error);
     res.status(500).json({ error: 'Failed to get PRD templates', message: error.message });
   }
@@ -268,7 +268,7 @@ Brief description of what this web application will do.
       message: 'PRD template applied successfully',
       timestamp: new Date().toISOString(),
     });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Apply template error:', error);
     res.status(500).json({ error: 'Failed to apply PRD template', message: error.message });
   }

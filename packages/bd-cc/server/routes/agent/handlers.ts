@@ -113,7 +113,7 @@ router.post('/', async (req: Request, res: Response) => {
     try {
       project = await addProjectManually(finalProjectPath);
       logger.info('Project registered:', { project });
-    } catch (error: any) {
+    } catch (error: Error) {
       // If project already exists, that's fine - continue with the existing registration
       if (error.message && error.message.includes('Project already configured')) {
         logger.info('Using existing project registration for:', { finalProjectPath });
@@ -239,7 +239,7 @@ router.post('/', async (req: Request, res: Response) => {
               throw new Error('Project does not have a GitHub remote configured');
             }
             logger.info(`Found GitHub remote: ${repoUrl}`);
-          } catch (error: any) {
+          } catch (error: Error) {
             throw new Error(`Failed to get GitHub remote URL: ${error.message}`);
           }
         }
@@ -379,7 +379,7 @@ router.post('/', async (req: Request, res: Response) => {
             });
           }
         }
-      } catch (error: any) {
+      } catch (error: Error) {
         logger.error('GitHub branch/PR creation error:', error);
 
         // Send error but don't fail the entire request
@@ -435,7 +435,7 @@ router.post('/', async (req: Request, res: Response) => {
         cleanupProject(finalProjectPath, sessionIdForCleanup);
       }, 5000);
     }
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('External session error:', error);
 
     // Clean up on error

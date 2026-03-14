@@ -40,7 +40,7 @@ router.get('/api/projects/:projectName/file', authenticateToken, async (req, res
 
     const content = await fs.promises.readFile(resolved, 'utf8');
     res.json({ content, path: resolved });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error reading file:', error);
     if (error.code === 'ENOENT') {
       res.status(404).json({ error: 'File not found' });
@@ -99,7 +99,7 @@ router.get('/api/projects/:projectName/files/content', authenticateToken, async 
 
     const fileStream = fs.createReadStream(resolved);
     fileStream.pipe(res);
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error reading file:', error);
     if (error.code === 'ENOENT') {
       res.status(404).json({ error: 'File not found' });
@@ -137,7 +137,7 @@ router.put('/api/projects/:projectName/file', authenticateToken, async (req, res
 
     await fs.promises.writeFile(resolved, content, 'utf8');
     res.json({ success: true, path: resolved });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error writing file:', error);
     if (error.code === 'EACCES') {
       res.status(403).json({ error: 'Permission denied' });
@@ -159,7 +159,7 @@ router.get('/api/projects/:projectName/files', authenticateToken, async (req, re
 
     const files = await getFileTree(projectRoot, 10, 0, true);
     res.json({ files, projectRoot });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error getting file tree:', error);
     res.status(500).json({ error: error.message });
   }
@@ -200,7 +200,7 @@ router.post('/api/projects/:projectName/files/create', authenticateToken, async 
     }
 
     res.json({ success: true, path: actualPath });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error creating file:', error);
     if (error.code === 'EACCES') {
       res.status(403).json({ error: 'Permission denied' });
@@ -258,7 +258,7 @@ router.put('/api/projects/:projectName/files/rename', authenticateToken, async (
 
     await fs.promises.rename(actualOldPath, actualNewPath);
     res.json({ success: true, path: actualNewPath });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error renaming file:', error);
     if (error.code === 'EACCES') {
       res.status(403).json({ error: 'Permission denied' });
@@ -299,7 +299,7 @@ router.delete('/api/projects/:projectName/files', authenticateToken, async (req,
     }
 
     res.json({ success: true });
-  } catch (error: any) {
+  } catch (error: Error) {
     logger.error('Error deleting file:', error);
     if (error.code === 'EACCES') {
       res.status(403).json({ error: 'Permission denied' });

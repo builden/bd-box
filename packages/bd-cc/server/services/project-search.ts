@@ -19,10 +19,10 @@ const logger = createLogger('services/project-search');
 export async function searchConversations(
   query: string,
   limit: number = 50,
-  onProjectResult: ((result: any) => void) | null = null,
+  onProjectResult: ((result: SearchResult) => void) | null = null,
   signal: AbortSignal | null = null
 ): Promise<any[]> {
-  const results: any[] = [];
+  const results: SearchResult[] = [];
   const queryLower = query.toLowerCase();
   const claudeProjectsDir = path.join(os.homedir(), '.claude', 'projects');
 
@@ -147,7 +147,7 @@ async function searchCodexSessionsForProject(
   limit: number = 50,
   signal: AbortSignal | null = null
 ): Promise<any[]> {
-  const results: any[] = [];
+  const results: SearchResult[] = [];
   const queryLower = query.toLowerCase();
   const configDir = path.join(os.homedir(), '.codex');
 
@@ -196,7 +196,7 @@ async function searchGeminiSessionsForProject(
   limit: number = 50,
   signal: AbortSignal | null = null
 ): Promise<any[]> {
-  const results: any[] = [];
+  const results: SearchResult[] = [];
   const queryLower = query.toLowerCase();
   const configDir = path.join(os.homedir(), '.gemini', 'cli', 'sessions');
 

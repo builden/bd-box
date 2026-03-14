@@ -22,7 +22,7 @@ function computeMD5(str: string): string {
  * Get Cursor sessions for a project
  */
 export async function getCursorSessions(projectPath: string): Promise<any[]> {
-  const sessions: any[] = [];
+  const sessions: Session[] = [];
   const md5Hash = computeMD5(projectPath);
   const cursorChatsDir = path.join(os.homedir(), '.cursor', 'chats', md5Hash);
 
