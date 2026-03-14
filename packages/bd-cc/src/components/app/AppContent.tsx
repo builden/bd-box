@@ -6,19 +6,18 @@ import MainContent from '../main-content/view/MainContent';
 import { useWebSocket } from '../../contexts/WebSocketContext';
 import { useDeviceSettings } from '../../hooks/useDeviceSettings';
 import { useSessionProtection } from '../../hooks/useSessionProtection';
-import { useProjects } from '@/store';
 import MobileNav from './MobileNav';
+import { useProjects } from '@/store';
 
 export default function AppContent() {
   const navigate = useNavigate();
-  const { sessionId } = useParams<{ sessionId?: string }>();
+  useParams<{ sessionId?: string }>(); // Keep for router compatibility
   const { t } = useTranslation('common');
   const { isMobile } = useDeviceSettings({ trackPWA: false });
   const { ws, sendMessage, latestMessage, isConnected } = useWebSocket();
   const wasConnectedRef = useRef(false);
 
   const {
-    activeSessions,
     processingSessions,
     markSessionAsActive,
     markSessionAsInactive,

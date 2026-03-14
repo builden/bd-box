@@ -1,14 +1,11 @@
 import { useAtom, useSetAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createLogger } from '@/lib/logger';
-import type { AppSocketMessage, LoadingProgress, Project, ProjectSession, AppTab } from '@/types';
 import { projectsAtom, selectedProjectAtom, selectedSessionAtom, activeTabAtom } from '../primitives/projects-atom';
 import { projectNamesAtom, currentProjectSessionsAtom, hasActiveSessionAtom } from '../domain/project-derived';
 import { calcRemoveProject, calcUpdateProjectSession, calcProjectsHaveChanges } from '../operations/projects-ops';
+import type { Project, ProjectSession, AppTab } from '@/types';
 import { useProjectsQuery } from '@/hooks/useProjectsQuery';
-
-const logger = createLogger('useProjects');
 
 /**
  * 项目和会话管理 Hook
@@ -37,11 +34,10 @@ export function useProjects() {
   // ========== UI 状态 (使用 useState，本地状态) ==========
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoadingProjects, setIsLoadingProjects] = useState(true);
-  const [loadingProgress, setLoadingProgress] = useState<LoadingProgress | null>(null);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [settingsInitialTab, setSettingsInitialTab] = useState('agents');
-  const [externalMessageUpdate, setExternalMessageUpdate] = useState(0);
+  const [externalMessageUpdate] = useState(0);
 
   // Refs
   const loadingProgressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -182,25 +178,12 @@ export function useProjects() {
     };
   }, []);
 
-  // 设置 Tab
-  const handleSetActiveTab = useCallback(
-    (tab: typeof activeTab) => {
-      setActiveTab(tab);
-      try {
-        localStorage.setItem('activeTab', tab);
-      } catch {
-        // Silently ignore storage errors
-      }
-    },
-    [setActiveTab]
-  );
-
   // 关闭设置面板
   const closeSettings = useCallback(() => {
     setShowSettings(false);
   }, [setShowSettings]);
 
-  // 兼容旧接口的 setActiveTab
+  // setActiveTab 兼容旧接口
   const setActiveTabDispatch: Dispatch<SetStateAction<AppTab>> = useCallback(
     (action: SetStateAction<AppTab>) => {
       const newTab = typeof action === 'function' ? action(activeTab) : action;
@@ -226,7 +209,7 @@ export function useProjects() {
     // ========== UI 状态 ==========
     sidebarOpen,
     isLoadingProjects,
-    loadingProgress,
+    loadingProgress: null,
     isInputFocused,
     showSettings,
     settingsInitialTab,

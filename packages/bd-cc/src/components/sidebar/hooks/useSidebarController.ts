@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type React from "react";
-import type { TFunction } from "i18next";
-import { api } from "../../../utils/api";
-import type { Project, ProjectSession, SessionProvider } from "../../../types/app";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { TFunction } from 'i18next';
+import { api } from '../../../utils/api';
+import type { Project, ProjectSession, SessionProvider } from '../../../types/app';
 import type {
   AdditionalSessionsByProject,
   DeleteProjectConfirmation,
@@ -10,7 +9,7 @@ import type {
   ProjectSortOrder,
   SessionDeleteConfirmation,
   SessionWithProvider,
-} from "../types/types";
+} from '../types/types';
 import {
   filterProjects,
   getAllSessions,
@@ -18,7 +17,7 @@ import {
   persistStarredProjects,
   readProjectSortOrder,
   sortProjects,
-} from "../utils/utils";
+} from '../utils/utils';
 
 type SnippetHighlight = {
   start: number;
@@ -78,7 +77,7 @@ type UseSidebarControllerArgs = {
 export function useSidebarController({
   projects,
   selectedProject,
-  selectedSession,
+  selectedSession: _selectedSession,
   isLoading,
   isMobile,
   t,
@@ -94,23 +93,23 @@ export function useSidebarController({
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
   const [editingProject, setEditingProject] = useState<string | null>(null);
   const [showNewProject, setShowNewProject] = useState(false);
-  const [editingName, setEditingName] = useState("");
+  const [editingName, setEditingName] = useState('');
   const [loadingSessions, setLoadingSessions] = useState<LoadingSessionsByProject>({});
   const [additionalSessions, setAdditionalSessions] = useState<AdditionalSessionsByProject>({});
   const [initialSessionsLoaded, setInitialSessionsLoaded] = useState<Set<string>>(new Set());
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [projectSortOrder, setProjectSortOrder] = useState<ProjectSortOrder>("name");
+  const [projectSortOrder, setProjectSortOrder] = useState<ProjectSortOrder>('name');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [projectHasMoreOverrides, setProjectHasMoreOverrides] = useState<Record<string, boolean>>({});
   const [editingSession, setEditingSession] = useState<string | null>(null);
-  const [editingSessionName, setEditingSessionName] = useState("");
-  const [searchFilter, setSearchFilter] = useState("");
+  const [editingSessionName, setEditingSessionName] = useState('');
+  const [searchFilter, setSearchFilter] = useState('');
   const [deletingProjects, setDeletingProjects] = useState<Set<string>>(new Set());
   const [deleteConfirmation, setDeleteConfirmation] = useState<DeleteProjectConfirmation | null>(null);
   const [sessionDeleteConfirmation, setSessionDeleteConfirmation] = useState<SessionDeleteConfirmation | null>(null);
   const [showVersionModal, setShowVersionModal] = useState(false);
   const [starredProjects, setStarredProjects] = useState<Set<string>>(() => loadStarredProjects());
-  const [searchMode, setSearchMode] = useState<"projects" | "conversations">("projects");
+  const [searchMode, setSearchMode] = useState<'projects' | 'conversations'>('projects');
   const [conversationResults, setConversationResults] = useState<ConversationSearchResults | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [searchProgress, setSearchProgress] = useState<SearchProgress | null>(null);
@@ -146,7 +145,7 @@ export function useSidebarController({
         next.add(selectedProject.name);
         return next;
       });
-      
+
       // 如果会话未加载，自动加载
       if (!initialSessionsLoaded.has(selectedProject.name)) {
         const loadInitialSessions = async () => {
@@ -207,12 +206,12 @@ export function useSidebarController({
     loadSortOrder();
 
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === "claude-settings") {
+      if (event.key === 'claude-settings') {
         loadSortOrder();
       }
     };
 
-    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener('storage', handleStorageChange);
 
     const interval = setInterval(() => {
       if (document.hasFocus()) {
@@ -221,7 +220,7 @@ export function useSidebarController({
     }, 1000);
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener('storage', handleStorageChange);
       clearInterval(interval);
     };
   }, []);
@@ -237,7 +236,7 @@ export function useSidebarController({
     }
 
     const query = searchFilter.trim();
-    if (searchMode !== "conversations" || query.length < 2) {
+    if (searchMode !== 'conversations' || query.length < 2) {
       searchSeqRef.current += 1;
       setConversationResults(null);
       setSearchProgress(null);
@@ -258,7 +257,7 @@ export function useSidebarController({
       const accumulated: ConversationProjectResult[] = [];
       let totalMatches = 0;
 
-      es.addEventListener("result", (evt) => {
+      es.addEventListener('result', (evt) => {
         if (seq !== searchSeqRef.current) {
           es.close();
           return;
@@ -279,7 +278,7 @@ export function useSidebarController({
         }
       });
 
-      es.addEventListener("progress", (evt) => {
+      es.addEventListener('progress', (evt) => {
         if (seq !== searchSeqRef.current) {
           es.close();
           return;
@@ -293,7 +292,7 @@ export function useSidebarController({
         }
       });
 
-      es.addEventListener("done", () => {
+      es.addEventListener('done', () => {
         if (seq !== searchSeqRef.current) {
           es.close();
           return;
@@ -307,7 +306,7 @@ export function useSidebarController({
         }
       });
 
-      es.addEventListener("error", () => {
+      es.addEventListener('error', () => {
         if (seq !== searchSeqRef.current) {
           es.close();
           return;
@@ -391,7 +390,7 @@ export function useSidebarController({
     (session: SessionWithProvider, projectName: string) => {
       onSessionSelect({ ...session, __projectName: projectName });
     },
-    [onSessionSelect],
+    [onSessionSelect]
   );
 
   const toggleStarProject = useCallback((projectName: string) => {
@@ -412,7 +411,7 @@ export function useSidebarController({
 
   const getProjectSessions = useCallback(
     (project: Project) => getAllSessions(project, additionalSessions),
-    [additionalSessions],
+    [additionalSessions]
   );
 
   const projectsWithSessionMeta = useMemo(
@@ -428,12 +427,12 @@ export function useSidebarController({
           sessionMeta: { ...project.sessionMeta, hasMore: hasMoreOverride },
         };
       }),
-    [projectHasMoreOverrides, projects],
+    [projectHasMoreOverrides, projects]
   );
 
   const sortedProjects = useMemo(
     () => sortProjects(projectsWithSessionMeta, projectSortOrder, starredProjects, additionalSessions),
-    [additionalSessions, projectSortOrder, projectsWithSessionMeta, starredProjects],
+    [additionalSessions, projectSortOrder, projectsWithSessionMeta, starredProjects]
   );
 
   const filteredProjects = useMemo(() => filterProjects(sortedProjects, searchFilter), [searchFilter, sortedProjects]);
@@ -445,7 +444,7 @@ export function useSidebarController({
 
   const cancelEditing = useCallback(() => {
     setEditingProject(null);
-    setEditingName("");
+    setEditingName('');
   }, []);
 
   const saveProjectName = useCallback(
@@ -459,16 +458,16 @@ export function useSidebarController({
             window.location.reload();
           }
         } else {
-          console.error("Failed to rename project");
+          console.error('Failed to rename project');
         }
       } catch (error) {
-        console.error("Error renaming project:", error);
+        console.error('Error renaming project:', error);
       } finally {
         setEditingProject(null);
-        setEditingName("");
+        setEditingName('');
       }
     },
-    [editingName],
+    [editingName]
   );
 
   const showDeleteSessionConfirmation = useCallback(
@@ -476,11 +475,11 @@ export function useSidebarController({
       projectName: string,
       sessionId: string,
       sessionTitle: string,
-      provider: SessionDeleteConfirmation["provider"] = "claude",
+      provider: SessionDeleteConfirmation['provider'] = 'claude'
     ) => {
       setSessionDeleteConfirmation({ projectName, sessionId, sessionTitle, provider });
     },
-    [],
+    []
   );
 
   const confirmDeleteSession = useCallback(async () => {
@@ -493,9 +492,9 @@ export function useSidebarController({
 
     try {
       let response;
-      if (provider === "codex") {
+      if (provider === 'codex') {
         response = await api.deleteCodexSession(sessionId);
-      } else if (provider === "gemini") {
+      } else if (provider === 'gemini') {
         response = await api.deleteGeminiSession(sessionId);
       } else {
         response = await api.deleteSession(projectName, sessionId);
@@ -505,15 +504,15 @@ export function useSidebarController({
         onSessionDelete?.(sessionId);
       } else {
         const errorText = await response.text();
-        console.error("[Sidebar] Failed to delete session:", {
+        console.error('[Sidebar] Failed to delete session:', {
           status: response.status,
           error: errorText,
         });
-        alert(t("messages.deleteSessionFailed"));
+        alert(t('messages.deleteSessionFailed'));
       }
     } catch (error) {
-      console.error("[Sidebar] Error deleting session:", error);
-      alert(t("messages.deleteSessionError"));
+      console.error('[Sidebar] Error deleting session:', error);
+      alert(t('messages.deleteSessionError'));
     }
   }, [onSessionDelete, sessionDeleteConfirmation, t]);
 
@@ -524,7 +523,7 @@ export function useSidebarController({
         sessionCount: getProjectSessions(project).length,
       });
     },
-    [getProjectSessions],
+    [getProjectSessions]
   );
 
   const confirmDeleteProject = useCallback(async () => {
@@ -545,11 +544,11 @@ export function useSidebarController({
         onProjectDelete?.(project.name);
       } else {
         const error = (await response.json()) as { error?: string };
-        alert(error.error || t("messages.deleteProjectFailed"));
+        alert(error.error || t('messages.deleteProjectFailed'));
       }
     } catch (error) {
-      console.error("Error deleting project:", error);
-      alert(t("messages.deleteProjectError"));
+      console.error('Error deleting project:', error);
+      alert(t('messages.deleteProjectError'));
     } finally {
       setDeletingProjects((prev) => {
         const next = new Set(prev);
@@ -598,12 +597,12 @@ export function useSidebarController({
           setProjectHasMoreOverrides((prev) => ({ ...prev, [project.name]: false }));
         }
       } catch (error) {
-        console.error("Error loading more sessions:", error);
+        console.error('Error loading more sessions:', error);
       } finally {
         setLoadingSessions((prev) => ({ ...prev, [project.name]: false }));
       }
     },
-    [additionalSessions, loadingSessions, projectHasMoreOverrides],
+    [additionalSessions, loadingSessions, projectHasMoreOverrides]
   );
 
   const handleProjectSelect = useCallback(
@@ -611,7 +610,7 @@ export function useSidebarController({
       onProjectSelect(project);
       setCurrentProject(project);
     },
-    [onProjectSelect, setCurrentProject],
+    [onProjectSelect, setCurrentProject]
   );
 
   const refreshProjects = useCallback(async () => {
@@ -628,7 +627,7 @@ export function useSidebarController({
       const trimmed = summary.trim();
       if (!trimmed) {
         setEditingSession(null);
-        setEditingSessionName("");
+        setEditingSessionName('');
         return;
       }
       try {
@@ -636,18 +635,18 @@ export function useSidebarController({
         if (response.ok) {
           await onRefresh();
         } else {
-          console.error("[Sidebar] Failed to rename session:", response.status);
-          alert(t("messages.renameSessionFailed"));
+          console.error('[Sidebar] Failed to rename session:', response.status);
+          alert(t('messages.renameSessionFailed'));
         }
       } catch (error) {
-        console.error("[Sidebar] Error renaming session:", error);
-        alert(t("messages.renameSessionError"));
+        console.error('[Sidebar] Error renaming session:', error);
+        alert(t('messages.renameSessionError'));
       } finally {
         setEditingSession(null);
-        setEditingSessionName("");
+        setEditingSessionName('');
       }
     },
-    [onRefresh, t],
+    [onRefresh, t]
   );
 
   const collapseSidebar = useCallback(() => {

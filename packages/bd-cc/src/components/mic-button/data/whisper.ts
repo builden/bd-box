@@ -9,7 +9,7 @@ type WhisperResponse = {
 
 export async function transcribeWithWhisper(
   audioBlob: Blob,
-  onStatusChange?: (status: WhisperStatus) => void,
+  onStatusChange?: (status: WhisperStatus) => void
 ): Promise<string> {
   const formData = new FormData();
   const fileName = `recording_${Date.now()}.webm`;
@@ -30,23 +30,15 @@ export async function transcribeWithWhisper(
 
     if (!response.ok) {
       const errorData = (await response.json().catch(() => ({}))) as WhisperResponse;
-      throw new Error(
-        errorData.error ||
-          `Transcription error: ${response.status} ${response.statusText}`,
-      );
+      throw new Error(errorData.error || `Transcription error: ${response.status} ${response.statusText}`);
     }
 
     const data = (await response.json()) as WhisperResponse;
     return data.text || '';
   } catch (error) {
-    if (
-      error instanceof Error
-      && error.name === 'TypeError'
-      && error.message.includes('fetch')
-    ) {
-      throw new Error('Cannot connect to server. Please ensure the backend is running.');
+    if (error instanceof Error && error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error('Cannot connect to server. Please ensure the backend is running.', { cause: error });
     }
     throw error;
   }
 }
-
