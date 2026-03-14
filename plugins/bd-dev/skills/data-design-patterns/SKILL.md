@@ -7,7 +7,7 @@ description: Use when designing state management architecture for new features, 
 
 ## Overview
 
-基于 Jotai 的状态管理架构设计规范，遵循 4 层架构模式：Primitives（基础）→ Domain（派生）→ Operations（操作）→ Actions（组合）。
+基于 Jotai 的状态管理架构设计规范，遵循 4 层架构模式：Primitives（基础）→ Derived（派生）→ Operations（操作）→ Actions（组合）。
 
 ## 数据分类决策树
 
@@ -63,7 +63,7 @@ features/{feature}/
 │   ├── primitives/           # Layer 1: 基础 atoms
 │   │   ├── idx-list-atom.ts  # 索引列表 atom
 │   │   └── record-atom.ts    # 记录 atomFamily
-│   ├── domain/               # Layer 2: 派生 atoms
+│   ├── derived/              # Layer 2: 派生 atoms
 │   │   └── active-atoms.ts   # 活跃记录、派生数据
 │   ├── operations/           # Layer 3: 纯函数操作
 │   │   └── idx-list-ops.ts   # CRUD 操作（无 React 依赖）
@@ -352,7 +352,7 @@ export function removeRecord(id: string): void {
 | 目录          | 职责       | 导出       |
 | ------------- | ---------- | ---------- |
 | `primitives/` | 基础 atoms | 直接导出   |
-| `domain/`     | 派生 atoms | `export *` |
+| `derived/`    | 派生 atoms | `export *` |
 | `operations/` | 纯函数     | `export *` |
 | `actions/`    | 组合操作   | 按需导出   |
 

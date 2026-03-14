@@ -44,3 +44,36 @@ description: UI/UX/动效设计指南。参考 Apple Human Interface Guidelines 
 - 交互规范
 - 动效规范
 - 可访问性要求
+
+## UI 文件夹结构规范
+
+在 features 目录下的功能模块中，ui 文件夹按职责分为四个层级：
+
+```
+feature-name/
+├── ui/
+│   ├── parts/           # 原子组件（无状态，纯展示）
+│   ├── composites/     # 分子组件（组合 parts）
+│   ├── containers/     # 有机体（连接 store/hooks）
+│   └── pages/         # 页面级组件
+├── hooks/              # 功能专用 hooks
+├── types.ts
+├── operations/        # 纯业务逻辑
+└── index.ts
+```
+
+### 组件层级
+
+| 层级       | 说明     | 特点                   | 示例                     |
+| ---------- | -------- | ---------------------- | ------------------------ |
+| parts      | 原子组件 | 无状态，纯展示         | Button, Input, Avatar    |
+| composites | 分子组件 | 组合 parts，有局部状态 | ChatInput, MessageBubble |
+| containers | 有机体   | 连接 store/hooks       | ChatPane, Sidebar        |
+| pages      | 页面     | 完整功能页面           | ChatPage, SettingsPage   |
+
+### 命名规范
+
+- 目录名：`ui/`
+- operations 目录：`operations/`
+- operations 文件：`*-ops.ts`（如 `projects-ops.ts`）
+- 函数前缀：`calc`（如 `calcFilterProjects`）

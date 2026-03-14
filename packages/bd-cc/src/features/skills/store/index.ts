@@ -5,5 +5,5 @@ export {
   disabledSkillsAtom,
   skillsCountAtom,
   enabledSkillsCountAtom,
-} from './domain/skills-derived';
+} from './derived/skills-derived';
 export { useSkills } from './actions/use-skills';

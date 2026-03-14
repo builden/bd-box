@@ -5,5 +5,5 @@ export {
   disabledPluginsAtom,
   pluginsCountAtom,
   enabledPluginsCountAtom,
-} from './domain/plugins-derived';
+} from './derived/plugins-derived';
 export { usePlugins } from './actions/use-plugins';

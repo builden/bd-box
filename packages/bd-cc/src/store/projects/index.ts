@@ -6,5 +6,5 @@ export {
   activeTabAtom,
   selectedProviderAtom,
 } from './primitives/projects-atom';
-export { projectNamesAtom, currentProjectSessionsAtom, hasActiveSessionAtom } from './domain/project-derived';
+export { projectNamesAtom, currentProjectSessionsAtom, hasActiveSessionAtom } from './derived/project-derived';
 export { useProjects } from './actions/use-projects';

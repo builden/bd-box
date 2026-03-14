@@ -7,7 +7,7 @@ import {
   activeTabAtom,
   selectedProviderAtom,
 } from '../primitives/projects-atom';
-import { projectNamesAtom, currentProjectSessionsAtom, hasActiveSessionAtom } from '../domain/project-derived';
+import { projectNamesAtom, currentProjectSessionsAtom, hasActiveSessionAtom } from '../derived/project-derived';
 import type { Project, ProjectSession, AppTab } from '@/types';
 import { useProjectsQuery } from '@/hooks/useProjectsQuery';
 

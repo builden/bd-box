@@ -1,7 +1,7 @@
 import { useAtom } from 'jotai';
 import { useCallback, useEffect } from 'react';
 import { themeAtom } from '../primitives/theme-atom';
-import { isDarkModeAtom } from '../domain/theme-derived';
+import { isDarkModeAtom } from '../derived/theme-derived';
 import { calcToggleTheme } from '../operations/theme-ops';
 
 /**

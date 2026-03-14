@@ -40,86 +40,123 @@ npm run release      # 创建发布版本 (使用 release-it)
 
 ```
 src/                          # React 前端
-├── components/               # UI 组件
-│   ├── app/                  # 应用外壳 (AppContent, MobileNav)
-│   ├── auth/                # 认证 (登录、设置)
-│   ├── chat/                # 聊天界面、消息、工具
-│   ├── code-editor/         # CodeMirror 编辑器
-│   ├── file-tree/           # 文件浏览器
-│   ├── git-panel/           # Git UI 组件
-│   ├── settings/             # 设置面板
-│   ├── sidebar/             # 侧边栏 (项目/会话列表)
-│   ├── shell/               # 终端 (xterm.js)
-│   ├── main-content/        # 主内容区 (编辑器+终端)
-│   ├── plugins/             # 插件系统前端
-│   ├── task-master/         # 任务看板
-│   ├── prd-editor/          # PRD 编辑器
-│   ├── quick-settings-panel/# 快捷设置面板
-│   ├── onboarding/          # 引导流程
-│   ├── version-upgrade/     # 版本升级提示
-│   └── provider-auth/      # 第三方认证
-├── contexts/                # React Context (全局状态)
-│   ├── ThemeContext.tsx     # 主题 (明/暗)
-│   ├── WebSocketContext.tsx # WebSocket 连接
-│   ├── PluginsContext.tsx   # 插件列表
-│   ├── SkillsContext.tsx    # Skills 列表
-│   ├── TaskMasterContext.ts # 任务看板状态
-│   └── TasksSettingsContext.tsx # 任务设置
-├── hooks/                   # 自定义 React Hooks
-├── lib/                     # 工具函数和 API 客户端
-├── utils/                   # 纯工具函数
-├── constants/              # 常量定义
-├── types/                  # TypeScript 类型定义
-├── i18n/                   # 国际化配置
-└── shared/                 # 跨包共享代码
-    └── view/ui/            # 共享 UI 组件 (Button, Input 等)
+├── features/                 # 功能模块（按业务划分）
+│   ├── chat/               # 聊天功能
+│   ├── projects/           # 项目管理功能
+│   ├── shell/              # 终端功能
+│   └── ...
+├── components/              # 通用 UI 组件
+│   ├── app/                # 应用外壳
+│   ├── auth/               # 认证
+│   ├── chat/               # 聊天（迁移到 features 后废弃）
+│   └── ...
+├── store/                   # 全局状态（Jotai）
+├── hooks/                   # 通用 hooks
+├── lib/                     # 通用库
+├── utils/                   # 通用工具
+├── constants/               # 常量定义
+├── types/                   # 全局类型定义
+├── i18n/                    # 国际化配置
+└── shared/                  # 跨包共享代码
+    └── view/ui/            # 共享 UI 组件
+```
 
-server/                     # Express 后端
-├── database/               # SQLite 数据库
-├── routes/                 # REST API 端点
-├── utils/                  # 工具函数
-│   ├── plugin-loader.ts    # 插件加载
-│   ├── skill-loader.ts     # Skill 加载
-│   ├── mcp-detector.ts     # MCP 服务器检测
-│   ├── commandParser.ts    # 命令解析
-│   └── taskmaster-websocket.ts # 任务看板 WebSocket
-├── sessionManager.ts       # 会话管理
-├── claude-sdk.ts          # Claude Code 集成
-├── cursor-cli.ts          # Cursor CLI 集成
-├── openai-codex.ts        # Codex 集成
-├── gemini-cli.ts          # Gemini CLI 集成
-└── index.ts               # 服务端入口
+### 功能模块结构（features）
 
-shared/                    # 共享常量
-└── modelConstants.ts      # 支持的 AI 模型
+> 新增功能或重构时使用，按业务功能划分。通用代码保持在根目录。
+
+```
+feature-name/                 # 功能模块目录
+├── ui/                      # UI 组件
+│   ├── parts/              # 原子组件（无状态，纯展示）
+│   ├── composites/         # 分子组件（组合 parts）
+│   ├── containers/         # 有机体（连接 store/hooks）
+│   └── pages/              # 页面级组件
+├── hooks/                   # 功能专用 hooks
+├── types.ts                 # 功能类型定义
+├── operations/             # 业务逻辑（纯函数，无 React 依赖）
+│   ├── index.ts            # 聚合导出
+│   └── {domain}-ops.ts     # 按领域细分，如 projects-ops.ts
+└── index.ts                 # 模块导出
+```
+
+### ui 组件层级
+
+| 层级       | 说明     | 示例                     |
+| ---------- | -------- | ------------------------ |
+| parts      | 原子组件 | Button, Input, Avatar    |
+| composites | 分子组件 | ChatInput, MessageBubble |
+| containers | 有机体   | ChatPane, Sidebar        |
+| pages      | 页面     | ChatPage, SettingsPage   |
+
+### operations 命名规范
+
+- 目录名：`operations/`
+- 文件名：`*-ops.ts`（如 `projects-ops.ts`）
+- 函数前缀：`calc`（如 `calcFilterProjects`）
+
+### store 结构（参考）
+
+```
+store/
+├── {feature}/               # 功能状态模块
+│   ├── primitives/        # 原始 atom
+│   ├── derived/           # 派生 atom
+│   ├── operations/       # 纯函数操作
+│   ├── actions/           # React 组件 action
+│   └── index.ts           # 导出入口
+└── index.ts               # 全局 store 导出
+```
+
+server/ # Express 后端
+├── database/ # SQLite 数据库
+├── routes/ # REST API 端点
+├── utils/ # 工具函数
+│ ├── plugin-loader.ts # 插件加载
+│ ├── skill-loader.ts # Skill 加载
+│ ├── mcp-detector.ts # MCP 服务器检测
+│ ├── commandParser.ts # 命令解析
+│ └── taskmaster-websocket.ts # 任务看板 WebSocket
+├── sessionManager.ts # 会话管理
+├── claude-sdk.ts # Claude Code 集成
+├── cursor-cli.ts # Cursor CLI 集成
+├── openai-codex.ts # Codex 集成
+├── gemini-cli.ts # Gemini CLI 集成
+└── index.ts # 服务端入口
+
+shared/ # 共享常量
+└── modelConstants.ts # 支持的 AI 模型
+
 ```
 
 ### 模块依赖关系
 
 ```
+
 App.tsx (根组件)
 ├── AuthProvider (认证上下文)
-│   └── ProtectedRoute (路由守卫)
+│ └── ProtectedRoute (路由守卫)
 ├── WebSocketProvider (WebSocket)
-│   └── Sidebar (侧边栏)
-│       ├── ProjectList (项目列表)
-│       └── SessionList (会话列表)
+│ └── Sidebar (侧边栏)
+│ ├── ProjectList (项目列表)
+│ └── SessionList (会话列表)
 ├── PluginsContext (插件)
-│   └── Settings (设置面板 → 插件设置)
+│ └── Settings (设置面板 → 插件设置)
 ├── SkillsContext (Skills)
-│   └── Settings (设置面板 → Skills 设置)
+│ └── Settings (设置面板 → Skills 设置)
 ├── TaskMasterContext (任务看板)
-│   └── TaskMaster (看板视图)
+│ └── TaskMaster (看板视图)
 └── AppContent (主布局)
-    ├── Sidebar (左侧)
-    │   └── Chat (聊天入口)
-    └── MainContent (右侧)
-        ├── Shell (终端)
-        ├── CodeEditor (编辑器)
-        └── Chat (聊天界面)
-            ├── ChatMessagesPane (消息列表)
-            ├── ChatInput (输入框)
-            └── Tools (工具面板)
+├── Sidebar (左侧)
+│ └── Chat (聊天入口)
+└── MainContent (右侧)
+├── Shell (终端)
+├── CodeEditor (编辑器)
+└── Chat (聊天界面)
+├── ChatMessagesPane (消息列表)
+├── ChatInput (输入框)
+└── Tools (工具面板)
+
 ```
 
 ### 核心数据流
@@ -143,13 +180,15 @@ App.tsx (根组件)
 ### 现有结构
 
 ```
-src/types/               # 全局共享类型
-├── index.ts            # 统一导出入口
-├── app.ts              # 应用核心类型 (Project, Session, PermissionMode 等)
-└── sharedTypes.ts      # 其他共享类型
 
-src/components/*/types/types.ts  # 组件特有类型
-```
+src/types/ # 全局共享类型
+├── index.ts # 统一导出入口
+├── app.ts # 应用核心类型 (Project, Session, PermissionMode 等)
+└── sharedTypes.ts # 其他共享类型
+
+src/components/\*/types/types.ts # 组件特有类型
+
+````
 
 ### 改进原则
 
@@ -170,17 +209,17 @@ import { Project, PermissionMode } from '../../../types/app';
 
 // 之后（使用路径别名）
 import { Project, PermissionMode } from '@/types';
-```
+````
 
 ### 第二阶段分析结果
 
 经过分析，以下类型的迁移优先级较低（保持现状）：
 
-| 类型 | 当前位置 | 原因 |
-|------|----------|------|
-| McpServer | settings/types/types.ts | 特定领域，建议保持模块内 |
-| TaskMasterTask | task-master/types.ts | 任务看板特有 |
-| GitStatusResponse | git-panel/types/types.ts | Git 特有 |
+| 类型              | 当前位置                 | 原因                     |
+| ----------------- | ------------------------ | ------------------------ |
+| McpServer         | settings/types/types.ts  | 特定领域，建议保持模块内 |
+| TaskMasterTask    | task-master/types.ts     | 任务看板特有             |
+| GitStatusResponse | git-panel/types/types.ts | Git 特有                 |
 
 ### 后续改进方向
 
@@ -190,12 +229,13 @@ import { Project, PermissionMode } from '@/types';
 
 ### 已完成的改进总结
 
-| 阶段 | 改进内容 | 状态 |
-|------|----------|------|
-| 第一阶段 | 创建 types/index.ts 统一入口 | ✅ |
-| 第一阶段 | 迁移 PermissionMode 到全局 | ✅ |
-| 第一阶段 | 添加 @/ 路径别名 | ✅ |
-| 第二阶段 | 分析高频类型迁移必要性 | ✅ |
+| 阶段     | 改进内容                     | 状态 |
+| -------- | ---------------------------- | ---- |
+| 第一阶段 | 创建 types/index.ts 统一入口 | ✅   |
+| 第一阶段 | 迁移 PermissionMode 到全局   | ✅   |
+| 第一阶段 | 添加 @/ 路径别名             | ✅   |
+| 第二阶段 | 分析高频类型迁移必要性       | ✅   |
+
 - **WebSocket**: 用于终端、聊天进度和会话更新的实时通信
 - **node-pty**: 终端仿真的 PTY
 
@@ -236,12 +276,12 @@ curl -i -N \
 
 ### 常见问题
 
-| 问题 | 原因 | 解决方案 |
-|------|------|----------|
-| 终端提示"在 shell 中继续" | 服务未启动或端口冲突 | `bun run server` 重启 |
-| WebSocket 连接失败 | 端口被占用或多实例冲突 | `lsof -i :3001` 检查 |
-| 认证 token 缺失 | 开发模式下未登录 | `socket.ts` 允许无 token |
-| 侧边栏会话为空 | Claude Code 格式变化 | 检查 jsonl 解析逻辑 |
+| 问题                      | 原因                   | 解决方案                 |
+| ------------------------- | ---------------------- | ------------------------ |
+| 终端提示"在 shell 中继续" | 服务未启动或端口冲突   | `bun run server` 重启    |
+| WebSocket 连接失败        | 端口被占用或多实例冲突 | `lsof -i :3001` 检查     |
+| 认证 token 缺失           | 开发模式下未登录       | `socket.ts` 允许无 token |
+| 侧边栏会话为空            | Claude Code 格式变化   | 检查 jsonl 解析逻辑      |
 
 ### 诊断脚本
 

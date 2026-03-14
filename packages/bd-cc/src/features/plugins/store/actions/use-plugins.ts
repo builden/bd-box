@@ -7,7 +7,7 @@ import {
   disabledPluginsAtom,
   pluginsCountAtom,
   enabledPluginsCountAtom,
-} from '../domain/plugins-derived';
+} from '../derived/plugins-derived';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('usePlugins');

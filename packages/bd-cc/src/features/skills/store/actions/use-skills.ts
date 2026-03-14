@@ -7,7 +7,7 @@ import {
   disabledSkillsAtom,
   skillsCountAtom,
   enabledSkillsCountAtom,
-} from '../domain/skills-derived';
+} from '../derived/skills-derived';
 import { SkillsListResponseSchema } from '@shared/api/skills';
 import { validateResponse } from '@shared/api/validation';
 import { createLogger } from '@/lib/logger';
