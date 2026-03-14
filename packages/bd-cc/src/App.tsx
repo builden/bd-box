@@ -6,23 +6,29 @@ import { WebSocketProvider } from './contexts/WebSocketContext';
 import AppContent from './components/app/AppContent';
 import i18n from './i18n/config';
 
-export default function App() {
+function AppProviders({ children }: { children: React.ReactNode }) {
   return (
     <I18nextProvider i18n={i18n}>
       <AuthProvider>
         <WebSocketProvider>
-          <TaskMasterProvider>
-            <ProtectedRoute>
-              <Router basename={window.__ROUTER_BASENAME__ || ''}>
-                <Routes>
-                  <Route path="/" element={<AppContent />} />
-                  <Route path="/session/:sessionId" element={<AppContent />} />
-                </Routes>
-              </Router>
-            </ProtectedRoute>
-          </TaskMasterProvider>
+          <TaskMasterProvider>{children}</TaskMasterProvider>
         </WebSocketProvider>
       </AuthProvider>
     </I18nextProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <AppProviders>
+      <ProtectedRoute>
+        <Router basename={window.__ROUTER_BASENAME__ || ''}>
+          <Routes>
+            <Route path="/" element={<AppContent />} />
+            <Route path="/session/:sessionId" element={<AppContent />} />
+          </Routes>
+        </Router>
+      </ProtectedRoute>
+    </AppProviders>
   );
 }

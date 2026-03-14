@@ -1,12 +1,12 @@
 import { useAtom, useSetAtom } from 'jotai';
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '@/utils/api';
 import { createLogger } from '@/lib/logger';
 import type { AppSocketMessage, LoadingProgress, Project, ProjectSession, AppTab } from '@/types';
 import { projectsAtom, selectedProjectAtom, selectedSessionAtom, activeTabAtom } from '../primitives/projects-atom';
 import { projectNamesAtom, currentProjectSessionsAtom, hasActiveSessionAtom } from '../domain/project-derived';
 import { calcRemoveProject, calcUpdateProjectSession, calcProjectsHaveChanges } from '../operations/projects-ops';
+import { useProjectsQuery } from '@/hooks/useProjectsQuery';
 
 const logger = createLogger('useProjects');
 
@@ -15,6 +15,9 @@ const logger = createLogger('useProjects');
  */
 export function useProjects() {
   const navigate = useNavigate();
+
+  // ========== TanStack Query 数据获取 ==========
+  const { data: projectsData, isLoading: isLoadingProjectsQuery, refetch: refetchProjects } = useProjectsQuery();
 
   // ========== 持久化状态 (使用 Jotai) ==========
   const [projects] = useAtom(projectsAtom);
@@ -43,42 +46,32 @@ export function useProjects() {
   // Refs
   const loadingProgressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ========== 加载项目列表 ==========
-  const fetchProjects = useCallback(
-    async ({ showLoadingState = true }: { showLoadingState?: boolean } = {}) => {
-      try {
-        if (showLoadingState) {
-          setIsLoadingProjects(true);
-        }
-        const response = await api.projects();
-        const projectData = (await response.json()) as Project[];
-
-        setProjects((prevProjects) => {
-          if (prevProjects.length === 0) {
-            return projectData;
-          }
-          return calcProjectsHaveChanges(prevProjects, projectData, true) ? projectData : prevProjects;
-        });
-      } catch (error) {
-        logger.error('Error fetching projects', error);
-      } finally {
-        if (showLoadingState) {
-          setIsLoadingProjects(false);
-        }
-      }
-    },
-    [setProjects]
-  );
-
-  // 静默刷新
-  const refreshProjectsSilently = useCallback(async () => {
-    await fetchProjects({ showLoadingState: false });
-  }, [fetchProjects]);
-
-  // 初始加载
+  // ========== 同步 TanStack Query 数据到 Jotai ==========
   useEffect(() => {
-    void fetchProjects();
-  }, [fetchProjects]);
+    if (projectsData) {
+      setProjects((prevProjects) => {
+        if (prevProjects.length === 0) {
+          return projectsData;
+        }
+        return calcProjectsHaveChanges(prevProjects, projectsData, true) ? projectsData : prevProjects;
+      });
+    }
+  }, [projectsData, setProjects]);
+
+  // ========== 同步加载状态 ==========
+  useEffect(() => {
+    setIsLoadingProjects(isLoadingProjectsQuery);
+  }, [isLoadingProjectsQuery]);
+
+  // ========== 刷新项目 (使用 TanStack Query) ==========
+  const refreshProjectsSilently = useCallback(async () => {
+    await refetchProjects();
+  }, [refetchProjects]);
+
+  // 兼容旧接口的 fetchProjects (使用 TanStack Query)
+  const fetchProjects = useCallback(async () => {
+    await refetchProjects();
+  }, [refetchProjects]);
 
   // 自动选择单个项目
   useEffect(() => {
@@ -174,19 +167,10 @@ export function useProjects() {
     [navigate, selectedProject, setProjects, setSelectedProject, setSelectedSession]
   );
 
-  // 刷新侧边栏
+  // 刷新侧边栏 (使用 TanStack Query)
   const refreshSidebar = useCallback(async () => {
-    try {
-      const response = await api.projects();
-      const freshProjects = (await response.json()) as Project[];
-
-      setProjects((prevProjects) =>
-        calcProjectsHaveChanges(prevProjects, freshProjects, true) ? freshProjects : prevProjects
-      );
-    } catch (error) {
-      logger.error('Error refreshing sidebar', error);
-    }
-  }, [setProjects]);
+    await refetchProjects();
+  }, [refetchProjects]);
 
   // 清理超时
   useEffect(() => {
