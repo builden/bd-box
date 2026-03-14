@@ -3,15 +3,20 @@
 [test]
 # 前端测试需要 DOM 环境
 preload = ["./tests/setup.ts"]
-# 覆盖率阈值 - 80% 为目标，允许个别文件例外
-coverageThreshold = { "**": { functions = 80, lines = 80 } }
+
+# 覆盖率阈值 - 80% 为目标
+[test.coverageThreshold]
+functions = 80
+lines = 80
+
 # Include test file patterns
 testPatterns = [
   "**/*.test.ts",
   "**/*.api.ts",
   "**/*.smoke.ts",
   "tests/integration/*.spec.ts",
-  "**/*.bench.ts"
+  "**/*.bench.ts",
 ]
+
 # Exclude e2e tests from bun test (uses Playwright)
 ignore = ["tests/e2e/**"]
