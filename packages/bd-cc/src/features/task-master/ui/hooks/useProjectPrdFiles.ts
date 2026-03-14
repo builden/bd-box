@@ -1,67 +1,27 @@
-import { useCallback, useEffect, useState } from 'react';
+import { usePrdRegistryQuery } from '@/hooks/usePrdQuery';
 import type { PrdFile } from '../types';
-import { createLogger } from '@/lib/logger';
-import { api } from '@/utils/api';
-
-const logger = createLogger('ProjectPrdFiles');
 
 type UseProjectPrdFilesOptions = {
   projectName?: string;
 };
 
-type PrdResponse = {
-  prdFiles?: PrdFile[];
-  prds?: PrdFile[];
+type UseProjectPrdFilesResult = {
+  prdFiles: PrdFile[];
+  isLoadingPrdFiles: boolean;
+  error: Error | null;
+  refreshPrdFiles: () => Promise<unknown>;
 };
 
-function normalizePrdResponse(responseData: PrdResponse): PrdFile[] {
-  if (Array.isArray(responseData.prdFiles)) {
-    return responseData.prdFiles;
-  }
-
-  if (Array.isArray(responseData.prds)) {
-    return responseData.prds;
-  }
-
-  return [];
-}
-
-export function useProjectPrdFiles({ projectName }: UseProjectPrdFilesOptions) {
-  const [prdFiles, setPrdFiles] = useState<PrdFile[]>([]);
-  const [isLoadingPrdFiles, setIsLoadingPrdFiles] = useState(false);
-
-  const refreshPrdFiles = useCallback(async () => {
-    if (!projectName) {
-      setPrdFiles([]);
-      return;
-    }
-
-    try {
-      setIsLoadingPrdFiles(true);
-      const response = await api.get(`/taskmasters/prd/${encodeURIComponent(projectName)}`);
-
-      if (!response.ok) {
-        setPrdFiles([]);
-        return;
-      }
-
-      const data = (await response.json()) as PrdResponse;
-      setPrdFiles(normalizePrdResponse(data));
-    } catch (error) {
-      logger.error('Failed to load PRD files:', error);
-      setPrdFiles([]);
-    } finally {
-      setIsLoadingPrdFiles(false);
-    }
-  }, [projectName]);
-
-  useEffect(() => {
-    void refreshPrdFiles();
-  }, [refreshPrdFiles]);
+/**
+ * 项目 PRD 文件 Hook - 复用 usePrdRegistryQuery
+ */
+export function useProjectPrdFiles({ projectName }: UseProjectPrdFilesOptions): UseProjectPrdFilesResult {
+  const { data = [], isLoading, error, refetch } = usePrdRegistryQuery(projectName || '');
 
   return {
-    prdFiles,
-    isLoadingPrdFiles,
-    refreshPrdFiles,
+    prdFiles: data as PrdFile[],
+    isLoadingPrdFiles: isLoading,
+    error: error as Error | null,
+    refreshPrdFiles: () => refetch(),
   };
 }
