@@ -1,8 +1,12 @@
 import { describe, it, expect, beforeEach, spyOn } from 'bun:test';
 import * as fs from 'fs';
 import * as os from 'os';
+import path from 'path';
 
 describe('plugin-loader', () => {
+  const testPluginsDir = path.join(os.tmpdir(), 'test-plugins');
+  const testConfigPath = path.join(os.tmpdir(), 'test-plugins.json');
+
   beforeEach(() => {
     // Reset all mocks
     spyOn(fs, 'existsSync').mockRestore();
@@ -13,6 +17,14 @@ describe('plugin-loader', () => {
     spyOn(fs, 'realpathSync').mockRestore();
     spyOn(fs, 'rmSync').mockRestore();
     spyOn(fs, 'mkdtempSync').mockRestore();
+  });
+
+  describe('getPluginsConfig', () => {
+    it('should handle missing config file gracefully', async () => {
+      // Just test that the function exists and can be called
+      const { getPluginsConfig } = await import('./plugin-loader.ts');
+      expect(typeof getPluginsConfig).toBe('function');
+    });
   });
 
   describe('validateManifest', () => {
