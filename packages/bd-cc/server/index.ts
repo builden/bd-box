@@ -67,7 +67,7 @@ import sessionManager from './sessionManager.ts';
 import gitRoutes from './routes/git/index.ts';
 import systemRoutes from './routes/system.ts';
 import inlineProjectsRoutes from './routes/inline-projects.ts';
-import inlineFilesRoutes from './routes/inline-files.ts';
+import inlineFilesRoutes from './routes/inline-files/index.ts';
 import mediaRoutes from './routes/media.ts';
 import authRoutes from './routes/auth.ts';
 import mcpRoutes from './routes/mcp.ts';
