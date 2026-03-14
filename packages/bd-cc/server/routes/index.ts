@@ -21,7 +21,7 @@ import commandsRoutes from './commands/index.ts';
 import settingsRoutes from './settings.ts';
 import agentRoutes from './agent/index.ts';
 import projectsRoutes from './projects.ts';
-import cliAuthRoutes from './cli-auth.ts';
+import cliAuthRoutes from './cli-auth/index.ts';
 import userRoutes from './users.ts';
 import codexRoutes from './codex.ts';
 import geminiRoutes from './gemini.ts';
