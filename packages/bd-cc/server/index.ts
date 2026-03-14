@@ -21,6 +21,9 @@ import {
   shouldAutoOpenUrlFromOutput,
 } from './utils/url-parser';
 import { permToRwx } from './utils/file-permissions';
+import { c } from './utils/terminal-colors';
+import { PTY_SESSION_TIMEOUT, SHELL_URL_PARSE_BUFFER_LIMIT } from './constants/terminal';
+import { PORT, HOST, DISPLAY_HOST } from './constants/server';
 
 const logger = createLogger('server/index');
 
@@ -28,29 +31,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const installMode = fs.existsSync(path.join(__dirname, '..', '.git')) ? 'git' : 'npm';
-
-// ============================================================================
-// region: constants
-// ============================================================================
-// ANSI color codes for terminal output
-const colors = {
-  reset: '\x1b[0m',
-  bright: '\x1b[1m',
-  cyan: '\x1b[36m',
-  green: '\x1b[32m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  dim: '\x1b[2m',
-};
-
-const c = {
-  info: (text) => `${colors.cyan}${text}${colors.reset}`,
-  ok: (text) => `${colors.green}${text}${colors.reset}`,
-  warn: (text) => `${colors.yellow}${text}${colors.reset}`,
-  tip: (text) => `${colors.blue}${text}${colors.reset}`,
-  bright: (text) => `${colors.bright}${text}${colors.reset}`,
-  dim: (text) => `${colors.dim}${text}${colors.reset}`,
-};
 
 logger.info('PORT from env:', { PORT: process.env.PORT });
 
@@ -250,8 +230,6 @@ const server = http.createServer(app);
 // region: PTY session constants
 // ============================================================================
 const ptySessionsMap = new Map();
-const PTY_SESSION_TIMEOUT = 30 * 60 * 1000;
-const SHELL_URL_PARSE_BUFFER_LIMIT = 32768;
 
 // Single WebSocket server that handles both paths
 const wss = new WebSocketServer({
@@ -1036,11 +1014,6 @@ app.get('{*splat}', (req, res) => {
     res.redirect(`http://localhost:${process.env.VITE_PORT || 5173}`);
   }
 });
-
-const PORT = process.env.PORT || 3001;
-const HOST = process.env.HOST || '0.0.0.0';
-// Show localhost in URL when binding to all interfaces (0.0.0.0 isn't a connectable address)
-const DISPLAY_HOST = HOST === '0.0.0.0' ? 'localhost' : HOST;
 
 // ============================================================================
 // endregion
