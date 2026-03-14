@@ -15,3 +15,7 @@ export * from './git';
 export * from './auth';
 export * from './users';
 export * from './system';
+export * from './commands';
+export * from './providers';
+export * from './settings';
+export * from './media';
