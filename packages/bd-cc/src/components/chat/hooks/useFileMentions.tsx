@@ -84,7 +84,7 @@ export function useFileMentions({ selectedProject, input, setInput, textareaRef 
         const result = validateResponse(FileTreeResponseSchema, json, {
           endpoint: `/api/projects/${projectName}/files`,
           status: response.status,
-          fallbackValue: { files: [], projectRoot: '' } as FileTreeResponse,
+          fallbackValue: null,
         });
 
         if (result) {

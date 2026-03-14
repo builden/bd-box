@@ -64,7 +64,7 @@ export function useFileTreeData(selectedProject: Project | null): UseFileTreeDat
         const result = validateResponse(FileTreeResponseSchema, json, {
           endpoint: `/api/projects/${projectName}/files`,
           status: response.status,
-          fallbackValue: { files: [] },
+          fallbackValue: null,
         });
 
         if (isActive) {

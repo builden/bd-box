@@ -74,7 +74,7 @@ function getSessionsAtom(projectName: string) {
           const result = validateResponse(SessionsListResponseSchema, json, {
             endpoint: `/api/projects/${projectName}/sessions`,
             status: response.status,
-            fallbackValue: { sessions: [] },
+            fallbackValue: null,
           });
 
           return result?.sessions || [];

@@ -36,11 +36,11 @@ export interface ValidationOptions {
  *   status: 200,
  * });
  */
-export function validateResponse<T>(
+export function validateResponse<T, F = unknown>(
   schema: z.ZodSchema<T>,
   data: unknown,
-  options: ValidationOptions
-): T | typeof options.fallbackValue {
+  options: ValidationOptions & { fallbackValue?: F }
+): T | F {
   const { endpoint, status = 200, fallbackValue, notifyOnError = true, errorMessage } = options;
 
   const result = schema.safeParse(data);
@@ -59,7 +59,7 @@ export function validateResponse<T>(
       });
     }
 
-    return fallbackValue as typeof options.fallbackValue;
+    return fallbackValue as F;
   }
 
   return result.data;
@@ -80,11 +80,11 @@ export function validateResponse<T>(
  *   { endpoint: '/api/projects' }
  * );
  */
-export function validateListResponse<T>(
+export function validateListResponse<T, F = unknown>(
   schema: z.ZodSchema<T>,
   data: unknown,
-  options: ValidationOptions
-): { items: T[]; pagination?: { total: number; page: number; pageSize: number } } | typeof options.fallbackValue {
+  options: ValidationOptions & { fallbackValue?: F }
+): { items: T[]; pagination?: { total: number; page: number; pageSize: number } } | F {
   const listSchema = z.object({
     items: z.array(schema),
     pagination: z
@@ -114,7 +114,7 @@ export function validateListResponse<T>(
       });
     }
 
-    return fallbackValue as typeof options.fallbackValue;
+    return fallbackValue as F;
   }
 
   return {
