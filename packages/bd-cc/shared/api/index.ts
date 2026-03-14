@@ -12,3 +12,6 @@ export * from './tasks';
 export * from './plugins';
 export * from './mcp';
 export * from './git';
+export * from './auth';
+export * from './users';
+export * from './system';
