@@ -9,3 +9,6 @@ export * from './projects';
 export * from './skills';
 export * from './sessions';
 export * from './tasks';
+export * from './plugins';
+export * from './mcp';
+export * from './git';
