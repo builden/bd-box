@@ -7,6 +7,16 @@
 import { z } from 'zod';
 
 /**
+ * TaskMaster 检测结果
+ */
+export const TaskMasterDetectionSchema = z
+  .object({
+    hasTaskmaster: z.boolean(),
+    reason: z.string().optional(),
+  })
+  .describe('TaskMaster 检测结果');
+
+/**
  * 项目信息
  *
  * | 字段 | 类型 | 必填 | 说明 |
@@ -18,7 +28,7 @@ import { z } from 'zod';
  * | path | string | 否 | 简短路径 (同 fullPath) |
  * | type | string | 否 | 项目来源类型，如 'claude' |
  * | manuallyAdded | boolean | 否 | 是否手动添加的项目 |
- * | hasTaskMaster | boolean | 否 | 是否包含 TaskMaster 配置 |
+ * | hasTaskMaster | object | 否 | TaskMaster 检测结果 { hasTaskmaster: boolean, reason?: string } |
  * | sessionMeta | object | 否 | 会话元信息 { total: number, hasMore: boolean } |
  */
 export const ProjectSchema = z.object({
@@ -29,7 +39,7 @@ export const ProjectSchema = z.object({
   path: z.string().optional().describe('简短路径'),
   type: z.string().optional().describe('项目来源类型'),
   manuallyAdded: z.boolean().optional().describe('是否手动添加'),
-  hasTaskMaster: z.boolean().optional().describe('是否包含 TaskMaster'),
+  hasTaskMaster: TaskMasterDetectionSchema.optional().describe('TaskMaster 检测结果'),
   sessionMeta: z
     .object({
       total: z.number(),

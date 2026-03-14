@@ -12,6 +12,7 @@ import { normalizeComparablePath } from '../utils/project-utils';
 import { detectTaskMasterFolder } from '../utils/taskmaster';
 import { loadProjectConfig, saveProjectConfig } from './project-config';
 import { createLogger } from '../lib/logger';
+import type { Project } from '../../shared/api/projects';
 
 const logger = createLogger('services/project-discovery');
 
@@ -114,7 +115,7 @@ export async function extractProjectDirectory(projectName: string): Promise<stri
  */
 export async function getProjects(progressCallback: ((info: any) => void) | null = null) {
   const claudeProjectsDir = path.join(os.homedir(), '.claude', 'projects');
-  const projects: any[] = [];
+  const projects: Project[] = [];
   const config = await loadProjectConfig();
   const manuallyAdded = config.manuallyAddedProjects || {};
 
@@ -144,7 +145,9 @@ export async function getProjects(progressCallback: ((info: any) => void) | null
         const displayName = await generateDisplayName(projectName, actualDir);
         const projectPath = manuallyAdded[projectName]?.path || actualDir || `/${projectName.replace(/-/g, '/')}`;
 
-        const hasTaskMaster = actualDir ? await detectTaskMasterFolder(actualDir) : false;
+        const hasTaskMaster = actualDir
+  ? await detectTaskMasterFolder(actualDir)
+  : { hasTaskmaster: false, reason: 'Project directory not found' };
 
         // 计算会话数量
         const projectDir = path.join(claudeProjectsDir, projectName);
