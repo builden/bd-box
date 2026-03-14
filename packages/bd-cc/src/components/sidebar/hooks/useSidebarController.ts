@@ -190,7 +190,7 @@ export function useSidebarController({
     if (projects.length > 0 && !isLoading) {
       const loadedProjects = new Set<string>();
       projects.forEach((project) => {
-        if (project.sessions && project.sessions.length >= 0) {
+        if (project.sessions) {
           loadedProjects.add(project.name);
         }
       });
@@ -213,15 +213,8 @@ export function useSidebarController({
 
     window.addEventListener('storage', handleStorageChange);
 
-    const interval = setInterval(() => {
-      if (document.hasFocus()) {
-        loadSortOrder();
-      }
-    }, 1000);
-
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
     };
   }, []);
 

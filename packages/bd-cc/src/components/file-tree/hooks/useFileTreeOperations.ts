@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import JSZip from 'jszip';
 import { api } from '../../../utils/api';
+import { copyTextToClipboard } from '@/utils/clipboard';
 import type { FileTreeNode } from '../types/types';
 import type { Project } from '../../../types/app';
 
@@ -82,21 +83,24 @@ export function useFileTreeOperations({
   const [operationLoading, setOperationLoading] = useState(false);
 
   // Validation
-  const validateFilename = useCallback((name: string): string | null => {
-    if (!name || !name.trim()) {
-      return t('fileTree.validation.emptyName', 'Filename cannot be empty');
-    }
-    if (INVALID_FILENAME_CHARS.test(name)) {
-      return t('fileTree.validation.invalidChars', 'Filename contains invalid characters');
-    }
-    if (RESERVED_NAMES.test(name)) {
-      return t('fileTree.validation.reserved', 'Filename is a reserved name');
-    }
-    if (/^\.+$/.test(name)) {
-      return t('fileTree.validation.dotsOnly', 'Filename cannot be only dots');
-    }
-    return null;
-  }, [t]);
+  const validateFilename = useCallback(
+    (name: string): string | null => {
+      if (!name || !name.trim()) {
+        return t('fileTree.validation.emptyName', 'Filename cannot be empty');
+      }
+      if (INVALID_FILENAME_CHARS.test(name)) {
+        return t('fileTree.validation.invalidChars', 'Filename contains invalid characters');
+      }
+      if (RESERVED_NAMES.test(name)) {
+        return t('fileTree.validation.reserved', 'Filename is a reserved name');
+      }
+      if (/^\.+$/.test(name)) {
+        return t('fileTree.validation.dotsOnly', 'Filename cannot be only dots');
+      }
+      return null;
+    },
+    [t]
+  );
 
   // Rename operations
   const handleStartRename = useCallback((item: FileTreeNode) => {
@@ -236,113 +240,135 @@ export function useFileTreeOperations({
     } finally {
       setOperationLoading(false);
     }
-  }, [selectedProject, newItemParent, newItemType, newItemName, validateFilename, showToast, t, onRefresh, handleCancelCreate]);
+  }, [
+    selectedProject,
+    newItemParent,
+    newItemType,
+    newItemName,
+    validateFilename,
+    showToast,
+    t,
+    onRefresh,
+    handleCancelCreate,
+  ]);
 
   // Copy path to clipboard
-  const handleCopyPath = useCallback((item: FileTreeNode) => {
-    navigator.clipboard.writeText(item.path).catch(() => {
-      // Clipboard API may fail in some contexts (e.g., non-HTTPS)
-      showToast(t('fileTree.toast.copyFailed', 'Failed to copy path'), 'error');
-      return;
-    });
-    showToast(t('fileTree.toast.pathCopied', 'Path copied to clipboard'), 'success');
-  }, [showToast, t]);
+  const handleCopyPath = useCallback(
+    (item: FileTreeNode) => {
+      const success = copyTextToClipboard(item.path);
+      if (success) {
+        showToast(t('fileTree.toast.pathCopied', 'Path copied to clipboard'), 'success');
+      } else {
+        showToast(t('fileTree.toast.copyFailed', 'Failed to copy path'), 'error');
+      }
+    },
+    [showToast, t]
+  );
 
   // Download file or folder
-  const handleDownload = useCallback(async (item: FileTreeNode) => {
-    if (!selectedProject) return;
+  const handleDownload = useCallback(
+    async (item: FileTreeNode) => {
+      if (!selectedProject) return;
 
-    setOperationLoading(true);
-    try {
-      if (item.type === 'directory') {
-        // Download folder as ZIP
-        await downloadFolderAsZip(item);
-      } else {
-        // Download single file
-        await downloadSingleFile(item);
+      setOperationLoading(true);
+      try {
+        if (item.type === 'directory') {
+          // Download folder as ZIP
+          await downloadFolderAsZip(item);
+        } else {
+          // Download single file
+          await downloadSingleFile(item);
+        }
+      } catch (err) {
+        showToast((err as Error).message, 'error');
+      } finally {
+        setOperationLoading(false);
       }
-    } catch (err) {
-      showToast((err as Error).message, 'error');
-    } finally {
-      setOperationLoading(false);
-    }
-  }, [selectedProject, showToast]);
+    },
+    [selectedProject, showToast]
+  );
 
   // Download a single file
-  const downloadSingleFile = useCallback(async (item: FileTreeNode) => {
-    if (!selectedProject) return;
+  const downloadSingleFile = useCallback(
+    async (item: FileTreeNode) => {
+      if (!selectedProject) return;
 
-    const response = await api.readFile(selectedProject.name, item.path);
+      const response = await api.readFile(selectedProject.name, item.path);
 
-    if (!response.ok) {
-      throw new Error('Failed to download file');
-    }
+      if (!response.ok) {
+        throw new Error('Failed to download file');
+      }
 
-    const data = await response.json();
-    const content = data.content;
+      const data = await response.json();
+      const content = data.content;
 
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
 
-    anchor.href = url;
-    anchor.download = item.name;
+      anchor.href = url;
+      anchor.download = item.name;
 
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
 
-    URL.revokeObjectURL(url);
-  }, [selectedProject]);
+      URL.revokeObjectURL(url);
+    },
+    [selectedProject]
+  );
 
   // Download folder as ZIP
-  const downloadFolderAsZip = useCallback(async (folder: FileTreeNode) => {
-    if (!selectedProject) return;
+  const downloadFolderAsZip = useCallback(
+    async (folder: FileTreeNode) => {
+      if (!selectedProject) return;
 
-    const zip = new JSZip();
+      const zip = new JSZip();
 
-    // Recursively get all files in the folder
-    const collectFiles = async (node: FileTreeNode, currentPath: string) => {
-      const fullPath = currentPath ? `${currentPath}/${node.name}` : node.name;
+      // Recursively get all files in the folder
+      const collectFiles = async (node: FileTreeNode, currentPath: string) => {
+        const fullPath = currentPath ? `${currentPath}/${node.name}` : node.name;
 
-      if (node.type === 'file') {
-        // Fetch file content
-        const response = await api.readFile(selectedProject.name, node.path);
-        if (response.ok) {
-          const data = await response.json();
-          zip.file(fullPath, data.content);
+        if (node.type === 'file') {
+          // Fetch file content
+          const response = await api.readFile(selectedProject.name, node.path);
+          if (response.ok) {
+            const data = await response.json();
+            zip.file(fullPath, data.content);
+          }
+        } else if (node.type === 'directory' && node.children) {
+          // Recursively process children
+          for (const child of node.children) {
+            await collectFiles(child, fullPath);
+          }
         }
-      } else if (node.type === 'directory' && node.children) {
-        // Recursively process children
-        for (const child of node.children) {
-          await collectFiles(child, fullPath);
+      };
+
+      // If the folder has children, process them
+      if (folder.children && folder.children.length > 0) {
+        for (const child of folder.children) {
+          await collectFiles(child, '');
         }
       }
-    };
 
-    // If the folder has children, process them
-    if (folder.children && folder.children.length > 0) {
-      for (const child of folder.children) {
-        await collectFiles(child, '');
-      }
-    }
+      // Generate ZIP file
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(zipBlob);
+      const anchor = document.createElement('a');
 
-    // Generate ZIP file
-    const zipBlob = await zip.generateAsync({ type: 'blob' });
-    const url = URL.createObjectURL(zipBlob);
-    const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `${folder.name}.zip`;
 
-    anchor.href = url;
-    anchor.download = `${folder.name}.zip`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
 
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
+      URL.revokeObjectURL(url);
 
-    URL.revokeObjectURL(url);
-
-    showToast(t('fileTree.toast.folderDownloaded', 'Folder downloaded as ZIP'), 'success');
-  }, [selectedProject, showToast, t]);
+      showToast(t('fileTree.toast.folderDownloaded', 'Folder downloaded as ZIP'), 'success');
+    },
+    [selectedProject, showToast, t]
+  );
 
   return {
     // Rename operations
