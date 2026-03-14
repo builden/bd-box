@@ -70,6 +70,97 @@ it('should keep PTY process alive', async () => {
 
 ---
 
+## 禁止服务器依赖
+
+**核心原则**：单元测试和集成测试禁止依赖外部服务器（包括 HTTP、WebSocket，子进程等）。如果有依赖，说明代码的可测试性设计有问题，需要重构。
+
+### 单元测试
+
+❌ **禁止**：
+
+- 发起 HTTP 请求
+- 连接 WebSocket
+- spawn 子进程
+- 读写文件系统（测试专用目录除外）
+
+✅ **正确做法**：
+
+- 使用 mock 替代外部依赖
+- 依赖注入模式，将外部依赖作为参数传入
+
+```typescript
+// ❌ 错误：直接调用外部服务
+it('should fetch user', async () => {
+  const user = await fetchUser(1); // 依赖外部服务
+  expect(user.name).toBe('John');
+});
+
+// ✅ 正确：使用 mock
+it('should fetch user', async () => {
+  const mockFetch = vi.fn().mockResolvedValue({ id: 1, name: 'John' });
+  const user = await fetchUser(1, mockFetch); // 注入 mock
+  expect(user.name).toBe('John');
+});
+```
+
+### 集成测试
+
+❌ **禁止**：
+
+- 启动外部服务器进程
+- 连接真实的数据库/缓存
+- 调用外部 API
+
+✅ **正确做法**：
+
+- 使用测试替身（Test Double）
+- 使用内存数据库
+- Mock 外部服务
+
+```typescript
+// ❌ 错误：依赖真实数据库
+it('should create user', async () => {
+  const db = connectToRealDatabase();
+  const user = await userService.create({ name: 'John' }, db);
+});
+
+// ✅ 正确：使用内存 mock
+it('should create user', async () => {
+  const db = new MockDatabase();
+  const user = await userService.create({ name: 'John' }, db);
+});
+```
+
+### 为什么这么规定
+
+| 问题       | 影响                         |
+| ---------- | ---------------------------- |
+| 测试运行慢 | 每次都要等待服务器启动/连接  |
+| 测试不稳定 | 网络波动、服务器宕机导致误报 |
+| 并行困难   | 服务器状态难以隔离           |
+| CI/CD 复杂 | 需要启动依赖服务，配置困难   |
+
+### 何时可以依赖服务器
+
+只有 **E2E 测试** 和 **API 测试** 可以依赖真实服务器：
+
+```bash
+# 只有这些测试可以依赖服务器
+bun test tests/api/      # 需要服务器运行
+bun test tests/integration/  # 禁止依赖服务器！
+bun test                   # 单元测试，禁止依赖服务器！
+```
+
+### 可测试性设计
+
+如果发现测试需要依赖服务器，反思代码设计：
+
+1. **依赖注入**：将外部依赖通过参数传入
+2. **接口抽象**：使用接口而不是具体实现
+3. **单一职责**：业务逻辑与外部调用分离
+
+---
+
 ## 覆盖率要求
 
 - **整体覆盖率 ≥ 80%**
