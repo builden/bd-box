@@ -3,8 +3,10 @@ import { spawn } from 'child_process';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
+import { createLogger } from '../lib/logger';
 
 const router = express.Router();
+const logger = createLogger('cli-auth');
 
 router.get('/claude/status', async (req, res) => {
   try {
@@ -14,7 +16,7 @@ router.get('/claude/status', async (req, res) => {
       return res.json({
         authenticated: true,
         email: credentialsResult.email || 'Authenticated',
-        method: credentialsResult.method  // 'api_key' or 'credentials_file'
+        method: credentialsResult.method, // 'api_key' or 'credentials_file'
       });
     }
 
@@ -22,16 +24,15 @@ router.get('/claude/status', async (req, res) => {
       authenticated: false,
       email: null,
       method: null,
-      error: credentialsResult.error || 'Not authenticated'
+      error: credentialsResult.error || 'Not authenticated',
     });
-
   } catch (error) {
-    console.error('Error checking Claude auth status:', error);
+    logger.error('Error checking Claude auth status:', error);
     res.status(500).json({
       authenticated: false,
       email: null,
       method: null,
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -43,15 +44,14 @@ router.get('/cursor/status', async (req, res) => {
     res.json({
       authenticated: result.authenticated,
       email: result.email,
-      error: result.error
+      error: result.error,
     });
-
   } catch (error) {
-    console.error('Error checking Cursor auth status:', error);
+    logger.error('Error checking Cursor auth status:', error);
     res.status(500).json({
       authenticated: false,
       email: null,
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -63,15 +63,14 @@ router.get('/codex/status', async (req, res) => {
     res.json({
       authenticated: result.authenticated,
       email: result.email,
-      error: result.error
+      error: result.error,
     });
-
   } catch (error) {
-    console.error('Error checking Codex auth status:', error);
+    logger.error('Error checking Codex auth status:', error);
     res.status(500).json({
       authenticated: false,
       email: null,
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -83,15 +82,14 @@ router.get('/gemini/status', async (req, res) => {
     res.json({
       authenticated: result.authenticated,
       email: result.email,
-      error: result.error
+      error: result.error,
     });
-
   } catch (error) {
-    console.error('Error checking Gemini auth status:', error);
+    logger.error('Error checking Gemini auth status:', error);
     res.status(500).json({
       authenticated: false,
       email: null,
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -124,7 +122,7 @@ async function checkClaudeCredentials() {
     return {
       authenticated: true,
       email: 'API Key Auth',
-      method: 'api_key'
+      method: 'api_key',
     };
   }
 
@@ -134,7 +132,7 @@ async function checkClaudeCredentials() {
     return {
       authenticated: true,
       email: 'Auth Token',
-      method: 'auth_token'
+      method: 'auth_token',
     };
   }
 
@@ -150,14 +148,14 @@ async function checkClaudeCredentials() {
         return {
           authenticated: true,
           email: 'API Key (from settings.json)',
-          method: 'api_key'
+          method: 'api_key',
         };
       }
       if (settings.env.ANTHROPIC_AUTH_TOKEN && settings.env.ANTHROPIC_AUTH_TOKEN.trim()) {
         return {
           authenticated: true,
           email: 'Auth Token (from settings.json)',
-          method: 'auth_token'
+          method: 'auth_token',
         };
       }
     }
@@ -181,7 +179,7 @@ async function checkClaudeCredentials() {
         return {
           authenticated: true,
           email: creds.email || creds.user || null,
-          method: 'credentials_file'
+          method: 'credentials_file',
         };
       }
     }
@@ -189,13 +187,13 @@ async function checkClaudeCredentials() {
     return {
       authenticated: false,
       email: null,
-      method: null
+      method: null,
     };
   } catch (error) {
     return {
       authenticated: false,
       email: null,
-      method: null
+      method: null,
     };
   }
 }
@@ -213,7 +211,7 @@ function checkCursorStatus() {
         resolve({
           authenticated: false,
           email: null,
-          error: 'Command timeout'
+          error: 'Command timeout',
         });
       }
     }, 5000);
@@ -227,7 +225,7 @@ function checkCursorStatus() {
       resolve({
         authenticated: false,
         email: null,
-        error: 'Cursor CLI not found or not installed'
+        error: 'Cursor CLI not found or not installed',
       });
       return;
     }
@@ -255,26 +253,26 @@ function checkCursorStatus() {
           resolve({
             authenticated: true,
             email: emailMatch[1],
-            output: stdout
+            output: stdout,
           });
         } else if (stdout.includes('Logged in')) {
           resolve({
             authenticated: true,
             email: 'Logged in',
-            output: stdout
+            output: stdout,
           });
         } else {
           resolve({
             authenticated: false,
             email: null,
-            error: 'Not logged in'
+            error: 'Not logged in',
           });
         }
       } else {
         resolve({
           authenticated: false,
           email: null,
-          error: stderr || 'Not logged in'
+          error: stderr || 'Not logged in',
         });
       }
     });
@@ -287,7 +285,7 @@ function checkCursorStatus() {
       resolve({
         authenticated: false,
         email: null,
-        error: 'Cursor CLI not found or not installed'
+        error: 'Cursor CLI not found or not installed',
       });
     });
   });
@@ -323,7 +321,7 @@ async function checkCodexCredentials() {
 
       return {
         authenticated: true,
-        email
+        email,
       };
     }
 
@@ -331,27 +329,27 @@ async function checkCodexCredentials() {
     if (auth.OPENAI_API_KEY) {
       return {
         authenticated: true,
-        email: 'API Key Auth'
+        email: 'API Key Auth',
       };
     }
 
     return {
       authenticated: false,
       email: null,
-      error: 'No valid tokens found'
+      error: 'No valid tokens found',
     };
   } catch (error) {
     if (error.code === 'ENOENT') {
       return {
         authenticated: false,
         email: null,
-        error: 'Codex not configured'
+        error: 'Codex not configured',
       };
     }
     return {
       authenticated: false,
       email: null,
-      error: error.message
+      error: error.message,
     };
   }
 }
@@ -360,7 +358,7 @@ async function checkGeminiCredentials() {
   if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim()) {
     return {
       authenticated: true,
-      email: 'API Key Auth'
+      email: 'API Key Auth',
     };
   }
 
@@ -385,7 +383,7 @@ async function checkGeminiCredentials() {
           return {
             authenticated: false,
             email: null,
-            error: 'Access token invalid and no refresh token found'
+            error: 'Access token invalid and no refresh token found',
           };
         } else {
           // Token might be expired but we have a refresh token, so CLI will refresh it
@@ -396,7 +394,7 @@ async function checkGeminiCredentials() {
             if (accounts.active) {
               email = accounts.active;
             }
-          } catch (e) { }
+          } catch (e) {}
         }
       } catch (e) {
         // Network error, fallback to checking local accounts file
@@ -407,25 +405,25 @@ async function checkGeminiCredentials() {
           if (accounts.active) {
             email = accounts.active;
           }
-        } catch (err) { }
+        } catch (err) {}
       }
 
       return {
         authenticated: true,
-        email: email
+        email: email,
       };
     }
 
     return {
       authenticated: false,
       email: null,
-      error: 'No valid tokens found in oauth_creds'
+      error: 'No valid tokens found in oauth_creds',
     };
   } catch (error) {
     return {
       authenticated: false,
       email: null,
-      error: 'Gemini CLI not configured'
+      error: 'Gemini CLI not configured',
     };
   }
 }
