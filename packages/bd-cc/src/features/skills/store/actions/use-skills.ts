@@ -9,7 +9,7 @@ import {
   enabledSkillsCountAtom,
 } from '../domain/skills-derived';
 import { SkillsListResponseSchema } from '@shared/api/skills';
-import { notificationService } from '@/components/app/GlobalNotifications';
+import { validateResponse } from '@shared/api/validation';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('useSkills');
@@ -39,22 +39,19 @@ export function useSkills() {
       const res = await authenticatedFetch('/api/skills');
       if (res.ok) {
         const json = await res.json();
-        const result = SkillsListResponseSchema.safeParse(json);
+        const result = validateResponse(SkillsListResponseSchema, json, {
+          endpoint: '/api/skills',
+          status: res.status,
+          fallbackValue: { skills: [] },
+        });
 
-        if (!result.success) {
-          logger.error('Invalid skills response:', result.error);
-          notificationService.error('数据格式错误', '技能列表响应格式不正确', {
-            url: '/api/skills',
-            status: 200,
-            context: { zodError: result.error.format() },
-          });
+        if (result) {
+          setSkills(result.skills || []);
+          setError(null);
+        } else {
           setSkills([]);
           setError('数据格式错误');
-          return;
         }
-
-        setSkills(result.data.skills || []);
-        setError(null);
       } else {
         let errorMessage = `Failed to fetch skills (${res.status})`;
         try {

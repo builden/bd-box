@@ -3,8 +3,8 @@ import type { Dispatch, KeyboardEvent, RefObject, SetStateAction } from 'react';
 import { api } from '../../../utils/api';
 import { escapeRegExp } from '../utils/chatFormatting';
 import type { Project } from '../../../types/app';
-import { FileTreeResponseSchema } from '@shared/api/files';
-import { notificationService } from '../../app/GlobalNotifications';
+import { FileTreeResponse, FileTreeResponseSchema } from '@shared/api/files';
+import { validateResponse } from '@shared/api/validation';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('FileMentions');
@@ -81,15 +81,15 @@ export function useFileMentions({ selectedProject, input, setInput, textareaRef 
         }
 
         const json = await response.json();
-        const result = FileTreeResponseSchema.safeParse(json);
+        const result = validateResponse(FileTreeResponseSchema, json, {
+          endpoint: `/api/projects/${projectName}/files`,
+          status: response.status,
+          fallbackValue: { files: [], projectRoot: '' } as FileTreeResponse,
+        });
 
-        if (!result.success) {
-          logger.error('Invalid file tree response:', result.error);
-          notificationService.error('数据格式错误', '文件列表响应格式不正确');
-          return;
+        if (result) {
+          setFileList(flattenFileTree(result.files));
         }
-
-        setFileList(flattenFileTree(result.data.files));
       } catch (error) {
         // Ignore aborts from rapid project switches; we only care about the latest request.
         if ((error as { name?: string })?.name === 'AbortError') {

@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { z } from 'zod';
 import { api } from '../../../utils/api';
 import type { Project } from '../../../types/app';
-import { FileTreeNodeSchema, FileTreeResponseSchema } from '@shared/api/files';
-import { notificationService } from '../../app/GlobalNotifications';
+import { FileTreeNodeSchema, FileTreeResponse, FileTreeResponseSchema } from '@shared/api/files';
+import { validateResponse } from '@shared/api/validation';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('FileTreeData');
@@ -61,23 +61,14 @@ export function useFileTreeData(selectedProject: Project | null): UseFileTreeDat
         }
 
         const json = await response.json();
-        const result = FileTreeResponseSchema.safeParse(json);
-
-        if (!result.success) {
-          logger.error('Invalid file tree response:', result.error);
-          notificationService.error('数据格式错误', '文件列表响应格式不正确', {
-            url: `/api/projects/${projectName}/files`,
-            status: 200,
-            context: { zodError: result.error.format() },
-          });
-          if (isActive) {
-            setFiles([]);
-          }
-          return;
-        }
+        const result = validateResponse(FileTreeResponseSchema, json, {
+          endpoint: `/api/projects/${projectName}/files`,
+          status: response.status,
+          fallbackValue: { files: [] },
+        });
 
         if (isActive) {
-          setFiles(result.data.files);
+          setFiles(result?.files || []);
         }
       } catch (error) {
         if ((error as { name?: string }).name === 'AbortError') {

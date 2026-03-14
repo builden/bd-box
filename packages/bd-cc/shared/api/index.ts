@@ -21,4 +21,5 @@ export * from './settings';
 export * from './media';
 export * from './workspace';
 export * from './common';
+export * from './validation';
 export * from './agent';

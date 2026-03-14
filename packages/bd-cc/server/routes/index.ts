@@ -15,7 +15,7 @@ import mediaRoutes from './media.ts';
 import authRoutes from './auth.ts';
 import mcpRoutes from './mcp.ts';
 import cursorRoutes from './cursor.ts';
-import taskmasterRoutes from './taskmasters.ts';
+import taskmasterRoutes from './taskmasters/index.ts';
 import mcpUtilsRoutes from './mcp-utils.ts';
 import commandsRoutes from './commands.ts';
 import settingsRoutes from './settings.ts';
