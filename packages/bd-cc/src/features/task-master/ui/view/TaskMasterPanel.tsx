@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTaskMaster } from '../context/TaskMasterContext';
-import { useProjectPrdFiles } from '../hooks/useProjectPrdFiles';
+import { usePrdRegistry } from '@/components/prd-editor/hooks/usePrdRegistry';
 import type { PrdFile, TaskMasterTask, TaskSelection } from '../types';
 import TaskBoard from './TaskBoard';
 import TaskDetailModal from './TaskDetailModal';
@@ -24,7 +24,9 @@ export default function TaskMasterPanel({ isVisible }: TaskMasterPanelProps) {
   const [prdNotification, setPrdNotification] = useState<string | null>(null);
   const notificationTimeoutRef = useRef<number | null>(null);
 
-  const { prdFiles, refreshPrdFiles } = useProjectPrdFiles({ projectName: currentProject?.name });
+  const { existingPrds: prdFiles, refreshExistingPrds: refreshPrdFiles } = usePrdRegistry({
+    projectName: currentProject?.name,
+  });
 
   const showPrdNotification = useCallback((message: string) => {
     if (notificationTimeoutRef.current) {
