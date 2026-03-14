@@ -7,7 +7,7 @@ import { Router } from 'express';
 import path from 'path';
 import os from 'os';
 import { promises as fs } from 'fs';
-import { CURSOR_MODELS } from '../../shared/modelConstants.ts';
+import { CURSOR_MODELS } from '../../../shared/modelConstants.ts';
 
 const router = Router();
 

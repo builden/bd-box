@@ -19,7 +19,7 @@ import taskmasterRoutes from './taskmasters/index.ts';
 import mcpUtilsRoutes from './mcp-utils.ts';
 import commandsRoutes from './commands.ts';
 import settingsRoutes from './settings.ts';
-import agentRoutes from './agent.ts';
+import agentRoutes from './agent/index.ts';
 import projectsRoutes from './projects.ts';
 import cliAuthRoutes from './cli-auth.ts';
 import userRoutes from './users.ts';

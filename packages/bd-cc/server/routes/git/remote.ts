@@ -13,7 +13,8 @@ import {
   repositoryHasCommits,
   validateRemoteName,
 } from '../../utils/git';
-import { validateBranchName, getGitErrorDetails } from '../../utils/git';
+import { validateBranchName } from '../../utils/validation';
+import { getGitErrorDetails } from '../../utils/git';
 import { getActualProjectPath, validateGitRepository, spawnAsync, getCurrentBranchName } from './utils';
 
 const router = Router();
@@ -91,16 +92,14 @@ router.post('/fetch', async (req, res) => {
     res.json({ success: result.success, output: result.output || 'Fetch completed successfully', remoteName });
   } catch (error) {
     const message = getGitErrorDetails(error).message;
-    res
-      .status(500)
-      .json({
-        error: 'Fetch failed',
-        details: message.includes('Could not resolve hostname')
-          ? 'Unable to connect to remote repository. Check your internet connection.'
-          : message.includes("fatal: 'origin' does not appear to be a git repository")
-            ? 'No remote repository configured. Add a remote with: git remote add origin <url>'
-            : message,
-      });
+    res.status(500).json({
+      error: 'Fetch failed',
+      details: message.includes('Could not resolve hostname')
+        ? 'Unable to connect to remote repository. Check your internet connection.'
+        : message.includes("fatal: 'origin' does not appear to be a git repository")
+          ? 'No remote repository configured. Add a remote with: git remote add origin <url>'
+          : message,
+    });
   }
 });
 

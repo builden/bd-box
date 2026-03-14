@@ -7,12 +7,12 @@ import { Router } from 'express';
 import path from 'path';
 import { promises as fs } from 'fs';
 import {
-  validateCommitRef,
   getGitErrorDetails,
   getRepositoryRootPath,
   resolveRepositoryFilePath,
   cleanCommitMessage,
 } from '../../utils/git';
+import { validateCommitRef } from '../../utils/validation';
 import { queryClaudeSDK } from '../../providers/claude.ts';
 import { spawnCursor } from '../../providers/cursor.ts';
 import { getActualProjectPath, validateGitRepository, spawnAsync } from './utils';

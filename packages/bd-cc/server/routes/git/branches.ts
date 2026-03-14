@@ -5,7 +5,8 @@
 
 import { Router } from 'express';
 import { gitBranches, gitCheckout, gitCreateBranch } from '../../utils/git';
-import { validateBranchName, getGitErrorDetails } from '../../utils/git';
+import { validateBranchName } from '../../utils/validation';
+import { getGitErrorDetails } from '../../utils/git';
 import { getActualProjectPath, validateGitRepository } from './utils';
 
 const router = Router();
