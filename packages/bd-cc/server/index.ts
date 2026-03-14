@@ -20,8 +20,8 @@ import {
   extractUrlsFromText,
   shouldAutoOpenUrlFromOutput,
 } from './utils/url-parser';
-import { permToRwx } from './utils/file-permissions';
 import { c } from './utils/terminal-colors';
+import { WebSocketWriter } from './utils/websocket-writer';
 import { PTY_SESSION_TIMEOUT, SHELL_URL_PARSE_BUFFER_LIMIT } from './constants/terminal';
 import { PORT, HOST, DISPLAY_HOST } from './constants/server';
 
@@ -29,8 +29,6 @@ const logger = createLogger('server/index');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
-const installMode = fs.existsSync(path.join(__dirname, '..', '.git')) ? 'git' : 'npm';
 
 logger.info('PORT from env:', { PORT: process.env.PORT });
 
@@ -89,6 +87,7 @@ import skillsRoutes from './routes/skills.ts';
 import { startEnabledPluginServers, stopAllPlugins } from './utils/plugins';
 import { initializeDatabase, sessionNamesDb, applyCustomSessionNames } from './database/db.ts';
 import { validateApiKey, authenticateToken, authenticateWebSocket } from './middleware/auth.ts';
+import { requestLogger } from './middleware/request-logger.ts';
 import { IS_PLATFORM } from './env.ts';
 
 // ============================================================================
@@ -279,29 +278,7 @@ app.use(cors({ exposedHeaders: ['X-Refreshed-Token'] }));
 // ============================================================================
 // region: middleware
 // ============================================================================
-// Global HTTP request logging middleware
-app.use((req, res, next) => {
-  const startTime = Date.now();
-  const requestId = req.headers['x-request-id'] || Math.random().toString(36).substring(2, 15);
-
-  // Log request
-  logger.debug(`→ ${req.method} ${req.url}`, { requestId, method: req.method, url: req.url });
-
-  // Log response when finished
-  res.on('finish', () => {
-    const duration = Date.now() - startTime;
-    const level = res.statusCode >= 400 ? 'warn' : 'debug';
-    logger[level](`← ${req.method} ${req.url} ${res.statusCode} (${duration}ms)`, {
-      requestId,
-      method: req.method,
-      url: req.url,
-      status: res.statusCode,
-      duration,
-    });
-  });
-
-  next();
-});
+app.use(requestLogger);
 
 app.use(
   express.json({
@@ -434,34 +411,6 @@ wss.on('connection', (ws, request) => {
 /**
  * WebSocket Writer - Wrapper for WebSocket to match SSEStreamWriter interface
  */
-class WebSocketWriter {
-  constructor(ws) {
-    this.ws = ws;
-    this.sessionId = null;
-    this.isWebSocketWriter = true; // Marker for transport detection
-  }
-
-  send(data) {
-    if (this.ws.readyState === 1) {
-      // WebSocket.OPEN
-      // Providers send raw objects, we stringify for WebSocket
-      this.ws.send(JSON.stringify(data));
-    }
-  }
-
-  updateWebSocket(newRawWs) {
-    this.ws = newRawWs;
-  }
-
-  setSessionId(sessionId) {
-    this.sessionId = sessionId;
-  }
-
-  getSessionId() {
-    return this.sessionId;
-  }
-}
-
 // Handle chat WebSocket connections
 function handleChatConnection(ws) {
   logger.info('Chat WebSocket connected');
