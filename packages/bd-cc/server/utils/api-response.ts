@@ -209,7 +209,7 @@ export function gatewayTimeout(res: Response, message: string = '上游服务超
  * 处理 Zod 验证错误，转换为 RFC 7807 格式
  */
 export function handleZodError(res: Response, err: ZodError): Response {
-  const details: ErrorDetail[] = err.errors.map((e) => ({
+  const details: ErrorDetail[] = err.issues.map((e) => ({
     field: e.path.join('.'),
     message: e.message,
   }));
