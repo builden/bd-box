@@ -160,16 +160,11 @@ export function useProjects() {
     setShowSettings(false);
   }, [setShowSettings]);
 
-  // setActiveTab 兼容旧接口
+  // setActiveTab 兼容旧接口 - atomWithStorage 已自动持久化
   const setActiveTabDispatch: Dispatch<SetStateAction<AppTab>> = useCallback(
     (action: SetStateAction<AppTab>) => {
       const newTab = typeof action === 'function' ? action(activeTab) : action;
       setActiveTab(newTab);
-      try {
-        localStorage.setItem('activeTab', newTab);
-      } catch {
-        // Silently ignore storage errors
-      }
     },
     [activeTab, setActiveTab]
   );
