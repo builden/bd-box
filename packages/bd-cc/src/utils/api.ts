@@ -7,6 +7,89 @@ interface FetchOptions extends RequestInit {
   skipErrorNotification?: boolean;
 }
 
+/**
+ * API 响应拦截器
+ *
+ * 遵循 api.md 规范:
+ * - 成功响应: { data: ... }
+ * - 错误响应: { error: { code, message, details, ... } }
+ *
+ * 此函数自动展开 data 字段，使前端可以直接访问 response.data
+ */
+async function processResponse(response: Response, url: string, skipErrorNotification?: boolean): Promise<Response> {
+  const refreshedToken = response.headers.get('X-Refreshed-Token');
+  if (refreshedToken) {
+    localStorage.setItem('auth-token', refreshedToken);
+  }
+
+  // API 错误处理 - 显示全局通知
+  if (!response.ok && !skipErrorNotification) {
+    const statusText = response.statusText || 'Request failed';
+    const path = new URL(url, window.location.origin).pathname;
+    const title = `API 错误: ${response.status}`;
+    const message = `${path} - ${statusText}`;
+
+    // 尝试解析错误消息 (RFC 7807 格式)
+    try {
+      const contentType = response.headers.get('content-type');
+      if (contentType?.includes('application/json')) {
+        const errorData = await response.clone().json();
+        // 优先使用 RFC 7807 格式
+        if (errorData.error) {
+          const errorMsg = errorData.error.message || errorData.error.code || message;
+          notificationService.error(title, errorMsg, {
+            url: path,
+            status: response.status,
+            context: { originalUrl: url, error: errorData.error },
+          });
+        } else {
+          notificationService.error(title, errorData.error || errorData.message || message, {
+            url: path,
+            status: response.status,
+            context: { originalUrl: url },
+          });
+        }
+      } else {
+        notificationService.error(title, message, {
+          url: path,
+          status: response.status,
+        });
+      }
+    } catch {
+      notificationService.error(title, message, {
+        url: path,
+        status: response.status,
+      });
+    }
+  }
+
+  // 成功响应: 展开 data 字段 (遵循 api.md 规范)
+  if (response.ok) {
+    try {
+      const contentType = response.headers.get('content-type');
+      if (contentType?.includes('application/json')) {
+        const jsonData = await response.clone().json();
+        // 如果响应有 data 字段，创建新响应展开它
+        if (jsonData && typeof jsonData === 'object' && 'data' in jsonData) {
+          const { data, meta, ...rest } = jsonData;
+          // 返回一个新的 Response，包含展开的 data
+          const newBody = JSON.stringify({ data, meta, ...rest });
+          const newResponse = new Response(newBody, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers,
+          });
+          return newResponse;
+        }
+      }
+    } catch {
+      // 如果解析失败，返回原始响应
+    }
+  }
+
+  return response;
+}
+
 // Utility function for authenticated API calls
 export const authenticatedFetch = (url: string, options: FetchOptions = {}): Promise<Response> => {
   const { skipErrorNotification, ...fetchOptions } = options;
@@ -29,45 +112,7 @@ export const authenticatedFetch = (url: string, options: FetchOptions = {}): Pro
       ...defaultHeaders,
       ...fetchOptions.headers,
     },
-  }).then(async (response) => {
-    const refreshedToken = response.headers.get('X-Refreshed-Token');
-    if (refreshedToken) {
-      localStorage.setItem('auth-token', refreshedToken);
-    }
-
-    // API 错误处理 - 显示全局通知
-    if (!response.ok && !skipErrorNotification) {
-      const statusText = response.statusText || 'Request failed';
-      const path = new URL(url, window.location.origin).pathname;
-      const title = `API 错误: ${response.status}`;
-      const message = `${path} - ${statusText}`;
-
-      // 尝试解析错误消息
-      try {
-        const contentType = response.headers.get('content-type');
-        if (contentType?.includes('application/json')) {
-          const errorData = await response.clone().json();
-          notificationService.error(title, errorData.error || errorData.message || message, {
-            url: path,
-            status: response.status,
-            context: { originalUrl: url },
-          });
-        } else {
-          notificationService.error(title, message, {
-            url: path,
-            status: response.status,
-          });
-        }
-      } catch {
-        notificationService.error(title, message, {
-          url: path,
-          status: response.status,
-        });
-      }
-    }
-
-    return response;
-  });
+  }).then((response) => processResponse(response, url, skipErrorNotification));
 };
 
 // API endpoints

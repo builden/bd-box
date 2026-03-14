@@ -1,8 +1,4 @@
-import { useMemo } from 'react';
-import { markdown } from '@codemirror/lang-markdown';
-import { oneDark } from '@codemirror/theme-one-dark';
-import { EditorView } from '@codemirror/view';
-import CodeMirror from '@uiw/react-codemirror';
+import Editor from '@monaco-editor/react';
 import MarkdownPreview from '../../code-editor/view/subcomponents/markdown/MarkdownPreview';
 
 type PrdEditorBodyProps = {
@@ -20,11 +16,6 @@ export default function PrdEditorBody({
   isDarkMode,
   wordWrap,
 }: PrdEditorBodyProps) {
-  const extensions = useMemo(
-    () => [markdown(), ...(wordWrap ? [EditorView.lineWrapping] : [])],
-    [wordWrap],
-  );
-
   if (previewMode) {
     return (
       <div className="prose prose-gray h-full max-w-none overflow-y-auto p-6 dark:prose-invert">
@@ -34,28 +25,33 @@ export default function PrdEditorBody({
   }
 
   return (
-    <CodeMirror
-      value={content}
-      onChange={onContentChange}
-      extensions={extensions}
-      theme={isDarkMode ? oneDark : undefined}
+    <Editor
       height="100%"
-      style={{
-        fontSize: '14px',
-        height: '100%',
+      language="markdown"
+      value={content}
+      onChange={(value) => onContentChange(value || '')}
+      theme={isDarkMode ? 'vs-dark' : 'vs'}
+      options={{
+        fontSize: 14,
+        lineNumbers: 'on',
+        minimap: { enabled: false },
+        wordWrap: wordWrap ? 'on' : 'off',
+        scrollBeyondLastLine: false,
+        automaticLayout: true,
+        folding: true,
+        formatOnPaste: true,
+        formatOnType: true,
+        tabSize: 2,
+        insertSpaces: true,
+        renderWhitespace: 'selection',
+        quickSuggestions: true,
+        suggestOnTriggerCharacters: true,
       }}
-      basicSetup={{
-        lineNumbers: true,
-        foldGutter: true,
-        dropCursor: false,
-        allowMultipleSelections: false,
-        indentOnInput: true,
-        bracketMatching: true,
-        closeBrackets: true,
-        autocompletion: true,
-        highlightSelectionMatches: true,
-        searchKeymap: true,
-      }}
+      loading={
+        <div className="flex h-full items-center justify-center bg-gray-100 dark:bg-gray-800">
+          <div className="text-gray-500 dark:text-gray-400">Loading editor...</div>
+        </div>
+      }
     />
   );
 }

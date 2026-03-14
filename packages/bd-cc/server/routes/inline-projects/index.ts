@@ -1,6 +1,10 @@
 /**
  * Inline Projects & Sessions Routes
  * Extracted from index.ts for better maintainability
+ *
+ * 遵循 api.md 规范:
+ * - 成功响应: { data: ... }
+ * - 错误响应: { error: { code, message, details, ... } }
  */
 
 import { Router } from 'express';
@@ -16,6 +20,9 @@ import { searchConversations } from '../../services/project-search.js';
 
 import { WORKSPACES_ROOT, validateWorkspacePath } from '../projects.js';
 import { VALID_PROVIDERS } from '../../constants/providers.js';
+
+// 统一 API 响应工具
+import { success, successList, created, badRequest, notFound, serverError, error } from '../../utils/api-response.js';
 
 import type { Request, Response } from 'express';
 
@@ -47,9 +54,9 @@ const expandWorkspacePath = (inputPath: string): string => {
 router.get('/api/projects', authenticateToken, async (req: Request, res: Response) => {
   try {
     const projects = await getProjects(null);
-    res.json(projects);
-  } catch (error) {
-    res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
+    return success(res, projects);
+  } catch (err) {
+    return serverError(res, err instanceof Error ? err.message : String(err));
   }
 });
 
@@ -58,9 +65,9 @@ router.get('/api/projects/:projectName/sessions', authenticateToken, async (req:
   try {
     const { limit = 5, offset = 0 } = req.query;
     const result = await getSessions(req.params.projectName, parseInt(String(limit)), parseInt(String(offset)));
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
+    return success(res, result);
+  } catch (err) {
+    return serverError(res, err instanceof Error ? err.message : String(err));
   }
 });
 
@@ -78,13 +85,9 @@ router.get(
 
       const result = await getSessionMessages(projectName, sessionId, parsedLimit, parsedOffset);
 
-      if (Array.isArray(result)) {
-        res.json({ messages: result });
-      } else {
-        res.json(result);
-      }
-    } catch (error) {
-      res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
+      return success(res, { messages: result });
+    } catch (err) {
+      return serverError(res, err instanceof Error ? err.message : String(err));
     }
   }
 );
@@ -93,10 +96,13 @@ router.get(
 router.put('/api/projects/:projectName/rename', authenticateToken, async (req: Request, res: Response) => {
   try {
     const { displayName } = req.body;
+    if (!displayName) {
+      return badRequest(res, 'displayName is required');
+    }
     await renameProject(req.params.projectName, displayName);
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
+    return success(res, { success: true });
+  } catch (err) {
+    return serverError(res, err instanceof Error ? err.message : String(err));
   }
 });
 
@@ -111,10 +117,10 @@ router.delete(
       await deleteSession(projectName, sessionId);
       sessionNamesDb.deleteName(sessionId, 'claude');
       logger.info(`Session ${sessionId} deleted successfully`);
-      res.json({ success: true });
-    } catch (error) {
-      logger.error(`Error deleting session ${req.params.sessionId}:`, error);
-      res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
+      return success(res, { success: true });
+    } catch (err) {
+      logger.error(`Error deleting session ${req.params.sessionId}:`, err);
+      return serverError(res, err instanceof Error ? err.message : String(err));
     }
   }
 );
@@ -125,23 +131,23 @@ router.put('/api/sessions/:sessionId/rename', authenticateToken, async (req: Req
     const { sessionId } = req.params;
     const safeSessionId = String(sessionId).replace(/[^a-zA-Z0-9._-]/g, '');
     if (!safeSessionId || safeSessionId !== String(sessionId)) {
-      return res.status(400).json({ error: 'Invalid sessionId' });
+      return badRequest(res, 'Invalid sessionId');
     }
     const { summary, provider } = req.body;
     if (!summary || typeof summary !== 'string' || summary.trim() === '') {
-      return res.status(400).json({ error: 'Summary is required' });
+      return badRequest(res, 'Summary is required');
     }
     if (summary.trim().length > 500) {
-      return res.status(400).json({ error: 'Summary must not exceed 500 characters' });
+      return badRequest(res, 'Summary must not exceed 500 characters');
     }
     if (!provider || !VALID_PROVIDERS.includes(provider)) {
-      return res.status(400).json({ error: `Provider must be one of: ${VALID_PROVIDERS.join(', ')}` });
+      return badRequest(res, `Provider must be one of: ${VALID_PROVIDERS.join(', ')}`);
     }
     sessionNamesDb.setName(safeSessionId, provider, summary.trim());
-    res.json({ success: true });
-  } catch (error) {
-    logger.error(`Error renaming session ${req.params.sessionId}:`, error);
-    res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
+    return success(res, { success: true });
+  } catch (err) {
+    logger.error(`Error renaming session ${req.params.sessionId}:`, err);
+    return serverError(res, err instanceof Error ? err.message : String(err));
   }
 });
 
@@ -151,9 +157,9 @@ router.delete('/api/projects/:projectName', authenticateToken, async (req: Reque
     const { projectName } = req.params;
     const force = req.query.force === 'true';
     await deleteProject(projectName, force);
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
+    return success(res, { success: true });
+  } catch (err) {
+    return serverError(res, err instanceof Error ? err.message : String(err));
   }
 });
 
@@ -163,14 +169,14 @@ router.post('/api/projects/create', authenticateToken, async (req: Request, res:
     const { path: projectPath } = req.body;
 
     if (!projectPath || !projectPath.trim()) {
-      return res.status(400).json({ error: 'Project path is required' });
+      return badRequest(res, 'Project path is required');
     }
 
     const project = await addProjectManually(projectPath.trim());
-    res.json({ success: true, project });
-  } catch (error) {
-    logger.error('Error creating project:', error);
-    res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
+    return created(res, { success: true, project });
+  } catch (err) {
+    logger.error('Error creating project:', err);
+    return serverError(res, err instanceof Error ? err.message : String(err));
   }
 });
 
@@ -181,7 +187,7 @@ router.get('/api/search/conversations', authenticateToken, async (req: Request, 
   const limit = Number.isNaN(parsedLimit) ? 50 : Math.max(1, Math.min(parsedLimit, 100));
 
   if (query.length < 2) {
-    return res.status(400).json({ error: 'Query must be at least 2 characters' });
+    return badRequest(res, 'Query must be at least 2 characters');
   }
 
   res.writeHead(200, {
@@ -217,8 +223,8 @@ router.get('/api/search/conversations', authenticateToken, async (req: Request, 
     if (!closed) {
       res.write(`event: done\ndata: {}\n\n`);
     }
-  } catch (error) {
-    logger.error('Error searching conversations:', error);
+  } catch (err) {
+    logger.error('Error searching conversations:', err);
     if (!closed) {
       res.write(`event: error\ndata: ${JSON.stringify({ error: 'Search failed' })}\n\n`);
     }
@@ -239,7 +245,11 @@ router.get('/api/browse-filesystem', authenticateToken, async (req: Request, res
 
     const validation = await validateWorkspacePath(targetPath);
     if (!validation.valid) {
-      return res.status(403).json({ error: validation.error });
+      return error(res, {
+        code: 'filesystem.access_denied',
+        message: validation.error || 'Access denied',
+        statusCode: 403,
+      });
     }
     const resolvedPath = validation.resolvedPath || targetPath;
 
@@ -247,10 +257,10 @@ router.get('/api/browse-filesystem', authenticateToken, async (req: Request, res
       await require('fs').promises.access(resolvedPath);
       const stats = await require('fs').promises.stat(resolvedPath);
       if (!stats.isDirectory()) {
-        return res.status(400).json({ error: 'Path is not a directory' });
+        return badRequest(res, 'Path is not a directory');
       }
     } catch (err) {
-      return res.status(404).json({ error: 'Directory not accessible' });
+      return notFound(res, 'Directory');
     }
 
     // Simple file tree for suggestions
@@ -270,13 +280,13 @@ router.get('/api/browse-filesystem', authenticateToken, async (req: Request, res
         return a.name.localeCompare(b.name);
       });
 
-    res.json({
+    return success(res, {
       path: resolvedPath,
       suggestions: directories,
     });
-  } catch (error) {
-    logger.error('Error browsing filesystem:', error);
-    res.status(500).json({ error: 'Failed to browse filesystem' });
+  } catch (err) {
+    logger.error('Error browsing filesystem:', err);
+    return serverError(res, 'Failed to browse filesystem');
   }
 });
 
@@ -285,39 +295,43 @@ router.post('/api/create-folder', authenticateToken, async (req: Request, res: R
   try {
     const { path: folderPath } = req.body;
     if (!folderPath) {
-      return res.status(400).json({ error: 'Path is required' });
+      return badRequest(res, 'Path is required');
     }
     const expandedPath = expandWorkspacePath(folderPath);
     const resolvedInput = require('path').resolve(expandedPath);
     const validation = await validateWorkspacePath(resolvedInput);
     if (!validation.valid) {
-      return res.status(403).json({ error: validation.error });
+      return error(res, {
+        code: 'filesystem.access_denied',
+        message: validation.error || 'Access denied',
+        statusCode: 403,
+      });
     }
     const targetPath = validation.resolvedPath || resolvedInput;
     const parentDir = require('path').dirname(targetPath);
     try {
       await require('fs').promises.access(parentDir);
     } catch (err) {
-      return res.status(404).json({ error: 'Parent directory does not exist' });
+      return notFound(res, 'Parent directory');
     }
     try {
       await require('fs').promises.access(targetPath);
-      return res.status(409).json({ error: 'Folder already exists' });
+      return error(res, { code: 'filesystem.already_exists', message: 'Folder already exists', statusCode: 409 });
     } catch (err) {
       // Folder doesn't exist, which is what we want
     }
     try {
       await require('fs').promises.mkdir(targetPath, { recursive: false });
-      res.json({ success: true, path: targetPath });
+      return success(res, { success: true, path: targetPath });
     } catch (mkdirError: any) {
       if (mkdirError.code === 'EEXIST') {
-        return res.status(409).json({ error: 'Folder already exists' });
+        return error(res, { code: 'filesystem.already_exists', message: 'Folder already exists', statusCode: 409 });
       }
       throw mkdirError;
     }
-  } catch (error) {
-    logger.error('Error creating folder:', error);
-    res.status(500).json({ error: 'Failed to create folder' });
+  } catch (err) {
+    logger.error('Error creating folder:', err);
+    return serverError(res, 'Failed to create folder');
   }
 });
 

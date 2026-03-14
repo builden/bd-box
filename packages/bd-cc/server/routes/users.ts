@@ -1,3 +1,10 @@
+/**
+ * Users Routes
+ * User profile and settings management
+ *
+ * 遵循 api.md 规范
+ */
+
 import express from 'express';
 import { userDb } from '../database/index.ts';
 import { authenticateToken } from '../middleware/auth.ts';
@@ -5,6 +12,7 @@ import { getSystemGitConfig } from '../utils/git';
 import { runCommand } from '../utils/spawn.ts';
 import { validateGitConfig } from '../utils/validation.ts';
 import { createLogger, logApiEntry, logApiExit, logUserAction } from '../lib/logger.ts';
+import { success, badRequest, serverError } from '../utils/api-response.ts';
 
 const router = express.Router();
 const logger = createLogger('users');
@@ -34,7 +42,7 @@ router.get('/git-config', authenticateToken, async (req, res) => {
     }
 
     logApiExit('GET', '/api/users/git-config', 200, Date.now() - startTime);
-    res.json({
+    return success(res, {
       success: true,
       gitName: gitConfig?.git_name || null,
       gitEmail: gitConfig?.git_email || null,
@@ -42,7 +50,7 @@ router.get('/git-config', authenticateToken, async (req, res) => {
   } catch (error) {
     logger.error('Error getting git config', error as Error);
     logApiExit('GET', '/api/users/git-config', 500, Date.now() - startTime, error as Error);
-    res.status(500).json({ error: 'Failed to get git configuration' });
+    return serverError(res, 'Failed to get git configuration');
   }
 });
 
@@ -60,7 +68,7 @@ router.post('/git-config', authenticateToken, async (req, res) => {
       validateGitConfig({ gitName, gitEmail });
     } catch {
       logApiExit('POST', '/api/users/git-config', 400, Date.now() - startTime);
-      return res.status(400).json({ error: 'Git name and email are required' });
+      return badRequest(res, 'Git name and email are required');
     }
 
     userDb.updateGitConfig(userId, gitName, gitEmail);
@@ -74,7 +82,7 @@ router.post('/git-config', authenticateToken, async (req, res) => {
     }
 
     logApiExit('POST', '/api/users/git-config', 200, Date.now() - startTime);
-    res.json({
+    return success(res, {
       success: true,
       gitName,
       gitEmail,
@@ -82,7 +90,7 @@ router.post('/git-config', authenticateToken, async (req, res) => {
   } catch (error) {
     logger.error('Error updating git config', error as Error);
     logApiExit('POST', '/api/users/git-config', 500, Date.now() - startTime, error as Error);
-    res.status(500).json({ error: 'Failed to update git configuration' });
+    return serverError(res, 'Failed to update git configuration');
   }
 });
 
@@ -96,14 +104,14 @@ router.post('/complete-onboarding', authenticateToken, async (req, res) => {
     logUserAction(userId, 'complete_onboarding');
 
     logApiExit('POST', '/api/users/complete-onboarding', 200, Date.now() - startTime);
-    res.json({
+    return success(res, {
       success: true,
       message: 'Onboarding completed successfully',
     });
   } catch (error) {
     logger.error('Error completing onboarding', error as Error);
     logApiExit('POST', '/api/users/complete-onboarding', 500, Date.now() - startTime, error as Error);
-    res.status(500).json({ error: 'Failed to complete onboarding' });
+    return serverError(res, 'Failed to complete onboarding');
   }
 });
 
@@ -116,14 +124,14 @@ router.get('/onboarding-status', authenticateToken, async (req, res) => {
     const hasCompleted = userDb.hasCompletedOnboarding(userId);
 
     logApiExit('GET', '/api/users/onboarding-status', 200, Date.now() - startTime);
-    res.json({
+    return success(res, {
       success: true,
       hasCompletedOnboarding: hasCompleted,
     });
   } catch (error) {
     logger.error('Error checking onboarding status', error as Error);
     logApiExit('GET', '/api/users/onboarding-status', 500, Date.now() - startTime, error as Error);
-    res.status(500).json({ error: 'Failed to check onboarding status' });
+    return serverError(res, 'Failed to check onboarding status');
   }
 });
 

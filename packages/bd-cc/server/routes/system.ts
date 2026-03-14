@@ -1,6 +1,8 @@
 /**
  * System Routes
  * Health check and system update endpoints
+ *
+ * 遵循 api.md 规范
  */
 
 import { Router } from 'express';
@@ -11,6 +13,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { createLogger } from '../lib/logger.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { success, serverError } from '../utils/api-response.js';
 
 const logger = createLogger('routes/system');
 const router = Router();
@@ -24,7 +27,7 @@ const installMode = fs.existsSync(path.join(__dirname, '..', '..', '.git')) ? 'g
 // ============================================================================
 
 router.get('/health', (req, res) => {
-  res.json({
+  return success(res, {
     status: 'ok',
     timestamp: new Date().toISOString(),
     installMode,
@@ -68,34 +71,23 @@ router.post('/system/update', authenticateToken, async (req, res) => {
 
     child.on('close', (code) => {
       if (code === 0) {
-        res.json({
+        return success(res, {
           success: true,
           output: output || 'Update completed successfully',
           message: 'Update completed. Please restart the server to apply changes.',
         });
       } else {
-        res.status(500).json({
-          success: false,
-          error: 'Update command failed',
-          output,
-          errorOutput,
-        });
+        return serverError(res, 'Update command failed');
       }
     });
 
     child.on('error', (error) => {
       logger.error('Update process error:', error);
-      res.status(500).json({
-        success: false,
-        error: error.message,
-      });
+      return serverError(res, error.message);
     });
   } catch (error) {
     logger.error('System update error:', error);
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : String(error),
-    });
+    return serverError(res, error instanceof Error ? error.message : String(error));
   }
 });
 

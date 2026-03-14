@@ -1,23 +1,14 @@
-import { EditorView } from '@codemirror/view';
-import { unifiedMergeView } from '@codemirror/merge';
-import type { Extension } from '@codemirror/state';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCodeEditorDocument } from '../hooks/useCodeEditorDocument';
 import { useCodeEditorSettings } from '../hooks/useCodeEditorSettings';
 import { useEditorKeyboardShortcuts } from '../hooks/useEditorKeyboardShortcuts';
 import type { CodeEditorFile } from '../types/types';
-import {
-  createMinimapExtension,
-  createScrollToFirstChunkExtension,
-  getLanguageExtensions,
-} from '../utils/editorExtensions';
 import { getEditorStyles } from '../utils/editorStyles';
-import { createEditorToolbarPanelExtension } from '../utils/editorToolbarPanel';
+import MonacoEditorSurface from './subcomponents/MonacoEditorSurface';
 import CodeEditorFooter from './subcomponents/CodeEditorFooter';
 import CodeEditorHeader from './subcomponents/CodeEditorHeader';
 import CodeEditorLoadingState from './subcomponents/CodeEditorLoadingState';
-import CodeEditorSurface from './subcomponents/CodeEditorSurface';
 import CodeEditorBinaryFile from './subcomponents/CodeEditorBinaryFile';
 
 type CodeEditorProps = {
@@ -35,13 +26,13 @@ export default function CodeEditor({
   onClose,
   projectPath,
   isSidebar = false,
-  isExpanded = false,
-  onToggleExpand = null,
-  onPopOut = null,
+  isExpanded: _isExpanded = false,
+  onToggleExpand: _onToggleExpand = null,
+  onPopOut: _onPopOut = null,
 }: CodeEditorProps) {
   const { t } = useTranslation('codeEditor');
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showDiff, setShowDiff] = useState(Boolean(file.diffInfo));
+  const [showDiff] = useState(Boolean(file.diffInfo));
   const [markdownPreview, setMarkdownPreview] = useState(false);
 
   const { isDarkMode, wordWrap, minimapEnabled, showLineNumbers, fontSize } = useCodeEditorSettings();
@@ -57,76 +48,8 @@ export default function CodeEditor({
     return extension === 'md' || extension === 'markdown';
   }, [file.name]);
 
-  const minimapExtension = useMemo(
-    () =>
-      createMinimapExtension({
-        file,
-        showDiff,
-        minimapEnabled,
-        isDarkMode,
-      }),
-    [file, isDarkMode, minimapEnabled, showDiff]
-  );
-
-  const scrollToFirstChunkExtension = useMemo(
-    () => createScrollToFirstChunkExtension({ file, showDiff }),
-    [file, showDiff]
-  );
-
-  const toolbarPanelExtension = useMemo(
-    () =>
-      createEditorToolbarPanelExtension({
-        file,
-        showDiff,
-        isSidebar,
-        isExpanded,
-        onToggleDiff: () => setShowDiff((previous) => !previous),
-        onPopOut,
-        onToggleExpand,
-        labels: {
-          changes: t('toolbar.changes'),
-          previousChange: t('toolbar.previousChange'),
-          nextChange: t('toolbar.nextChange'),
-          hideDiff: t('toolbar.hideDiff'),
-          showDiff: t('toolbar.showDiff'),
-          collapse: t('toolbar.collapse'),
-          expand: t('toolbar.expand'),
-        },
-      }),
-    [file, isExpanded, isSidebar, onPopOut, onToggleExpand, showDiff, t]
-  );
-
-  const extensions = useMemo(() => {
-    const allExtensions: Extension[] = [...getLanguageExtensions(file.name), ...toolbarPanelExtension];
-
-    if (file.diffInfo && showDiff && file.diffInfo.old_string !== undefined) {
-      allExtensions.push(
-        unifiedMergeView({
-          original: file.diffInfo.old_string,
-          mergeControls: false,
-          highlightChanges: true,
-          syntaxHighlightDeletions: false,
-          gutter: true,
-        })
-      );
-      allExtensions.push(...minimapExtension);
-      allExtensions.push(...scrollToFirstChunkExtension);
-    }
-
-    if (wordWrap) {
-      allExtensions.push(EditorView.lineWrapping);
-    }
-
-    return allExtensions;
-  }, [
-    file.diffInfo,
-    file.name,
-    minimapExtension,
-    scrollToFirstChunkExtension,
-    showDiff,
-    toolbarPanelExtension,
-    wordWrap,
-  ]);
+  // 检查是否显示 diff
+  const showDiffView = file.diffInfo && showDiff && file.diffInfo.old_string !== undefined;
 
   useEditorKeyboardShortcuts({
     onSave: handleSave,
@@ -214,16 +137,20 @@ export default function CodeEditor({
           )}
 
           <div className="flex-1 overflow-hidden">
-            <CodeEditorSurface
+            <MonacoEditorSurface
               content={content}
+              originalContent={showDiffView ? file.diffInfo?.old_string : undefined}
               onChange={setContent}
               markdownPreview={markdownPreview}
               isMarkdownFile={isMarkdownFile}
               isDarkMode={isDarkMode}
               fontSize={fontSize}
               showLineNumbers={showLineNumbers}
-              extensions={extensions}
-              filePath={file.path}
+              minimapEnabled={minimapEnabled}
+              wordWrap={wordWrap}
+              fileName={file.name}
+              isDiffMode={Boolean(showDiffView)}
+              editorKey={file.path}
             />
           </div>
 

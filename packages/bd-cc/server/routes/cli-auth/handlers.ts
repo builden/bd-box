@@ -1,10 +1,13 @@
 /**
  * CLI Auth Route Handlers
  * Request handlers for CLI authentication status
+ *
+ * 遵循 api.md 规范
  */
 
 import { Router } from 'express';
 import { checkClaudeCredentials, checkCursorStatus, checkCodexCredentials, checkGeminiCredentials } from './utils.js';
+import { success, serverError } from '../../utils/api-response.js';
 
 const router = Router();
 
@@ -13,14 +16,14 @@ router.get('/claude/status', async (req, res) => {
     const credentialsResult = await checkClaudeCredentials();
 
     if (credentialsResult.authenticated) {
-      return res.json({
+      return success(res, {
         authenticated: true,
         email: credentialsResult.email || 'Authenticated',
         method: credentialsResult.method,
       });
     }
 
-    return res.json({
+    return success(res, {
       authenticated: false,
       email: null,
       method: null,
@@ -28,12 +31,7 @@ router.get('/claude/status', async (req, res) => {
     });
   } catch (error: any) {
     console.error('Error checking Claude auth status:', error);
-    res.status(500).json({
-      authenticated: false,
-      email: null,
-      method: null,
-      error: error.message,
-    });
+    return serverError(res, error.message);
   }
 });
 
@@ -41,18 +39,14 @@ router.get('/cursor/status', async (req, res) => {
   try {
     const result = await checkCursorStatus();
 
-    res.json({
+    return success(res, {
       authenticated: result.authenticated,
       email: result.email,
       error: result.error,
     });
   } catch (error: any) {
     console.error('Error checking Cursor auth status:', error);
-    res.status(500).json({
-      authenticated: false,
-      email: null,
-      error: error.message,
-    });
+    return serverError(res, error.message);
   }
 });
 
@@ -60,18 +54,14 @@ router.get('/codex/status', async (req, res) => {
   try {
     const result = await checkCodexCredentials();
 
-    res.json({
+    return success(res, {
       authenticated: result.authenticated,
       email: result.email,
       error: result.error,
     });
   } catch (error: any) {
     console.error('Error checking Codex auth status:', error);
-    res.status(500).json({
-      authenticated: false,
-      email: null,
-      error: error.message,
-    });
+    return serverError(res, error.message);
   }
 });
 
@@ -79,18 +69,14 @@ router.get('/gemini/status', async (req, res) => {
   try {
     const result = await checkGeminiCredentials();
 
-    res.json({
+    return success(res, {
       authenticated: result.authenticated,
       email: result.email,
       error: result.error,
     });
   } catch (error: any) {
     console.error('Error checking Gemini auth status:', error);
-    res.status(500).json({
-      authenticated: false,
-      email: null,
-      error: error.message,
-    });
+    return serverError(res, error.message);
   }
 });
 

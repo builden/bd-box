@@ -1,6 +1,8 @@
 /**
  * MCP Route Handlers
  * Request handlers for MCP server management
+ *
+ * 遵循 api.md 规范
  */
 
 import { Router } from 'express';
@@ -10,12 +12,16 @@ import os from 'os';
 import { spawnCli } from '../../utils/spawn-cli';
 import { createLogger } from '../../lib/logger';
 import { buildServerFromConfig, parseClaudeListOutput, parseClaudeGetOutput } from './utils.js';
+import { success, badRequest, notFound, serverError, error } from '../../utils/api-response.js';
 
 const logger = createLogger('routes/mcp/handlers');
 
 const router = Router();
 
-// GET /api/mcp/cli/list - List MCP servers using Claude CLI
+/**
+ * GET /api/mcp/cli/list
+ * @summary 使用 Claude CLI 列出 MCP 服务器
+ */
 router.get('/cli/list', async (req, res) => {
   try {
     logger.info('Listing MCP servers using Claude CLI');
@@ -23,21 +29,21 @@ router.get('/cli/list', async (req, res) => {
     const { stdout, stderr, code } = await spawnCli('claude', { args: ['mcp', 'list'] });
 
     if (code === 0) {
-      res.json({ success: true, output: stdout, servers: parseClaudeListOutput(stdout) });
+      return success(res, { success: true, output: stdout, servers: parseClaudeListOutput(stdout) });
     } else {
       logger.error('Claude CLI error:', stderr);
-      res.status(500).json({ error: 'Claude CLI command failed', details: stderr });
+      return serverError(res, 'Claude CLI command failed');
     }
-  } catch (error) {
-    logger.error('Error listing MCP servers via CLI:', error);
-    res.status(500).json({
-      error: 'Failed to list MCP servers',
-      details: error instanceof Error ? error.message : String(error),
-    });
+  } catch (err) {
+    logger.error('Error listing MCP servers via CLI:', err);
+    return serverError(res, 'Failed to list MCP servers');
   }
 });
 
-// POST /api/mcp/cli/add - Add MCP server using Claude CLI
+/**
+ * POST /api/mcp/cli/add
+ * @summary 使用 Claude CLI 添加 MCP 服务器
+ */
 router.post('/cli/add', async (req, res) => {
   try {
     const {
@@ -90,21 +96,21 @@ router.post('/cli/add', async (req, res) => {
     const { stdout, stderr, code } = await spawnCli('claude', { args: cliArgs, ...spawnOptions });
 
     if (code === 0) {
-      res.json({ success: true, output: stdout, message: `MCP server "${name}" added successfully` });
+      return success(res, { success: true, output: stdout, message: `MCP server "${name}" added successfully` });
     } else {
       logger.error('Claude CLI error:', stderr);
-      res.status(400).json({ error: 'Claude CLI command failed', details: stderr });
+      return badRequest(res, 'Claude CLI command failed');
     }
-  } catch (error) {
-    logger.error('Error adding MCP server via CLI:', error);
-    res.status(500).json({
-      error: 'Failed to add MCP server',
-      details: error instanceof Error ? error.message : String(error),
-    });
+  } catch (err) {
+    logger.error('Error adding MCP server via CLI:', err);
+    return serverError(res, 'Failed to add MCP server');
   }
 });
 
-// POST /api/mcp/cli/add-json - Add MCP server using JSON format
+/**
+ * POST /api/mcp/cli/add-json
+ * @summary 使用 JSON 格式添加 MCP 服务器
+ */
 router.post('/cli/add-json', async (req, res) => {
   try {
     const { name, jsonConfig, scope = 'user', projectPath } = req.body;
@@ -116,32 +122,20 @@ router.post('/cli/add-json', async (req, res) => {
     try {
       parsedConfig = typeof jsonConfig === 'string' ? JSON.parse(jsonConfig) : jsonConfig;
     } catch (parseError) {
-      return res.status(400).json({
-        error: 'Invalid JSON configuration',
-        details: parseError instanceof Error ? parseError.message : String(parseError),
-      });
+      return badRequest(res, 'Invalid JSON configuration');
     }
 
     // Validate required fields
     if (!parsedConfig.type) {
-      return res.status(400).json({
-        error: 'Invalid configuration',
-        details: 'Missing required field: type',
-      });
+      return badRequest(res, 'Invalid configuration: Missing required field: type');
     }
 
     if (parsedConfig.type === 'stdio' && !parsedConfig.command) {
-      return res.status(400).json({
-        error: 'Invalid configuration',
-        details: 'stdio type requires a command field',
-      });
+      return badRequest(res, 'Invalid configuration: stdio type requires a command field');
     }
 
     if ((parsedConfig.type === 'http' || parsedConfig.type === 'sse') && !parsedConfig.url) {
-      return res.status(400).json({
-        error: 'Invalid configuration',
-        details: `${parsedConfig.type} type requires a url field`,
-      });
+      return badRequest(res, `Invalid configuration: ${parsedConfig.type} type requires a url field`);
     }
 
     const cliArgs = ['mcp', 'add-json', '--scope', scope, name, JSON.stringify(parsedConfig)];
@@ -154,21 +148,25 @@ router.post('/cli/add-json', async (req, res) => {
     const { stdout, stderr, code } = await spawnCli('claude', { args: cliArgs, ...spawnOptions });
 
     if (code === 0) {
-      res.json({ success: true, output: stdout, message: `MCP server "${name}" added successfully via JSON` });
+      return success(res, {
+        success: true,
+        output: stdout,
+        message: `MCP server "${name}" added successfully via JSON`,
+      });
     } else {
       logger.error('Claude CLI error:', stderr);
-      res.status(400).json({ error: 'Claude CLI command failed', details: stderr });
+      return badRequest(res, 'Claude CLI command failed');
     }
-  } catch (error) {
-    logger.error('Error adding MCP server via JSON:', error);
-    res.status(500).json({
-      error: 'Failed to add MCP server',
-      details: error instanceof Error ? error.message : String(error),
-    });
+  } catch (err) {
+    logger.error('Error adding MCP server via JSON:', err);
+    return serverError(res, 'Failed to add MCP server');
   }
 });
 
-// DELETE /api/mcp/cli/remove/:name - Remove MCP server using Claude CLI
+/**
+ * DELETE /api/mcp/cli/remove/:name
+ * @summary 使用 Claude CLI 删除 MCP 服务器
+ */
 router.delete('/cli/remove/:name', async (req, res) => {
   try {
     const { name } = req.params;
@@ -197,21 +195,21 @@ router.delete('/cli/remove/:name', async (req, res) => {
     const { stdout, stderr, code } = await spawnCli('claude', { args: cliArgs });
 
     if (code === 0) {
-      res.json({ success: true, output: stdout, message: `MCP server "${name}" removed successfully` });
+      return success(res, { success: true, output: stdout, message: `MCP server "${name}" removed successfully` });
     } else {
       logger.error('Claude CLI error:', stderr);
-      res.status(400).json({ error: 'Claude CLI command failed', details: stderr });
+      return badRequest(res, 'Claude CLI command failed');
     }
-  } catch (error) {
-    logger.error('Error removing MCP server via CLI:', error);
-    res.status(500).json({
-      error: 'Failed to remove MCP server',
-      details: error instanceof Error ? error.message : String(error),
-    });
+  } catch (err) {
+    logger.error('Error removing MCP server via CLI:', err);
+    return serverError(res, 'Failed to remove MCP server');
   }
 });
 
-// GET /api/mcp/cli/get/:name - Get MCP server details using Claude CLI
+/**
+ * GET /api/mcp/cli/get/:name
+ * @summary 使用 Claude CLI 获取 MCP 服务器详情
+ */
 router.get('/cli/get/:name', async (req, res) => {
   try {
     const { name } = req.params;
@@ -221,21 +219,21 @@ router.get('/cli/get/:name', async (req, res) => {
     const { stdout, stderr, code } = await spawnCli('claude', { args: ['mcp', 'get', name] });
 
     if (code === 0) {
-      res.json({ success: true, output: stdout, server: parseClaudeGetOutput(stdout) });
+      return success(res, { success: true, output: stdout, server: parseClaudeGetOutput(stdout) });
     } else {
       logger.error('Claude CLI error:', stderr);
-      res.status(404).json({ error: 'Claude CLI command failed', details: stderr });
+      return notFound(res, 'MCP server');
     }
-  } catch (error) {
-    logger.error('Error getting MCP server details via CLI:', error);
-    res.status(500).json({
-      error: 'Failed to get MCP server details',
-      details: error instanceof Error ? error.message : String(error),
-    });
+  } catch (err) {
+    logger.error('Error getting MCP server details via CLI:', err);
+    return serverError(res, 'Failed to get MCP server details');
   }
 });
 
-// GET /api/mcp/config/read - Read MCP servers directly from Claude config files
+/**
+ * GET /api/mcp/config/read
+ * @summary 直接从 Claude 配置文件读取 MCP 服务器
+ */
 router.get('/config/read', async (req, res) => {
   try {
     logger.info('Reading MCP servers from Claude config files');
@@ -259,7 +257,7 @@ router.get('/config/read', async (req, res) => {
     }
 
     if (!configData) {
-      return res.json({
+      return success(res, {
         success: false,
         message: 'No Claude configuration file found',
         servers: [],
@@ -298,17 +296,14 @@ router.get('/config/read', async (req, res) => {
 
     logger.info(`Found ${servers.length} MCP servers in config`);
 
-    res.json({
+    return success(res, {
       success: true,
       configPath: configPath,
       servers: servers,
     });
-  } catch (error) {
-    logger.error('Error reading Claude config:', error);
-    res.status(500).json({
-      error: 'Failed to read Claude configuration',
-      details: error instanceof Error ? error.message : String(error),
-    });
+  } catch (err) {
+    logger.error('Error reading Claude config:', err);
+    return serverError(res, 'Failed to read Claude configuration');
   }
 });
 
