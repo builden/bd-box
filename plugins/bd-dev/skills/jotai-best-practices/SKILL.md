@@ -22,10 +22,10 @@ description: Use when writing, reviewing, or debugging Jotai atoms, including at
 
 ### Q2: 你需要防抖/节流吗？
 
-| 场景         | 选择               | 章节            |
-| ------------ | ------------------ | --------------- |
-| 搜索输入防抖 | `atomWithDebounce` | jotai-common.md |
-| API 请求节流 | 自定义 atom        | jotai-common.md |
+| 场景         | 选择               | 章节                |
+| ------------ | ------------------ | ------------------- |
+| 搜索输入防抖 | `atomWithDebounce` | jotai-extensions.md |
+| API 请求节流 | 自定义 atom        | jotai-common.md     |
 
 ### Q3: 你需要派生/计算状态吗？
 
@@ -108,7 +108,8 @@ description: Use when writing, reviewing, or debugging Jotai atoms, including at
 - Store 最佳实践（getDefaultStore、createStore）
 - 常见错误与修复
 - 工厂模式
-- Utility Atoms（atomWithToggle、atomWithDebounce、atomWithToggleAndStorage）
+- Utility Atoms（atomWithToggle、atomWithToggleAndStorage）
+- `@builden/bd-utils` 自定义扩展（atomWithDebounce）
   j'o
 
 ### 优先级 2.5：Immer 不可变更新
@@ -134,29 +135,30 @@ description: Use when writing, reviewing, or debugging Jotai atoms, including at
 
 ### 优先级 4：生态库扩展
 
-[jotai-extensions.md](jotai-extensions.md) - tanstack-query、history、scope、effect、optics
+[jotai-extensions.md](jotai-extensions.md) - tanstack-query、history、scope、effect、optics、自定义扩展
 
 - jotai-tanstack-query（React Query 集成）
 - jotai-history（撤销/重做）
 - jotai-scope（作用域控制）
 - jotai-effect（副作用处理）
 - jotai-optics（透镜操作）
+- @builden/bd-utils 自定义扩展（atomWithDebounce）
 
 ## 快速参考
 
-| 需求            | 推荐方案                                  |
-| --------------- | ----------------------------------------- |
-| 基础状态        | `atom(initialValue)`                      |
-| 主题/偏好持久化 | `atomWithToggleAndStorage(key, default)`  |
-| 弹窗/临时开关   | `atomWithToggle(initial)`                 |
-| 搜索防抖        | `atomWithDebounce(initial, delay)`        |
-| 派生计算        | `atom((get) => ...)`                      |
-| 异步加载        | `loadable(asyncAtom)`                     |
-| 复杂嵌套更新    | `focusAtom` + `optic`                     |
-| 撤销/重做       | `atomWithHistory`                         |
-| API 缓存        | `atomWithCache` 或 `jotai-tanstack-query` |
-| Redux 风格      | `atomWithReducer`                         |
-| 状态变化回调    | `atomWithCallback`                        |
+| 需求            | 推荐方案                                                    |
+| --------------- | ----------------------------------------------------------- |
+| 基础状态        | `atom(initialValue)`                                        |
+| 主题/偏好持久化 | `atomWithToggleAndStorage(key, default)`                    |
+| 弹窗/临时开关   | `atomWithToggle(initial)`                                   |
+| 搜索防抖        | `atomWithDebounce(initial, delay)` (来自 @builden/bd-utils) |
+| 派生计算        | `atom((get) => ...)`                                        |
+| 异步加载        | `loadable(asyncAtom)`                                       |
+| 复杂嵌套更新    | `focusAtom` + `optic`                                       |
+| 撤销/重做       | `atomWithHistory`                                           |
+| API 缓存        | `atomWithCache` 或 `jotai-tanstack-query`                   |
+| Redux 风格      | `atomWithReducer`                                           |
+| 状态变化回调    | `atomWithCallback`                                          |
 
 ## 调试技巧
 

@@ -315,8 +315,12 @@ function ToggleButton() {
 
 ### atomWithDebounce（防抖 atom）
 
+> 注意：`jotai/utils` 中没有 `atomWithDebounce`，请使用 `@builden/bd-utils` 提供的实现。
+
+**详细文档**: [jotai-extensions.md](jotai-extensions.md) - 见 `@builden/bd-utils 自定义扩展` 章节
+
 ```typescript
-import { atomWithDebounce } from 'jotai/utils';
+import { atomWithDebounce } from '@builden/bd-utils/jotai';
 
 // ✅ 正确：创建带防抖的搜索 atom
 const searchAtoms = atomWithDebounce('', 300);

@@ -963,6 +963,150 @@ const userEmailAtom = optics(stateAtom)
   .atom();
 ```
 
+## @builden/bd-utils 自定义扩展
+
+### atomWithDebounce（防抖 atom）
+
+**来源**: `@builden/bd-utils/jotai`
+
+**作用**: 创建带防抖功能的 atom，延迟更新目标值，适用于搜索输入等场景。
+
+### 安装
+
+```bash
+# peerDependencies（消费项目需要安装）
+bun add jotai
+
+# bd-utils 内部使用，无需额外配置
+```
+
+### 基本用法
+
+```typescript
+import { atomWithDebounce } from '@builden/bd-utils/jotai';
+
+// ✅ 正确：创建防抖 atom
+export const searchAtoms = atomWithDebounce('', 300); // 默认延迟 500ms
+
+// ✅ 正确：自定义延迟
+export const sidebarSearchAtoms = atomWithDebounce('', 400);
+export const fileTreeSearchAtoms = atomWithDebounce('', 300);
+```
+
+### 返回对象结构
+
+| 属性                 | 类型                 | 用途                   |
+| -------------------- | -------------------- | ---------------------- |
+| `currentValueAtom`   | `Atom<T>`            | 当前值（立即更新）     |
+| `debouncedValueAtom` | `WritableAtom<T>`    | 防抖后的值（延迟更新） |
+| `isDebouncingAtom`   | `Atom<boolean>`      | 是否正在防抖           |
+| `clearTimeoutAtom`   | `WritableAtom<void>` | 手动清除定时器         |
+
+### 在组件中使用
+
+```typescript
+import { useAtom } from 'jotai';
+import { searchAtoms } from '@/store/search-atom';
+
+function SearchInput() {
+  // currentValueAtom：用户输入的当前值（立即响应）
+  const [currentValue, setCurrentValue] = useAtom(searchAtoms.currentValueAtom);
+  // debouncedValueAtom：防抖后的值（用于触发搜索）
+  const [debouncedValue] = useAtom(searchAtoms.debouncedValueAtom);
+  // isDebouncingAtom：防抖状态（可用于显示加载指示器）
+  const [isDebouncing] = useAtom(searchAtoms.isDebouncingAtom);
+
+  return (
+    <div>
+      <input
+        value={currentValue}
+        onChange={(e) => setCurrentValue(e.target.value)}
+        placeholder="搜索..."
+      />
+      {isDebouncing && <span>正在搜索...</span>}
+      {/* 使用 debouncedValue 触发实际搜索 */}
+      <SearchResults query={debouncedValue} />
+    </div>
+  );
+}
+```
+
+### 完整示例：侧边栏搜索
+
+```typescript
+// store/search/primitives/search-atom.ts
+import { atomWithDebounce } from '@builden/bd-utils/jotai';
+
+/**
+ * 侧边栏搜索防抖 atom (400ms 延迟)
+ */
+export const sidebarSearchAtoms = atomWithDebounce('', 400);
+
+/**
+ * 文件树搜索防抖 atom (300ms 延迟)
+ */
+export const fileTreeSearchAtoms = atomWithDebounce('', 300);
+```
+
+```typescript
+// store/search/actions/use-search.ts
+import { useAtom } from 'jotai';
+import { sidebarSearchAtoms, fileTreeSearchAtoms } from '../primitives/search-atom';
+
+/**
+ * 侧边栏搜索 Hook - 使用 atomWithDebounce 自动防抖
+ */
+export function useSidebarSearch() {
+  const [currentValue, setCurrentValue] = useAtom(sidebarSearchAtoms.currentValueAtom);
+  const [debouncedValue] = useAtom(sidebarSearchAtoms.debouncedValueAtom);
+
+  return {
+    searchQuery: currentValue,
+    setSearchQuery: setCurrentValue,
+    debouncedSearchQuery: debouncedValue,
+  };
+}
+
+/**
+ * 文件树搜索 Hook - 使用 atomWithDebounce 自动防抖
+ */
+export function useFileTreeSearch() {
+  const [currentValue, setCurrentValue] = useAtom(fileTreeSearchAtoms.currentValueAtom);
+  const [debouncedValue] = useAtom(fileTreeSearchAtoms.debouncedValueAtom);
+
+  return {
+    searchQuery: currentValue,
+    setSearchQuery: setCurrentValue,
+    debouncedSearchQuery: debouncedValue,
+  };
+}
+```
+
+### API 参考
+
+```typescript
+atomWithDebounce<T>(
+  initialValue: T,           // 初始值
+  delayMilliseconds?: number, // 防抖延迟（默认 500ms）
+  shouldDebounceOnReset?: boolean // 重置时是否防抖（默认 false）
+): AtomWithDebounceResult<T>
+```
+
+### 与 lodash.debounce 对比
+
+| 特性     | atomWithDebounce   | lodash.debounce |
+| -------- | ------------------ | --------------- |
+| 状态管理 | 原生集成 Jotai     | 独立函数        |
+| 响应式   | 原子级别响应       | 需要手动绑定    |
+| 取消方式 | `clearTimeoutAtom` | 返回的取消函数  |
+| 适用场景 | React 状态防抖     | 通用防抖        |
+
+### 注意事项
+
+- 防抖 atom 返回的是 4 个独立的 atom，需要分别使用 `useAtom` 订阅
+- `currentValueAtom` 会立即更新，`debouncedValueAtom` 会延迟更新
+- 适合用于搜索输入、实时过滤等需要避免频繁请求的场景
+
 ## 相关章节
 
 - [SKILL.md](SKILL.md) - 场景选择指南

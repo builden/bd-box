@@ -15,12 +15,21 @@
     },
     "./scripts": {
       "import": "./scripts/build.ts"
+    },
+    "./jotai": {
+      "types": "./dist/jotai/index.d.ts",
+      "import": "./src/jotai/index.ts"
+    },
+    "./jotai/atom-with-debounce": {
+      "types": "./dist/jotai/atom-with-debounce.d.ts",
+      "import": "./src/jotai/atomWithDebounce.ts"
     }
   },
   "publishConfig": {
     "access": "public"
   },
   "peerDependencies": {
+    "jotai": "^2.0.0",
     "execa": "^9.0.0",
     "ora": "^8.0.0",
     "picocolors": "^1.0.0"
@@ -31,8 +40,9 @@
   },
   "devDependencies": {
     "@types/bun": "^1.0.0",
-    "bun-types": "^1.0.0",
     "@types/node": "^22.0.0",
+    "bun-types": "^1.0.0",
+    "jotai": "^2.18.1",
     "typescript": "^5.0.0"
   },
   "dependencies": {
