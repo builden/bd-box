@@ -215,7 +215,7 @@ function ChatInterface({
   }, [selectedProject, selectedSession, loadSessionMessages, setChatMessages, setIsLoading, setCanAbortSession]);
 
   useChatRealtimeHandlers({
-    latestMessage,
+    latestMessage: latestMessage as any,
     provider,
     selectedProject,
     selectedSession,
