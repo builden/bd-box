@@ -11,7 +11,7 @@ import TasksSettingsTab from './TasksSettingsTab';
 import { Button } from '@/shared/view/ui';
 import ProviderLoginModal from '@/components/provider-auth/view/ProviderLoginModal';
 import PluginSettingsTab from '@/features/plugins/ui/PluginSettingsTab';
-import { useSettingsController } from '@/components/settings/hooks/useSettingsController';
+import { useSettingsController } from '@/features/settings/hooks/useSettingsController';
 import type { SettingsProps } from '@/components/settings/types/types';
 import SkillsSettingsTab from '@/features/skills/ui/SkillsSettingsTab';
 

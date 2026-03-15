@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button, Input } from '../../../../shared/view/ui';
-import { DEFAULT_CODEX_MCP_FORM } from '@/components/settings/constants/constants';
+import { DEFAULT_CODEX_MCP_FORM } from '@/features/settings/constants/constants';
 import type { CodexMcpFormState, McpServer } from '@/components/settings/types/types';
 
 type CodexMcpFormModalProps = {

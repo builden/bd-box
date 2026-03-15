@@ -9,7 +9,7 @@ import {
 } from '../primitives/projects-atom';
 import { projectNamesAtom, currentProjectSessionsAtom, hasActiveSessionAtom } from '../derived/project-derived';
 import type { Project, ProjectSession, AppTab } from '@/types';
-import { useProjectsQuery } from '@/hooks/useProjectsQuery';
+import { useProjectsQuery } from '@/features/projects/hooks/useProjectsQuery';
 
 /**
  * 项目和会话管理 Hook

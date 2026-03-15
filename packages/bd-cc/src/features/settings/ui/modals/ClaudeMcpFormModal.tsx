@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Input } from '../../../../shared/view/ui';
-import { DEFAULT_CLAUDE_MCP_FORM } from '@/components/settings/constants/constants';
+import { DEFAULT_CLAUDE_MCP_FORM } from '@/features/settings/constants/constants';
 import type {
   ClaudeMcpFormState,
   McpServer,

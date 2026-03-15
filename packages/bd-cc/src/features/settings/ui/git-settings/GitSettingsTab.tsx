@@ -2,7 +2,7 @@ import { Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import SettingsCard from '../SettingsCard';
 import SettingsSection from '../SettingsSection';
-import { useGitSettings } from '@/components/settings/hooks/useGitSettings';
+import { useGitSettings } from '@/features/settings/hooks/useGitSettings';
 import { Button, Input } from '@/shared/view/ui';
 
 export default function GitSettingsTab() {

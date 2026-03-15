@@ -3,7 +3,7 @@ import ApiKeysSection from './sections/ApiKeysSection';
 import GithubCredentialsSection from './sections/GithubCredentialsSection';
 import NewApiKeyAlert from './sections/NewApiKeyAlert';
 import VersionInfoSection from './sections/VersionInfoSection';
-import { useCredentialsSettings } from '@/components/settings/hooks/useCredentialsSettings';
+import { useCredentialsSettings } from '@/features/settings/hooks/useCredentialsSettings';
 import { useVersionCheck } from '@/hooks/useVersionCheck';
 
 export default function CredentialsSettingsTab() {

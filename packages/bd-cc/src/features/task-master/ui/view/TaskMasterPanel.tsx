@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTaskMaster } from '../context/TaskMasterContext';
-import { usePrdRegistryQuery } from '@/hooks/usePrdQuery';
+import { usePrdRegistryQuery } from '@/features/prd-editor/hooks/usePrdQuery';
 import type { PrdFile, TaskMasterTask, TaskSelection } from '../types';
 import TaskBoard from './TaskBoard';
 import TaskDetailModal from './TaskDetailModal';

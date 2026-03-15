@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import type { Project } from '@/types/app';
 import { usePrdDocument } from '@/features/prd-editor/hooks/usePrdDocument';
 import { usePrdKeyboardShortcuts } from '@/features/prd-editor/hooks/usePrdKeyboardShortcuts';
-import { usePrdRegistryQuery } from '@/hooks/usePrdQuery';
+import { usePrdRegistryQuery } from '@/features/prd-editor/hooks/usePrdQuery';
 import { usePrdSave } from '@/features/prd-editor/hooks/usePrdSave';
 import type { PrdFile, ExistingPrdFile } from '@/features/prd-editor/types/types';
 import { ensurePrdExtension } from '@/features/prd-editor/biz/fileName';
