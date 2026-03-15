@@ -79,16 +79,20 @@ describe('api-response', () => {
     it('should return list with meta', () => {
       successList(mockResponse as Response, [{ id: 1 }], { total: 10, page: 1, limit: 5 });
       expect(mockResponse.json).toHaveBeenCalledWith({
-        data: [{ id: 1 }],
-        meta: { total: 10, page: 1, limit: 5 },
+        data: {
+          items: [{ id: 1 }],
+          meta: { total: 10, page: 1, limit: 5 },
+        },
       });
     });
 
     it('should return empty meta when not provided', () => {
       successList(mockResponse as Response, []);
       expect(mockResponse.json).toHaveBeenCalledWith({
-        data: [],
-        meta: {},
+        data: {
+          items: [],
+          meta: {},
+        },
       });
     });
   });
