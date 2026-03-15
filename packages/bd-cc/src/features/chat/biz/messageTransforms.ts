@@ -1,4 +1,4 @@
-import type { ChatMessage } from '../types';
+import type { ChatMessage, SubagentChildTool } from '../types';
 import { decodeHtmlEntities, unescapeWithMathProtection } from './chatFormatting';
 import { createLogger } from '@/lib/logger';
 
@@ -535,7 +535,7 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
             const isSubagentContainer = part.name === 'Task';
 
             // Build child tools from server-provided subagentTools data
-            const childTools: import('../types').SubagentChildTool[] = [];
+            const childTools: SubagentChildTool[] = [];
             if (isSubagentContainer && toolResult?.subagentTools && Array.isArray(toolResult.subagentTools)) {
               for (const tool of toolResult.subagentTools as any[]) {
                 childTools.push({
