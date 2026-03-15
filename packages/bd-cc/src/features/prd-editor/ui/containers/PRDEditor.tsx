@@ -6,9 +6,9 @@ import { usePrdRegistryQuery } from '@/features/prd-editor/hooks/usePrdQuery';
 import { usePrdSave } from '@/features/prd-editor/hooks/usePrdSave';
 import type { PrdFile, ExistingPrdFile } from '@/features/prd-editor/types/types';
 import { ensurePrdExtension } from '@/features/prd-editor/biz/fileName';
-import OverwriteConfirmModal from '@/features/prd-editor/ui/pages/OverwriteConfirmModal';
-import PrdEditorLoadingState from '@/features/prd-editor/ui/pages/PrdEditorLoadingState';
-import PrdEditorWorkspace from '@/features/prd-editor/ui/pages/PrdEditorWorkspace';
+import OverwriteConfirmModal from '@/features/prd-editor/ui/composites/OverwriteConfirmModal';
+import PrdEditorLoadingState from '@/features/prd-editor/ui/composites/PrdEditorLoadingState';
+import PrdEditorWorkspace from '@/features/prd-editor/ui/composites/PrdEditorWorkspace';
 
 type PRDEditorProps = {
   file?: PrdFile | null;

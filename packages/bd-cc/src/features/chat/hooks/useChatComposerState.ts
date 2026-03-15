@@ -1,26 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type {
-  ChangeEvent,
-  ClipboardEvent,
-  Dispatch,
-  FormEvent,
-  KeyboardEvent,
-  MouseEvent,
-  SetStateAction,
-  TouchEvent,
-} from 'react';
-import { useDropzone } from 'react-dropzone';
-import { authenticatedFetch } from '@/utils/api';
-import { thinkingModes } from '../biz/thinkingModes';
-import { grantClaudeToolPermission } from '../biz/chatPermissions';
+import type { ChangeEvent, Dispatch, FormEvent, KeyboardEvent, MouseEvent, SetStateAction, TouchEvent } from 'react';
 import { safeLocalStorage } from '../biz/chatStorage';
-import { createFakeSubmitEvent, isTemporarySessionId } from '../biz/sessionId';
-import type { ChatMessage, ChatImage, PendingPermissionRequest, PermissionMode } from '../types';
+import { grantClaudeToolPermission } from '../biz/chatPermissions';
+import type { ChatMessage, PendingPermissionRequest, PermissionMode } from '../types';
 import type { SessionMessage } from '@shared/api/sessions';
 import type { Project, ProjectSession, SessionProvider } from '@/types';
-import { escapeRegExp } from '../biz/chatFormatting';
 import { useFileMentions } from './useFileMentions';
-import { type SlashCommand, useSlashCommands } from './useSlashCommands';
+import { useSlashCommands } from './useSlashCommands';
+import { useImageUpload } from './useImageUpload';
+import { useChatCommands } from './useChatCommands';
+import { useChatSubmit } from './useChatSubmit';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('ChatComposerState');
@@ -67,15 +56,6 @@ interface MentionableFile {
   path: string;
 }
 
-interface CommandExecutionResult {
-  type: 'builtin' | 'custom';
-  action?: string;
-  data?: Record<string, unknown>;
-  content?: string;
-  hasBashCommands?: boolean;
-  hasFileIncludes?: boolean;
-}
-
 export function useChatComposerState({
   selectedProject,
   selectedSession,
@@ -107,285 +87,64 @@ export function useChatComposerState({
   setIsUserScrolledUp,
   setPendingPermissionRequests,
 }: UseChatComposerStateArgs) {
+  // 输入状态
   const [input, setInput] = useState(() => {
     if (typeof window !== 'undefined' && selectedProject) {
       return safeLocalStorage.getItem(`draft_input_${selectedProject.name}`) || '';
     }
     return '';
   });
-  const [attachedImages, setAttachedImages] = useState<File[]>([]);
-  const [uploadingImages, setUploadingImages] = useState<Map<string, number>>(new Map());
-  const [imageErrors, setImageErrors] = useState<Map<string, string>>(new Map());
   const [isTextareaExpanded, setIsTextareaExpanded] = useState(false);
   const [thinkingMode, setThinkingMode] = useState('none');
 
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const inputHighlightRef = useRef<HTMLDivElement>(null);
-  const handleSubmitRef = useRef<
-    | ((
-        event: FormEvent<HTMLFormElement> | MouseEvent | TouchEvent | KeyboardEvent<HTMLTextAreaElement>
-      ) => Promise<void>)
-    | null
-  >(null);
   const inputValueRef = useRef(input);
 
-  const handleBuiltInCommand = useCallback(
-    (result: CommandExecutionResult) => {
-      const { action, data } = result;
-      if (!data) {
-        logger.warn('handleBuiltInCommand received no data', { action });
-        return;
-      }
-      switch (action) {
-        case 'clear':
-          setChatMessages([]);
-          setSessionMessages?.([]);
-          break;
+  // 图片上传 hook
+  const {
+    attachedImages,
+    setAttachedImages: setAttachedImagesFromHook,
+    uploadingImages,
+    imageErrors,
+    getRootProps,
+    getInputProps,
+    isDragActive,
+    openImagePicker,
+    handlePaste,
+  } = useImageUpload();
 
-        case 'help':
-          setChatMessages((previous) => [
-            ...previous,
-            {
-              type: 'assistant',
-              content: String(data.content ?? ''),
-              timestamp: Date.now(),
-            },
-          ]);
-          break;
+  // 内部 ref 用于命令执行
+  const setInputRef = useRef(setInput);
+  const setAttachedImagesRef = useRef(setAttachedImagesFromHook);
+  const setUploadingImagesRef = useRef<Dispatch<SetStateAction<Map<string, number>>>>(() => {});
+  const setImageErrorsRef = useRef<Dispatch<SetStateAction<Map<string, string>>>>(() => {});
+  const setIsTextareaExpandedRef = useRef(setIsTextareaExpanded);
+  const resetCommandMenuStateRef = useRef<() => void>(() => {});
 
-        case 'model': {
-          const modelData = data as {
-            current?: { model?: string };
-            available?: { claude?: string[]; cursor?: string[] };
-          };
-          setChatMessages((previous) => [
-            ...previous,
-            {
-              type: 'assistant',
-              content: `**Current Model**: ${modelData.current?.model ?? 'unknown'}\n\n**Available Models**:\n\nClaude: ${modelData.available?.claude?.join(', ') ?? 'none'}\n\nCursor: ${modelData.available?.cursor?.join(', ') ?? 'none'}`,
-              timestamp: Date.now(),
-            },
-          ]);
-          break;
-        }
+  // 更新 ref
+  useEffect(() => {
+    setInputRef.current = setInput;
+    setAttachedImagesRef.current = setAttachedImagesFromHook;
+  }, [setInput, setAttachedImagesFromHook]);
 
-        case 'cost': {
-          const costData = data as {
-            tokenUsage?: { used?: number; total?: number; percentage?: number };
-            cost?: { input?: number; output?: number; total?: number };
-            model?: string;
-          };
-          const costMessage = `**Token Usage**: ${costData.tokenUsage?.used?.toLocaleString() ?? 0} / ${costData.tokenUsage?.total?.toLocaleString() ?? 0} (${costData.tokenUsage?.percentage ?? 0}%)\n\n**Estimated Cost**:\n- Input: $${costData.cost?.input ?? 0}\n- Output: $${costData.cost?.output ?? 0}\n- **Total**: $${costData.cost?.total ?? 0}\n\n**Model**: ${costData.model ?? 'unknown'}`;
-          setChatMessages((previous) => [
-            ...previous,
-            { type: 'assistant', content: costMessage, timestamp: Date.now() },
-          ]);
-          break;
-        }
+  // Chat Commands hook
+  const { executeCommand } = useChatCommands({
+    selectedProject,
+    currentSessionId,
+    provider,
+    cursorModel,
+    claudeModel,
+    codexModel,
+    geminiModel,
+    tokenBudget,
+    setChatMessages,
+    setSessionMessages,
+    onFileOpen,
+    onShowSettings,
+  });
 
-        case 'status': {
-          const statusData = data as {
-            version?: string;
-            uptime?: string;
-            model?: string;
-            provider?: string;
-            nodeVersion?: string;
-            platform?: string;
-          };
-          const statusMessage = `**System Status**\n\n- Version: ${statusData.version ?? 'unknown'}\n- Uptime: ${statusData.uptime ?? 'unknown'}\n- Model: ${statusData.model ?? 'unknown'}\n- Provider: ${statusData.provider ?? 'unknown'}\n- Node.js: ${statusData.nodeVersion ?? 'unknown'}\n- Platform: ${statusData.platform ?? 'unknown'}`;
-          setChatMessages((previous) => [
-            ...previous,
-            { type: 'assistant', content: statusMessage, timestamp: Date.now() },
-          ]);
-          break;
-        }
-
-        case 'memory': {
-          const memoryData = data as { error?: boolean; message?: string; path?: string; exists?: boolean };
-          if (memoryData.error) {
-            setChatMessages((previous) => [
-              ...previous,
-              {
-                type: 'assistant',
-                content: `⚠️ ${memoryData.message ?? 'Unknown error'}`,
-                timestamp: Date.now(),
-              },
-            ]);
-          } else {
-            setChatMessages((previous) => [
-              ...previous,
-              {
-                type: 'assistant',
-                content: `📝 ${memoryData.message ?? 'Done'}\n\nPath: \`${memoryData.path ?? ''}\``,
-                timestamp: Date.now(),
-              },
-            ]);
-            if (memoryData.exists && onFileOpen && memoryData.path) {
-              onFileOpen(memoryData.path);
-            }
-          }
-          break;
-        }
-
-        case 'config':
-          onShowSettings?.();
-          break;
-
-        case 'rewind': {
-          const rewindData = data as { error?: boolean; message?: string; steps?: number };
-          if (rewindData.error) {
-            setChatMessages((previous) => [
-              ...previous,
-              {
-                type: 'assistant',
-                content: `⚠️ ${rewindData.message ?? 'Unknown error'}`,
-                timestamp: Date.now(),
-              },
-            ]);
-          } else {
-            setChatMessages((previous) => previous.slice(0, -((rewindData.steps ?? 1) * 2)));
-            setChatMessages((previous) => [
-              ...previous,
-              {
-                type: 'assistant',
-                content: `⏪ ${rewindData.message ?? 'Rewound'}`,
-                timestamp: Date.now(),
-              },
-            ]);
-          }
-          break;
-        }
-
-        default:
-          logger.warn('Unknown built-in command action', { action });
-      }
-    },
-    [onFileOpen, onShowSettings, setChatMessages, setSessionMessages]
-  );
-
-  const handleCustomCommand = useCallback(
-    async (result: CommandExecutionResult) => {
-      const { content, hasBashCommands } = result;
-
-      if (hasBashCommands) {
-        const confirmed = window.confirm(
-          'This command contains bash commands that will be executed. Do you want to proceed?'
-        );
-        if (!confirmed) {
-          setChatMessages((previous) => [
-            ...previous,
-            {
-              type: 'assistant',
-              content: '❌ Command execution cancelled',
-              timestamp: Date.now(),
-            },
-          ]);
-          return;
-        }
-      }
-
-      const commandContent = content || '';
-      setInput(commandContent);
-      inputValueRef.current = commandContent;
-
-      // Defer submit to next tick so the command text is reflected in UI before dispatching.
-      setTimeout(() => {
-        if (handleSubmitRef.current) {
-          handleSubmitRef.current(createFakeSubmitEvent());
-        }
-      }, 0);
-    },
-    [setChatMessages]
-  );
-
-  const executeCommand = useCallback(
-    async (command: SlashCommand, rawInput?: string) => {
-      if (!command || !selectedProject) {
-        return;
-      }
-
-      try {
-        const effectiveInput = rawInput ?? input;
-        const commandMatch = effectiveInput.match(new RegExp(`${escapeRegExp(command.name)}\\s*(.*)`));
-        const args = commandMatch && commandMatch[1] ? commandMatch[1].trim().split(/\s+/) : [];
-
-        const context = {
-          projectPath: selectedProject.fullPath || selectedProject.path,
-          projectName: selectedProject.name,
-          sessionId: currentSessionId,
-          provider,
-          model:
-            provider === 'cursor'
-              ? cursorModel
-              : provider === 'codex'
-                ? codexModel
-                : provider === 'gemini'
-                  ? geminiModel
-                  : claudeModel,
-          tokenUsage: tokenBudget,
-        };
-
-        const response = await authenticatedFetch('/api/commands/execute', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            commandName: command.name,
-            commandPath: command.path,
-            args,
-            context,
-          }),
-        });
-
-        if (!response.ok) {
-          let errorMessage = `Failed to execute command (${response.status})`;
-          try {
-            const errorData = await response.json();
-            errorMessage = errorData?.message || errorData?.error || errorMessage;
-          } catch {
-            // Ignore JSON parse failures and use fallback message.
-          }
-          throw new Error(errorMessage);
-        }
-
-        const result = (await response.json()) as CommandExecutionResult;
-        if (result.type === 'builtin') {
-          handleBuiltInCommand(result);
-          setInput('');
-          inputValueRef.current = '';
-        } else if (result.type === 'custom') {
-          await handleCustomCommand(result);
-        }
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Unknown error';
-        logger.error('Error executing command', error);
-        setChatMessages((previous) => [
-          ...previous,
-          {
-            type: 'assistant',
-            content: `Error executing command: ${message}`,
-            timestamp: Date.now(),
-          },
-        ]);
-      }
-    },
-    [
-      claudeModel,
-      codexModel,
-      currentSessionId,
-      cursorModel,
-      geminiModel,
-      handleBuiltInCommand,
-      handleCustomCommand,
-      input,
-      provider,
-      selectedProject,
-      setChatMessages,
-      tokenBudget,
-    ]
-  );
-
+  // 命令 hook
   const {
     slashCommands,
     slashCommandsCount,
@@ -407,6 +166,12 @@ export function useChatComposerState({
     onExecuteCommand: executeCommand,
   });
 
+  // 更新 resetCommandMenuState ref
+  useEffect(() => {
+    resetCommandMenuStateRef.current = resetCommandMenuState;
+  }, [resetCommandMenuState]);
+
+  // 文件提及 hook
   const {
     showFileDropdown,
     filteredFiles,
@@ -422,339 +187,77 @@ export function useChatComposerState({
     textareaRef,
   });
 
-  const syncInputOverlayScroll = useCallback((target: HTMLTextAreaElement) => {
-    if (!inputHighlightRef.current || !target) {
-      return;
-    }
-    inputHighlightRef.current.scrollTop = target.scrollTop;
-    inputHighlightRef.current.scrollLeft = target.scrollLeft;
-  }, []);
-
-  const handleImageFiles = useCallback((files: File[]) => {
-    const validFiles = files.filter((file) => {
-      try {
-        if (!file || typeof file !== 'object') {
-          logger.warn('Invalid file object', { file });
-          return false;
-        }
-
-        if (!file.type || !file.type.startsWith('image/')) {
-          return false;
-        }
-
-        if (!file.size || file.size > 5 * 1024 * 1024) {
-          const fileName = file.name || 'Unknown file';
-          setImageErrors((previous) => {
-            const next = new Map(previous);
-            next.set(fileName, 'File too large (max 5MB)');
-            return next;
-          });
-          return false;
-        }
-
-        return true;
-      } catch (error) {
-        logger.error('Error validating file', error, { file });
-        return false;
+  // Chat Submit hook
+  const getToolsSettings = useCallback(() => {
+    try {
+      const settingsKey =
+        provider === 'cursor'
+          ? 'cursor-tools-settings'
+          : provider === 'codex'
+            ? 'codex-settings'
+            : provider === 'gemini'
+              ? 'gemini-settings'
+              : 'claude-settings';
+      const savedSettings = safeLocalStorage.getItem(settingsKey);
+      if (savedSettings) {
+        return JSON.parse(savedSettings);
       }
-    });
-
-    if (validFiles.length > 0) {
-      setAttachedImages((previous) => [...previous, ...validFiles].slice(0, 5));
+    } catch (error) {
+      logger.error('Error loading tools settings', error);
     }
-  }, []);
 
-  const handlePaste = useCallback(
-    (event: ClipboardEvent<HTMLTextAreaElement>) => {
-      const items = Array.from(event.clipboardData.items);
+    return {
+      allowedTools: [],
+      disallowedTools: [],
+      skipPermissions: false,
+    };
+  }, [provider]);
 
-      items.forEach((item) => {
-        if (!item.type.startsWith('image/')) {
-          return;
-        }
-        const file = item.getAsFile();
-        if (file) {
-          handleImageFiles([file]);
-        }
-      });
-
-      if (items.length === 0 && event.clipboardData.files.length > 0) {
-        const files = Array.from(event.clipboardData.files);
-        const imageFiles = files.filter((file) => file.type.startsWith('image/'));
-        if (imageFiles.length > 0) {
-          handleImageFiles(imageFiles);
-        }
-      }
-    },
-    [handleImageFiles]
-  );
-
-  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
-    accept: {
-      'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'],
-    },
-    maxSize: 5 * 1024 * 1024,
-    maxFiles: 5,
-    onDrop: handleImageFiles,
-    noClick: true,
-    noKeyboard: true,
+  const { handleSubmit, handleAbortSession } = useChatSubmit({
+    selectedProject,
+    selectedSession,
+    currentSessionId,
+    provider,
+    permissionMode,
+    cursorModel,
+    claudeModel,
+    codexModel,
+    geminiModel,
+    isLoading,
+    canAbortSession,
+    tokenBudget,
+    inputValueRef,
+    attachedImages,
+    slashCommands,
+    thinkingMode,
+    pendingViewSessionRef,
+    scrollToBottom,
+    setChatMessages,
+    setSessionMessages,
+    setIsLoading,
+    setCanAbortSession,
+    setClaudeStatus,
+    setIsUserScrolledUp,
+    setInput: setInputRef.current,
+    setAttachedImages: setAttachedImagesRef.current,
+    setUploadingImages: setUploadingImagesRef.current,
+    setImageErrors: setImageErrorsRef.current,
+    setIsTextareaExpanded: setIsTextareaExpandedRef.current,
+    setThinkingMode,
+    onSessionActive,
+    onSessionProcessing,
+    resetCommandMenuState: resetCommandMenuStateRef.current,
+    textareaRef,
+    sendMessage,
+    getToolsSettings,
   });
 
-  const handleSubmit = useCallback(
-    async (event: FormEvent<HTMLFormElement> | MouseEvent | TouchEvent | KeyboardEvent<HTMLTextAreaElement>) => {
-      event.preventDefault();
-      const currentInput = inputValueRef.current;
-      if (!currentInput.trim() || isLoading || !selectedProject) {
-        return;
-      }
-
-      // Intercept slash commands: if input starts with /commandName, execute as command with args
-      const trimmedInput = currentInput.trim();
-      if (trimmedInput.startsWith('/')) {
-        const firstSpace = trimmedInput.indexOf(' ');
-        const commandName = firstSpace > 0 ? trimmedInput.slice(0, firstSpace) : trimmedInput;
-        const matchedCommand = slashCommands.find((cmd: SlashCommand) => cmd.name === commandName);
-        if (matchedCommand) {
-          executeCommand(matchedCommand, trimmedInput);
-          setInput('');
-          inputValueRef.current = '';
-          setAttachedImages([]);
-          setUploadingImages(new Map());
-          setImageErrors(new Map());
-          resetCommandMenuState();
-          setIsTextareaExpanded(false);
-          if (textareaRef.current) {
-            textareaRef.current.style.height = 'auto';
-          }
-          return;
-        }
-      }
-
-      let messageContent = currentInput;
-      const selectedThinkingMode = thinkingModes.find(
-        (mode: { id: string; prefix?: string }) => mode.id === thinkingMode
-      );
-      if (selectedThinkingMode && selectedThinkingMode.prefix) {
-        messageContent = `${selectedThinkingMode.prefix}: ${currentInput}`;
-      }
-
-      let uploadedImages: unknown[] = [];
-      if (attachedImages.length > 0) {
-        const formData = new FormData();
-        attachedImages.forEach((file) => {
-          formData.append('images', file);
-        });
-
-        try {
-          const response = await authenticatedFetch(`/api/projects/${selectedProject.name}/upload-images`, {
-            method: 'POST',
-            headers: {},
-            body: formData,
-          });
-
-          if (!response.ok) {
-            throw new Error('Failed to upload images');
-          }
-
-          const result = await response.json();
-          // result.images 是字符串数组，需要转换为 ChatImage[] 格式
-          uploadedImages = (result.images || []) as string[];
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'Unknown error';
-          logger.error('Image upload failed', error);
-          setChatMessages((previous) => [
-            ...previous,
-            {
-              type: 'error',
-              content: `Failed to upload images: ${message}`,
-              timestamp: new Date(),
-            },
-          ]);
-          return;
-        }
-      }
-
-      // 将字符串数组转换为 ChatImage[] 格式
-      const chatImages: ChatImage[] = (uploadedImages as string[]).map((data, index) => ({
-        data,
-        name: `image-${index}`,
-      }));
-
-      const userMessage: ChatMessage = {
-        type: 'user',
-        content: currentInput,
-        images: chatImages,
-        timestamp: new Date(),
-      };
-
-      setChatMessages((previous) => [...previous, userMessage]);
-      setIsLoading(true); // Processing banner starts
-      setCanAbortSession(true);
-      setClaudeStatus({
-        text: 'Processing',
-        tokens: 0,
-        can_interrupt: true,
-      });
-
-      setIsUserScrolledUp(false);
-      setTimeout(() => scrollToBottom(), 100);
-
-      const effectiveSessionId = currentSessionId || selectedSession?.id || sessionStorage.getItem('cursorSessionId');
-      const sessionToActivate = effectiveSessionId || `new-session-${Date.now()}`;
-
-      if (!effectiveSessionId && !selectedSession?.id) {
-        if (typeof window !== 'undefined') {
-          // Reset stale pending IDs from previous interrupted runs before creating a new one.
-          sessionStorage.removeItem('pendingSessionId');
-        }
-        pendingViewSessionRef.current = { sessionId: null, startedAt: Date.now() };
-      }
-      onSessionActive?.(sessionToActivate);
-      if (effectiveSessionId && !isTemporarySessionId(effectiveSessionId)) {
-        onSessionProcessing?.(effectiveSessionId);
-      }
-
-      const getToolsSettings = () => {
-        try {
-          const settingsKey =
-            provider === 'cursor'
-              ? 'cursor-tools-settings'
-              : provider === 'codex'
-                ? 'codex-settings'
-                : provider === 'gemini'
-                  ? 'gemini-settings'
-                  : 'claude-settings';
-          const savedSettings = safeLocalStorage.getItem(settingsKey);
-          if (savedSettings) {
-            return JSON.parse(savedSettings);
-          }
-        } catch (error) {
-          logger.error('Error loading tools settings', error);
-        }
-
-        return {
-          allowedTools: [],
-          disallowedTools: [],
-          skipPermissions: false,
-        };
-      };
-
-      const toolsSettings = getToolsSettings();
-      const resolvedProjectPath = selectedProject.fullPath || selectedProject.path || '';
-
-      if (provider === 'cursor') {
-        sendMessage({
-          type: 'cursor-command',
-          command: messageContent,
-          sessionId: effectiveSessionId,
-          options: {
-            cwd: resolvedProjectPath,
-            projectPath: resolvedProjectPath,
-            sessionId: effectiveSessionId,
-            resume: Boolean(effectiveSessionId),
-            model: cursorModel,
-            skipPermissions: toolsSettings?.skipPermissions || false,
-            toolsSettings,
-          },
-        });
-      } else if (provider === 'codex') {
-        sendMessage({
-          type: 'codex-command',
-          command: messageContent,
-          sessionId: effectiveSessionId,
-          options: {
-            cwd: resolvedProjectPath,
-            projectPath: resolvedProjectPath,
-            sessionId: effectiveSessionId,
-            resume: Boolean(effectiveSessionId),
-            model: codexModel,
-            permissionMode: permissionMode === 'plan' ? 'default' : permissionMode,
-          },
-        });
-      } else if (provider === 'gemini') {
-        sendMessage({
-          type: 'gemini-command',
-          command: messageContent,
-          sessionId: effectiveSessionId,
-          options: {
-            cwd: resolvedProjectPath,
-            projectPath: resolvedProjectPath,
-            sessionId: effectiveSessionId,
-            resume: Boolean(effectiveSessionId),
-            model: geminiModel,
-            permissionMode,
-            toolsSettings,
-          },
-        });
-      } else {
-        sendMessage({
-          type: 'claude-command',
-          command: messageContent,
-          options: {
-            projectPath: resolvedProjectPath,
-            cwd: resolvedProjectPath,
-            sessionId: effectiveSessionId,
-            resume: Boolean(effectiveSessionId),
-            toolsSettings,
-            permissionMode,
-            model: claudeModel,
-            images: uploadedImages,
-          },
-        });
-      }
-
-      setInput('');
-      inputValueRef.current = '';
-      resetCommandMenuState();
-      setAttachedImages([]);
-      setUploadingImages(new Map());
-      setImageErrors(new Map());
-      setIsTextareaExpanded(false);
-      setThinkingMode('none');
-
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto';
-      }
-
-      safeLocalStorage.removeItem(`draft_input_${selectedProject.name}`);
-    },
-    [
-      attachedImages,
-      claudeModel,
-      codexModel,
-      currentSessionId,
-      cursorModel,
-      executeCommand,
-      geminiModel,
-      isLoading,
-      onSessionActive,
-      onSessionProcessing,
-      pendingViewSessionRef,
-      permissionMode,
-      provider,
-      resetCommandMenuState,
-      scrollToBottom,
-      selectedProject,
-      selectedSession?.id,
-      sendMessage,
-      setCanAbortSession,
-      setChatMessages,
-      setClaudeStatus,
-      setIsLoading,
-      setIsUserScrolledUp,
-      slashCommands,
-      thinkingMode,
-    ]
-  );
-
-  useEffect(() => {
-    handleSubmitRef.current = handleSubmit;
-  }, [handleSubmit]);
-
+  // Sync input value ref
   useEffect(() => {
     inputValueRef.current = input;
   }, [input]);
 
+  // 从 localStorage 恢复输入
   useEffect(() => {
     if (!selectedProject) {
       return;
@@ -767,6 +270,7 @@ export function useChatComposerState({
     });
   }, [selectedProject?.name]);
 
+  // 保存输入到 localStorage
   useEffect(() => {
     if (!selectedProject) {
       return;
@@ -778,11 +282,11 @@ export function useChatComposerState({
     }
   }, [input, selectedProject]);
 
+  // 自动调整 textarea 高度
   useEffect(() => {
     if (!textareaRef.current) {
       return;
     }
-    // Re-run when input changes so restored drafts get the same autosize behavior as typed text.
     textareaRef.current.style.height = 'auto';
     textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     const lineHeight = parseInt(window.getComputedStyle(textareaRef.current).lineHeight);
@@ -790,6 +294,7 @@ export function useChatComposerState({
     setIsTextareaExpanded(expanded);
   }, [input]);
 
+  // 清空时重置高度
   useEffect(() => {
     if (!textareaRef.current || input.trim()) {
       return;
@@ -797,6 +302,14 @@ export function useChatComposerState({
     textareaRef.current.style.height = 'auto';
     setIsTextareaExpanded(false);
   }, [input]);
+
+  const syncInputOverlayScroll = useCallback((target: HTMLTextAreaElement) => {
+    if (!inputHighlightRef.current || !target) {
+      return;
+    }
+    inputHighlightRef.current.scrollTop = target.scrollTop;
+    inputHighlightRef.current.scrollLeft = target.scrollLeft;
+  }, []);
 
   const handleInputChange = useCallback(
     (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -891,37 +404,6 @@ export function useChatComposerState({
     }
     setIsTextareaExpanded(false);
   }, [resetCommandMenuState]);
-
-  const handleAbortSession = useCallback(() => {
-    if (!canAbortSession) {
-      return;
-    }
-
-    const pendingSessionId = typeof window !== 'undefined' ? sessionStorage.getItem('pendingSessionId') : null;
-    const cursorSessionId = typeof window !== 'undefined' ? sessionStorage.getItem('cursorSessionId') : null;
-
-    const candidateSessionIds = [
-      currentSessionId,
-      pendingViewSessionRef.current?.sessionId || null,
-      pendingSessionId,
-      provider === 'cursor' ? cursorSessionId : null,
-      selectedSession?.id || null,
-    ];
-
-    const targetSessionId =
-      candidateSessionIds.find((sessionId) => Boolean(sessionId) && !isTemporarySessionId(sessionId)) || null;
-
-    if (!targetSessionId) {
-      logger.warn('Abort requested but no concrete session ID is available yet');
-      return;
-    }
-
-    sendMessage({
-      type: 'abort-session',
-      sessionId: targetSessionId,
-      provider,
-    });
-  }, [canAbortSession, currentSessionId, pendingViewSessionRef, provider, selectedSession?.id, sendMessage]);
 
   const handleTranscript = useCallback((text: string) => {
     if (!text.trim()) {
@@ -1023,13 +505,13 @@ export function useChatComposerState({
     renderInputWithMentions,
     selectFile,
     attachedImages,
-    setAttachedImages,
+    setAttachedImages: setAttachedImagesFromHook,
     uploadingImages,
     imageErrors,
     getRootProps,
     getInputProps,
     isDragActive,
-    openImagePicker: open,
+    openImagePicker,
     handleSubmit,
     handleInputChange,
     handleKeyDown,

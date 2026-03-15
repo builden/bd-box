@@ -1,1 +1,1 @@
-export { default } from '@/features/prd-editor/ui/pages/PRDEditor';
+export { default } from '@/features/prd-editor/ui/containers/PRDEditor';
