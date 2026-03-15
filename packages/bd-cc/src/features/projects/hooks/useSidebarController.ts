@@ -167,7 +167,7 @@ export function useSidebarController({
                 status: response.status,
                 fallbackValue: { data: [] },
               });
-              const sessions: Session[] = result?.data || [];
+              const sessions: Session[] = result?.data?.items || [];
               if (sessions.length > 0) {
                 const mappedSessions = sessions.map((session) => ({
                   id: session.id,
@@ -226,7 +226,7 @@ export function useSidebarController({
                 status: response.status,
                 fallbackValue: { data: [] },
               });
-              const sessions: Session[] = result?.data || [];
+              const sessions: Session[] = result?.data?.items || [];
               if (sessions.length > 0) {
                 const mappedSessions = sessions.map((session) => ({
                   id: session.id,
@@ -275,7 +275,7 @@ export function useSidebarController({
                   status: response.status,
                   fallbackValue: { data: [] },
                 });
-                const sessions: Session[] = result?.data || [];
+                const sessions: Session[] = result?.data?.items || [];
                 if (sessions.length > 0) {
                   const mappedSessions = sessions.map((session) => ({
                     id: session.id,
@@ -462,7 +462,7 @@ export function useSidebarController({
                 status: response.status,
                 fallbackValue: { data: [] },
               });
-              const sessions: Session[] = result?.data || [];
+              const sessions: Session[] = result?.data?.items || [];
               if (sessions.length > 0) {
                 const mappedSessions = sessions.map((session) => ({
                   id: session.id,
@@ -693,7 +693,7 @@ export function useSidebarController({
           status: response.status,
           fallbackValue: { data: [] },
         });
-        const sessions: Session[] = result?.data || [];
+        const sessions: Session[] = result?.data?.items || [];
         const mappedSessions = sessions.map((session) => ({
           id: session.id,
           name: session.customName || session.id,

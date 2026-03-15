@@ -1,5 +1,5 @@
 import { ExternalLink, KeyRound, X } from 'lucide-react';
-import StandaloneShell from '../../standalone-shell/view/StandaloneShell';
+import StandaloneShell from '@/features/standalone-shell/ui/pages/StandaloneShell';
 import { IS_PLATFORM } from '../../../constants/config';
 import type { CliProvider } from '../types';
 
