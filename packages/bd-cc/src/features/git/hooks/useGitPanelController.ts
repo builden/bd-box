@@ -16,7 +16,7 @@ import type {
   GitStatusResponse,
   UseGitPanelControllerOptions,
 } from '../types/types';
-import { getAllChangedFiles } from '@/features/git/biz/gitPanelUtils';
+import { getAllChangedFiles, isAbortError, readJsonResponse } from '@/features/git/biz/gitPanelUtils';
 import { useSelectedProvider } from './useSelectedProvider';
 import { createLogger } from '@/lib/logger';
 
@@ -25,23 +25,9 @@ const logger = createLogger('GitPanelController');
 // ! use authenticatedFetch directly. fetchWithAuth is redundant
 const fetchWithAuth = authenticatedFetch as (url: string, options?: RequestInit) => Promise<Response>;
 
-function isAbortError(error: unknown): boolean {
-  return error instanceof DOMException && error.name === 'AbortError';
-}
-
-async function readJson<T>(response: Response, signal?: AbortSignal): Promise<T> {
-  if (signal?.aborted) {
-    throw new DOMException('Request aborted', 'AbortError');
-  }
-
-  const data = (await response.json()) as T;
-
-  if (signal?.aborted) {
-    throw new DOMException('Request aborted', 'AbortError');
-  }
-
-  return data;
-}
+// 类型别名，保持向后兼容
+type ReadJson = <T>(response: Response, signal?: AbortSignal) => Promise<T>;
+const readJson = readJsonResponse as ReadJson;
 
 export function useGitPanelController({
   selectedProject,

@@ -3,12 +3,9 @@ import { useTranslation } from 'react-i18next';
 import JSZip from 'jszip';
 import { api } from '@/utils/api';
 import { copyTextToClipboard } from '@/utils/clipboard';
+import { INVALID_FILENAME_CHARS, RESERVED_NAMES } from '@/features/file-tree/biz/constants';
 import type { FileTreeNode } from '@/features/file-tree/types/types';
 import type { Project } from '../../../types/app';
-
-// Invalid filename characters
-const INVALID_FILENAME_CHARS = /[<>:"/\\|?*\x00-\x1f]/;
-const RESERVED_NAMES = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i;
 
 export type ToastMessage = {
   message: string;
