@@ -1,3 +1,4 @@
+import React, { memo, useCallback } from 'react';
 import { Check, ChevronDown, ChevronRight, Edit3, Folder, FolderOpen, Star, Trash2, X } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import { Button } from '@/shared/view/ui';
@@ -66,7 +67,7 @@ const getSessionCountDisplay = (
   return `${sessionCount}`;
 };
 
-export default function SidebarProjectItem({
+function SidebarProjectItem({
   project,
   selectedProject,
   selectedSession,
@@ -108,20 +109,19 @@ export default function SidebarProjectItem({
   const sessionCountLabel = `${sessionCountDisplay} session${sessions.length === 1 ? '' : 's'}`;
   const taskStatus = getTaskIndicatorStatus(project, mcpServerStatus);
 
-  const toggleProject = () => onToggleProject(project.name);
-  const toggleStarProject = () => onToggleStarProject(project.name);
+  const toggleProject = useCallback(() => onToggleProject(project.name), [onToggleProject, project.name]);
+  const toggleStarProject = useCallback(() => onToggleStarProject(project.name), [onToggleStarProject, project.name]);
 
-  const saveProjectName = () => {
+  const saveProjectName = useCallback(() => {
     onSaveProjectName(project.name);
-  };
+  }, [onSaveProjectName, project.name]);
 
-  const selectAndToggleProject = () => {
+  const selectAndToggleProject = useCallback(() => {
     if (selectedProject?.name !== project.name) {
       onProjectSelect(project);
     }
-
     toggleProject();
-  };
+  }, [selectedProject, project, onProjectSelect, toggleProject]);
 
   return (
     <div className={cn('md:space-y-1', isDeleting && 'opacity-50 pointer-events-none')}>
@@ -433,3 +433,5 @@ export default function SidebarProjectItem({
     </div>
   );
 }
+
+export default memo(SidebarProjectItem);

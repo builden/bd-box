@@ -1,3 +1,4 @@
+import React, { memo } from 'react';
 import { ChevronRight, Trash2 } from 'lucide-react';
 import type { FileStatusCode } from '@/features/git/types';
 import { getStatusBadgeClass, getStatusLabel } from '@/features/git/biz/gitPanelUtils';
@@ -18,7 +19,7 @@ type FileChangeItemProps = {
   onRequestFileAction: (filePath: string, status: FileStatusCode) => void;
 };
 
-export default function FileChangeItem({
+function FileChangeItem({
   filePath,
   status,
   isMobile,
@@ -37,7 +38,9 @@ export default function FileChangeItem({
 
   return (
     <div className="border-b border-border last:border-0">
-      <div className={`flex items-center transition-colors hover:bg-accent/50 ${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'}`}>
+      <div
+        className={`flex items-center transition-colors hover:bg-accent/50 ${isMobile ? 'px-2 py-1.5' : 'px-3 py-2'}`}
+      >
         <input
           type="checkbox"
           checked={isSelected}
@@ -55,7 +58,9 @@ export default function FileChangeItem({
             className={`cursor-pointer rounded p-0.5 hover:bg-accent ${isMobile ? 'mr-1' : 'mr-2'}`}
             title={isExpanded ? 'Collapse diff' : 'Expand diff'}
           >
-            <ChevronRight className={`h-3 w-3 transition-transform duration-200 ease-in-out ${isExpanded ? 'rotate-90' : 'rotate-0'}`} />
+            <ChevronRight
+              className={`h-3 w-3 transition-transform duration-200 ease-in-out ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
+            />
           </button>
 
           <span
@@ -95,12 +100,15 @@ export default function FileChangeItem({
       </div>
 
       <div
-        className={`duration-400 overflow-hidden bg-muted/50 transition-all ease-in-out ${isExpanded && diff ? 'max-h-[600px] translate-y-0 opacity-100' : 'max-h-0 -translate-y-1 opacity-0'
-          }`}
+        className={`duration-400 overflow-hidden bg-muted/50 transition-all ease-in-out ${
+          isExpanded && diff ? 'max-h-[600px] translate-y-0 opacity-100' : 'max-h-0 -translate-y-1 opacity-0'
+        }`}
       >
         <div className="flex items-center justify-between border-b border-border p-2">
           <span className="flex items-center gap-2">
-            <span className={`inline-flex h-5 w-5 items-center justify-center rounded border text-[10px] font-bold ${badgeClass}`}>
+            <span
+              className={`inline-flex h-5 w-5 items-center justify-center rounded border text-[10px] font-bold ${badgeClass}`}
+            >
               {status}
             </span>
             <span className="text-sm font-medium text-foreground">{statusLabel}</span>
@@ -126,3 +134,5 @@ export default function FileChangeItem({
     </div>
   );
 }
+
+export default memo(FileChangeItem);

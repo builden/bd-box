@@ -1,7 +1,7 @@
+import React, { memo } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import type { GitCommitSummary } from '@/features/git/types';
 import GitDiffViewer from '../parts/GitDiffViewer';
-
 
 type CommitHistoryItemProps = {
   commit: GitCommitSummary;
@@ -12,14 +12,7 @@ type CommitHistoryItemProps = {
   onToggle: () => void;
 };
 
-export default function CommitHistoryItem({
-  commit,
-  isExpanded,
-  diff,
-  isMobile,
-  wrapText,
-  onToggle,
-}: CommitHistoryItemProps) {
+function CommitHistoryItem({ commit, isExpanded, diff, isMobile, wrapText, onToggle }: CommitHistoryItemProps) {
   return (
     <div className="border-b border-border last:border-0">
       <button
@@ -51,9 +44,7 @@ export default function CommitHistoryItem({
       {isExpanded && diff && (
         <div className="bg-muted/50">
           <div className="max-h-96 overflow-y-auto p-2">
-            <div className="mb-2 font-mono text-sm text-muted-foreground">
-              {commit.stats}
-            </div>
+            <div className="mb-2 font-mono text-sm text-muted-foreground">{commit.stats}</div>
             <GitDiffViewer diff={diff} isMobile={isMobile} wrapText={wrapText} />
           </div>
         </div>
@@ -61,3 +52,5 @@ export default function CommitHistoryItem({
     </div>
   );
 }
+
+export default memo(CommitHistoryItem);

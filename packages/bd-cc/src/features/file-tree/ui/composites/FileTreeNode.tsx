@@ -1,4 +1,4 @@
-import type { ReactNode, RefObject } from 'react';
+import React, { memo, type ReactNode, type RefObject } from 'react';
 import { ChevronRight, Folder, FolderOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { FileTreeNode as FileTreeNodeType, FileTreeViewMode } from '@/features/file-tree/types/types';
@@ -59,7 +59,7 @@ function TreeItemIcon({ item, isOpen, renderFileIcon }: TreeItemIconProps) {
   return <span className="ml-[18px] flex flex-shrink-0 items-center">{renderFileIcon(item.name)}</span>;
 }
 
-export default function FileTreeNode({
+function FileTreeNode({
   item,
   level,
   viewMode,
@@ -234,3 +234,5 @@ export default function FileTreeNode({
     </div>
   );
 }
+
+export default memo(FileTreeNode);
