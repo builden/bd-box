@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ChangeEvent, Dispatch, FormEvent, KeyboardEvent, MouseEvent, SetStateAction, TouchEvent } from 'react';
+import type { ChangeEvent, Dispatch, FormEvent, KeyboardEvent, MouseEvent, SetStateAction } from 'react';
 import { safeLocalStorage } from '../biz/chatStorage';
 import { grantClaudeToolPermission } from '../biz/chatPermissions';
 import type { ChatMessage, PendingPermissionRequest, PermissionMode } from '../types';

@@ -1,7 +1,6 @@
 import type { ChatMessage } from '../types';
 import type { ProjectSession } from '@/types';
 import { safeLocalStorage } from './chatStorage';
-import { appendStreamingChunk, finalizeStreamingMessage } from './streaming';
 
 /**
  * 消息类型常量
