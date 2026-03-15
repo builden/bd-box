@@ -236,6 +236,136 @@ import { Project, PermissionMode } from '@/types';
 | 第一阶段 | 添加 @/ 路径别名             | ✅   |
 | 第二阶段 | 分析高频类型迁移必要性       | ✅   |
 
+## 服务端工具模块
+
+项目提供统一的服务端工具模块，位于 `server/utils/` 目录：
+
+### 验证模块 (`validation.ts`)
+
+使用 Zod 进行输入验证：
+
+```typescript
+import { emailSchema, gitBranchNameSchema, paginationSchema, validateFilePath } from './utils/validation';
+
+// 预定义 Schema
+emailSchema                    // 邮箱验证
+gitBranchNameSchema          // Git 分支名验证
+filePathSchema               // 文件路径验证（防路径遍历）
+paginationSchema             // 分页参数验证 { page, limit }
+
+// 验证函数
+validateEmail(email)         // 验证并解析 email
+validateBranchName(branch)   // 验证分支名
+validateFilePath(file, projectPath?) // 验证文件路径
+validateGitConfig(input)     // 验证 Git 配置
+```
+
+### 日期模块 (`date.ts`)
+
+使用 dayjs 进行日期处理：
+
+```typescript
+import { formatIso, formatLocal, formatRelative, dayjs, add, diff, toTimestamp, HOUR } from './utils/date';
+
+// 格式化
+formatIso(date?)             // ISO 格式
+formatLocal(date?, format?)  // 本地格式
+formatDate(date?)            // 仅日期 YYYY-MM-DD
+formatTime(date?)            // 仅时间 HH:mm:ss
+formatRelative(date?)        // 相对时间 "2小时前"
+
+// 计算
+add(date, amount, 'hour')    // 添加时间
+subtract(date, 1, 'day')    // 减去时间
+diff(date1, date2)          // 时间差(毫秒)
+isExpired(date)              // 是否过期
+toTimestamp(date?)          // 转毫秒时间戳
+
+// 常量
+HOUR = 60 * 60 * 1000
+DAY = 24 * HOUR
+```
+
+### 对象工具模块 (`objects.ts`)
+
+使用 radash 简化对象操作：
+
+```typescript
+import { debounce, throttle, deepMerge, extract, exclude, tryParseJson } from './utils/objects';
+
+// 函数工具
+debounce(fn, ms)            // 防抖
+throttle(fn, ms)            // 节流
+
+// 对象操作
+deepMerge(target, source1, source2)  // 深度合并
+extract(obj, ['a', 'b'])      // 提取字段
+exclude(obj, ['password'])   // 排除字段
+omit(obj, ['password'])       // 省略字段（radash）
+pick(obj, ['id', 'name'])    // 选择字段（radash）
+
+// JSON
+tryParseJson<T>(json, fallback)  // 安全 JSON 解析
+```
+
+### 日志模块 (`logger.ts`)
+
+统一日志记录：
+
+```typescript
+import { createLogger } from './utils/logger';
+
+const logger = createLogger('module-name');
+
+logger.info('message', { data })    // 信息日志
+logger.error('message', error, { data })  // 错误日志
+logger.warn('message', { data })    // 警告日志
+logger.debug('message', { data })   // 调试日志
+```
+
+### API 响应模块 (`api-response.ts`)
+
+统一 API 响应格式（遵循 RFC 7807/9457）：
+
+```typescript
+import { success, successList, error, badRequest, notFound } from './utils/api-response';
+
+// 成功响应
+success(res, data)                  // 200
+successList(res, items, { total, page, limit })  // 200 + 分页
+created(res, data)                 // 201
+noContent(res)                     // 204
+
+// 错误响应
+badRequest(res, message)           // 400
+unauthorized(res, message?)        // 401
+forbidden(res, message?)           // 403
+notFound(res, 'User')              // 404
+conflict(res, message)             // 409
+unprocessable(res, message, details) // 422
+serverError(res, message?)         // 500
+```
+
+### Spawn 模块 (`spawn.ts`)
+
+Bun 原生进程执行：
+
+```typescript
+import { runCommand, runCommandRaw, runCommandSync, $ } from './utils/spawn';
+
+// 执行命令（成功返回，失败抛错）
+const { stdout, stderr, code } = await runCommand('git', ['status']);
+
+// 执行命令（不抛错）
+const result = await runCommandRaw('git', ['status']);
+
+// 同步执行
+const syncResult = runCommandSync('git', ['log']);
+
+// 模板字符串方式
+const result = await $`git status`;
+```
+
 - **WebSocket**: 用于终端、聊天进度和会话更新的实时通信
 - **node-pty**: 终端仿真的 PTY
 

@@ -35,6 +35,3 @@ export type { SkillManifest, SkillInfo } from '../utils/skills/skill-loader';
 
 // Re-export from utils/git/git-loader
 export type { GitCloneOptions } from '../utils/git/git-loader';
-
-// Re-export from utils/validation
-export type { ErrorDetail, ErrorOptions } from '../utils/validation';
