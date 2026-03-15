@@ -295,3 +295,66 @@ cd packages/bd-cc && bun run dev
 
 - 引导他们在工作树中打开新会话
 - **必需子技能：** 新会话使用 builden-dev:executing-plans
+
+---
+
+## 执行状态（2026-03-15）
+
+### 已完成
+
+| 任务                   | 状态 | 说明                                   |
+| ---------------------- | ---- | -------------------------------------- |
+| 任务 1：创建目录结构   | ✅   | features/chat, projects, shell         |
+| 子任务 2.1：迁移 types | ✅   | features/chat/types.ts                 |
+| 子任务 2.2：迁移 biz   | ✅   | 9 个文件从 utils/ 迁移到 biz/          |
+| 子任务 2.3：迁移 hooks | ✅   | 6 个 hooks 迁移到 features/chat/hooks/ |
+| 子任务 2.4：迁移 UI    | ⚠️   | 暂停 - 依赖复杂                        |
+
+### 待后续完成
+
+1. **UI 组件迁移** - components/chat/view/ 下的组件依赖较多外部模块（llm-logo-provider, mic-button, quick-settings-panel 等），需要：
+   - 先提取公共依赖到 features/chat/ui/parts/
+   - 或保持现有 components/chat/ 结构，仅迁移业务逻辑
+
+2. **projects 模块迁移** - components/sidebar/ 目录
+
+3. **shell 模块迁移** - components/shell/ 目录
+
+4. **清理旧目录** - 确认迁移完成后删除 components/chat/utils/, components/chat/hooks/
+
+### 当前 features/chat 结构
+
+```
+features/chat/
+├── index.ts          # 模块导出
+├── types.ts          # 类型定义
+├── biz/              # 业务逻辑（9 个文件）
+│   ├── chatFormatting.ts
+│   ├── chatPermissions.ts
+│   ├── chatStorage.ts
+│   ├── constants.ts
+│   ├── index.ts
+│   ├── messageKeys.ts
+│   ├── messageTransforms.ts
+│   ├── sessionId.ts
+│   ├── streaming.ts
+│   └── thinkingModes.ts
+├── hooks/            # 功能 hooks（6 个文件）
+│   ├── useChatComposerState.ts
+│   ├── useChatProviderState.ts
+│   ├── useChatRealtimeHandlers.ts
+│   ├── useChatSessionState.ts
+│   ├── useFileMentions.tsx
+│   └── useSlashCommands.ts
+└── ui/               # UI 组件（待迁移，目前仍在 components/chat/）
+    ├── parts/
+    ├── composites/
+    ├── containers/
+    └── pages/
+```
+
+### 验证
+
+```bash
+bun test  # 835 pass ✅
+```
