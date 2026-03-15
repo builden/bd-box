@@ -1,4 +1,4 @@
-import type { CodeEditorFile } from '../../types/types';
+import type { CodeEditorFile } from '@/features/code-editor/types/types';
 
 type CodeEditorBinaryFileProps = {
   file: CodeEditorFile;

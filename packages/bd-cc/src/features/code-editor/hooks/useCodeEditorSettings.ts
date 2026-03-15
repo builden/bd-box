@@ -3,7 +3,7 @@ import {
   CODE_EDITOR_DEFAULTS,
   CODE_EDITOR_SETTINGS_CHANGED_EVENT,
   CODE_EDITOR_STORAGE_KEYS,
-} from '../constants/settings';
+} from '@/features/code-editor/biz/settings';
 
 const readTheme = () => {
   const savedTheme = localStorage.getItem(CODE_EDITOR_STORAGE_KEYS.theme);

@@ -1,4 +1,4 @@
-import { getEditorLoadingStyles } from '../../utils/editorStyles';
+import { getEditorLoadingStyles } from '@/features/code-editor/biz/editorStyles';
 
 type CodeEditorLoadingStateProps = {
   isDarkMode: boolean;

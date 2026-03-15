@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import type { MouseEvent, MutableRefObject } from 'react';
-import type { CodeEditorFile } from '../types/types';
+import type { CodeEditorFile } from '@/features/code-editor/types/types';
 import CodeEditor from './CodeEditor';
 
 type EditorSidebarProps = {

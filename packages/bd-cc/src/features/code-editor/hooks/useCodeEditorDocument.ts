@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../../../utils/api';
-import type { CodeEditorFile } from '../types/types';
-import { isBinaryFile } from '../utils/binaryFile';
+import type { CodeEditorFile } from '@/features/code-editor/types/types';
+import { isBinaryFile } from '@/features/code-editor/biz/binaryFile';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('useCodeEditorDocument');
