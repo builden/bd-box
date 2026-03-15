@@ -33,8 +33,5 @@ export type { WebSocketConnectionHandler, WebSocketRoutes } from '../utils/webso
 // Re-export from utils/skills/skill-loader
 export type { SkillManifest, SkillInfo } from '../utils/skills/skill-loader';
 
-// Re-export from utils/spawn-cli
-export type { SpawnCliOptions, SpawnCliResult } from '../utils/spawn-cli';
-
 // Re-export from utils/git/git-loader
 export type { GitCloneOptions } from '../utils/git/git-loader';

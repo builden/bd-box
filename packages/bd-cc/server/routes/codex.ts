@@ -5,7 +5,7 @@ import os from 'os';
 import TOML from '@iarna/toml';
 import { getCodexSessions, getCodexSessionMessages, deleteCodexSession } from '../project-service.ts';
 import { applyCustomSessionNames, sessionNamesDb } from '../database/index.ts';
-import { spawnCli, spawnCliOrThrow } from '../utils/spawn-cli';
+import { runCommandRaw } from '../utils/spawn';
 import { createLogger } from '../utils/logger';
 
 const router = express.Router();
@@ -93,7 +93,7 @@ router.delete('/sessions/:sessionId', async (req, res) => {
 
 router.get('/mcp/cli/list', async (req, res) => {
   try {
-    const { stdout, stderr, code } = await spawnCli('codex', { args: ['mcp', 'list'] });
+    const { stdout, stderr, code } = await runCommandRaw('codex', ['mcp', 'list']);
 
     if (code === 0) {
       res.json({ success: true, output: stdout, servers: parseCodexListOutput(stdout) });
@@ -135,7 +135,7 @@ router.post('/mcp/cli/add', async (req, res) => {
       cliArgs.push(...args);
     }
 
-    const { stdout, stderr, code } = await spawnCli('codex', { args: cliArgs });
+    const { stdout, stderr, code } = await runCommandRaw('codex', cliArgs);
 
     if (code === 0) {
       res.json({ success: true, output: stdout, message: `MCP server "${name}" added successfully` });
@@ -160,7 +160,7 @@ router.delete('/mcp/cli/remove/:name', async (req, res) => {
   try {
     const { name } = req.params;
 
-    const { stdout, stderr, code } = await spawnCli('codex', { args: ['mcp', 'remove', name] });
+    const { stdout, stderr, code } = await runCommandRaw('codex', ['mcp', 'remove', name]);
 
     if (code === 0) {
       res.json({ success: true, output: stdout, message: `MCP server "${name}" removed successfully` });
@@ -185,7 +185,7 @@ router.get('/mcp/cli/get/:name', async (req, res) => {
   try {
     const { name } = req.params;
 
-    const { stdout, stderr, code } = await spawnCli('codex', { args: ['mcp', 'get', name] });
+    const { stdout, stderr, code } = await runCommandRaw('codex', ['mcp', 'get', name]);
 
     if (code === 0) {
       res.json({ success: true, output: stdout, server: parseCodexGetOutput(stdout) });

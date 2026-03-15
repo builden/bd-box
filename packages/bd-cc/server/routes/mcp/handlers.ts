@@ -9,7 +9,7 @@ import { Router } from 'express';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
-import { spawnCli } from '../../utils/spawn-cli';
+import { runCommandRaw } from '../../utils/spawn';
 import { createLogger } from '../../utils/logger';
 import { buildServerFromConfig, parseClaudeListOutput, parseClaudeGetOutput } from './utils.js';
 import { success, badRequest, notFound, serverError, error } from '../../utils/api-response.js';
@@ -26,7 +26,7 @@ router.get('/cli/list', async (req, res) => {
   try {
     logger.info('Listing MCP servers using Claude CLI');
 
-    const { stdout, stderr, code } = await spawnCli('claude', { args: ['mcp', 'list'] });
+    const { stdout, stderr, code } = await runCommandRaw('claude', ['mcp', 'list']);
 
     if (code === 0) {
       return success(res, { success: true, output: stdout, servers: parseClaudeListOutput(stdout) });
@@ -93,7 +93,7 @@ router.post('/cli/add', async (req, res) => {
       logger.debug('Running in project directory:', projectPath);
     }
 
-    const { stdout, stderr, code } = await spawnCli('claude', { args: cliArgs, ...spawnOptions });
+    const { stdout, stderr, code } = await runCommandRaw('claude', cliArgs, { cwd: spawnOptions.cwd });
 
     if (code === 0) {
       return success(res, { success: true, output: stdout, message: `MCP server "${name}" added successfully` });
@@ -145,7 +145,7 @@ router.post('/cli/add-json', async (req, res) => {
       spawnOptions.cwd = projectPath;
     }
 
-    const { stdout, stderr, code } = await spawnCli('claude', { args: cliArgs, ...spawnOptions });
+    const { stdout, stderr, code } = await runCommandRaw('claude', cliArgs, { cwd: spawnOptions.cwd });
 
     if (code === 0) {
       return success(res, {
@@ -192,7 +192,7 @@ router.delete('/cli/remove/:name', async (req, res) => {
     }
     cliArgs.push(actualName);
 
-    const { stdout, stderr, code } = await spawnCli('claude', { args: cliArgs });
+    const { stdout, stderr, code } = await runCommandRaw('claude', cliArgs);
 
     if (code === 0) {
       return success(res, { success: true, output: stdout, message: `MCP server "${name}" removed successfully` });
@@ -216,7 +216,7 @@ router.get('/cli/get/:name', async (req, res) => {
 
     logger.info('Getting MCP server details:', name);
 
-    const { stdout, stderr, code } = await spawnCli('claude', { args: ['mcp', 'get', name] });
+    const { stdout, stderr, code } = await runCommandRaw('claude', ['mcp', 'get', name]);
 
     if (code === 0) {
       return success(res, { success: true, output: stdout, server: parseClaudeGetOutput(stdout) });
