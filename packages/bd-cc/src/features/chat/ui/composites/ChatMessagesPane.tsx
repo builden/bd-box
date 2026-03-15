@@ -246,11 +246,14 @@ export default function ChatMessagesPane({
 
           {visibleMessages.map((message, index) => {
             const prevMessage = index > 0 ? visibleMessages[index - 1] : null;
+            // 序号：最新消息 = totalMessages，最旧 = 1
+            const messageIndex = totalMessages - 1 - index;
             return (
               <MessageComponent
                 key={getMessageKey(message)}
                 message={message}
                 prevMessage={prevMessage}
+                messageIndex={messageIndex}
                 createDiff={createDiff}
                 onFileOpen={onFileOpen}
                 onShowSettings={onShowSettings}

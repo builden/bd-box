@@ -19,6 +19,7 @@ type DiffLine = {
 type MessageComponentProps = {
   message: ChatMessage;
   prevMessage: ChatMessage | null;
+  messageIndex: number;
   createDiff: (oldStr: string, newStr: string) => DiffLine[];
   onFileOpen?: (filePath: string, diffInfo?: unknown) => void;
   onShowSettings?: () => void;
@@ -37,6 +38,7 @@ const MessageComponent = memo(
   ({
     message,
     prevMessage,
+    messageIndex,
     createDiff,
     onFileOpen,
     onShowSettings,
@@ -135,8 +137,9 @@ const MessageComponent = memo(
                   ))}
                 </div>
               )}
-              <div className="mt-1 flex items-center justify-end gap-1 text-xs text-blue-100">
+              <div className="mt-1 flex items-center justify-end gap-2 text-xs text-blue-100">
                 {shouldShowUserCopyControl && <MessageCopyControl content={userCopyContent} messageType="user" />}
+                <span className="text-blue-200">#{messageIndex + 1}</span>
                 <span>{formattedTime}</span>
               </div>
             </div>
@@ -415,7 +418,12 @@ const MessageComponent = memo(
                   {shouldShowAssistantCopyControl && (
                     <MessageCopyControl content={assistantCopyContent} messageType="assistant" />
                   )}
-                  {!isGrouped && <span>{formattedTime}</span>}
+                  {!isGrouped && (
+                    <>
+                      <span className="text-gray-500">#{messageIndex + 1}</span>
+                      <span>{formattedTime}</span>
+                    </>
+                  )}
                 </div>
               )}
             </div>
