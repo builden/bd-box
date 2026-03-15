@@ -3,7 +3,7 @@ import { Plus, Terminal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { TaskMasterProject } from '../../types';
 import { cn } from '@/lib/utils';
-import Shell from '@/components/shell/view/Shell';
+import Shell from '@/features/shell/ui/pages/Shell';
 
 type TaskMasterSetupModalProps = {
   isOpen: boolean;

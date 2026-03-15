@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import SessionProviderLogo from '../../../llm-logo-provider/SessionProviderLogo';
+import SessionProviderLogo from '@/features/chat/ui/parts/ProviderLogos/SessionProviderLogo';
 import type { AppTab, Project, ProjectSession } from '../../../../types/app';
 import { usePlugins } from '@/store';
 

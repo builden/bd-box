@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-import ChatInterface from '../../chat/view/ChatInterface';
+import ChatInterface from '@/features/chat/ui/pages/ChatInterface';
 import FileTree from '../../file-tree/view/FileTree';
 import StandaloneShell from '../../standalone-shell/view/StandaloneShell';
 import GitPanel from '../../git-panel/view/GitPanel';

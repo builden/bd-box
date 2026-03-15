@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react';
-import SessionProviderLogo from '../../../llm-logo-provider/SessionProviderLogo';
+import SessionProviderLogo from '@/features/chat/ui/parts/ProviderLogos/SessionProviderLogo';
 import type { CliProvider, ProviderAuthStatus } from '../types';
 
 type AgentConnectionCardProps = {

@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
-import Sidebar from '../sidebar/view/Sidebar';
+import Sidebar from '@/features/projects/ui/pages/Sidebar';
 import MainContent from '../main-content/view/MainContent';
 import { useWebSocket } from '../../contexts/WebSocketContext';
 import { useDeviceSettings } from '../../hooks/useDeviceSettings';

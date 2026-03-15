@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import SessionProviderLogo from '@/components/llm-logo-provider/SessionProviderLogo';
+import SessionProviderLogo from '@/features/chat/ui/parts/ProviderLogos/SessionProviderLogo';
 import type { AgentProvider, AuthStatus } from '@/components/settings/types/types';
 
 type AgentListItemProps = {
