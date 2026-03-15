@@ -52,14 +52,16 @@ export type Session = z.infer<typeof SessionSchema>;
  * | meta.limit | number | 每页数量 |
  */
 export const SessionsListResponseSchema = z.object({
-  data: z.array(SessionSchema),
-  meta: z
-    .object({
-      total: z.number().optional(),
-      page: z.number().optional(),
-      limit: z.number().optional(),
-    })
-    .optional(),
+  data: z.object({
+    items: z.array(SessionSchema),
+    meta: z
+      .object({
+        total: z.number().optional(),
+        page: z.number().optional(),
+        limit: z.number().optional(),
+      })
+      .optional(),
+  }),
 });
 
 export type SessionsListResponse = z.infer<typeof SessionsListResponseSchema>;

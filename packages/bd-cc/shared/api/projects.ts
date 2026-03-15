@@ -54,17 +54,19 @@ export type Project = z.infer<typeof ProjectSchema>;
 /**
  * 项目列表响应
  *
- * 包装格式: { data: Project[], meta?: { total, page, limit } }
+ * 格式: { data: { items: Project[], meta?: { total, page, limit } } }
  */
 export const ProjectListResponseSchema = z.object({
-  data: z.array(ProjectSchema),
-  meta: z
-    .object({
-      total: z.number().optional(),
-      page: z.number().optional(),
-      limit: z.number().optional(),
-    })
-    .optional(),
+  data: z.object({
+    items: z.array(ProjectSchema),
+    meta: z
+      .object({
+        total: z.number().optional(),
+        page: z.number().optional(),
+        limit: z.number().optional(),
+      })
+      .optional(),
+  }),
 });
 
 export type ProjectListResponse = z.infer<typeof ProjectListResponseSchema>;

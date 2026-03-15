@@ -1,5 +1,5 @@
 import { IS_PLATFORM } from '../../../constants/config';
-import type { CliProvider, ProviderStatusMap } from './types';
+import type { CliProvider, ProviderStatusMap } from '@/features/onboarding/types/types';
 
 export const cliProviders: CliProvider[] = ['claude', 'cursor', 'codex', 'gemini'];
 

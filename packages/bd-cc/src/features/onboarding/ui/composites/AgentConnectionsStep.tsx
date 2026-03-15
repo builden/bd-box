@@ -1,4 +1,4 @@
-import type { CliProvider, ProviderStatusMap } from '../types';
+import type { CliProvider, ProviderStatusMap } from '@/features/onboarding/types/types';
 import AgentConnectionCard from './AgentConnectionCard';
 
 type AgentConnectionsStepProps = {

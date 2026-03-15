@@ -1,20 +1,20 @@
 import { Check, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { authenticatedFetch } from '../../../utils/api';
+import { authenticatedFetch } from '@/utils/api';
 
 const logger = createLogger('Onboarding');
-import ProviderLoginModal from '../../provider-auth/view/ProviderLoginModal';
-import AgentConnectionsStep from './subcomponents/AgentConnectionsStep';
-import GitConfigurationStep from './subcomponents/GitConfigurationStep';
-import OnboardingStepProgress from './subcomponents/OnboardingStepProgress';
-import type { CliProvider, ProviderStatusMap } from './types';
+import ProviderLoginModal from '@/components/provider-auth/view/ProviderLoginModal';
+import AgentConnectionsStep from '@/features/onboarding/ui/composites/AgentConnectionsStep';
+import GitConfigurationStep from '@/features/onboarding/ui/composites/GitConfigurationStep';
+import OnboardingStepProgress from '@/features/onboarding/ui/composites/OnboardingStepProgress';
+import type { CliProvider, ProviderStatusMap } from '@/features/onboarding/types/types';
 import {
   cliProviders,
   createInitialProviderStatuses,
   gitEmailPattern,
   readErrorMessageFromResponse,
   selectedProject,
-} from './utils';
+} from '@/features/onboarding/biz/utils';
 import { createLogger } from '@/lib/logger';
 
 type OnboardingProps = {

@@ -84,14 +84,14 @@ export function validateListResponse<T, F = unknown>(
   schema: z.ZodSchema<T>,
   data: unknown,
   options: ValidationOptions & { fallbackValue?: F }
-): { items: T[]; pagination?: { total: number; page: number; pageSize: number } } | F {
+): { items: T[]; meta?: { total?: number; page?: number; limit?: number } } | F {
   const listSchema = z.object({
     items: z.array(schema),
-    pagination: z
+    meta: z
       .object({
-        total: z.number(),
-        page: z.number(),
-        pageSize: z.number(),
+        total: z.number().optional(),
+        page: z.number().optional(),
+        limit: z.number().optional(),
       })
       .optional(),
   });
@@ -119,7 +119,7 @@ export function validateListResponse<T, F = unknown>(
 
   return {
     items: result.data.items,
-    pagination: result.data.pagination,
+    meta: result.data.meta,
   };
 }
 

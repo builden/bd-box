@@ -54,7 +54,7 @@ const expandWorkspacePath = (inputPath: string): string => {
 router.get('/api/projects', authenticateToken, async (req: Request, res: Response) => {
   try {
     const projects = await getProjects(null);
-    return success(res, projects);
+    return successList(res, projects);
   } catch (err) {
     return serverError(res, err instanceof Error ? err.message : String(err));
   }
@@ -65,7 +65,7 @@ router.get('/api/projects/:projectName/sessions', authenticateToken, async (req:
   try {
     const { limit = 5, offset = 0 } = req.query;
     const result = await getSessions(req.params.projectName, parseInt(String(limit)), parseInt(String(offset)));
-    return success(res, result);
+    return successList(res, result);
   } catch (err) {
     return serverError(res, err instanceof Error ? err.message : String(err));
   }

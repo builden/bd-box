@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react';
 import SessionProviderLogo from '@/features/chat/ui/parts/ProviderLogos/SessionProviderLogo';
-import type { CliProvider, ProviderAuthStatus } from '../types';
+import type { CliProvider, ProviderAuthStatus } from '@/features/onboarding/types/types';
 
 type AgentConnectionCardProps = {
   provider: CliProvider;
