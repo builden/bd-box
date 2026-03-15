@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
 import type { Project, ProjectSession } from '@/types/app';
 import Shell from '@/features/shell/ui/pages/Shell';
-import StandaloneShellEmptyState from '@/features/standalone-shell/ui/pages/subcomponents/StandaloneShellEmptyState';
-import StandaloneShellHeader from '@/features/standalone-shell/ui/pages/subcomponents/StandaloneShellHeader';
+import StandaloneShellEmptyState from '../parts/StandaloneShellEmptyState';
+import StandaloneShellHeader from '../parts/StandaloneShellHeader';
 
 type StandaloneShellProps = {
   project?: Project | null;
@@ -47,7 +47,7 @@ export default function StandaloneShell({
       setIsCompleted(true);
       onComplete?.(exitCode);
     },
-    [onComplete],
+    [onComplete]
   );
 
   if (!project) {
