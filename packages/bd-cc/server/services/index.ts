@@ -13,3 +13,4 @@ export * from './gemini-sessions';
 export * from './project-search';
 export * from './github';
 export * from './response-writer';
+export * from './project-watcher';
