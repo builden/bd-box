@@ -125,8 +125,8 @@ export { default as ChatPage } from './ui/pages/ChatPage';
 // hooks
 export { useChat } from './hooks/useChat';
 
-// operations
-export * from './operations';
+// biz
+export * from './biz';
 ```
 
 ### 步骤 3：提交
@@ -150,7 +150,7 @@ chat/
 ├── hooks/              # 可迁移 → features/chat/hooks/
 ├── tools/              # 可迁移 → features/chat/ui/parts/
 ├── types/              # 可迁移 → features/chat/types.ts
-├── utils/              # 可迁移 → features/chat/operations/
+├── utils/              # 可迁移 → features/chat/biz/
 └── view/               # 可迁移 → features/chat/ui/
 ```
 
@@ -215,7 +215,7 @@ git commit -m "refactor(chat): migrate to features structure"
 1. 创建 `features/projects/` 目录结构
 2. 迁移组件到 `ui/` 目录
 3. 迁移 hooks 到 `hooks/` 目录
-4. 迁移业务逻辑到 `operations/`
+4. 迁移业务逻辑到 `biz/`
 5. 更新导入路径
 6. 验证并提交
 
