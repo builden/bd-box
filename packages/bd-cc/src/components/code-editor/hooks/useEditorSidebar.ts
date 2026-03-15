@@ -9,11 +9,7 @@ type UseEditorSidebarOptions = {
   initialWidth?: number;
 };
 
-export const useEditorSidebar = ({
-  selectedProject,
-  isMobile,
-  initialWidth = 600,
-}: UseEditorSidebarOptions) => {
+export const useEditorSidebar = ({ selectedProject, isMobile, initialWidth = 600 }: UseEditorSidebarOptions) => {
   const [editingFile, setEditingFile] = useState<CodeEditorFile | null>(null);
   const [editorWidth, setEditorWidth] = useState(initialWidth);
   const [editorExpanded, setEditorExpanded] = useState(false);
@@ -22,7 +18,7 @@ export const useEditorSidebar = ({
   const resizeHandleRef = useRef<HTMLDivElement | null>(null);
 
   const handleFileOpen = useCallback(
-    (filePath: string, diffInfo: CodeEditorDiffInfo | null = null) => {
+    (filePath: string, diffInfo: unknown = null) => {
       const normalizedPath = filePath.replace(/\\/g, '/');
       const fileName = normalizedPath.split('/').pop() || filePath;
 
@@ -30,10 +26,10 @@ export const useEditorSidebar = ({
         name: fileName,
         path: filePath,
         projectName: selectedProject?.name,
-        diffInfo,
+        diffInfo: diffInfo as CodeEditorDiffInfo | null,
       });
     },
-    [selectedProject?.name],
+    [selectedProject?.name]
   );
 
   const handleCloseEditor = useCallback(() => {
@@ -56,7 +52,7 @@ export const useEditorSidebar = ({
       setIsResizing(true);
       event.preventDefault();
     },
-    [isMobile],
+    [isMobile]
   );
 
   useEffect(() => {
