@@ -16,6 +16,8 @@ import type { AppConfig } from './config';
 
 const logger = createLogger('server/bootstrap');
 
+import type { UpdateCallback } from '../services/project-watcher';
+
 export interface BootstrapOptions {
   port: number;
   host: string;
@@ -23,7 +25,7 @@ export interface BootstrapOptions {
   httpServer: HttpServer;
   wss: WSServer;
   config: AppConfig;
-  setupProjectsWatcher: () => Promise<void>;
+  setupProjectsWatcher: (onUpdate: UpdateCallback) => Promise<void>;
 }
 
 export interface BootstrapResult {
