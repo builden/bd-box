@@ -20,7 +20,7 @@ export function useCredentialsSettings({
 }: UseCredentialsSettingsArgs) {
   const [apiKeys, setApiKeys] = useState<ApiKeyItem[]>([]);
   const [githubCredentials, setGithubCredentials] = useState<
-    ReturnType<typeof CredentialsListResponseSchema.parse>['credentials']
+    ReturnType<typeof CredentialsListResponseSchema.parse>['items']
   >([]);
   const [loading, setLoading] = useState(true);
 
@@ -76,8 +76,8 @@ export function useCredentialsSettings({
         is_active: key.enabled,
       });
 
-      setApiKeys((apiKeysResult?.apiKeys || []).map(convertApiKey));
-      setGithubCredentials(credentialsResult?.credentials || []);
+      setApiKeys((apiKeysResult?.items || []).map(convertApiKey));
+      setGithubCredentials(credentialsResult?.items || []);
     } catch (error) {
       logger.error('Error fetching settings:', error);
     } finally {

@@ -10,15 +10,9 @@ import type {
   McpTestResult,
   ProjectSortOrder,
   SettingsMainTab,
-} from '../types/types';
+} from '@/components/settings/types/types';
 
-export const SETTINGS_MAIN_TABS: SettingsMainTab[] = [
-  'agents',
-  'appearance',
-  'git',
-  'api',
-  'tasks',
-];
+export const SETTINGS_MAIN_TABS: SettingsMainTab[] = ['agents', 'appearance', 'git', 'api', 'tasks'];
 
 export const AGENT_PROVIDERS: AgentProvider[] = ['claude', 'cursor', 'codex'];
 export const AGENT_CATEGORIES: AgentCategory[] = ['account', 'permissions', 'mcp'];
