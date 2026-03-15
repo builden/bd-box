@@ -7,7 +7,7 @@ import { atomWithQuery } from 'jotai-tanstack-query';
 import { api } from '@/utils/api';
 import { queryKeys } from '@/lib/query-keys';
 import { createLogger } from '@/lib/logger';
-import type { ExistingPrdFile } from '@/components/prd-editor/types';
+import type { ExistingPrdFile } from '@/features/prd-editor/types/types';
 
 const logger = createLogger('usePrdQuery');
 

@@ -9,7 +9,7 @@ import type { ReleaseInfo } from '@/types/sharedTypes';
 import type { InstallMode } from '@/hooks/useVersionCheck';
 import { normalizeProjectForSettings } from '@/features/projects/biz/sidebar-utils';
 import type { DeleteProjectConfirmation, SessionDeleteConfirmation, SettingsProject } from '@/features/projects/types';
-import ProjectCreationWizard from '@/components/project-creation-wizard';
+import ProjectCreationWizard from '@/features/project-creation';
 import Settings from '@/features/settings/ui/Settings';
 
 type SidebarModalsProps = {

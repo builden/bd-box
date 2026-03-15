@@ -165,9 +165,9 @@ export function useSidebarController({
               const result = validateResponse(SessionsListResponseSchema, json, {
                 endpoint: `/api/projects/${project.name}/sessions`,
                 status: response.status,
-                fallbackValue: { data: [] },
+                fallbackValue: { items: [] },
               });
-              const sessions: Session[] = result?.data?.items || [];
+              const sessions: Session[] = result?.items || [];
               if (sessions.length > 0) {
                 const mappedSessions = sessions.map((session) => ({
                   id: session.id,
@@ -224,9 +224,9 @@ export function useSidebarController({
               const result = validateResponse(SessionsListResponseSchema, json, {
                 endpoint: `/api/projects/${selectedProject.name}/sessions`,
                 status: response.status,
-                fallbackValue: { data: [] },
+                fallbackValue: { items: [] },
               });
-              const sessions: Session[] = result?.data?.items || [];
+              const sessions: Session[] = result?.items || [];
               if (sessions.length > 0) {
                 const mappedSessions = sessions.map((session) => ({
                   id: session.id,
@@ -273,9 +273,9 @@ export function useSidebarController({
                 const result = validateResponse(SessionsListResponseSchema, json, {
                   endpoint: `/api/projects/${project.name}/sessions`,
                   status: response.status,
-                  fallbackValue: { data: [] },
+                  fallbackValue: { items: [] },
                 });
-                const sessions: Session[] = result?.data?.items || [];
+                const sessions: Session[] = result?.items || [];
                 if (sessions.length > 0) {
                   const mappedSessions = sessions.map((session) => ({
                     id: session.id,
@@ -460,9 +460,9 @@ export function useSidebarController({
               const result = validateResponse(SessionsListResponseSchema, json, {
                 endpoint: `/api/projects/${projectName}/sessions`,
                 status: response.status,
-                fallbackValue: { data: [] },
+                fallbackValue: { items: [] },
               });
-              const sessions: Session[] = result?.data?.items || [];
+              const sessions: Session[] = result?.items || [];
               if (sessions.length > 0) {
                 const mappedSessions = sessions.map((session) => ({
                   id: session.id,
@@ -691,9 +691,9 @@ export function useSidebarController({
         const result = validateResponse(SessionsListResponseSchema, json, {
           endpoint: `/api/projects/${project.name}/sessions`,
           status: response.status,
-          fallbackValue: { data: [] },
+          fallbackValue: { items: [] },
         });
-        const sessions: Session[] = result?.data?.items || [];
+        const sessions: Session[] = result?.items || [];
         const mappedSessions = sessions.map((session) => ({
           id: session.id,
           name: session.customName || session.id,

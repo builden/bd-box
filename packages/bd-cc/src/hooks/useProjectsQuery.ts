@@ -40,11 +40,11 @@ const projectsAtom = atomWithQuery(() => ({
     const validated = validateResponse(ProjectListResponseSchema, json, {
       endpoint: '/api/projects',
       status: response.status,
-      fallbackValue: { data: [] },
+      fallbackValue: { items: [] },
     });
 
     // 返回 data 数组
-    return validated?.data || [];
+    return validated?.items || [];
   }),
   // 项目列表变化较慢，可以设置较长的 staleTime
   staleTime: 1000 * 60 * 5, // 5 minutes
@@ -79,11 +79,11 @@ function getSessionsAtom(projectName: string) {
           const result = validateResponse(SessionsListResponseSchema, json, {
             endpoint: `/api/projects/${projectName}/sessions`,
             status: response.status,
-            fallbackValue: { data: [] },
+            fallbackValue: { items: [] },
           });
 
           // 返回 data 数组
-          return result?.data || [];
+          return result?.items || [];
         }),
         // 会话数据相对稳定，设置较长的 staleTime
         staleTime: 1000 * 60 * 2, // 2 minutes

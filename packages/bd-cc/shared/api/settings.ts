@@ -21,7 +21,7 @@ export type ApiKey = z.infer<typeof ApiKeySchema>;
 
 /**
  * API Keys 列表响应
- * authenticatedFetch 完全展开 data 后格式: { apiKeys: [...] }
+ * authenticatedFetch 展开后格式: { apiKeys: [...] }
  */
 export const ApiKeysListResponseSchema = z.object({
   apiKeys: z.array(ApiKeySchema),

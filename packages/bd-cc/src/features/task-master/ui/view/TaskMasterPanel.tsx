@@ -4,7 +4,7 @@ import { usePrdRegistryQuery } from '@/hooks/usePrdQuery';
 import type { PrdFile, TaskMasterTask, TaskSelection } from '../types';
 import TaskBoard from './TaskBoard';
 import TaskDetailModal from './TaskDetailModal';
-import PRDEditor from '@/components/prd-editor';
+import PRDEditor from '@/features/prd-editor';
 
 type TaskMasterPanelProps = {
   isVisible: boolean;
