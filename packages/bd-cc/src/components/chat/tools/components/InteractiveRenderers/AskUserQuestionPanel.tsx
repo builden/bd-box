@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import type { PermissionPanelProps } from '../../configs/permissionPanelRegistry';
-import type { Question } from '../../../types/types';
+import type { Question } from '@/features/chat/types';
 
 export const AskUserQuestionPanel: React.FC<PermissionPanelProps> = ({
   request,

@@ -9,10 +9,10 @@ import {
   PROMPT_MIN_OPTIONS,
   PROMPT_OPTION_SCAN_LINES,
   SHELL_RESTART_DELAY_MS,
-} from '../constants/constants';
-import { useShellRuntime } from '../hooks/useShellRuntime';
-import { sendSocketMessage } from '../utils/socket';
-import { getSessionDisplayName } from '../utils/auth';
+} from '@/features/shell/biz/constants';
+import { useShellRuntime } from '@/features/shell/hooks/useShellRuntime';
+import { sendSocketMessage } from '@/features/shell/biz/socket';
+import { getSessionDisplayName } from '@/features/shell/biz/auth';
 import ShellConnectionOverlay from './subcomponents/ShellConnectionOverlay';
 import ShellEmptyState from './subcomponents/ShellEmptyState';
 import ShellHeader from './subcomponents/ShellHeader';

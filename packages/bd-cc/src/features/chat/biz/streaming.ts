@@ -4,7 +4,7 @@
  */
 
 import type { Dispatch, SetStateAction } from 'react';
-import type { ChatMessage } from '@/components/chat/types/types';
+import type { ChatMessage } from '@/features/chat/types';
 
 /**
  * Append a streaming chunk to the last assistant message or create a new one

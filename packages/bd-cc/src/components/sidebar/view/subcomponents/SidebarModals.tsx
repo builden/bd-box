@@ -7,8 +7,8 @@ import { VersionUpgradeModal } from '../../../version-upgrade';
 import type { Project } from '../../../../types/app';
 import type { ReleaseInfo } from '../../../../types/sharedTypes';
 import type { InstallMode } from '../../../../hooks/useVersionCheck';
-import { normalizeProjectForSettings } from '../../utils/utils';
-import type { DeleteProjectConfirmation, SessionDeleteConfirmation, SettingsProject } from '../../types/types';
+import { normalizeProjectForSettings } from '@/features/projects/biz/sidebar-utils';
+import type { DeleteProjectConfirmation, SessionDeleteConfirmation, SettingsProject } from '@/features/projects/types';
 import ProjectCreationWizard from '../../../project-creation-wizard';
 import Settings from '@/features/settings/ui/Settings';
 

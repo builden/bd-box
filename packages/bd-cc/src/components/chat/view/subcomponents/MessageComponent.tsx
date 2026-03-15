@@ -1,8 +1,8 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import SessionProviderLogo from '../../../llm-logo-provider/SessionProviderLogo';
-import type { ChatMessage, ClaudePermissionSuggestion, PermissionGrantResult, Provider } from '../../types/types';
-import { formatUsageLimitText } from '../../utils/chatFormatting';
+import type { ChatMessage, ClaudePermissionSuggestion, PermissionGrantResult, Provider } from '@/features/chat/types';
+import { formatUsageLimitText } from '@/features/chat/biz/chatFormatting';
 import { getClaudePermissionSuggestion } from '@/features/chat/biz/chatPermissions';
 import type { Project } from '../../../../types/app';
 import { ToolRenderer, shouldHideToolResult } from '../../tools';

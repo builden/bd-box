@@ -4,7 +4,7 @@ import type { TFunction } from 'i18next';
 import { ScrollArea } from '../../../../shared/view/ui';
 import type { Project } from '../../../../types/app';
 import type { ReleaseInfo } from '../../../../types/sharedTypes';
-import type { ConversationSearchResults, SearchProgress } from '../../hooks/useSidebarController';
+import type { ConversationSearchResults, SearchProgress } from '@/features/projects/hooks/useSidebarController';
 import SidebarFooter from './SidebarFooter';
 import SidebarHeader from './SidebarHeader';
 import SidebarProjectList, { type SidebarProjectListProps } from './SidebarProjectList';

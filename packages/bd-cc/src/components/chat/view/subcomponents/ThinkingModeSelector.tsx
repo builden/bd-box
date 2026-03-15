@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Brain, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { thinkingModes } from '../../constants/thinkingModes';
+import { thinkingModes } from '@/features/chat/biz/thinkingModes';
 
 type ThinkingModeSelectorProps = {
   selectedMode: string;

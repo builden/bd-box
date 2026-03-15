@@ -12,7 +12,7 @@ import type {
   TouchEvent,
 } from 'react';
 import MicButton from '../../../mic-button/view/MicButton';
-import type { PendingPermissionRequest, PermissionMode, Provider } from '../../types/types';
+import type { PendingPermissionRequest, PermissionMode, Provider } from '@/features/chat/types';
 import CommandMenu from './CommandMenu';
 import ClaudeStatus from './ClaudeStatus';
 import ImageAttachment from './ImageAttachment';

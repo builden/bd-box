@@ -5,7 +5,7 @@ import type {
   LoadingSessionsByProject,
   MCPServerStatus,
   SessionWithProvider,
-} from '../../types/types';
+} from '@/features/projects/types';
 import SidebarProjectItem from './SidebarProjectItem';
 import SidebarProjectsState from './SidebarProjectsState';
 

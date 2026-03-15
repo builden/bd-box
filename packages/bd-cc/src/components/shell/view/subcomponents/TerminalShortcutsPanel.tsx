@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Terminal } from '@xterm/xterm';
-import { sendSocketMessage } from '../../utils/socket';
+import { sendSocketMessage } from '@/features/shell/biz/socket';
 
 const SHORTCUTS = [
   { id: 'escape', labelKey: 'escape', sequence: '\x1b', hint: 'Esc' },

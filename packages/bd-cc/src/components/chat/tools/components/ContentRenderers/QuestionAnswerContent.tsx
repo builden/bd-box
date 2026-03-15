@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { Question } from '../../../types/types';
+import type { Question } from '@/features/chat/types';
 
 interface QuestionAnswerContentProps {
   questions: Question[];
