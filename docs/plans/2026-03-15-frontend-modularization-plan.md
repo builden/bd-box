@@ -358,3 +358,28 @@ features/chat/
 ```bash
 bun test  # 835 pass ✅
 ```
+
+---
+
+## 执行状态更新（继续迁移）
+
+### 已完成
+
+| 任务              | 状态 | 说明              |
+| ----------------- | ---- | ----------------- |
+| projects 模块迁移 | ✅   | types, biz, hooks |
+| shell 模块迁移    | ✅   | types, biz, hooks |
+
+### 当前 features 结构
+
+```
+features/
+├── chat/           # types + biz (10) + hooks (6)
+├── projects/      # types + biz (1) + hooks (1)
+└── shell/         # types + biz (4) + hooks (3)
+```
+
+### 待清理
+
+- 删除旧的 components/sidebar/utils/, components/sidebar/hooks/
+- 删除旧的 components/shell/utils/, components/shell/hooks/, components/shell/types/
