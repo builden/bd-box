@@ -27,7 +27,7 @@ import type {
   ProjectSortOrder,
   SettingsMainTab,
   SettingsProject,
-} from '../types/types';
+} from '@/components/settings/types/types';
 
 type ThemeContextValue = {
   isDarkMode: boolean;
@@ -752,7 +752,7 @@ export function useSettingsController({ isOpen, initialTab, projects }: UseSetti
 
   const updateCodeEditorSetting = useCallback(
     <K extends keyof CodeEditorSettingsState>(key: K, value: CodeEditorSettingsState[K]) => {
-      setCodeEditorSettings((prev) => ({ ...prev, [key]: value }));
+      setCodeEditorSettings((prev: CodeEditorSettingsState) => ({ ...prev, [key]: value }));
     },
     []
   );
