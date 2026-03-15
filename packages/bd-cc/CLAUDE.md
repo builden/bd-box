@@ -48,7 +48,7 @@ src/                          # React 前端
 ├── components/              # 通用 UI 组件
 │   ├── app/                # 应用外壳
 │   ├── auth/               # 认证
-│   ├── chat/               # 聊天（迁移到 features 后废弃）
+│   ├── chat/                   # 聊天功能（已完成迁移）
 │   └── ...
 ├── store/                   # 全局状态（Jotai）
 ├── hooks/                   # 通用 hooks
