@@ -1,6 +1,6 @@
 import { spawn } from 'child_process';
 import crossSpawn from 'cross-spawn';
-import { createLogger } from '../lib/logger.ts';
+import { createLogger } from '../utils/logger.ts';
 
 const logger = createLogger('provider/gemini');
 

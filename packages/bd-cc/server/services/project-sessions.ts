@@ -9,7 +9,7 @@ import path from 'path';
 import os from 'os';
 import sessionManager from '../sessionManager';
 import { loadProjectConfig } from './project-config';
-import { createLogger } from '../lib/logger';
+import { createLogger } from '../utils/logger';
 import type { Session } from '../../shared/api/sessions';
 
 const logger = createLogger('services/project-sessions');

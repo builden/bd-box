@@ -11,7 +11,7 @@ import crypto from 'crypto';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import { applyCustomSessionNames } from '../../database/index.ts';
-import { createLogger } from '../../lib/logger';
+import { createLogger } from '../../utils/logger';
 
 const router = Router();
 const logger = createLogger('cursor-sessions');

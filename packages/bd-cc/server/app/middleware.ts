@@ -7,7 +7,7 @@ import cors from 'cors';
 import express from 'express';
 import { validateApiKey, authenticateToken } from '../middleware/auth.js';
 import { IS_PLATFORM } from '../env.js';
-import { createLogger } from '../lib/logger';
+import { createLogger } from '../utils/logger';
 
 const logger = createLogger('middleware');
 

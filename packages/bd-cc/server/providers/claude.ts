@@ -18,7 +18,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 import { CLAUDE_MODELS } from '../../shared/modelConstants.ts';
-import { createLogger } from '../lib/logger.ts';
+import { createLogger } from '../utils/logger.ts';
 
 const logger = createLogger('provider/claude');
 

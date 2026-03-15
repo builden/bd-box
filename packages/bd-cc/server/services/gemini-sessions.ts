@@ -7,7 +7,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
-import { createLogger } from '../lib/logger';
+import { createLogger } from '../utils/logger';
 
 const logger = createLogger('services/gemini-sessions');
 

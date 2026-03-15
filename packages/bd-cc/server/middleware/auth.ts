@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { userDb, appConfigDb } from '../database/index.ts';
 import { IS_PLATFORM } from '../env.ts';
-import { createLogger } from '../lib/logger.ts';
+import { createLogger } from '../utils/logger.ts';
 
 const logger = createLogger('auth');
 

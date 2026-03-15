@@ -8,7 +8,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { promises as fsPromises } from 'fs';
-import { createLogger } from '../../lib/logger';
+import { createLogger } from '../../utils/logger';
 
 const router = Router();
 const logger = createLogger('routes/taskmasters/prd');

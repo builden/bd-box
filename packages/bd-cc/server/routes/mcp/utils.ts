@@ -3,7 +3,7 @@
  * Helper functions for MCP server management
  */
 
-import { createLogger } from '../../lib/logger.ts';
+import { createLogger } from '../../utils/logger.ts';
 
 const logger = createLogger('routes/mcp/utils');
 

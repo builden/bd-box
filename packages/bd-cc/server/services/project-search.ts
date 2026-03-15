@@ -9,7 +9,7 @@ import path from 'path';
 import os from 'os';
 import { getCodexSessions, getCodexSessionMessages } from './codex-sessions';
 import { getGeminiCliSessions, getGeminiCliSessionMessages } from './gemini-sessions';
-import { createLogger } from '../lib/logger';
+import { createLogger } from '../utils/logger';
 
 const logger = createLogger('services/project-search');
 

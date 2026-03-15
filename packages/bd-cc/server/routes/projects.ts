@@ -4,7 +4,7 @@ import path from 'path';
 import { spawn } from 'child_process';
 import os from 'os';
 import { addProjectManually } from '../project-service.ts';
-import { createLogger, logApiEntry, logApiExit, logUserAction } from '../lib/logger.ts';
+import { createLogger, logApiEntry, logApiExit, logUserAction } from '../utils/logger.ts';
 
 const router = express.Router();
 const logger = createLogger('projects');

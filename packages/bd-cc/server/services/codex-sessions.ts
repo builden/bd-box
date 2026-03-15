@@ -8,7 +8,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 import { isVisibleCodexUserMessage } from '../utils/project-utils';
-import { createLogger } from '../lib/logger';
+import { createLogger } from '../utils/logger';
 
 const logger = createLogger('services/codex-sessions');
 

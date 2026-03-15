@@ -7,7 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { createLogger } from './lib/logger';
+import { createLogger } from './utils/logger';
 import {
   VALID_PROVIDERS,
   PROVIDER_WATCH_PATHS,

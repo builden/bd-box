@@ -4,7 +4,7 @@
  */
 
 import { Server } from 'http';
-import { createLogger } from '../lib/logger';
+import { createLogger } from '../utils/logger';
 import { c } from './terminal-colors';
 import { PORT, HOST, DISPLAY_HOST } from '../constants/server';
 import { initializeDatabase } from '../database/db.ts';

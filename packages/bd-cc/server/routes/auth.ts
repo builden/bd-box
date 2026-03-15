@@ -9,7 +9,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import { userDb, db } from '../database/index.ts';
 import { generateToken, authenticateToken } from '../middleware/auth.ts';
-import { createLogger } from '../lib/logger.ts';
+import { createLogger } from '../utils/logger.ts';
 import { success, badRequest, forbidden, unauthorized, conflict, serverError, created } from '../utils/api-response.ts';
 
 const router = express.Router();

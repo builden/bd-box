@@ -7,7 +7,7 @@ import { Router } from 'express';
 import os from 'os';
 import path from 'path';
 import fs from 'fs';
-import { createLogger } from '../lib/logger.js';
+import { createLogger } from '../utils/logger.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const logger = createLogger('routes/media');

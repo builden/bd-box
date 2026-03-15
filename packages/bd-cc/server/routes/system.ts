@@ -11,7 +11,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { createLogger } from '../lib/logger.js';
+import { createLogger } from '../utils/logger.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { success, serverError } from '../utils/api-response.js';
 

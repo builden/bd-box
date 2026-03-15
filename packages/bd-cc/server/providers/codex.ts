@@ -14,7 +14,7 @@
  */
 
 import { Codex } from '@openai/codex-sdk';
-import { createLogger } from '../lib/logger.ts';
+import { createLogger } from '../utils/logger.ts';
 
 const logger = createLogger('provider/codex');
 

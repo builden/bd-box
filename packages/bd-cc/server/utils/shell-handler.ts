@@ -7,7 +7,7 @@ import type { WebSocket } from 'ws';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { createLogger } from '../lib/logger';
+import { createLogger } from '../utils/logger';
 import { WebSocketHandler } from '../../shared/utils/websocket';
 import { PTY_SESSION_TIMEOUT, SHELL_URL_PARSE_BUFFER_LIMIT } from '../constants/terminal';
 import {

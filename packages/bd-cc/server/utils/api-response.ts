@@ -10,7 +10,7 @@
 
 import { Request, Response } from 'express';
 import { ZodError } from 'zod';
-import { createLogger } from '../lib/logger';
+import { createLogger } from '../utils/logger';
 
 const logger = createLogger('utils/api-response');
 

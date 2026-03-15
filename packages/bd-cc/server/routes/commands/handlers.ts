@@ -8,7 +8,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 import matter from 'gray-matter';
-import { createLogger } from '../../lib/logger.ts';
+import { createLogger } from '../../utils/logger.ts';
 import { scanCommandsDirectory, builtInCommands, processCommandTemplate } from './utils.ts';
 
 const logger = createLogger('routes/commands/handlers');

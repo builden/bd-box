@@ -7,7 +7,7 @@ import * as ws from 'ws';
 import fs from 'fs';
 import { promises as fsPromises } from 'fs';
 import path from 'path';
-import { createLogger } from '../lib/logger';
+import { createLogger } from '../utils/logger';
 import { PROVIDER_WATCH_PATHS, WATCHER_IGNORED_PATTERNS, WATCHER_DEBOUNCE_MS } from '../constants/providers';
 import { clearProjectDirectoryCache } from '../project-service.ts';
 import { getProjects } from '../project-service.ts';

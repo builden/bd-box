@@ -15,7 +15,7 @@ import {
   uninstallPlugin,
 } from '../utils/plugins';
 import { startPluginServer, stopPluginServer, getPluginPort, isPluginRunning } from '../utils/plugins';
-import { createLogger } from '../lib/logger';
+import { createLogger } from '../utils/logger';
 
 const router = express.Router();
 const logger = createLogger('plugins');

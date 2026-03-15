@@ -6,7 +6,7 @@ import TOML from '@iarna/toml';
 import { getCodexSessions, getCodexSessionMessages, deleteCodexSession } from '../project-service.ts';
 import { applyCustomSessionNames, sessionNamesDb } from '../database/index.ts';
 import { spawnCli, spawnCliOrThrow } from '../utils/spawn-cli';
-import { createLogger } from '../lib/logger';
+import { createLogger } from '../utils/logger';
 
 const router = express.Router();
 const logger = createLogger('codex-routes');

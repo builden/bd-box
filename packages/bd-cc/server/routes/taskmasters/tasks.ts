@@ -10,7 +10,7 @@ import os from 'os';
 import { promises as fsPromises } from 'fs';
 import { extractProjectDirectory } from '../../project-service.ts';
 import { broadcastTaskMasterTasksUpdate } from '../../utils/taskmaster';
-import { createLogger } from '../../lib/logger';
+import { createLogger } from '../../utils/logger';
 
 const router = Router();
 const logger = createLogger('routes/taskmasters/tasks');

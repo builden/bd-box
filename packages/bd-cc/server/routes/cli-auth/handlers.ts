@@ -8,7 +8,7 @@
 import { Router } from 'express';
 import { checkClaudeCredentials, checkCursorStatus, checkCodexCredentials, checkGeminiCredentials } from './utils.js';
 import { success, serverError } from '../../utils/api-response.js';
-import { createLogger } from '../../lib/logger';
+import { createLogger } from '../../utils/logger';
 
 const router = Router();
 const logger = createLogger('cli-auth-handlers');

@@ -6,7 +6,7 @@
 import { Router } from 'express';
 import fs from 'fs';
 import path from 'path';
-import { createLogger } from '../../lib/logger.js';
+import { createLogger } from '../../utils/logger.js';
 import { authenticateToken } from '../../middleware/auth.js';
 import { extractProjectDirectory } from '../../services/project-discovery.js';
 import { validatePathInProject, validateFilename, getFileTree } from './utils.js';

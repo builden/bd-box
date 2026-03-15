@@ -3,7 +3,7 @@ import { spawn } from 'child_process';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
-import { createLogger } from '../lib/logger';
+import { createLogger } from '../utils/logger';
 
 const router = express.Router();
 const logger = createLogger('cli-auth');

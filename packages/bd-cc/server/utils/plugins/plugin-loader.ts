@@ -14,7 +14,7 @@ import {
   npmInstall,
   mkTempDir,
 } from '../git';
-import { createLogger } from '../../lib/logger';
+import { createLogger } from '../../utils/logger';
 
 const logger = createLogger('utils/plugin-loader');
 

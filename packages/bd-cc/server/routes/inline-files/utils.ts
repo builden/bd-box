@@ -5,7 +5,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { createLogger } from '../../lib/logger.js';
+import { createLogger } from '../../utils/logger.js';
 
 const logger = createLogger('routes/inline-files/utils');
 

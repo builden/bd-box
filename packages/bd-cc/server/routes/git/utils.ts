@@ -13,7 +13,7 @@ import {
   resolveRepositoryFilePath,
   getCurrentBranchName,
 } from '../../utils/git';
-import { createLogger } from '../../lib/logger';
+import { createLogger } from '../../utils/logger';
 
 const logger = createLogger('git/routes');
 

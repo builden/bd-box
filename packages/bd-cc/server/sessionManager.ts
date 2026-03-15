@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import { debounce } from 'radash';
 import path from 'path';
 import os from 'os';
-import { createLogger } from './lib/logger.ts';
+import { createLogger } from './utils/logger.ts';
 
 const logger = createLogger('sessionManager');
 

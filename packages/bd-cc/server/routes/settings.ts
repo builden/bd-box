@@ -7,7 +7,7 @@
 
 import express from 'express';
 import { apiKeysDb, credentialsDb } from '../database/index.ts';
-import { createLogger } from '../lib/logger.ts';
+import { createLogger } from '../utils/logger.ts';
 import { success, badRequest, notFound, serverError, created } from '../utils/api-response.ts';
 
 const router = express.Router();

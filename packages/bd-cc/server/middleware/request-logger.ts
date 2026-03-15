@@ -4,7 +4,7 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { createLogger } from '../lib/logger.js';
+import { createLogger } from '../utils/logger.js';
 
 const logger = createLogger('middleware/request-logger');
 

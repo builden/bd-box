@@ -33,7 +33,7 @@ import path from 'path';
 import os from 'os';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { createLogger } from './lib/logger';
+import { createLogger } from './utils/logger';
 
 const logger = createLogger('cli');
 

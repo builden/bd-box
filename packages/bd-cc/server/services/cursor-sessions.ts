@@ -10,7 +10,7 @@ import crypto from 'crypto';
 import sqlite3 from 'sqlite3';
 import { open, Database } from 'sqlite';
 import os from 'os';
-import { createLogger } from '../lib/logger';
+import { createLogger } from '../utils/logger';
 
 const logger = createLogger('services/cursor-sessions');
 

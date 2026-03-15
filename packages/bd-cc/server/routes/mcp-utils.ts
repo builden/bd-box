@@ -8,7 +8,7 @@
 
 import express from 'express';
 import { detectTaskMasterMCPServer, getAllMCPServers } from '../utils/mcp';
-import { createLogger } from '../lib/logger';
+import { createLogger } from '../utils/logger';
 
 const router = express.Router();
 const logger = createLogger('mcp-utils');

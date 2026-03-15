@@ -8,7 +8,7 @@
  */
 
 import { Router } from 'express';
-import { createLogger } from '../../lib/logger.js';
+import { createLogger } from '../../utils/logger.js';
 import { authenticateToken } from '../../middleware/auth.js';
 import { initializeDatabase, sessionNamesDb } from '../../database/db.js';
 

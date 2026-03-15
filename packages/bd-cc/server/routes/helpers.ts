@@ -4,7 +4,7 @@
  */
 
 import type { Response } from 'express';
-import { createLogger } from '../lib/logger.js';
+import { createLogger } from '../utils/logger.js';
 
 const logger = createLogger('routes/helpers');
 

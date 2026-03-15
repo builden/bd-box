@@ -6,7 +6,7 @@
 import express, { Router } from 'express';
 import { userDb, apiKeysDb } from '../../database/index.ts';
 import { IS_PLATFORM } from '../../env.ts';
-import { createLogger } from '../../lib/logger.ts';
+import { createLogger } from '../../utils/logger.ts';
 import handlers from './handlers.ts';
 
 const logger = createLogger('routes/agent');

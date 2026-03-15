@@ -11,7 +11,7 @@ import { authenticateToken } from '../middleware/auth.ts';
 import { getSystemGitConfig } from '../utils/git';
 import { runCommand } from '../utils/spawn.ts';
 import { validateGitConfig } from '../utils/validation.ts';
-import { createLogger, logApiEntry, logApiExit, logUserAction } from '../lib/logger.ts';
+import { createLogger, logApiEntry, logApiExit, logUserAction } from '../utils/logger.ts';
 import { success, badRequest, serverError } from '../utils/api-response.ts';
 
 const router = express.Router();

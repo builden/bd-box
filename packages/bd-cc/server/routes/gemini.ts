@@ -2,7 +2,7 @@ import express from 'express';
 import sessionManager from '../sessionManager.ts';
 import { sessionNamesDb } from '../database/index.ts';
 import { getGeminiCliSessionMessages } from '../project-service.ts';
-import { createLogger } from '../lib/logger';
+import { createLogger } from '../utils/logger';
 
 const router = express.Router();
 const logger = createLogger('gemini-routes');

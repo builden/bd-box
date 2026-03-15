@@ -4,7 +4,7 @@
  */
 
 import type { WebSocket } from 'ws';
-import { createLogger } from '../lib/logger';
+import { createLogger } from '../utils/logger';
 import { WebSocketHandler } from '../../shared/utils/websocket';
 import {
   queryClaudeSDK,

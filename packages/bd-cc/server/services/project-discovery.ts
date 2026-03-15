@@ -11,7 +11,7 @@ import os from 'os';
 import { normalizeComparablePath } from '../utils/project-utils';
 import { detectTaskMasterFolder } from '../utils/taskmaster';
 import { loadProjectConfig, saveProjectConfig } from './project-config';
-import { createLogger } from '../lib/logger';
+import { createLogger } from '../utils/logger';
 import type { Project } from '../../shared/api/projects';
 
 const logger = createLogger('services/project-discovery');

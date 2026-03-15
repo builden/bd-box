@@ -5,7 +5,7 @@
 
 import { WebSocketServer, WebSocket } from 'ws';
 import { Server } from 'http';
-import { createLogger } from '../lib/logger';
+import { createLogger } from '../utils/logger';
 import { authenticateWebSocket } from '../middleware/auth.ts';
 import { IS_PLATFORM } from '../env.ts';
 
