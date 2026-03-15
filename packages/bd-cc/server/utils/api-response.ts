@@ -11,6 +11,7 @@
 import { Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { createLogger } from '../utils/logger';
+import { formatIso, toTimestamp, HOUR } from '../utils/date';
 
 const logger = createLogger('utils/api-response');
 
@@ -21,10 +22,10 @@ const requestIdMap = new Map<string, number>();
  * 生成请求 ID
  */
 export function generateRequestId(): string {
-  const id = `req_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
-  requestIdMap.set(id, Date.now());
+  const id = `req_${toTimestamp()}_${Math.random().toString(36).slice(2, 11)}`;
+  requestIdMap.set(id, toTimestamp());
   // 清理过期的请求 ID (1小时后)
-  const oneHourAgo = Date.now() - 3600000;
+  const oneHourAgo = toTimestamp() - HOUR;
   for (const [key, timestamp] of requestIdMap.entries()) {
     if (timestamp < oneHourAgo) {
       requestIdMap.delete(key);
@@ -122,7 +123,7 @@ export function error(res: Response, options: ErrorOptions): Response {
       message,
       locale: 'zh-CN',
       request_id: requestId,
-      timestamp: new Date().toISOString(),
+      timestamp: formatIso(),
     },
   };
 

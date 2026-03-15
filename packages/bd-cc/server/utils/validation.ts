@@ -34,6 +34,7 @@ export const gitConfigSchema = z.object({
 // ============================================================================
 export const filePathSchema = z
   .string()
+  .min(1, 'File path is required')
   .refine((file) => !file.includes('\0'), { message: 'Invalid file path: contains null byte' });
 
 // ============================================================================
@@ -82,17 +83,6 @@ export function validateFilePath(file: unknown, projectPath?: string): string {
  */
 export function validateGitConfig(input: unknown) {
   return gitConfigSchema.parse(input);
-}
-
-/**
- * 安全解析 JSON（带默认值）
- */
-export function safeJsonParse<T>(json: string, fallback: T): T {
-  try {
-    return JSON.parse(json) as T;
-  } catch {
-    return fallback;
-  }
 }
 
 /**
