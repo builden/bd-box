@@ -16,7 +16,7 @@ import { spawnCursor } from '../../providers/cursor.ts';
 import { queryCodex } from '../../providers/codex.ts';
 import { spawnGemini } from '../../providers/gemini.ts';
 import { CODEX_MODELS } from '../../../shared/modelConstants.ts';
-import { createLogger } from '../../lib/logger.ts';
+import { createLogger } from '../../utils/logger';
 import {
   normalizeGitHubUrl,
   parseGitHubUrl,
@@ -30,7 +30,7 @@ import {
   cleanupProject,
   SSEStreamWriter,
   ResponseCollector,
-} from './utils.ts';
+} from '../../services/index';
 
 const logger = createLogger('routes/agent/handlers');
 
