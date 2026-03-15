@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronRight, Info } from 'lucide-react';
 import { useState } from 'react';
-import { getStatusBadgeClass } from '../../utils/gitPanelUtils';
+import { getStatusBadgeClass } from '@/features/git/biz/gitPanelUtils';
 
 type FileStatusLegendProps = {
   isMobile: boolean;

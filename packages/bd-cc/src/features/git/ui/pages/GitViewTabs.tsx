@@ -1,5 +1,5 @@
 import { FileText, History } from 'lucide-react';
-import type { GitPanelView } from '../types/types';
+import type { GitPanelView } from '@/features/git/types';
 
 type GitViewTabsProps = {
   activeView: GitPanelView;

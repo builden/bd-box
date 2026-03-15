@@ -1,7 +1,7 @@
 import { ChevronRight, Trash2 } from 'lucide-react';
-import type { FileStatusCode } from '../../types/types';
-import { getStatusBadgeClass, getStatusLabel } from '../../utils/gitPanelUtils';
-import GitDiffViewer from '../shared/GitDiffViewer';
+import type { FileStatusCode } from '@/features/git/types';
+import { getStatusBadgeClass, getStatusLabel } from '@/features/git/biz/gitPanelUtils';
+import GitDiffViewer from '../parts/GitDiffViewer';
 
 type FileChangeItemProps = {
   filePath: string;

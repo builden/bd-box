@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import type { GitCommitSummary } from '../../types/types';
-import GitDiffViewer from '../shared/GitDiffViewer';
+import type { GitCommitSummary } from '@/features/git/types';
+import GitDiffViewer from '../parts/GitDiffViewer';
 
 
 type CommitHistoryItemProps = {

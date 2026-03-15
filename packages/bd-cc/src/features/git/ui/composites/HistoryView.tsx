@@ -1,6 +1,6 @@
 import { History, RefreshCw } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import type { GitDiffMap, GitCommitSummary } from '../../types/types';
+import type { GitDiffMap, GitCommitSummary } from '@/features/git/types';
 import CommitHistoryItem from './CommitHistoryItem';
 import { createLogger } from '@/lib/logger';
 

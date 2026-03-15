@@ -1,5 +1,5 @@
-import { FILE_STATUS_GROUPS } from '../../constants/constants';
-import type { FileStatusCode, GitDiffMap, GitStatusResponse } from '../../types/types';
+import { FILE_STATUS_GROUPS } from '@/features/git/biz/constants';
+import type { FileStatusCode, GitDiffMap, GitStatusResponse } from '@/features/git/types';
 import FileChangeItem from './FileChangeItem';
 
 type FileChangeListProps = {

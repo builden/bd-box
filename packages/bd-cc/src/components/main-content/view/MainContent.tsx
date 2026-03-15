@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import ChatInterface from '@/features/chat/ui/pages/ChatInterface';
 import FileTree from '../../file-tree/view/FileTree';
 import StandaloneShell from '../../standalone-shell/view/StandaloneShell';
-import GitPanel from '../../git-panel/view/GitPanel';
+import GitPanel from '@/features/git/ui/pages/GitPanel';
 import PluginTabContent from '../../../features/plugins/ui/PluginTabContent';
 import type { MainContentProps } from '../types/types';
 import { useTaskMaster } from '../../../contexts/TaskMasterContext';

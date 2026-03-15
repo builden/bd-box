@@ -51,10 +51,10 @@ async function processJsonResponse(
     }
   }
 
-  // 成功响应: 展开 data 字段 (遵循 api.md 规范)
+  // 成功响应: 完全展开 data 字段 (遵循 api.md 规范)
+  // 后端返回 { data: {...} }，展开后直接返回 data 内部内容
   if (response.ok && jsonData && typeof jsonData === 'object' && 'data' in jsonData) {
-    const { data, meta, ...rest } = jsonData as { data: unknown; meta?: unknown; [key: string]: unknown };
-    return { data, meta, ...rest };
+    return (jsonData as { data: unknown }).data;
   }
 
   return jsonData;

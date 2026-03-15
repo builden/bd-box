@@ -21,7 +21,7 @@ export type ApiKey = z.infer<typeof ApiKeySchema>;
 
 /**
  * API Keys 列表响应
- * authenticatedFetch 已展开 data 层，格式: { apiKeys: [...] }
+ * authenticatedFetch 完全展开 data 后格式: { apiKeys: [...] }
  */
 export const ApiKeysListResponseSchema = z.object({
   apiKeys: z.array(ApiKeySchema),
@@ -68,7 +68,7 @@ export type Credential = z.infer<typeof CredentialSchema>;
 
 /**
  * 凭证列表响应
- * authenticatedFetch 已展开 data 层，格式: { credentials: [...] }
+ * authenticatedFetch 完全展开 data 后格式: { credentials: [...] }
  */
 export const CredentialsListResponseSchema = z.object({
   credentials: z.array(CredentialSchema),

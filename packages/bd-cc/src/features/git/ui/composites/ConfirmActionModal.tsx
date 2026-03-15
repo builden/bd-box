@@ -5,8 +5,8 @@ import {
   CONFIRMATION_BUTTON_CLASSES,
   CONFIRMATION_ICON_CONTAINER_CLASSES,
   CONFIRMATION_TITLES,
-} from '../../constants/constants';
-import type { ConfirmationRequest } from '../../types/types';
+} from '@/features/git/biz/constants';
+import type { ConfirmationRequest } from '@/features/git/types';
 
 type ConfirmActionModalProps = {
   action: ConfirmationRequest | null;

@@ -1,7 +1,7 @@
 import { Check, ChevronDown, Download, GitBranch, Plus, RefreshCw, RotateCcw, Upload } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import type { ConfirmationRequest, GitRemoteStatus } from '../types/types';
-import NewBranchModal from './modals/NewBranchModal';
+import type { ConfirmationRequest, GitRemoteStatus } from '@/features/git/types';
+import NewBranchModal from '@/features/git/ui/composites/NewBranchModal';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('GitPanelHeader');

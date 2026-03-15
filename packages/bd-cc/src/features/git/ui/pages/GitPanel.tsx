@@ -1,13 +1,13 @@
 import { useCallback, useState } from 'react';
-import { useGitPanelController } from '../hooks/useGitPanelController';
-import { useRevertLocalCommit } from '../hooks/useRevertLocalCommit';
-import type { ConfirmationRequest, GitPanelProps, GitPanelView } from '../types/types';
-import ChangesView from '../view/changes/ChangesView';
-import HistoryView from '../view/history/HistoryView';
-import GitPanelHeader from '../view/GitPanelHeader';
-import GitRepositoryErrorState from '../view/GitRepositoryErrorState';
-import GitViewTabs from '../view/GitViewTabs';
-import ConfirmActionModal from '../view/modals/ConfirmActionModal';
+import { useGitPanelController } from '@/features/git/hooks/useGitPanelController';
+import { useRevertLocalCommit } from '@/features/git/hooks/useRevertLocalCommit';
+import type { ConfirmationRequest, GitPanelProps, GitPanelView } from '@/features/git/types';
+import ChangesView from '@/features/git/ui/composites/ChangesView';
+import HistoryView from '@/features/git/ui/composites/HistoryView';
+import GitPanelHeader from '@/features/git/ui/pages/GitPanelHeader';
+import GitRepositoryErrorState from '@/features/git/ui/pages/GitRepositoryErrorState';
+import GitViewTabs from '@/features/git/ui/pages/GitViewTabs';
+import ConfirmActionModal from '@/features/git/ui/composites/ConfirmActionModal';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('GitPanel');

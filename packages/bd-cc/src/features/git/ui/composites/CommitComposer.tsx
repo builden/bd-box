@@ -1,7 +1,7 @@
 import { Check, ChevronDown, GitCommit, RefreshCw, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import MicButton from '@/features/chat/ui/parts/MicButton/view/MicButton';
-import type { ConfirmationRequest } from '../../types/types';
+import type { ConfirmationRequest } from '@/features/git/types';
 
 // Persists commit messages across unmount/remount, keyed by project path
 const commitMessageCache = new Map<string, string>();

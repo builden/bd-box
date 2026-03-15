@@ -1,4 +1,4 @@
-import { FILE_STATUS_BADGE_CLASSES, FILE_STATUS_GROUPS, FILE_STATUS_LABELS } from '../constants/constants';
+import { FILE_STATUS_BADGE_CLASSES, FILE_STATUS_GROUPS, FILE_STATUS_LABELS } from '@/features/git/biz/constants';
 import type { FileStatusCode, GitStatusResponse } from '../types/types';
 
 export function getAllChangedFiles(gitStatus: GitStatusResponse | null): string[] {
