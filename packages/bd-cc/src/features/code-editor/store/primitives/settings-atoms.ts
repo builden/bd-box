@@ -54,5 +54,5 @@ export const isShowLineNumbersAtom = atom((get) => get(editorLineNumbersAtom) ==
 const DEFAULT_FONT_SIZE = 12;
 export const fontSizeValueAtom = atom<number>((get) => {
   const value = Number(get(editorFontSizeAtom));
-  return value || DEFAULT_FONT_SIZE;
+  return value || (DEFAULT_FONT_SIZE as number);
 });

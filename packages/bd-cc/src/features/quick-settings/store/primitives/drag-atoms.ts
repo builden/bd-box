@@ -1,3 +1,4 @@
+import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 import {
   DEFAULT_HANDLE_POSITION,
