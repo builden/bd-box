@@ -6,8 +6,8 @@ import {
   HANDLE_POSITION_MAX,
   HANDLE_POSITION_MIN,
   HANDLE_POSITION_STORAGE_KEY,
-} from '../constants';
-import type { QuickSettingsHandleStyle } from '../types';
+} from '@/features/quick-settings/biz/constants';
+import type { QuickSettingsHandleStyle } from '@/features/quick-settings/types/types';
 
 type UseQuickSettingsDragProps = {
   isMobile: boolean;

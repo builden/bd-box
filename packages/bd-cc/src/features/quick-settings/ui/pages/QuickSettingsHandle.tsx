@@ -8,7 +8,7 @@ import {
   GripVertical,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import type { QuickSettingsHandleStyle } from '../types';
+import type { QuickSettingsHandleStyle } from '@/features/quick-settings/types';
 
 type QuickSettingsHandleProps = {
   isOpen: boolean;

@@ -1,6 +1,6 @@
 import { atomWithStorage } from 'jotai/utils';
 import { STORAGE_KEYS } from '../../constants';
-import type { WhisperMode } from '@/components/quick-settings-panel/types';
+import type { WhisperMode } from '@/features/quick-settings/types/types';
 import type { FileTreeViewMode } from '@/features/file-tree/types/types';
 
 /**

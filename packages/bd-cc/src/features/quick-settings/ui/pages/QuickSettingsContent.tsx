@@ -1,18 +1,18 @@
 import { Moon, Sun } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { DarkModeToggle } from '../../../shared/view/ui';
-import LanguageSelector from '../../../shared/view/ui/LanguageSelector';
+import { DarkModeToggle } from '@/shared/view/ui';
+import LanguageSelector from '@/shared/view/ui/LanguageSelector';
 import {
   INPUT_SETTING_TOGGLES,
   SETTING_ROW_CLASS,
   TOOL_DISPLAY_TOGGLES,
   VIEW_OPTION_TOGGLES,
-} from '../constants';
+} from '@/features/quick-settings/biz/constants';
 import type {
   PreferenceToggleItem,
   PreferenceToggleKey,
   QuickSettingsPreferences,
-} from '../types';
+} from '@/features/quick-settings/types';
 import QuickSettingsSection from './QuickSettingsSection';
 import QuickSettingsToggleRow from './QuickSettingsToggleRow';
 import QuickSettingsWhisperSection from './QuickSettingsWhisperSection';

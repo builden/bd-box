@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { TOGGLE_ROW_CLASS, WHISPER_OPTIONS } from '../constants';
+import { TOGGLE_ROW_CLASS, WHISPER_OPTIONS } from '@/features/quick-settings/biz/constants';
 import { useWhisperMode } from '@/store/ui-modes';
 import QuickSettingsSection from './QuickSettingsSection';
 

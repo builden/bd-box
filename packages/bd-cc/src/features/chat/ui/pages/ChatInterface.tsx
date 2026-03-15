@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { QuickSettingsPanel } from '@/components/quick-settings-panel';
+import QuickSettingsPanel from '@/features/quick-settings/ui/pages/QuickSettingsPanelView';
 import type { ChatInterfaceProps, Provider } from '@/features/chat/types';
 import { useChatProviderState } from '@/features/chat/hooks/useChatProviderState';
 import { useChatSessionState } from '@/features/chat/hooks/useChatSessionState';

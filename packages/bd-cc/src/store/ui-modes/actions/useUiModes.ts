@@ -1,8 +1,8 @@
 import { useAtom, useSetAtom } from 'jotai';
 import { useCallback } from 'react';
 import { whisperModeAtom, fileTreeViewModeAtom } from '../primitives/modes-atom';
-import { VIBE_MODE_ALIASES } from '@/components/quick-settings-panel/constants';
-import type { WhisperMode, WhisperOptionValue } from '@/components/quick-settings-panel/types';
+import { VIBE_MODE_ALIASES } from '@/features/quick-settings/biz/constants';
+import type { WhisperMode, WhisperOptionValue } from '@/features/quick-settings/types/types';
 import type { FileTreeViewMode } from '@/features/file-tree/types/types';
 
 /**

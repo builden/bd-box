@@ -12,7 +12,7 @@ import type {
   PreferenceToggleItem,
   WhisperMode,
   WhisperOption,
-} from './types';
+} from '@/features/quick-settings/types/types';
 
 export const HANDLE_POSITION_STORAGE_KEY = 'quickSettingsHandlePosition';
 export const WHISPER_MODE_STORAGE_KEY = 'whisperMode';
