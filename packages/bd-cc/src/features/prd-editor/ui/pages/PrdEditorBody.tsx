@@ -1,5 +1,5 @@
 import Editor from '@monaco-editor/react';
-import MarkdownPreview from '@/features/code-editor/ui/pages/subcomponents/markdown/MarkdownPreview';
+import MarkdownPreview from '@/features/code-editor/ui/parts/markdown/MarkdownPreview';
 
 type PrdEditorBodyProps = {
   content: string;

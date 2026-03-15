@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 
 import ChatInterface from '@/features/chat/ui/pages/ChatInterface';
-import FileTree from '@/features/file-tree/ui/pages/FileTree';
+import FileTree from '@/features/file-tree/ui/containers/FileTree';
 import StandaloneShell from '@/features/standalone-shell/ui/pages/StandaloneShell';
 import GitPanel from '@/features/git/ui/pages/GitPanel';
 import PluginTabContent from '../../../features/plugins/ui/PluginTabContent';

@@ -13,11 +13,11 @@ import type { FileTreeImageSelection, FileTreeNode } from '@/features/file-tree/
 import { formatFileSize, formatRelativeTime, isImageFile } from '@/features/file-tree/biz/fileTreeUtils';
 import { Project } from '@/types/app';
 import { ScrollArea, Input } from '@/shared/view/ui';
-import FileTreeBody from './FileTreeBody';
-import FileTreeDetailedColumns from './FileTreeDetailedColumns';
-import FileTreeHeader from './FileTreeHeader';
-import FileTreeLoadingState from './FileTreeLoadingState';
-import ImageViewer from './ImageViewer';
+import FileTreeBody from '../composites/FileTreeBody';
+import FileTreeDetailedColumns from '../composites/FileTreeDetailedColumns';
+import FileTreeHeader from '../composites/FileTreeHeader';
+import FileTreeLoadingState from '../composites/FileTreeLoadingState';
+import ImageViewer from '../composites/ImageViewer';
 
 type FileTreeProps = {
   selectedProject: Project | null;

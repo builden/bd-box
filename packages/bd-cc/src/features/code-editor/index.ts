@@ -10,11 +10,11 @@ export * from './biz';
 export * from './hooks';
 
 // UI 组件
-export { default as CodeEditor } from './ui/pages/CodeEditor';
+export { default as CodeEditor } from './ui/containers/CodeEditorContainer';
 export { default as EditorSidebar } from './ui/pages/EditorSidebar';
-export { default as CodeEditorHeader } from './ui/pages/subcomponents/CodeEditorHeader';
-export { default as CodeEditorFooter } from './ui/pages/subcomponents/CodeEditorFooter';
-export { default as CodeEditorLoadingState } from './ui/pages/subcomponents/CodeEditorLoadingState';
-export { default as MonacoEditorSurface } from './ui/pages/subcomponents/MonacoEditorSurface';
-export { default as CodeEditorBinaryFile } from './ui/pages/subcomponents/CodeEditorBinaryFile';
-export { default as MarkdownPreview } from './ui/pages/subcomponents/markdown/MarkdownPreview';
+export { default as CodeEditorHeader } from './ui/composites/CodeEditorHeader';
+export { default as CodeEditorFooter } from './ui/composites/CodeEditorFooter';
+export { default as CodeEditorLoadingState } from './ui/composites/CodeEditorLoadingState';
+export { default as MonacoEditorSurface } from './ui/composites/MonacoEditorSurface';
+export { default as CodeEditorBinaryFile } from './ui/composites/CodeEditorBinaryFile';
+export { default as MarkdownPreview } from './ui/parts/markdown/MarkdownPreview';

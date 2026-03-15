@@ -10,13 +10,13 @@ export * from './biz';
 export * from './hooks';
 
 // UI 组件
-export { default as FileTree } from './ui/pages/FileTree';
-export { default as FileTreeBody } from './ui/pages/FileTreeBody';
-export { default as FileTreeHeader } from './ui/pages/FileTreeHeader';
-export { default as FileTreeList } from './ui/pages/FileTreeList';
-export { default as FileTreeNode } from './ui/pages/FileTreeNode';
-export { default as FileTreeEmptyState } from './ui/pages/FileTreeEmptyState';
-export { default as FileTreeLoadingState } from './ui/pages/FileTreeLoadingState';
-export { default as FileTreeDetailedColumns } from './ui/pages/FileTreeDetailedColumns';
-export { default as FileContextMenu } from './ui/pages/FileContextMenu';
-export { default as ImageViewer } from './ui/pages/ImageViewer';
+export { default as FileTree } from './ui/containers/FileTree';
+export { default as FileTreeBody } from './ui/composites/FileTreeBody';
+export { default as FileTreeHeader } from './ui/composites/FileTreeHeader';
+export { default as FileTreeList } from './ui/composites/FileTreeList';
+export { default as FileTreeNode } from './ui/composites/FileTreeNode';
+export { default as FileTreeEmptyState } from './ui/composites/FileTreeEmptyState';
+export { default as FileTreeLoadingState } from './ui/composites/FileTreeLoadingState';
+export { default as FileTreeDetailedColumns } from './ui/composites/FileTreeDetailedColumns';
+export { default as FileContextMenu } from './ui/composites/FileContextMenu';
+export { default as ImageViewer } from './ui/composites/ImageViewer';
