@@ -3,6 +3,7 @@ import { debounce } from 'radash';
 import path from 'path';
 import os from 'os';
 import { createLogger } from './utils/logger.ts';
+import { dayjs, formatIso } from './utils/date.ts';
 
 const logger = createLogger('sessionManager');
 
@@ -51,8 +52,8 @@ class SessionManager {
       id: sessionId,
       projectPath: projectPath,
       messages: [],
-      createdAt: new Date(),
-      lastActivity: new Date(),
+      createdAt: dayjs().toDate(),
+      lastActivity: dayjs().toDate(),
     };
 
     // Evict oldest session from memory if we exceed limit
@@ -80,11 +81,11 @@ class SessionManager {
     const message = {
       role: role, // 'user' or 'assistant'
       content: content,
-      timestamp: new Date(),
+      timestamp: dayjs().toDate(),
     };
 
     session.messages.push(message);
-    session.lastActivity = new Date();
+    session.lastActivity = dayjs().toDate();
 
     // Use debounced save instead of immediate save
     this.pendingSaves.add(sessionId);
@@ -138,7 +139,7 @@ class SessionManager {
       }
     }
 
-    return sessions.sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity));
+    return sessions.sort((a, b) => dayjs(b.lastActivity).valueOf() - dayjs(a.lastActivity).valueOf());
   }
 
   // Get session summary
@@ -215,10 +216,10 @@ class SessionManager {
             const session = JSON.parse(data);
 
             // Convert dates
-            session.createdAt = new Date(session.createdAt);
-            session.lastActivity = new Date(session.lastActivity);
+            session.createdAt = dayjs(session.createdAt).toDate();
+            session.lastActivity = dayjs(session.lastActivity).toDate();
             session.messages.forEach((msg) => {
-              msg.timestamp = new Date(msg.timestamp);
+              msg.timestamp = dayjs(msg.timestamp).toDate();
             });
 
             this.sessions.set(session.id, session);
@@ -261,7 +262,7 @@ class SessionManager {
         role: msg.role,
         content: msg.content,
       },
-      timestamp: msg.timestamp.toISOString(),
+      timestamp: formatIso(msg.timestamp),
     }));
   }
 }
