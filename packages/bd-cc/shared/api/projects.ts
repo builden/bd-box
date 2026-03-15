@@ -54,19 +54,18 @@ export type Project = z.infer<typeof ProjectSchema>;
 /**
  * 项目列表响应
  *
- * 格式: { data: { items: Project[], meta?: { total, page, limit } } }
+ * 格式: { items: Project[], meta?: { total, page, limit } }
+ * authenticatedFetch 已展开 data 层
  */
 export const ProjectListResponseSchema = z.object({
-  data: z.object({
-    items: z.array(ProjectSchema),
-    meta: z
-      .object({
-        total: z.number().optional(),
-        page: z.number().optional(),
-        limit: z.number().optional(),
-      })
-      .optional(),
-  }),
+  items: z.array(ProjectSchema),
+  meta: z
+    .object({
+      total: z.number().optional(),
+      page: z.number().optional(),
+      limit: z.number().optional(),
+    })
+    .optional(),
 });
 
 export type ProjectListResponse = z.infer<typeof ProjectListResponseSchema>;

@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { AlertTriangle, Trash2 } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import { Button } from '@/shared/view/ui';
-import { VersionUpgradeModal } from '@/components/version-upgrade';
+import { VersionUpgradeModal } from '@/features/version-upgrade';
 import type { Project } from '@/types/app';
 import type { ReleaseInfo } from '@/types/sharedTypes';
 import type { InstallMode } from '@/hooks/useVersionCheck';
