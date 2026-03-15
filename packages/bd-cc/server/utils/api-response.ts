@@ -53,6 +53,7 @@ export function success<T>(res: Response, data: T, statusCode: number = 200): Re
 
 /**
  * 成功响应 - 资源集合 (带分页元数据)
+ * 格式: { data: { items: T[], meta: { total, page, limit } } }
  */
 export function successList<T>(
   res: Response,
@@ -64,8 +65,10 @@ export function successList<T>(
   }
 ): Response {
   return res.status(200).json({
-    data: items,
-    meta: meta || {},
+    data: {
+      items,
+      meta: meta || {},
+    },
   });
 }
 

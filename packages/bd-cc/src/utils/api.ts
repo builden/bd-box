@@ -11,10 +11,10 @@ interface FetchOptions extends RequestInit {
  * 处理 API 响应
  *
  * 遵循 api.md 规范:
- * - 成功响应: { data: ... }
+ * - 成功响应: { data: singleObject } 或 { data: { items: [...], meta: {...} } }
  * - 错误响应: { error: { code, message, details, ... } }
  *
- * 此函数自动展开 data 字段，使前端可以直接访问 response.data
+ * 此函数自动展开 data 字段（单个对象时），使前端可以直接访问 response.data
  */
 async function processJsonResponse(
   jsonData: unknown,
@@ -51,10 +51,21 @@ async function processJsonResponse(
     }
   }
 
-  // 成功响应: 完全展开 data 字段 (遵循 api.md 规范)
-  // 后端返回 { data: {...} }，展开后直接返回 data 内部内容
+  // 成功响应: 智能展开 data 字段 (遵循 api.md 规范)
+  // - success() 返回 { data: singleObject } → 展开为 singleObject
+  // - successList() 返回 { data: { items: [...], meta: {...} } } → 展开为 { items: [...], meta: {...} }
   if (response.ok && jsonData && typeof jsonData === 'object' && 'data' in jsonData) {
-    return (jsonData as { data: unknown }).data;
+    const data = (jsonData as { data: unknown }).data;
+    // data 是对象（不含数组）时展开，数组+meta 结构也需要展开
+    if (data !== null && typeof data === 'object' && !Array.isArray(data)) {
+      // 检查是否是 { items: [...], meta: {...} } 结构
+      const dataObj = data as Record<string, unknown>;
+      if ('items' in dataObj && Array.isArray(dataObj.items)) {
+        return data; // 保留 items + meta 结构
+      }
+      return data; // 展开为单个对象
+    }
+    return jsonData;
   }
 
   return jsonData;

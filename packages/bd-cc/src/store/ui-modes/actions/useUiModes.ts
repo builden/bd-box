@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { whisperModeAtom, fileTreeViewModeAtom } from '../primitives/modes-atom';
 import { VIBE_MODE_ALIASES } from '@/components/quick-settings-panel/constants';
 import type { WhisperMode, WhisperOptionValue } from '@/components/quick-settings-panel/types';
-import type { FileTreeViewMode } from '@/components/file-tree/types/types';
+import type { FileTreeViewMode } from '@/features/file-tree/types/types';
 
 /**
  * Whisper 模式管理 Hook

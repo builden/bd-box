@@ -1,9 +1,9 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import JSZip from 'jszip';
-import { api } from '../../../utils/api';
+import { api } from '@/utils/api';
 import { copyTextToClipboard } from '@/utils/clipboard';
-import type { FileTreeNode } from '../types/types';
+import type { FileTreeNode } from '@/features/file-tree/types/types';
 import type { Project } from '../../../types/app';
 
 // Invalid filename characters

@@ -1,7 +1,7 @@
 import type { TFunction } from "i18next";
 import dayjs from "dayjs";
-import { IMAGE_FILE_EXTENSIONS } from "../constants/constants";
-import type { FileTreeNode } from "../types/types";
+import { IMAGE_FILE_EXTENSIONS } from "./constants";
+import type { FileTreeNode } from "@/features/file-tree/types/types";
 
 export function filterFileTree(items: FileTreeNode[], query: string): FileTreeNode[] {
   return items.reduce<FileTreeNode[]>((filteredItems, item) => {

@@ -1,8 +1,8 @@
 import { ChevronDown, Eye, FileText, FolderPlus, List, RefreshCw, Search, TableProperties, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Button, Input } from '../../../shared/view/ui';
-import { cn } from '../../../lib/utils';
-import type { FileTreeViewMode } from '../types/types';
+import { Button, Input } from '@/shared/view/ui';
+import { cn } from '@/lib/utils';
+import type { FileTreeViewMode } from '@/features/file-tree/types/types';
 
 type FileTreeHeaderProps = {
   viewMode: FileTreeViewMode;

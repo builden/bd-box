@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { collectExpandedDirectoryPaths, filterFileTree } from '../utils/fileTreeUtils';
-import type { FileTreeNode } from '../types/types';
+import { collectExpandedDirectoryPaths, filterFileTree } from '@/features/file-tree/biz/fileTreeUtils';
+import type { FileTreeNode } from '@/features/file-tree/types/types';
 
 type UseFileTreeSearchArgs = {
   files: FileTreeNode[];

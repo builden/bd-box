@@ -1,4 +1,4 @@
-import type { FileTreeViewMode } from '../types/types';
+import type { FileTreeViewMode } from '@/features/file-tree/types/types';
 
 export const FILE_TREE_VIEW_MODE_STORAGE_KEY = 'file-tree-view-mode';
 

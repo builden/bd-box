@@ -1,7 +1,7 @@
 import { atomWithStorage } from 'jotai/utils';
 import { STORAGE_KEYS } from '../../constants';
 import type { WhisperMode } from '@/components/quick-settings-panel/types';
-import type { FileTreeViewMode } from '@/components/file-tree/types/types';
+import type { FileTreeViewMode } from '@/features/file-tree/types/types';
 
 /**
  * Whisper 模式 atom - 使用 atomWithStorage 自动持久化

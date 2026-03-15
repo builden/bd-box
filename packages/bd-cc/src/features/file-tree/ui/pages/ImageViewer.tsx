@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
-import { Button } from '../../../shared/view/ui';
-import { authenticatedFetch } from '../../../utils/api';
-import type { FileTreeImageSelection } from '../types/types';
+import { Button } from '@/shared/view/ui';
+import { authenticatedFetch } from '@/utils/api';
+import type { FileTreeImageSelection } from '@/features/file-tree/types/types';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('ImageViewer');

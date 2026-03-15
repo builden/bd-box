@@ -1,29 +1,24 @@
 import type { ReactNode, RefObject } from 'react';
-import { Folder, Search } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import type { FileTreeNode, FileTreeViewMode } from '../types/types';
-import FileTreeEmptyState from './FileTreeEmptyState';
-import FileTreeList from './FileTreeList';
+import type { FileTreeNode as FileTreeNodeType, FileTreeViewMode } from '@/features/file-tree/types/types';
+import FileTreeNode from './FileTreeNode';
 
-type FileTreeBodyProps = {
-  files: FileTreeNode[];
-  filteredFiles: FileTreeNode[];
-  searchQuery: string;
+type FileTreeListProps = {
+  items: FileTreeNodeType[];
   viewMode: FileTreeViewMode;
   expandedDirs: Set<string>;
-  onItemClick: (item: FileTreeNode) => void;
+  onItemClick: (item: FileTreeNodeType) => void;
   renderFileIcon: (filename: string) => ReactNode;
   formatFileSize: (bytes?: number) => string;
   formatRelativeTime: (date?: string) => string;
-  onRename?: (item: FileTreeNode) => void;
-  onDelete?: (item: FileTreeNode) => void;
+  onRename?: (item: FileTreeNodeType) => void;
+  onDelete?: (item: FileTreeNodeType) => void;
   onNewFile?: (path: string) => void;
   onNewFolder?: (path: string) => void;
-  onCopyPath?: (item: FileTreeNode) => void;
-  onDownload?: (item: FileTreeNode) => void;
+  onCopyPath?: (item: FileTreeNodeType) => void;
+  onDownload?: (item: FileTreeNodeType) => void;
   onRefresh?: () => void;
   // Rename state for inline editing
-  renamingItem?: FileTreeNode | null;
+  renamingItem?: FileTreeNodeType | null;
   renameValue?: string;
   setRenameValue?: (value: string) => void;
   handleConfirmRename?: () => void;
@@ -32,10 +27,8 @@ type FileTreeBodyProps = {
   operationLoading?: boolean;
 };
 
-export default function FileTreeBody({
-  files,
-  filteredFiles,
-  searchQuery,
+export default function FileTreeList({
+  items,
   viewMode,
   expandedDirs,
   onItemClick,
@@ -56,26 +49,14 @@ export default function FileTreeBody({
   handleCancelRename,
   renameInputRef,
   operationLoading,
-}: FileTreeBodyProps) {
-  const { t } = useTranslation();
-
+}: FileTreeListProps) {
   return (
-    <>
-      {files.length === 0 ? (
-        <FileTreeEmptyState
-          icon={Folder}
-          title={t('fileTree.noFilesFound')}
-          description={t('fileTree.checkProjectPath')}
-        />
-      ) : filteredFiles.length === 0 && searchQuery ? (
-        <FileTreeEmptyState
-          icon={Search}
-          title={t('fileTree.noMatchesFound')}
-          description={t('fileTree.tryDifferentSearch')}
-        />
-      ) : (
-        <FileTreeList
-          items={filteredFiles}
+    <div>
+      {items.map((item) => (
+        <FileTreeNode
+          key={item.path}
+          item={item}
+          level={0}
           viewMode={viewMode}
           expandedDirs={expandedDirs}
           onItemClick={onItemClick}
@@ -97,7 +78,7 @@ export default function FileTreeBody({
           renameInputRef={renameInputRef}
           operationLoading={operationLoading}
         />
-      )}
-    </>
+      ))}
+    </div>
   );
 }

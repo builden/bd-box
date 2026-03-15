@@ -36,7 +36,7 @@ import {
   Video,
   Workflow,
 } from 'lucide-react';
-import type { FileIconData, FileIconMap } from '../types/types';
+import type { FileIconData, FileIconMap } from '@/features/file-tree/types/types';
 
 export const ICON_SIZE_CLASS = 'w-4 h-4 flex-shrink-0';
 
