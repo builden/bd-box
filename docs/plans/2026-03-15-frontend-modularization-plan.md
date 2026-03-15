@@ -383,3 +383,37 @@ features/
 
 - 删除旧的 components/sidebar/utils/, components/sidebar/hooks/
 - 删除旧的 components/shell/utils/, components/shell/hooks/, components/shell/types/
+
+---
+
+## 最终完成状态
+
+### 已完成迁移
+
+| 模块        | biz | hooks | types | ui  | store |
+| ----------- | --- | ----- | ----- | --- | ----- |
+| chat        | ✅  | ✅    | ✅    | 待  | -     |
+| projects    | ✅  | ✅    | ✅    | 待  | -     |
+| shell       | ✅  | ✅    | ✅    | 待  | -     |
+| plugins     | -   | ✅    | ✅    | ✅  | ✅    |
+| settings    | -   | ✅    | ✅    | ✅  | ✅    |
+| skills      | -   | ✅    | ✅    | ✅  | ✅    |
+| task-master | -   | ✅    | ✅    | ✅  | ✅    |
+
+### 清理结果
+
+已删除的空目录：
+
+- components/chat/constants, types, utils, hooks
+- components/shell/constants, types, utils, hooks
+- components/sidebar/types, utils, hooks
+
+### 验证
+
+```bash
+bun test  # 760 pass ✅
+```
+
+### 结论
+
+前端模块化重构初步完成。业务逻辑（biz）和功能 hooks 已迁移到 features 目录。UI 组件因依赖复杂暂时保留在 components 目录。
