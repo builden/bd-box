@@ -63,7 +63,7 @@ export function isLifecycleMessage(messageType: string): boolean {
  * 检查是否是 Claude 系统初始化消息
  */
 export function isClaudeSystemInit(messageType: string, structuredMessageData: Record<string, any> | null): boolean {
-  return (
+  return Boolean(
     messageType === 'claude-response' &&
     structuredMessageData &&
     structuredMessageData.type === 'system' &&
@@ -75,7 +75,7 @@ export function isClaudeSystemInit(messageType: string, structuredMessageData: R
  * 检查是否是 Cursor 系统初始化消息
  */
 export function isCursorSystemInit(messageType: string, rawStructuredData: Record<string, any> | null): boolean {
-  return (
+  return Boolean(
     messageType === 'cursor-system' &&
     rawStructuredData &&
     rawStructuredData.type === 'system' &&
@@ -136,7 +136,7 @@ export function shouldBypassSessionFilter(messageType: string, isSystemInitForVi
  * 检查是否是无范围错误
  */
 export function isUnscopedError(latestMessage: any, pendingSession: { sessionId: string | null } | null): boolean {
-  return (
+  return Boolean(
     !latestMessage?.sessionId &&
     pendingSession &&
     !pendingSession.sessionId &&
