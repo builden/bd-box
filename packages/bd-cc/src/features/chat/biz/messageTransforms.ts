@@ -535,7 +535,7 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
             const isSubagentContainer = part.name === 'Task';
 
             // Build child tools from server-provided subagentTools data
-            const childTools: import('../types/types').SubagentChildTool[] = [];
+            const childTools: import('../types').SubagentChildTool[] = [];
             if (isSubagentContainer && toolResult?.subagentTools && Array.isArray(toolResult.subagentTools)) {
               for (const tool of toolResult.subagentTools as any[]) {
                 childTools.push({

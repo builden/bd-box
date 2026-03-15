@@ -1,5 +1,5 @@
 import { safeJsonParse } from "../../../lib/utils";
-import type { ChatMessage, ClaudePermissionSuggestion, PermissionGrantResult } from "../types/types";
+import type { ChatMessage, ClaudePermissionSuggestion, PermissionGrantResult } from "../types";
 import { CLAUDE_SETTINGS_KEY, getClaudeSettings, safeLocalStorage } from "./chatStorage";
 
 export function buildClaudeToolPermissionEntry(toolName?: string, toolInput?: unknown) {
