@@ -39,7 +39,7 @@ export const fetchGithubTokenCredentials = async () => {
     throw new Error(data.error || 'Failed to load GitHub tokens');
   }
 
-  return (data.credentials || []).filter((credential) => credential.is_active);
+  return (data.items || []).filter((credential) => credential.is_active);
 };
 
 export const browseFilesystemFolders = async (pathToBrowse: string) => {

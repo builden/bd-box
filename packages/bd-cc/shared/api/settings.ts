@@ -21,10 +21,10 @@ export type ApiKey = z.infer<typeof ApiKeySchema>;
 
 /**
  * API Keys 列表响应
- * authenticatedFetch 展开后格式: { apiKeys: [...] }
+ * 格式: { items: ApiKey[] }
  */
 export const ApiKeysListResponseSchema = z.object({
-  apiKeys: z.array(ApiKeySchema),
+  items: z.array(ApiKeySchema),
 });
 
 export type ApiKeysListResponse = z.infer<typeof ApiKeysListResponseSchema>;
@@ -68,10 +68,10 @@ export type Credential = z.infer<typeof CredentialSchema>;
 
 /**
  * 凭证列表响应
- * authenticatedFetch 完全展开 data 后格式: { credentials: [...] }
+ * 格式: { items: Credential[] }
  */
 export const CredentialsListResponseSchema = z.object({
-  credentials: z.array(CredentialSchema),
+  items: z.array(CredentialSchema),
 });
 
 export type CredentialsListResponse = z.infer<typeof CredentialsListResponseSchema>;

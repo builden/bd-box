@@ -17,7 +17,7 @@ export type GithubTokenCredential = {
 };
 
 export type CredentialsResponse = {
-  credentials?: GithubTokenCredential[];
+  items?: GithubTokenCredential[];
   error?: string;
 };
 
