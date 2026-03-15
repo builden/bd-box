@@ -940,29 +940,8 @@ function handleShellConnection(ws) {
 // ============================================================================
 // region: fallback
 // ============================================================================
-// Serve React app for all other routes (excluding static files)
-app.get('{*splat}', (req, res) => {
-  // Skip requests for static assets (files with extensions)
-  if (path.extname(req.path)) {
-    return res.status(404).send('Not found');
-  }
-
-  // Only serve index.html for HTML routes, not for static assets
-  // Static assets should already be handled by express.static middleware above
-  const indexPath = path.join(__dirname, '../dist/index.html');
-
-  // Check if dist/index.html exists (production build available)
-  if (fs.existsSync(indexPath)) {
-    // Set no-cache headers for HTML to prevent service worker issues
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    res.sendFile(indexPath);
-  } else {
-    // In development, redirect to Vite dev server only if dist doesn't exist
-    res.redirect(`http://localhost:${process.env.VITE_PORT || 5173}`);
-  }
-});
+import { registerFallbackRoute } from './utils/fallback';
+registerFallbackRoute(app);
 
 // ============================================================================
 // endregion

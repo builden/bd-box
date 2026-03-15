@@ -8,7 +8,7 @@
 import express from 'express';
 import { apiKeysDb, credentialsDb } from '../database/index.ts';
 import { createLogger } from '../utils/logger.ts';
-import { success, badRequest, notFound, serverError, created } from '../utils/api-response.ts';
+import { success, successList, badRequest, notFound, serverError, created } from '../utils/api-response.ts';
 
 const router = express.Router();
 const logger = createLogger('settings');
@@ -26,7 +26,7 @@ router.get('/api-keys', async (req, res) => {
       ...key,
       api_key: key.api_key.substring(0, 10) + '...',
     }));
-    return success(res, { apiKeys: sanitizedKeys });
+    return successList(res, sanitizedKeys);
   } catch (error) {
     logger.error('Error fetching API keys:', error as Error);
     return serverError(res, 'Failed to fetch API keys');
@@ -103,7 +103,7 @@ router.get('/credentials', async (req, res) => {
     const { type } = req.query;
     const credentials = credentialsDb.getCredentials(req.user.id, type || null);
     // Don't send the actual credential values for security
-    return success(res, { credentials });
+    return successList(res, credentials);
   } catch (error) {
     logger.error('Error fetching credentials:', error as Error);
     return serverError(res, 'Failed to fetch credentials');
