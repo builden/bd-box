@@ -111,7 +111,7 @@ export default function TaskDetailModal({
 
     setIsSaving(true);
     try {
-      const response = await api.taskmaster.updateTask(currentProject.name, task.id, updates);
+      const response = await api.taskmaster.updateTask(currentProject.name, String(task.id), updates);
       if (!response.ok) {
         const errorPayload = (await response.json()) as { message?: string };
         throw new Error(errorPayload.message ?? 'Failed to update task');
@@ -134,7 +134,7 @@ export default function TaskDetailModal({
     }
 
     try {
-      const response = await api.taskmaster.updateTask(currentProject.name, task.id, { status: nextStatus });
+      const response = await api.taskmaster.updateTask(currentProject.name, String(task.id), { status: nextStatus });
       if (!response.ok) {
         const errorPayload = (await response.json()) as { message?: string };
         throw new Error(errorPayload.message ?? 'Failed to update task status');

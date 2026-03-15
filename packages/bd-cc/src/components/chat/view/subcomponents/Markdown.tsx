@@ -32,8 +32,9 @@ const CodeBlock = ({ node, inline, className, children, ...props }: CodeBlockPro
   if (shouldInline) {
     return (
       <code
-        className={`whitespace-pre-wrap break-words rounded-md border border-gray-200 bg-gray-100 px-1.5 py-0.5 font-mono text-[0.9em] text-gray-900 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-100 ${className || ''
-          }`}
+        className={`whitespace-pre-wrap break-words rounded-md border border-gray-200 bg-gray-100 px-1.5 py-0.5 font-mono text-[0.9em] text-gray-900 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-100 ${
+          className || ''
+        }`}
         {...props}
       >
         {children}
@@ -52,14 +53,13 @@ const CodeBlock = ({ node, inline, className, children, ...props }: CodeBlockPro
 
       <button
         type="button"
-        onClick={() =>
-          copyTextToClipboard(raw).then((success) => {
-            if (success) {
-              setCopied(true);
-              setTimeout(() => setCopied(false), 2000);
-            }
-          })
-        }
+        onClick={() => {
+          const success = copyTextToClipboard(raw);
+          if (success) {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+          }
+        }}
         className="absolute right-2 top-2 z-10 rounded-md border border-gray-600 bg-gray-700/80 px-2 py-1 text-xs text-white opacity-0 transition-opacity hover:bg-gray-700 focus:opacity-100 active:opacity-100 group-hover:opacity-100"
         title={copied ? t('codeBlock.copied') : t('codeBlock.copyCode')}
         aria-label={copied ? t('codeBlock.copied') : t('codeBlock.copyCode')}
@@ -124,7 +124,12 @@ const markdownComponents = {
     </blockquote>
   ),
   a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
-    <a href={href} className="text-blue-600 hover:underline dark:text-blue-400" target="_blank" rel="noopener noreferrer">
+    <a
+      href={href}
+      className="text-blue-600 hover:underline dark:text-blue-400"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
       {children}
     </a>
   ),
@@ -134,9 +139,13 @@ const markdownComponents = {
       <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">{children}</table>
     </div>
   ),
-  thead: ({ children }: { children?: React.ReactNode }) => <thead className="bg-gray-50 dark:bg-gray-800">{children}</thead>,
+  thead: ({ children }: { children?: React.ReactNode }) => (
+    <thead className="bg-gray-50 dark:bg-gray-800">{children}</thead>
+  ),
   th: ({ children }: { children?: React.ReactNode }) => (
-    <th className="border border-gray-200 px-3 py-2 text-left text-sm font-semibold dark:border-gray-700">{children}</th>
+    <th className="border border-gray-200 px-3 py-2 text-left text-sm font-semibold dark:border-gray-700">
+      {children}
+    </th>
   ),
   td: ({ children }: { children?: React.ReactNode }) => (
     <td className="border border-gray-200 px-3 py-2 align-top text-sm dark:border-gray-700">{children}</td>

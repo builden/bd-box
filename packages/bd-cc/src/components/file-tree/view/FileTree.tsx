@@ -206,6 +206,7 @@ export default function FileTree({ selectedProject, onFileOpen }: FileTreeProps)
           setRenameValue={operations.setRenameValue}
           handleConfirmRename={operations.handleConfirmRename}
           handleCancelRename={operations.handleCancelRename}
+          // @ts-expect-error React 18 useRef 返回 MutableRefObject<T | null>，但子组件期望 RefObject<T>
           renameInputRef={renameInputRef}
           operationLoading={operations.operationLoading}
         />

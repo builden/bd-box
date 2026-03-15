@@ -11,7 +11,7 @@ import { z } from 'zod';
 export const FileTreeNodeSchema: z.ZodType<{
   name: string;
   type: 'file' | 'directory';
-  path?: string;
+  path: string;
   size?: number;
   modifiedAt?: string;
   children?: z.infer<typeof FileTreeNodeSchema>[];
@@ -19,7 +19,7 @@ export const FileTreeNodeSchema: z.ZodType<{
   z.object({
     name: z.string(),
     type: z.enum(['file', 'directory']),
-    path: z.string().optional(),
+    path: z.string(),
     size: z.number().optional(),
     modifiedAt: z.string().optional(),
     children: z.array(FileTreeNodeSchema).optional(),

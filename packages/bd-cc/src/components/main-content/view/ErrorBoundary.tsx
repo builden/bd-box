@@ -74,7 +74,10 @@ function ErrorBoundary({
   const [componentStack, setComponentStack] = useState<string | null>(null);
 
   const handleError = useCallback((error: unknown, errorInfo: ErrorInfo) => {
-    logger.error('ErrorBoundary caught an error:', error, errorInfo);
+    logger.error('ErrorBoundary caught an error:', error, { componentStack: errorInfo?.componentStack } as Record<
+      string,
+      unknown
+    >);
     // Keep component stack for optional debug rendering in fallback UI.
     setComponentStack(errorInfo?.componentStack ?? null);
   }, []);

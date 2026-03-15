@@ -131,7 +131,7 @@ export function useShellConnection({
           return;
         }
 
-        logger.info('[Shell] Connecting to WebSocket:', wsUrl);
+        logger.info('[Shell] Connecting to WebSocket', { wsUrl });
         connectingRef.current = true;
 
         const socket = new WebSocket(wsUrl);
@@ -149,21 +149,18 @@ export function useShellConnection({
             const currentFitAddon = fitAddonRef.current;
             const currentProject = selectedProjectRef.current;
             if (!currentTerminal || !currentFitAddon || !currentProject) {
-              logger.warn(
-                '[Shell] Missing refs for init, terminal:',
-                !!currentTerminal,
-                'fitAddon:',
-                !!currentFitAddon,
-                'project:',
-                !!currentProject
-              );
+              logger.warn('[Shell] Missing refs for init', {
+                hasTerminal: !!currentTerminal,
+                hasFitAddon: !!currentFitAddon,
+                hasProject: !!currentProject,
+              });
               return;
             }
 
             currentFitAddon.fit();
 
-            const initMessage = {
-              type: 'init',
+            const initMessage: { type: 'init'; [key: string]: unknown } = {
+              type: 'init' as const,
               projectPath: currentProject.fullPath || currentProject.path || '',
               sessionId: isPlainShellRef.current ? null : selectedSessionRef.current?.id || null,
               hasSession: isPlainShellRef.current ? false : Boolean(selectedSessionRef.current),
@@ -175,8 +172,21 @@ export function useShellConnection({
               initialCommand: initialCommandRef.current,
               isPlainShell: isPlainShellRef.current,
             };
-            logger.info('[Shell] Sending init message:', JSON.stringify(initMessage));
-            sendSocketMessage(socket, initMessage);
+            logger.info('[Shell] Sending init message', { initMessage: JSON.stringify(initMessage) });
+            sendSocketMessage(
+              socket,
+              initMessage as {
+                type: 'init';
+                projectPath: string;
+                sessionId: string | null;
+                hasSession: boolean;
+                provider: string;
+                cols: number;
+                rows: number;
+                initialCommand: string | null;
+                isPlainShell: boolean;
+              }
+            );
           }, TERMINAL_INIT_DELAY_MS);
         };
 

@@ -75,10 +75,18 @@ export default function ChatInputControls({
       </button>
 
       {provider === 'claude' && (
-        <ThinkingModeSelector selectedMode={thinkingMode} onModeChange={setThinkingMode} onClose={() => {}} className="" />
+        <ThinkingModeSelector
+          selectedMode={thinkingMode}
+          onModeChange={setThinkingMode}
+          onClose={() => {}}
+          className=""
+        />
       )}
 
-      <TokenUsagePie used={tokenBudget?.used || 0} total={tokenBudget?.total || parseInt(import.meta.env.VITE_CONTEXT_WINDOW) || 160000} />
+      <TokenUsagePie
+        used={tokenBudget?.used || 0}
+        total={tokenBudget?.total || parseInt(import.meta.env.VITE_CONTEXT_WINDOW || '160000') || 160000}
+      />
 
       <button
         type="button"
@@ -95,9 +103,7 @@ export default function ChatInputControls({
           />
         </svg>
         {slashCommandsCount > 0 && (
-          <span
-            className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground sm:h-5 sm:w-5"
-          >
+          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground sm:h-5 sm:w-5">
             {slashCommandsCount}
           </span>
         )}

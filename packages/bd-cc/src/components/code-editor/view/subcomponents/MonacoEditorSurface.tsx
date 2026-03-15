@@ -110,7 +110,7 @@ export default function MonacoEditorSurface({
 
   // 基础选项
   const baseOptions = useMemo(
-    () => ({
+    (): MonacoEditor.editor.IStandaloneEditorConstructionOptions => ({
       fontSize,
       lineNumbers: showLineNumbers ? 'on' : 'off',
       minimap: { enabled: minimapEnabled },
@@ -123,11 +123,11 @@ export default function MonacoEditorSurface({
       formatOnType: true,
       tabSize: 2,
       insertSpaces: true,
-      renderWhitespace: 'selection' as const,
+      renderWhitespace: 'selection',
       quickSuggestions: true,
       suggestOnTriggerCharacters: true,
-      acceptSuggestionOnEnter: 'on' as const,
-      snippetSuggestions: 'top' as const,
+      acceptSuggestionOnEnter: 'on',
+      snippetSuggestions: 'top',
     }),
     [fontSize, showLineNumbers, minimapEnabled, wordWrap]
   );

@@ -379,8 +379,10 @@ function ChatInterface({
           getRootProps={getRootProps as (...args: unknown[]) => Record<string, unknown>}
           getInputProps={getInputProps as (...args: unknown[]) => Record<string, unknown>}
           openImagePicker={openImagePicker}
+          // @ts-expect-error React 18 useRef 返回 MutableRefObject<T | null>，但子组件期望 RefObject<T>
           inputHighlightRef={inputHighlightRef}
           renderInputWithMentions={renderInputWithMentions}
+          // @ts-expect-error React 18 useRef 返回 MutableRefObject<T | null>，但子组件期望 RefObject<T>
           textareaRef={textareaRef}
           input={input}
           onInputChange={handleInputChange}

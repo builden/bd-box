@@ -125,7 +125,7 @@ export default function GithubCredentialsSection({
                 <Button
                   size="sm"
                   variant={credential.is_active ? 'outline' : 'secondary'}
-                  onClick={() => onToggleGithubCredential(credential.id, credential.is_active)}
+                  onClick={() => onToggleGithubCredential(credential.id, credential.is_active ?? false)}
                 >
                   {credential.is_active ? t('apiKeys.status.active') : t('apiKeys.status.inactive')}
                 </Button>

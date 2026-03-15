@@ -43,13 +43,13 @@ export default function MarkdownCodeBlock({
 
       <button
         type="button"
-        onClick={() =>
-          copyTextToClipboard(rawContent).then((success) => {
-            if (success) {
-              setCopied(true);
-              setTimeout(() => setCopied(false), 2000);
-            }
-          })}
+        onClick={() => {
+          const success = copyTextToClipboard(rawContent);
+          if (success) {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+          }
+        }}
         className="absolute right-2 top-2 z-10 rounded-md border border-gray-600 bg-gray-700/80 px-2 py-1 text-xs text-white opacity-0 transition-opacity hover:bg-gray-700 group-hover:opacity-100"
       >
         {copied ? 'Copied!' : 'Copy'}

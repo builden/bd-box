@@ -16,10 +16,13 @@ export type CreatedApiKey = {
 
 export type GithubCredentialItem = {
   id: string;
-  credential_name: string;
+  type?: string;
+  name?: string;
+  credential_name?: string;
   description?: string | null;
   created_at: string;
-  is_active: boolean;
+  updated_at?: string;
+  is_active?: boolean;
 };
 
 export type ApiKeysResponse = {

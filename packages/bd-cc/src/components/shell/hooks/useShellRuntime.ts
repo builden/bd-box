@@ -54,10 +54,7 @@ export function useShellRuntime({
       return;
     }
 
-    if (
-      activeSocket.readyState === WebSocket.OPEN ||
-      activeSocket.readyState === WebSocket.CONNECTING
-    ) {
+    if (activeSocket.readyState === WebSocket.OPEN || activeSocket.readyState === WebSocket.CONNECTING) {
       activeSocket.close();
     }
 
@@ -91,6 +88,7 @@ export function useShellRuntime({
   }, []);
 
   const { isInitialized, clearTerminalScreen, disposeTerminal } = useShellTerminal({
+    // @ts-expect-error React 18 useRef 返回 MutableRefObject<T | null>，但子组件期望 RefObject<T>
     terminalContainerRef,
     terminalRef,
     fitAddonRef,
@@ -150,6 +148,7 @@ export function useShellRuntime({
   }, [disconnectFromShell, isInitialized, selectedSession?.id]);
 
   return {
+    // @ts-expect-error React 18 useRef 返回 MutableRefObject<T | null>，但组件期望 RefObject<T>
     terminalContainerRef,
     terminalRef,
     wsRef,

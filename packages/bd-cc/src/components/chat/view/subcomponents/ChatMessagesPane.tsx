@@ -1,12 +1,12 @@
-import { useTranslation } from "react-i18next";
-import { useCallback, useRef } from "react";
-import type { Dispatch, RefObject, SetStateAction } from "react";
-import type { ChatMessage } from "../../types/types";
-import type { Project, ProjectSession, SessionProvider } from "../../../../types/app";
-import { getIntrinsicMessageKey } from "../../utils/messageKeys";
-import MessageComponent from "./MessageComponent";
-import ProviderSelectionEmptyState from "./ProviderSelectionEmptyState";
-import AssistantThinkingIndicator from "./AssistantThinkingIndicator";
+import { useTranslation } from 'react-i18next';
+import { useCallback, useRef } from 'react';
+import type { Dispatch, RefObject, SetStateAction } from 'react';
+import type { ChatMessage } from '../../types/types';
+import type { Project, ProjectSession, SessionProvider } from '../../../../types/app';
+import { getIntrinsicMessageKey } from '../../utils/messageKeys';
+import MessageComponent from './MessageComponent';
+import ProviderSelectionEmptyState from './ProviderSelectionEmptyState';
+import AssistantThinkingIndicator from './AssistantThinkingIndicator';
 
 interface ChatMessagesPaneProps {
   scrollContainerRef: RefObject<HTMLDivElement | null>;
@@ -99,7 +99,7 @@ export default function ChatMessagesPane({
   selectedProject,
   isLoading,
 }: ChatMessagesPaneProps) {
-  const { t } = useTranslation("chat");
+  const { t } = useTranslation('chat');
   const messageKeyMapRef = useRef<WeakMap<ChatMessage, string>>(new WeakMap());
   const allocatedKeysRef = useRef<Set<string>>(new Set());
   const generatedMessageKeyCounterRef = useRef(0);
@@ -139,7 +139,7 @@ export default function ChatMessagesPane({
         <div className="mt-8 text-center text-gray-500 dark:text-gray-400">
           <div className="flex items-center justify-center space-x-2">
             <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-gray-400" />
-            <p>{t("session.loading.sessionMessages")}</p>
+            <p>{t('session.loading.sessionMessages')}</p>
           </div>
         </div>
       ) : chatMessages.length === 0 ? (
@@ -148,6 +148,7 @@ export default function ChatMessagesPane({
           currentSessionId={currentSessionId}
           provider={provider}
           setProvider={setProvider}
+          // @ts-expect-error React 18 useRef 返回 MutableRefObject<T | null>，但子组件期望 RefObject<T>
           textareaRef={textareaRef}
           claudeModel={claudeModel}
           setClaudeModel={setClaudeModel}
@@ -169,7 +170,7 @@ export default function ChatMessagesPane({
             <div className="py-3 text-center text-gray-500 dark:text-gray-400">
               <div className="flex items-center justify-center space-x-2">
                 <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-gray-400" />
-                <p className="text-sm">{t("session.loading.olderMessages")}</p>
+                <p className="text-sm">{t('session.loading.olderMessages')}</p>
               </div>
             </div>
           )}
@@ -179,8 +180,8 @@ export default function ChatMessagesPane({
             <div className="border-b border-gray-200 py-2 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
               {totalMessages > 0 && (
                 <span>
-                  {t("session.messages.showingOf", { shown: sessionMessagesCount, total: totalMessages })}{" "}
-                  <span className="text-xs">{t("session.messages.scrollToLoad")}</span>
+                  {t('session.messages.showingOf', { shown: sessionMessagesCount, total: totalMessages })}{' '}
+                  <span className="text-xs">{t('session.messages.scrollToLoad')}</span>
                 </span>
               )}
             </div>
@@ -194,7 +195,7 @@ export default function ChatMessagesPane({
                   <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span>{t("session.messages.allLoaded")}</span>
+                  <span>{t('session.messages.allLoaded')}</span>
                 </div>
               ) : (
                 <button
@@ -207,10 +208,10 @@ export default function ChatMessagesPane({
                   )}
                   <span>
                     {isLoadingAllMessages ? (
-                      t("session.messages.loadingAll")
+                      t('session.messages.loadingAll')
                     ) : (
                       <>
-                        {t("session.messages.loadAll")} {totalMessages > 0 && `(${totalMessages})`}
+                        {t('session.messages.loadAll')} {totalMessages > 0 && `(${totalMessages})`}
                       </>
                     )}
                   </span>
@@ -222,23 +223,23 @@ export default function ChatMessagesPane({
           {/* Performance warning when all messages are loaded */}
           {allMessagesLoaded && (
             <div className="border-b border-amber-200 bg-amber-50 py-1.5 text-center text-xs text-amber-600 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-400">
-              {t("session.messages.perfWarning")}
+              {t('session.messages.perfWarning')}
             </div>
           )}
 
           {/* Legacy message count indicator (for non-paginated view) */}
           {!hasMoreMessages && chatMessages.length > visibleMessageCount && (
             <div className="border-b border-gray-200 py-2 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
-              {t("session.messages.showingLast", { count: visibleMessageCount, total: chatMessages.length })} |
+              {t('session.messages.showingLast', { count: visibleMessageCount, total: chatMessages.length })} |
               <button className="ml-1 text-blue-600 underline hover:text-blue-700" onClick={loadEarlierMessages}>
-                {t("session.messages.loadEarlier")}
+                {t('session.messages.loadEarlier')}
               </button>
-              {" | "}
+              {' | '}
               <button
                 className="text-blue-600 underline hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                 onClick={loadAllMessages}
               >
-                {t("session.messages.loadAll")}
+                {t('session.messages.loadAll')}
               </button>
             </div>
           )}

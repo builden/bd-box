@@ -56,8 +56,11 @@ export const CredentialSchema = z.object({
   id: z.string(),
   type: z.string(),
   name: z.string(),
+  credential_name: z.string().optional(),
+  description: z.string().optional().nullable(),
   created_at: z.string(),
   updated_at: z.string().optional(),
+  is_active: z.boolean().optional(),
 });
 
 export type Credential = z.infer<typeof CredentialSchema>;
