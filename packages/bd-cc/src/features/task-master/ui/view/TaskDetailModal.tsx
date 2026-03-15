@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { createLogger } from '@/lib/logger';
 import { copyTextToClipboard } from '@/utils/clipboard';
 import { api } from '@/utils/api';
+import StatusSelect from './TaskStatusSelect';
 
 const logger = createLogger('TaskDetailModal');
 
@@ -31,15 +32,6 @@ type TaskDetailModalProps = {
   onStatusChange?: ((taskId: TaskId, status: string) => void) | null;
   onTaskClick?: ((task: TaskReference) => void) | null;
 };
-
-const STATUS_OPTIONS = [
-  { value: 'pending', label: 'Pending' },
-  { value: 'in-progress', label: 'In Progress' },
-  { value: 'review', label: 'Review' },
-  { value: 'done', label: 'Done' },
-  { value: 'deferred', label: 'Deferred' },
-  { value: 'cancelled', label: 'Cancelled' },
-];
 
 function getStatusIcon(status?: string) {
   if (status === 'done') return CheckCircle;
@@ -230,19 +222,7 @@ export default function TaskDetailModal({
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-              <select
-                value={task.status ?? 'pending'}
-                onChange={(event) => {
-                  void handleStatusSelect(event.target.value);
-                }}
-                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-              >
-                {STATUS_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              <StatusSelect value={task.status ?? 'pending'} onChange={(value) => void handleStatusSelect(value)} />
             </div>
 
             <div className="space-y-2">
