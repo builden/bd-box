@@ -143,6 +143,18 @@ export async function getSessions(projectName: string, limit: number = 5, offset
 }
 
 /**
+ * Session messages response with pagination metadata
+ */
+export interface SessionMessagesResult {
+  messages: SessionMessage[];
+  meta: {
+    total: number;
+    hasMore: boolean;
+    offset: number;
+  };
+}
+
+/**
  * Get session messages
  */
 export async function getSessionMessages(
@@ -150,14 +162,14 @@ export async function getSessionMessages(
   sessionId: string,
   limit: number | null = null,
   offset: number = 0
-): Promise<Session[]> {
+): Promise<SessionMessagesResult> {
   const claudeProjectsDir = path.join(os.homedir(), '.claude', 'projects');
   const projectDir = path.join(claudeProjectsDir, projectName);
 
   try {
     await fs.access(projectDir);
   } catch {
-    return [];
+    return { messages: [], meta: { total: 0, hasMore: false, offset: 0 } };
   }
 
   const messages: SessionMessage[] = [];
@@ -221,10 +233,17 @@ export async function getSessionMessages(
       }
     }
 
-    return messages.slice(offset, limit ? offset + limit : undefined);
+    const total = messages.length;
+    const hasMore = limit !== null ? offset + (limit || 0) < total : false;
+    const paginatedMessages = messages.slice(offset, limit ? offset + limit : undefined);
+
+    return {
+      messages: paginatedMessages,
+      meta: { total, hasMore, offset },
+    };
   } catch (error) {
     logger.error('Error getting session messages', error as Error);
-    return [];
+    return { messages: [], meta: { total: 0, hasMore: false, offset: 0 } };
   }
 }
 

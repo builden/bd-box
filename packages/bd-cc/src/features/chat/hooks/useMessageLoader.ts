@@ -53,15 +53,11 @@ export function useMessageLoader({
         }
 
         const data = await response.json();
+        // 遵循 api.md 规范: { data: { messages: [...], meta: { total, hasMore } } }
+        const payload = data.data;
 
-        if (data.hasMore !== undefined) {
-          const loadedCount = data.messages?.length || 0;
-          messagesOffsetRef.current = currentOffset + loadedCount;
-          return data.messages || [];
-        }
-
-        const messages = data.messages || [];
-        messagesOffsetRef.current = messages.length;
+        const messages = payload?.messages || [];
+        messagesOffsetRef.current = currentOffset + messages.length;
         return messages;
       } catch (error) {
         logger.error('Error loading session messages', error);

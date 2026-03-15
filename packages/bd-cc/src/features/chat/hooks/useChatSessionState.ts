@@ -125,22 +125,26 @@ export function useChatSessionState({
         }
 
         const data = await response.json();
+        // 遵循 api.md 规范: { data: { messages: [...], meta: { total, hasMore } } }
+        const payload = data.data;
         if (isInitialLoad && data.tokenUsage) {
           setTokenBudget(data.tokenUsage);
         }
 
-        if (data.hasMore !== undefined) {
-          const loadedCount = data.messages?.length || 0;
-          setHasMoreMessages(Boolean(data.hasMore));
-          setTotalMessages(Number(data.total || 0));
+        const messages = payload?.messages || [];
+        const meta = payload?.meta;
+
+        if (meta) {
+          const loadedCount = messages.length;
+          setHasMoreMessages(Boolean(meta.hasMore));
+          setTotalMessages(Number(meta.total || 0));
           messagesOffsetRef.current = currentOffset + loadedCount;
-          return data.messages || [];
+        } else {
+          setHasMoreMessages(false);
+          setTotalMessages(messages.length);
+          messagesOffsetRef.current = messages.length;
         }
 
-        const messages = data.messages || [];
-        setHasMoreMessages(false);
-        setTotalMessages(messages.length);
-        messagesOffsetRef.current = messages.length;
         return messages;
       } catch (error) {
         logger.error('Error loading session messages', error);
@@ -574,7 +578,8 @@ export function useChatSessionState({
             );
             if (response.ok) {
               const data = await response.json();
-              const allMessages = data.messages || data;
+              const payload = data.data;
+              const allMessages = payload?.messages || payload || [];
               setSessionMessages(Array.isArray(allMessages) ? allMessages : []);
               setHasMoreMessages(false);
               setTotalMessages(Array.isArray(allMessages) ? allMessages.length : 0);
@@ -820,7 +825,8 @@ export function useChatSessionState({
 
       if (response.ok) {
         const data = await response.json();
-        const allMessages = data.messages || data;
+        const payload = data.data;
+        const allMessages = payload?.messages || payload || [];
 
         if (container) {
           pendingScrollRestoreRef.current = {
