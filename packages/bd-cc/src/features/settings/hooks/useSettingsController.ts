@@ -2,15 +2,22 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTheme } from '@/store';
 import { authenticatedFetch } from '../../../utils/api';
 import { createLogger } from '@/lib/logger';
+import {
+  getErrorMessage,
+  parseJson,
+  toCodexPermissionMode,
+  readCodeEditorSettings,
+  mapCliServersToMcpServers,
+  getDefaultProject,
+  toResponseJson,
+  createEmptyClaudePermissions,
+  createEmptyCursorPermissions,
+  type McpCliServer,
+} from '../biz/settingsUtils';
 
 const logger = createLogger('useSettingsController');
 
-import {
-  AUTH_STATUS_ENDPOINTS,
-  DEFAULT_AUTH_STATUS,
-  DEFAULT_CODE_EDITOR_SETTINGS,
-  DEFAULT_CURSOR_PERMISSIONS,
-} from '../constants/constants';
+import { AUTH_STATUS_ENDPOINTS, DEFAULT_AUTH_STATUS } from '../constants/constants';
 import type {
   AgentProvider,
   AuthStatus,
@@ -58,16 +65,6 @@ type McpReadResponse = {
   servers?: McpServer[];
 };
 
-type McpCliServer = {
-  name: string;
-  type?: string;
-  command?: string;
-  args?: string[];
-  env?: Record<string, string>;
-  url?: string;
-  headers?: Record<string, string>;
-};
-
 type McpCliReadResponse = {
   success?: boolean;
   servers?: McpCliServer[];
@@ -112,80 +109,6 @@ const normalizeMainTab = (tab: string): SettingsMainTab => {
 
   return KNOWN_MAIN_TABS.includes(tab as SettingsMainTab) ? (tab as SettingsMainTab) : 'agents';
 };
-
-const getErrorMessage = (error: unknown): string => (error instanceof Error ? error.message : 'Unknown error');
-
-const parseJson = <T>(value: string | null, fallback: T): T => {
-  if (!value) {
-    return fallback;
-  }
-
-  try {
-    return JSON.parse(value) as T;
-  } catch {
-    return fallback;
-  }
-};
-
-const toCodexPermissionMode = (value: unknown): CodexPermissionMode => {
-  if (value === 'acceptEdits' || value === 'bypassPermissions') {
-    return value;
-  }
-
-  return 'default';
-};
-
-const readCodeEditorSettings = (): CodeEditorSettingsState => ({
-  theme: localStorage.getItem('codeEditorTheme') === 'light' ? 'light' : 'dark',
-  wordWrap: localStorage.getItem('codeEditorWordWrap') === 'true',
-  showMinimap: localStorage.getItem('codeEditorShowMinimap') !== 'false',
-  lineNumbers: localStorage.getItem('codeEditorLineNumbers') !== 'false',
-  fontSize: localStorage.getItem('codeEditorFontSize') ?? DEFAULT_CODE_EDITOR_SETTINGS.fontSize,
-});
-
-const mapCliServersToMcpServers = (servers: McpCliServer[] = []): McpServer[] =>
-  servers.map((server) => ({
-    id: server.name,
-    name: server.name,
-    type: server.type || 'stdio',
-    scope: 'user',
-    config: {
-      command: server.command || '',
-      args: server.args || [],
-      env: server.env || {},
-      url: server.url || '',
-      headers: server.headers || {},
-      timeout: 30000,
-    },
-    created: new Date().toISOString(),
-    updated: new Date().toISOString(),
-  }));
-
-const getDefaultProject = (projects: SettingsProject[]): SettingsProject => {
-  if (projects.length > 0) {
-    return projects[0];
-  }
-
-  const cwd = typeof process !== 'undefined' && process.cwd ? process.cwd() : '';
-  return {
-    name: 'default',
-    displayName: 'default',
-    fullPath: cwd,
-    path: cwd,
-  };
-};
-
-const toResponseJson = async <T>(response: Response): Promise<T> => response.json() as Promise<T>;
-
-const createEmptyClaudePermissions = (): ClaudePermissionsState => ({
-  allowedTools: [],
-  disallowedTools: [],
-  skipPermissions: false,
-});
-
-const createEmptyCursorPermissions = (): CursorPermissionsState => ({
-  ...DEFAULT_CURSOR_PERMISSIONS,
-});
 
 export function useSettingsController({ isOpen, initialTab, projects }: UseSettingsControllerArgs) {
   const { isDarkMode, toggleDarkMode } = useTheme() as ThemeContextValue;
