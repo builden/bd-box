@@ -53,10 +53,11 @@ export function useMessageLoader({
         }
 
         const data = await response.json();
-        // 遵循 api.md 规范: { data: { messages: [...], meta: { total, hasMore } } }
+        // API 返回格式: { data: { messages: { messages: [...], meta: {...} } } }
         const payload = data.data;
+        const messagesData = payload?.messages;
 
-        const messages = payload?.messages || [];
+        const messages = messagesData?.messages || [];
         messagesOffsetRef.current = currentOffset + messages.length;
         return messages;
       } catch (error) {

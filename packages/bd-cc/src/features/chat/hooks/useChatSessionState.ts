@@ -3,6 +3,8 @@ import type { MutableRefObject } from 'react';
 import { api, authenticatedFetch } from '@/utils/api';
 import type { ChatMessage, Provider } from '../types';
 import type { SessionMessage } from '@shared/api/sessions';
+import { SessionMessagesResponseSchema } from '@shared/api/sessions';
+import { validateResponse } from '@shared/api/validation';
 import type { Project, ProjectSession } from '@/types';
 import { safeLocalStorage } from '../biz/chatStorage';
 import {
@@ -51,13 +53,13 @@ export function useChatSessionState({
 }: UseChatSessionStateArgs) {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(() => {
     if (typeof window !== 'undefined' && selectedProject) {
-      const saved = safeLocalStorage.getItem(`chat_messages_${selectedProject.name}`);
+      const saved = safeLocalStorage.getItem(`chat_messages_${selectedProject.name}_${selectedSession?.id || 'none'}`);
       if (saved) {
         try {
           return JSON.parse(saved) as ChatMessage[];
         } catch {
           logger.error('Failed to parse saved chat messages, resetting');
-          safeLocalStorage.removeItem(`chat_messages_${selectedProject.name}`);
+          safeLocalStorage.removeItem(`chat_messages_${selectedProject.name}_${selectedSession?.id || 'none'}`);
           return [];
         }
       }
@@ -125,14 +127,28 @@ export function useChatSessionState({
         }
 
         const data = await response.json();
-        // 遵循 api.md 规范: { data: { messages: [...], meta: { total, hasMore } } }
+        // 遵循 api.md 规范: 使用 Zod 验证响应格式
+        // TODO: 重新启用验证 - 需要先修复项目名 URL 编码问题
+        // const validated = validateResponse(SessionMessagesResponseSchema, data, {
+        //   endpoint: `/api/projects/${projectName}/sessions/${sessionId}/messages`,
+        //   status: response.status,
+        //   fallbackValue: null,
+        // });
+
+        // if (!validated) {
+        //   logger.error('Invalid session messages response format');
+        //   return [];
+        // }
+
+        // 暂时使用简化处理
         const payload = data.data;
         if (isInitialLoad && data.tokenUsage) {
           setTokenBudget(data.tokenUsage);
         }
 
-        const messages = payload?.messages || [];
-        const meta = payload?.meta;
+        const messagesData = payload?.messages;
+        const messages = messagesData?.messages || [];
+        const meta = messagesData?.meta;
 
         if (meta) {
           const loadedCount = messages.length;
@@ -145,7 +161,7 @@ export function useChatSessionState({
           messagesOffsetRef.current = messages.length;
         }
 
-        return messages;
+        return messages as SessionMessage[];
       } catch (error) {
         logger.error('Error loading session messages', error);
         return [];
@@ -550,9 +566,12 @@ export function useChatSessionState({
 
   useEffect(() => {
     if (selectedProject && chatMessages.length > 0) {
-      safeLocalStorage.setItem(`chat_messages_${selectedProject.name}`, JSON.stringify(chatMessages));
+      safeLocalStorage.setItem(
+        `chat_messages_${selectedProject.name}_${selectedSession?.id || 'none'}`,
+        JSON.stringify(chatMessages)
+      );
     }
-  }, [chatMessages, selectedProject]);
+  }, [chatMessages, selectedProject, selectedSession]);
 
   // Scroll to search target message after messages are loaded
   useEffect(() => {
@@ -579,7 +598,8 @@ export function useChatSessionState({
             if (response.ok) {
               const data = await response.json();
               const payload = data.data;
-              const allMessages = payload?.messages || payload || [];
+              const messagesData = payload?.messages;
+              const allMessages = messagesData?.messages || messagesData || [];
               setSessionMessages(Array.isArray(allMessages) ? allMessages : []);
               setHasMoreMessages(false);
               setTotalMessages(Array.isArray(allMessages) ? allMessages.length : 0);
@@ -826,7 +846,8 @@ export function useChatSessionState({
       if (response.ok) {
         const data = await response.json();
         const payload = data.data;
-        const allMessages = payload?.messages || payload || [];
+        const messagesData = payload?.messages;
+        const allMessages = messagesData?.messages || messagesData || [];
 
         if (container) {
           pendingScrollRestoreRef.current = {

@@ -1,5 +1,6 @@
 import { IS_PLATFORM } from '../constants/config';
 import { notificationService } from '../components/app/GlobalNotifications';
+import { z } from 'zod';
 
 interface FetchOptions extends RequestInit {
   body?: BodyInit | null;
@@ -54,15 +55,23 @@ async function processJsonResponse(
   // 成功响应: 智能展开 data 字段 (遵循 api.md 规范)
   // - success() 返回 { data: singleObject } → 展开为 singleObject
   // - successList() 返回 { data: { items: [...], meta: {...} } } → 展开为 { items: [...], meta: {...} }
+  // - 嵌套结构 { data: { messages: {...} } } → 保留完整结构
   if (response.ok && jsonData && typeof jsonData === 'object' && 'data' in jsonData) {
     const data = (jsonData as { data: unknown }).data;
     // data 是对象（不含数组）时展开，数组+meta 结构也需要展开
     if (data !== null && typeof data === 'object' && !Array.isArray(data)) {
-      // 检查是否是 { items: [...], meta: {...} } 结构
       const dataObj = data as Record<string, unknown>;
+
+      // 检查是否是 items + meta 结构 - 展开
       if ('items' in dataObj && Array.isArray(dataObj.items)) {
-        return data; // 保留 items + meta 结构
+        return data;
       }
+
+      // 检查是否是 messages 结构 (会话消息) - 不展开，保留嵌套
+      if ('messages' in dataObj) {
+        return jsonData; // 保留 { data: { messages: {...} } } 完整结构
+      }
+
       return data; // 展开为单个对象
     }
     return jsonData;
@@ -88,6 +97,7 @@ export const authenticatedFetch = (url: string, options: FetchOptions = {}): Pro
   }
 
   return fetch(url, {
+    cache: 'no-store',
     ...fetchOptions,
     headers: {
       ...defaultHeaders,

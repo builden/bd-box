@@ -52,7 +52,10 @@ export function useSearchNavigation({
           );
           if (response.ok) {
             const data = await response.json();
-            const allMessages = data.messages || data;
+            // API 返回格式: { data: { messages: { messages: [...], meta: {...} } } }
+            const payload = data.data;
+            const messagesData = payload?.messages;
+            const allMessages = messagesData?.messages || messagesData || [];
             // Wait for messages to render
             await new Promise((resolve) => setTimeout(resolve, 300));
           }

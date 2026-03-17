@@ -119,17 +119,23 @@ export const SessionMessageSchema = z.object({
 export type SessionMessage = z.infer<typeof SessionMessageSchema>;
 
 /**
- * 会话消息响应
+ * 会话消息响应 (遵循 api.md 规范)
+ * 格式: { data: { messages: { messages: [...], meta: {...} } } }
  */
 export const SessionMessagesResponseSchema = z.object({
-  data: z.array(SessionMessageSchema),
-  meta: z
-    .object({
-      total: z.number().optional(),
-      page: z.number().optional(),
-      limit: z.number().optional(),
-    })
-    .optional(),
+  data: z.object({
+    messages: z.object({
+      messages: z.array(SessionMessageSchema),
+      meta: z
+        .object({
+          total: z.number().optional(),
+          hasMore: z.boolean().optional(),
+          offset: z.number().optional(),
+          limit: z.number().optional(),
+        })
+        .optional(),
+    }),
+  }),
 });
 
 export type SessionMessagesResponse = z.infer<typeof SessionMessagesResponseSchema>;

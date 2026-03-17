@@ -12,6 +12,7 @@ import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import { applyCustomSessionNames } from '../../database/index.ts';
 import { createLogger } from '../../utils/logger';
+import { success, serverError } from '../../utils/api-response.js';
 
 const router = Router();
 const logger = createLogger('cursor-sessions');
@@ -29,7 +30,8 @@ router.get('/sessions', async (req, res) => {
     try {
       await fs.access(cursorChatsPath);
     } catch {
-      return res.json({ success: true, sessions: [], cwdId, path: cursorChatsPath });
+      // 遵循 api.md 规范: 使用 success() 包装响应
+      return success(res, { sessions: [], cwdId, path: cursorChatsPath });
     }
 
     const sessionDirs = await fs.readdir(cursorChatsPath);
@@ -121,9 +123,10 @@ router.get('/sessions', async (req, res) => {
     });
     applyCustomSessionNames(sessions, 'cursor');
 
-    res.json({ success: true, sessions, cwdId, path: cursorChatsPath });
+    // 遵循 api.md 规范: 使用 success() 包装响应
+    return success(res, { sessions, cwdId, path: cursorChatsPath });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to read Cursor sessions', details: error.message });
+    return serverError(res, error instanceof Error ? error.message : String(error));
   }
 });
 
@@ -204,9 +207,10 @@ router.get('/sessions/:sessionId', async (req, res) => {
     }
 
     await db.close();
-    res.json({ success: true, session: { id: sessionId, projectPath, messages, metadata, cwdId } });
+    // 遵循 api.md 规范: 使用 success() 包装响应
+    return success(res, { session: { id: sessionId, projectPath, messages, metadata, cwdId } });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to read Cursor session', details: error.message });
+    return serverError(res, error instanceof Error ? error.message : String(error));
   }
 });
 

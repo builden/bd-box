@@ -7,6 +7,7 @@ import { getCodexSessions, getCodexSessionMessages, deleteCodexSession } from '.
 import { applyCustomSessionNames, sessionNamesDb } from '../database/index.ts';
 import { runCommandRaw } from '../utils/spawn';
 import { createLogger } from '../utils/logger';
+import { success, serverError } from '../utils/api-response.js';
 
 const router = express.Router();
 const logger = createLogger('codex-routes');
@@ -70,10 +71,11 @@ router.get('/sessions/:sessionId/messages', async (req, res) => {
       offset ? parseInt(offset, 10) : 0
     );
 
-    res.json({ success: true, ...result });
+    // 遵循 api.md 规范: 使用 success() 包装响应
+    return success(res, { messages: result });
   } catch (error) {
     logger.error('Error fetching Codex session messages:', error);
-    res.status(500).json({ success: false, error: error.message });
+    return serverError(res, error instanceof Error ? error.message : String(error));
   }
 });
 
