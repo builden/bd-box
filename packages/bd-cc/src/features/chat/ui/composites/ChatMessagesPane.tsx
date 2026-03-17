@@ -1,12 +1,12 @@
-import { useTranslation } from 'react-i18next';
-import { useCallback, useRef } from 'react';
-import type { Dispatch, RefObject, SetStateAction } from 'react';
-import type { ChatMessage } from '@/features/chat/types';
-import type { Project, ProjectSession, SessionProvider } from '../../../../types/app';
 import { getIntrinsicMessageKey } from '@/features/chat/biz/messageKeys';
+import type { ChatMessage } from '@/features/chat/types';
+import type { Dispatch, RefObject, SetStateAction } from 'react';
+import { useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { Project, ProjectSession, SessionProvider } from '../../../../types/app';
+import AssistantThinkingIndicator from './AssistantThinkingIndicator';
 import MessageComponent from './MessageComponent';
 import ProviderSelectionEmptyState from './ProviderSelectionEmptyState';
-import AssistantThinkingIndicator from './AssistantThinkingIndicator';
 
 interface ChatMessagesPaneProps {
   scrollContainerRef: RefObject<HTMLDivElement | null>;
@@ -247,7 +247,7 @@ export default function ChatMessagesPane({
           {visibleMessages.map((message, index) => {
             const prevMessage = index > 0 ? visibleMessages[index - 1] : null;
             // 序号：最新消息 = totalMessages，最旧 = 1
-            const messageIndex = totalMessages - 1 - index;
+            const messageIndex = totalMessages - visibleMessages.length + index;
             return (
               <MessageComponent
                 key={getMessageKey(message)}

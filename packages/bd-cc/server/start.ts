@@ -11,6 +11,7 @@
  * - app/routes.ts - registerAllRoutes()
  * - app/bootstrap.ts - bootstrap()
  * - services/project-watcher.ts - ProjectWatcher
+ * - ws/shell-handler.ts - ShellHandler (Bun PTY)
  */
 
 import './env.ts';
@@ -23,6 +24,7 @@ import { bootstrap } from './app/bootstrap';
 import { initializeDatabase } from './database/db';
 import { createLogger } from './utils/logger';
 import { ProjectWatcher, type UpdateCallback } from './services/project-watcher';
+import { ShellHandler } from './ws/shell-handler';
 import { WebSocketServer, type WebSocket } from 'ws';
 import express from 'express';
 import http from 'http';
@@ -37,6 +39,9 @@ const logger = createLogger('server/start');
 
 // Track connected WebSocket clients for project updates
 const connectedClients = new Set<WebSocket>();
+
+// Shell handler instance (uses Bun PTY)
+let shellHandler: ShellHandler;
 
 /**
  * Broadcast project update event to all connected clients
@@ -131,6 +136,9 @@ async function main() {
 
   // Make WebSocket server available to routes
   app.locals.wss = wss;
+
+  // Initialize ShellHandler with Bun PTY
+  shellHandler = new ShellHandler(container, config);
 
   // Setup WebSocket connection handling
   setupWebSocketConnections(wss, connectedClients);
@@ -298,25 +306,15 @@ async function handleChatConnection(ws: WebSocket, connectedClients: Set<WebSock
 }
 
 /**
- * Handle shell WebSocket connections
+ * Handle shell WebSocket connections using ShellHandler (Bun PTY)
  */
 function handleShellConnection(ws: WebSocket): void {
-  logger.info('Shell client connected');
-  // Shell connection handling is complex and depends on many utilities
-  // For a simplified version, we'll defer to the full implementation in index.ts
-  // This is a placeholder that logs the connection
-  ws.on('message', (message) => {
-    try {
-      const data = JSON.parse(message.toString());
-      logger.debug('Shell message received', { type: data.type });
-    } catch (error) {
-      logger.error('Shell WebSocket parse error:', error);
-    }
-  });
-
-  ws.on('close', () => {
-    logger.info('Shell client disconnected');
-  });
+  if (shellHandler) {
+    shellHandler.handleConnection(ws, {} as any);
+  } else {
+    logger.error('ShellHandler not initialized');
+    ws.close();
+  }
 }
 
 // Start the server

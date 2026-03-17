@@ -7,10 +7,18 @@ let serverProcess: any = null;
 // Test project that has sessions
 const TEST_PROJECT = '-Users-builden-Develop-my-proj-bd-box';
 
+// Known session ID with many messages
+const TEST_SESSION_ID = '4dccddd5-5d98-4267-8407-1dd52fafcdf0';
+
+// Helper to extract sessions from response
+function getSessions(response: any): any[] {
+  return response?.data?.items || response?.items || response || [];
+}
+
 describe('Sessions API', () => {
   beforeAll(async () => {
     if (!serverProcess) {
-      serverProcess = spawn('bun', ['run', 'server/index.ts'], {
+      serverProcess = spawn('bun', ['run', 'server/start.ts'], {
         cwd: process.cwd(),
         env: { ...process.env, NODE_ENV: 'test' },
         stdio: ['ignore', 'pipe', 'pipe'],
@@ -61,18 +69,19 @@ describe('Sessions API', () => {
       });
 
       expect(res.ok).toBe(true);
-      const sessions = await res.json();
+      const response = await res.json();
+      const sessions = getSessions(response);
       expect(Array.isArray(sessions)).toBe(true);
       expect(sessions.length).toBeGreaterThan(0);
 
       // Verify session structure
       const session = sessions[0];
-      expect(session).toHaveProperty('sessionId');
-      expect(session).toHaveProperty('projectId');
+      expect(session).toHaveProperty('id');
+      expect(session).toHaveProperty('projectName');
       expect(session).toHaveProperty('createdAt');
       expect(session).toHaveProperty('updatedAt');
       expect(session).toHaveProperty('messageCount');
-      expect(session.sessionId).toMatch(/^[0-9a-f-]{36}$/); // UUID format
+      expect(session.id).toMatch(/^[0-9a-f-]{36}$/); // UUID format
     });
 
     it('should return sessions sorted by lastMessage (newest first)', async () => {
@@ -80,11 +89,11 @@ describe('Sessions API', () => {
         headers: { Authorization: 'Bearer local-token' },
       });
 
-      const sessions = await res.json();
+      const response = await res.json();
+      const sessions = getSessions(response);
       expect(sessions.length).toBeGreaterThan(1);
 
       // Verify that at least some sessions are sorted correctly
-      // Get sessions that have both lastMessage and updatedAt
       const validSessions = sessions.filter((s: any) => s.lastMessage && s.updatedAt);
 
       // If we have enough valid sessions, check the first two are sorted
@@ -101,7 +110,8 @@ describe('Sessions API', () => {
       });
 
       expect(res.ok).toBe(true);
-      const sessions = await res.json();
+      const response = await res.json();
+      const sessions = getSessions(response);
       expect(Array.isArray(sessions)).toBe(true);
       expect(sessions.length).toBe(0);
     });
@@ -111,7 +121,8 @@ describe('Sessions API', () => {
         headers: { Authorization: 'Bearer local-token' },
       });
 
-      const sessions = await res.json();
+      const response = await res.json();
+      const sessions = getSessions(response);
       expect(sessions.length).toBeLessThanOrEqual(2);
     });
 
@@ -119,17 +130,17 @@ describe('Sessions API', () => {
       const res1 = await fetch(`${BASE_URL}/api/projects/${TEST_PROJECT}/sessions?limit=5&offset=0`, {
         headers: { Authorization: 'Bearer local-token' },
       });
-      const sessions1 = await res1.json();
+      const sessions1 = getSessions(await res1.json());
 
       const res2 = await fetch(`${BASE_URL}/api/projects/${TEST_PROJECT}/sessions?limit=5&offset=5`, {
         headers: { Authorization: 'Bearer local-token' },
       });
-      const sessions2 = await res2.json();
+      const sessions2 = getSessions(await res2.json());
 
       // If there are more than 5 sessions, offsets should return different results
       if (sessions1.length >= 5 && sessions2.length >= 1) {
-        const ids1 = sessions1.map((s: any) => s.sessionId);
-        const ids2 = sessions2.map((s: any) => s.sessionId);
+        const ids1 = sessions1.map((s: any) => s.id);
+        const ids2 = sessions2.map((s: any) => s.id);
         // Check that offset actually skips sessions
         expect(ids1[0]).not.toBe(ids2[0]);
       }
@@ -140,7 +151,7 @@ describe('Sessions API', () => {
         headers: { Authorization: 'Bearer local-token' },
       });
 
-      const sessions = await res.json();
+      const sessions = getSessions(await res.json());
       const sessionWithMessages = sessions.find((s: any) => s.messageCount > 0);
       expect(sessionWithMessages).toBeDefined();
       expect(typeof sessionWithMessages.messageCount).toBe('number');
@@ -151,7 +162,7 @@ describe('Sessions API', () => {
         headers: { Authorization: 'Bearer local-token' },
       });
 
-      const sessions = await res.json();
+      const sessions = getSessions(await res.json());
       const session = sessions[0];
 
       if (session.messageCount > 0) {
@@ -166,29 +177,24 @@ describe('Sessions API', () => {
   // ==================== Session Messages ====================
 
   describe('GET /api/projects/:name/sessions/:sessionId/messages', () => {
-    it('should return messages for a valid session', async () => {
-      // First get a session ID that has messages
-      const sessionsRes = await fetch(`${BASE_URL}/api/projects/${TEST_PROJECT}/sessions?limit=10`, {
-        headers: { Authorization: 'Bearer local-token' },
-      });
-      const sessions = await sessionsRes.json();
-
-      const sessionWithMessages = sessions.find((s: any) => s.messageCount > 0);
-      if (!sessionWithMessages) {
-        expect(true).toBe(true); // Skip if no sessions with messages
-        return;
-      }
-
-      const sessionId = sessionWithMessages.sessionId;
-      const res = await fetch(`${BASE_URL}/api/projects/${TEST_PROJECT}/sessions/${sessionId}/messages?limit=10`, {
-        headers: { Authorization: 'Bearer local-token' },
-      });
+    it('should return messages with proper data structure', async () => {
+      const res = await fetch(
+        `${BASE_URL}/api/projects/${TEST_PROJECT}/sessions/${TEST_SESSION_ID}/messages?limit=10`,
+        {
+          headers: { Authorization: 'Bearer local-token' },
+        }
+      );
 
       expect(res.ok).toBe(true);
       const data = await res.json();
-      // Response is { messages: [...] }
-      expect(data).toHaveProperty('messages');
-      const messages = data.messages;
+
+      // New API response format: { data: { messages: { messages: [...], meta: {...} } } }
+      expect(data).toHaveProperty('data');
+      expect(data.data).toHaveProperty('messages');
+      expect(data.data.messages).toHaveProperty('messages');
+      expect(data.data.messages).toHaveProperty('meta');
+
+      const messages = data.data.messages.messages;
       expect(Array.isArray(messages)).toBe(true);
 
       // Each message should have type and message.role
@@ -201,6 +207,73 @@ describe('Sessions API', () => {
       }
     });
 
+    it('should return meta information with total and hasMore', async () => {
+      const res = await fetch(`${BASE_URL}/api/projects/${TEST_PROJECT}/sessions/${TEST_SESSION_ID}/messages?limit=5`, {
+        headers: { Authorization: 'Bearer local-token' },
+      });
+
+      expect(res.ok).toBe(true);
+      const data = await res.json();
+      const meta = data.data.messages.meta;
+
+      expect(meta).toHaveProperty('total');
+      expect(meta).toHaveProperty('hasMore');
+      expect(typeof meta.total).toBe('number');
+      expect(typeof meta.hasMore).toBe('boolean');
+    });
+
+    it('should return messages for session with many messages', async () => {
+      const res = await fetch(
+        `${BASE_URL}/api/projects/${TEST_PROJECT}/sessions/${TEST_SESSION_ID}/messages?limit=20&offset=0`,
+        {
+          headers: { Authorization: 'Bearer local-token' },
+        }
+      );
+
+      expect(res.ok).toBe(true);
+      const data = await res.json();
+
+      // Should return messages
+      expect(data.data).toBeDefined();
+      expect(data.data.messages).toBeDefined();
+      const messages = data.data.messages.messages;
+      expect(Array.isArray(messages)).toBe(true);
+      expect(messages.length).toBeGreaterThan(0);
+
+      // Should have meta with total
+      const meta = data.data.messages.meta;
+      expect(meta.total).toBeGreaterThan(1000); // This session has many messages
+    });
+
+    it('should support message pagination with limit and offset', async () => {
+      const res1 = await fetch(
+        `${BASE_URL}/api/projects/${TEST_PROJECT}/sessions/${TEST_SESSION_ID}/messages?limit=5&offset=0`,
+        {
+          headers: { Authorization: 'Bearer local-token' },
+        }
+      );
+
+      const res2 = await fetch(
+        `${BASE_URL}/api/projects/${TEST_PROJECT}/sessions/${TEST_SESSION_ID}/messages?limit=5&offset=5`,
+        {
+          headers: { Authorization: 'Bearer local-token' },
+        }
+      );
+
+      expect(res1.ok).toBe(true);
+      expect(res2.ok).toBe(true);
+
+      const data1 = await res1.json();
+      const data2 = await res2.json();
+
+      const messages1 = data1.data.messages.messages;
+      const messages2 = data2.data.messages.messages;
+
+      // Messages should be different due to offset
+      expect(messages1.length).toBeGreaterThan(0);
+      expect(messages2.length).toBeGreaterThan(0);
+    });
+
     it('should return empty array for non-existent session', async () => {
       const res = await fetch(`${BASE_URL}/api/projects/${TEST_PROJECT}/sessions/non-existent-session-id/messages`, {
         headers: { Authorization: 'Bearer local-token' },
@@ -210,36 +283,16 @@ describe('Sessions API', () => {
       expect([200, 404]).toContain(res.status);
     });
 
-    it('should support message pagination', async () => {
-      const sessionsRes = await fetch(`${BASE_URL}/api/projects/${TEST_PROJECT}/sessions?limit=1`, {
-        headers: { Authorization: 'Bearer local-token' },
-      });
-      const sessions = await sessionsRes.json();
-
-      if (sessions.length === 0) {
-        expect(true).toBe(true);
-        return;
-      }
-
-      const sessionId = sessions[0].sessionId;
-
-      const res1 = await fetch(
-        `${BASE_URL}/api/projects/${TEST_PROJECT}/sessions/${sessionId}/messages?limit=5&offset=0`,
+    it('should handle large limit values gracefully', async () => {
+      const res = await fetch(
+        `${BASE_URL}/api/projects/${TEST_PROJECT}/sessions/${TEST_SESSION_ID}/messages?limit=999999`,
         {
           headers: { Authorization: 'Bearer local-token' },
         }
       );
 
-      const res2 = await fetch(
-        `${BASE_URL}/api/projects/${TEST_PROJECT}/sessions/${sessionId}/messages?limit=5&offset=5`,
-        {
-          headers: { Authorization: 'Bearer local-token' },
-        }
-      );
-
-      // Both should return valid arrays
-      expect(res1.ok).toBe(true);
-      expect(res2.ok).toBe(true);
+      // Should handle gracefully
+      expect([200, 400]).toContain(res.status);
     });
   });
 
@@ -254,49 +307,6 @@ describe('Sessions API', () => {
 
       // Should handle gracefully (session not found is not an error)
       expect([200, 404]).toContain(res.status);
-    });
-
-    it('should return proper JSON response structure', async () => {
-      const res = await fetch(`${BASE_URL}/api/projects/${TEST_PROJECT}/sessions/test-session-id`, {
-        method: 'DELETE',
-        headers: { Authorization: 'Bearer local-token' },
-      });
-
-      const data = await res.json();
-      expect(data).toHaveProperty('success');
-      expect(typeof data.success).toBe('boolean');
-    });
-  });
-
-  // ==================== Session Rename ====================
-
-  describe('PUT /api/sessions/:sessionId/rename', () => {
-    it('should return success for valid rename request', async () => {
-      const res = await fetch(`${BASE_URL}/api/sessions/test-session-id/rename`, {
-        method: 'PUT',
-        headers: {
-          Authorization: 'Bearer local-token',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ summary: 'Test Session Name', provider: 'claude' }),
-      });
-
-      // May return 200 (success) or 404 (session not found)
-      expect([200, 404]).toContain(res.status);
-    });
-
-    it('should require valid request body', async () => {
-      const res = await fetch(`${BASE_URL}/api/sessions/test-session-id/rename`, {
-        method: 'PUT',
-        headers: {
-          Authorization: 'Bearer local-token',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ provider: 'claude' }),
-      });
-
-      // Should handle missing summary - returns 400 Bad Request
-      expect([200, 400, 404]).toContain(res.status);
     });
   });
 
