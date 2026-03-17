@@ -15,13 +15,12 @@ interface UseScrollManagerOptions {
 
 interface UseScrollManagerResult {
   scrollContainerRef: React.RefObject<HTMLDivElement | null>;
+  sentinelRef: React.RefObject<HTMLDivElement | null>;
   scrollToBottom: () => void;
   scrollToBottomAndReset: () => void;
   isNearBottom: () => boolean;
-  handleScroll: () => void;
   visibleMessageCount: number;
   setVisibleMessageCount: React.Dispatch<React.SetStateAction<number>>;
-  loadEarlierMessages: () => void;
 }
 
 export function useScrollManager({
@@ -30,8 +29,8 @@ export function useScrollManager({
   hasMoreMessages = false,
 }: UseScrollManagerOptions = {}): UseScrollManagerResult {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const isLoadingMoreRef = useRef(false);
-  const topLoadLockRef = useRef(false);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
   const pendingScrollRestoreRef = useRef<ScrollRestoreState | null>(null);
   const scrollPositionRef = useRef({ height: 0, top: 0 });
   const [visibleMessageCount, setVisibleMessageCount] = useState(INITIAL_VISIBLE_MESSAGES);
@@ -58,40 +57,34 @@ export function useScrollManager({
     setVisibleMessageCount(INITIAL_VISIBLE_MESSAGES);
   }, [scrollToBottom]);
 
-  const handleScroll = useCallback(async () => {
-    const container = scrollContainerRef.current;
-    if (!container) {
+  // Intersection Observer 实现无限滚动
+  useEffect(() => {
+    if (!sentinelRef.current || !scrollContainerRef.current) {
       return;
     }
 
-    const nearBottom = isNearBottom();
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
 
-    if (!hasMoreMessages) {
-      return;
-    }
-
-    const scrolledNearTop = container.scrollTop < 100;
-    if (!scrolledNearTop) {
-      topLoadLockRef.current = false;
-      return;
-    }
-
-    if (topLoadLockRef.current) {
-      if (container.scrollTop > 20) {
-        topLoadLockRef.current = false;
+        // 只有在可视区域内且还有更多消息时才触发
+        if (entry.isIntersecting && hasMoreMessages && onLoadMore) {
+          onLoadMore();
+        }
+      },
+      {
+        root: scrollContainerRef.current,
+        rootMargin: '500px', // 提前 500px 触发
+        threshold: 0,
       }
-      return;
-    }
+    );
 
-    if (onLoadMore && !isLoadingMoreRef.current) {
-      isLoadingMoreRef.current = true;
-      const didLoad = await onLoadMore();
-      if (didLoad) {
-        topLoadLockRef.current = true;
-      }
-      isLoadingMoreRef.current = false;
-    }
-  }, [isNearBottom, hasMoreMessages, onLoadMore]);
+    observerRef.current.observe(sentinelRef.current);
+
+    return () => {
+      observerRef.current?.disconnect();
+    };
+  }, [hasMoreMessages, onLoadMore]);
 
   // 滚动恢复
   useEffect(() => {
@@ -131,29 +124,13 @@ export function useScrollManager({
     }
   });
 
-  // 滚动监听
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) {
-      return;
-    }
-
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [handleScroll]);
-
-  const loadEarlierMessages = useCallback(() => {
-    setVisibleMessageCount((previousCount) => previousCount + 100);
-  }, []);
-
   return {
     scrollContainerRef,
+    sentinelRef,
     scrollToBottom,
     scrollToBottomAndReset,
     isNearBottom,
-    handleScroll,
     visibleMessageCount,
     setVisibleMessageCount,
-    loadEarlierMessages,
   };
 }

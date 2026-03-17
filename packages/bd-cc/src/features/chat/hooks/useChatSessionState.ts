@@ -88,6 +88,8 @@ export function useChatSessionState({
   const [showLoadAllOverlay, setShowLoadAllOverlay] = useState(false);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
   const [searchTarget, setSearchTarget] = useState<{ timestamp?: string; uuid?: string; snippet?: string } | null>(
     null
   );
@@ -769,6 +771,35 @@ export function useChatSessionState({
     return () => container.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    if (!sentinelRef.current || !scrollContainerRef.current) {
+      return;
+    }
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+
+        // Only trigger when in viewport and there are more messages
+        if (entry.isIntersecting && hasMoreMessages && !allMessagesLoadedRef.current && scrollContainerRef.current) {
+          loadOlderMessages(scrollContainerRef.current);
+        }
+      },
+      {
+        root: scrollContainerRef.current,
+        rootMargin: '500px', // Preload 500px before reaching top
+        threshold: 0,
+      }
+    );
+
+    observerRef.current.observe(sentinelRef.current);
+
+    return () => {
+      observerRef.current?.disconnect();
+    };
+  }, [hasMoreMessages, loadOlderMessages]);
+
   useEffect(() => {
     const activeViewSessionId = selectedSession?.id || currentSessionId;
     if (!activeViewSessionId || !processingSessions) {
@@ -921,6 +952,7 @@ export function useChatSessionState({
     setClaudeStatus,
     createDiff,
     scrollContainerRef,
+    sentinelRef,
     scrollToBottom,
     scrollToBottomAndReset,
     isNearBottom,

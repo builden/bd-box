@@ -105,6 +105,7 @@ function ChatInterface({
     setClaudeStatus,
     createDiff,
     scrollContainerRef,
+    sentinelRef,
     scrollToBottom,
     scrollToBottomAndReset,
     handleScroll,
@@ -294,6 +295,7 @@ function ChatInterface({
       <div className="flex h-full flex-col">
         <ChatMessagesPane
           scrollContainerRef={scrollContainerRef}
+          sentinelRef={sentinelRef}
           onWheel={handleScroll}
           onTouchMove={handleScroll}
           isLoadingSessionMessages={isLoadingSessionMessages}

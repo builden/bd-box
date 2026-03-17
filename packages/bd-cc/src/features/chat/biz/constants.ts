@@ -4,7 +4,7 @@
  */
 
 /** Number of messages to load per page when paginating */
-export const MESSAGES_PER_PAGE = 20;
+export const MESSAGES_PER_PAGE = 100;
 
 /** Initial number of visible messages when loading history */
 export const INITIAL_VISIBLE_MESSAGES = 100;

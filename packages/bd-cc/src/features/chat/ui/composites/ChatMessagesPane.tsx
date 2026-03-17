@@ -10,6 +10,7 @@ import ProviderSelectionEmptyState from './ProviderSelectionEmptyState';
 
 interface ChatMessagesPaneProps {
   scrollContainerRef: RefObject<HTMLDivElement | null>;
+  sentinelRef: RefObject<HTMLDivElement | null>;
   onWheel: () => void;
   onTouchMove: () => void;
   isLoadingSessionMessages: boolean;
@@ -56,6 +57,7 @@ interface ChatMessagesPaneProps {
 
 export default function ChatMessagesPane({
   scrollContainerRef,
+  sentinelRef,
   onWheel,
   onTouchMove,
   isLoadingSessionMessages,
@@ -243,6 +245,9 @@ export default function ChatMessagesPane({
               </button>
             </div>
           )}
+
+          {/* Sentinel element for Intersection Observer */}
+          <div ref={sentinelRef} />
 
           {visibleMessages.map((message, index) => {
             const prevMessage = index > 0 ? visibleMessages[index - 1] : null;
