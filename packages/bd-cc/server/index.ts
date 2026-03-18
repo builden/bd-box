@@ -301,9 +301,8 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // ============================================================================
 // region: routes registration
 // ============================================================================
-// Public health check endpoint (no authentication required)
-// System routes (health, update)
-app.use('/', systemRoutes);
+// System routes (health, home, open-in-vscode, update)
+app.use('/api/system', systemRoutes);
 
 // Inline projects routes (extracted from index.ts)
 app.use('/', authenticateToken, inlineProjectsRoutes);

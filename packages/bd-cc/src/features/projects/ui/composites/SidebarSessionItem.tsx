@@ -196,6 +196,34 @@ function SidebarSessionItem({
             </>
           ) : (
             <>
+              {session.__provider === 'claude' && (
+                <button
+                  className="flex h-6 w-6 items-center justify-center rounded bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    fetch('/api/system/open-in-vscode', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ projectName: project.name, sessionId: session.id }),
+                    }).catch(console.error);
+                  }}
+                  title={t('tooltips.openInVSCode', { defaultValue: 'Open session file in VS Code' })}
+                >
+                  <svg
+                    className="h-3 w-3 text-blue-600 dark:text-blue-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                    />
+                  </svg>
+                </button>
+              )}
               <button
                 className="flex h-6 w-6 items-center justify-center rounded bg-gray-50 hover:bg-gray-100 dark:bg-gray-900/20 dark:hover:bg-gray-900/40"
                 onClick={(event) => {

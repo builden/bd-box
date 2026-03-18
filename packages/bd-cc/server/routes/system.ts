@@ -9,14 +9,15 @@ import { Router } from 'express';
 import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { createLogger } from '../utils/logger.js';
 import { authenticateToken } from '../middleware/auth.js';
-import { success, serverError } from '../utils/api-response.js';
+import { success, serverError, badRequest } from '../utils/api-response.js';
 
 const logger = createLogger('routes/system');
-const router = Router();
+const router = Router({ mergeParams: true });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -34,11 +35,36 @@ router.get('/health', (req, res) => {
   });
 });
 
+// Open file/folder in VS Code
+router.post('/open-in-vscode', async (req, res) => {
+  const { projectName, sessionId } = req.body;
+
+  if (!projectName || !sessionId) {
+    return badRequest(res, 'Missing projectName or sessionId');
+  }
+
+  const filePath = path.join(os.homedir(), '.claude', 'projects', projectName, `${sessionId}.jsonl`);
+
+  try {
+    const child = spawn('code', [filePath], {
+      detached: true,
+      stdio: 'ignore',
+    });
+
+    child.unref();
+
+    return success(res, { success: true });
+  } catch (error) {
+    logger.error('Failed to open in VS Code:', error);
+    return serverError(res, 'Failed to open in VS Code');
+  }
+});
+
 // ============================================================================
 // System Update
 // ============================================================================
 
-router.post('/system/update', authenticateToken, async (req, res) => {
+router.post('/update', authenticateToken, async (req, res) => {
   try {
     const projectRoot = path.join(__dirname, '..');
 
