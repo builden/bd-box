@@ -1,13 +1,13 @@
 import React, { memo, useCallback } from 'react';
 import { Check, ChevronDown, ChevronRight, Edit3, Folder, FolderOpen, Star, Trash2, X } from 'lucide-react';
 import type { TFunction } from 'i18next';
+import TaskIndicator from './TaskIndicator';
+import SidebarProjectSessions from './SidebarProjectSessions';
 import { Button } from '@/shared/view/ui';
 import { cn } from '@/lib/utils';
 import type { Project, ProjectSession, SessionProvider } from '@/types/app';
 import type { MCPServerStatus, SessionWithProvider } from '@/features/projects/types';
 import { getTaskIndicatorStatus } from '@/features/projects/biz/sidebar-utils';
-import TaskIndicator from './TaskIndicator';
-import SidebarProjectSessions from './SidebarProjectSessions';
 
 type SidebarProjectItemProps = {
   project: Project;

@@ -1,19 +1,18 @@
 import React, { useEffect } from 'react';
-
-import ChatInterface from '@/features/chat/ui/pages/ChatInterface';
-import FileTree from '@/features/file-tree/ui/containers/FileTree';
-import StandaloneShell from '@/features/standalone-shell/ui/containers/StandaloneShell';
-import GitPanel from '@/features/git/ui/pages/GitPanel';
 import PluginTabContent from '../../../features/plugins/ui/PluginTabContent';
 import type { MainContentProps } from '../types/types';
 import { useTaskMaster } from '../../../contexts/TaskMasterContext';
-import { useEditorSidebar } from '@/features/code-editor/hooks/useEditorSidebar';
-import EditorSidebar from '@/features/code-editor/ui/pages/EditorSidebar';
 import type { Project } from '../../../types/app';
 import { TaskMasterPanel } from '../../../features/task-master/ui';
 import MainContentHeader from './subcomponents/MainContentHeader';
 import MainContentStateView from './subcomponents/MainContentStateView';
 import ErrorBoundary from './ErrorBoundary';
+import EditorSidebar from '@/features/code-editor/ui/pages/EditorSidebar';
+import { useEditorSidebar } from '@/features/code-editor/hooks/useEditorSidebar';
+import GitPanel from '@/features/git/ui/pages/GitPanel';
+import StandaloneShell from '@/features/standalone-shell/ui/containers/StandaloneShell';
+import ChatInterface from '@/features/chat/ui/pages/ChatInterface';
+import FileTree from '@/features/file-tree/ui/containers/FileTree';
 import { useTasksSettings, useUiPreferences } from '@/store';
 
 type TaskMasterContextValue = {

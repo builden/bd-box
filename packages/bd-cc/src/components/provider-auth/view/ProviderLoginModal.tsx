@@ -1,7 +1,7 @@
 import { ExternalLink, KeyRound, X } from 'lucide-react';
-import StandaloneShell from '@/features/standalone-shell/ui/containers/StandaloneShell';
 import { IS_PLATFORM } from '../../../constants/config';
 import type { CliProvider } from '../types';
+import StandaloneShell from '@/features/standalone-shell/ui/containers/StandaloneShell';
 
 type LoginModalProject = {
   name?: string;

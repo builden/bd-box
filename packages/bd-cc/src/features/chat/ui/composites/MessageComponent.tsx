@@ -1,14 +1,14 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import SessionProviderLogo from '../parts/ProviderLogos/SessionProviderLogo';
-import type { ChatMessage, ClaudePermissionSuggestion, PermissionGrantResult, Provider } from '@/features/chat/types';
-import { formatUsageLimitText } from '@/features/chat/biz/chatFormatting';
-import { getClaudePermissionSuggestion } from '@/features/chat/biz/chatPermissions';
 import type { Project } from '../../../../types/app';
 import { ToolRenderer, shouldHideToolResult } from '../parts/tools';
 import { Markdown } from './Markdown';
 import MessageCopyControl from './MessageCopyControl';
 import InteractivePrompt from './InteractivePrompt';
+import { getClaudePermissionSuggestion } from '@/features/chat/biz/chatPermissions';
+import { formatUsageLimitText } from '@/features/chat/biz/chatFormatting';
+import type { ChatMessage, ClaudePermissionSuggestion, PermissionGrantResult, Provider } from '@/features/chat/types';
 
 type DiffLine = {
   type: string;

@@ -3,14 +3,13 @@
  *
  * 从 useSettingsController 提取的通用函数
  */
+import { DEFAULT_CODE_EDITOR_SETTINGS, DEFAULT_CURSOR_PERMISSIONS } from '../constants/constants';
 import type {
   CodexPermissionMode,
   CodeEditorSettingsState,
   McpServer,
-  SettingsProject,
+  SettingsProject, ClaudePermissionsState, CursorPermissionsState 
 } from '@/components/settings/types/types';
-import { DEFAULT_CODE_EDITOR_SETTINGS, DEFAULT_CURSOR_PERMISSIONS } from '../constants/constants';
-import type { ClaudePermissionsState, CursorPermissionsState } from '@/components/settings/types/types';
 
 /**
  * 获取错误消息

@@ -4,17 +4,17 @@ import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { WebglAddon } from '@xterm/addon-webgl';
 import { Terminal } from '@xterm/xterm';
-import type { Project } from '@/types';
 import {
   CODEX_DEVICE_AUTH_URL,
   TERMINAL_INIT_DELAY_MS,
   TERMINAL_OPTIONS,
   TERMINAL_RESIZE_DELAY_MS,
 } from '../biz/constants';
-import { copyTextToClipboard } from '@/utils/clipboard';
 import { isCodexLoginCommand } from '../biz/auth';
 import { sendSocketMessage } from '../biz/socket';
 import { ensureXtermFocusStyles } from '../biz/terminalStyles';
+import { copyTextToClipboard } from '@/utils/clipboard';
+import type { Project } from '@/types';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('ShellTerminal');

@@ -1,9 +1,9 @@
 import React from 'react';
+import { getPermissionPanel, registerPermissionPanel } from '../parts/tools/configs/permissionPanelRegistry';
+import { AskUserQuestionPanel } from '../parts/tools/components/InteractiveRenderers';
 import type { PendingPermissionRequest } from '@/features/chat/types';
 import { buildClaudeToolPermissionEntry, formatToolInputForDisplay } from '@/features/chat/biz/chatPermissions';
 import { getClaudeSettings } from '@/features/chat/biz/chatStorage';
-import { getPermissionPanel, registerPermissionPanel } from '../parts/tools/configs/permissionPanelRegistry';
-import { AskUserQuestionPanel } from '../parts/tools/components/InteractiveRenderers';
 
 registerPermissionPanel('AskUserQuestion', AskUserQuestionPanel);
 

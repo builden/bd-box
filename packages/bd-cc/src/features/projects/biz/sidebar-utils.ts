@@ -1,5 +1,4 @@
 import type { TFunction } from 'i18next';
-import type { Project } from '@/types';
 import type {
   AdditionalSessionsByProject,
   ProjectSortOrder,
@@ -7,6 +6,7 @@ import type {
   SessionViewModel,
   SessionWithProvider,
 } from '../types';
+import type { Project } from '@/types';
 
 export const readProjectSortOrder = (): ProjectSortOrder => {
   try {

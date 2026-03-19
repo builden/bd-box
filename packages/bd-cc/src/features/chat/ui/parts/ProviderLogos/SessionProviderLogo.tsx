@@ -1,8 +1,8 @@
-import type { SessionProvider } from '@/types/app';
 import ClaudeLogo from './ClaudeLogo';
 import CodexLogo from './CodexLogo';
 import CursorLogo from './CursorLogo';
 import GeminiLogo from './GeminiLogo';
+import type { SessionProvider } from '@/types/app';
 
 type SessionProviderLogoProps = {
   provider?: SessionProvider | string | null;

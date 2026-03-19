@@ -1,11 +1,11 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
-import { useDeviceSettings } from '@/hooks/useDeviceSettings';
-import { useQuickSettingsDrag } from '@/features/quick-settings/hooks/useQuickSettingsDrag';
-import type { PreferenceToggleKey, QuickSettingsPreferences } from '@/features/quick-settings/types';
 import QuickSettingsContent from '../composites/QuickSettingsContent';
 import QuickSettingsHandle from '../composites/QuickSettingsHandle';
 import QuickSettingsPanelHeader from '../composites/QuickSettingsPanelHeader';
+import { useDeviceSettings } from '@/hooks/useDeviceSettings';
+import { useQuickSettingsDrag } from '@/features/quick-settings/hooks/useQuickSettingsDrag';
+import type { PreferenceToggleKey, QuickSettingsPreferences } from '@/features/quick-settings/types';
 import { useUiPreferences, useTheme } from '@/store';
 
 export default function QuickSettingsPanelView() {

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { AlertTriangle, Plus, Shield, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Button, Input } from '@/shared/view/ui';
 import { COMMON_CLAUDE_TOOLS, addUnique, removeValue } from './permissionsConstants';
+import { Button, Input } from '@/shared/view/ui';
 
 interface ClaudePermissionsProps {
   skipPermissions: boolean;

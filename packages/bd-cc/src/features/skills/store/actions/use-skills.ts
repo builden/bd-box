@@ -1,5 +1,7 @@
 import { useAtom, useSetAtom } from 'jotai';
 import { useCallback, useEffect } from 'react';
+import { SkillsListResponseSchema } from '@shared/api/skills';
+import { validateResponse } from '@shared/api/validation';
 import { authenticatedFetch } from '../../../../utils/api';
 import { skillsAtom, skillsLoadingAtom, skillsErrorAtom } from '../primitives/skills-atom';
 import {
@@ -8,8 +10,6 @@ import {
   skillsCountAtom,
   enabledSkillsCountAtom,
 } from '../derived/skills-derived';
-import { SkillsListResponseSchema } from '@shared/api/skills';
-import { validateResponse } from '@shared/api/validation';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('useSkills');

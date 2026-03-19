@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, Dispatch, FormEvent, KeyboardEvent, MouseEvent, SetStateAction } from 'react';
-import { safeLocalStorage } from '../biz/chatStorage';
-import { grantClaudeToolPermission } from '../biz/chatPermissions';
-import type { ChatMessage, PendingPermissionRequest, PermissionMode } from '../types';
 import type { SessionMessage } from '@shared/api/sessions';
-import type { Project, ProjectSession, SessionProvider } from '@/types';
+import type { ChatMessage, PendingPermissionRequest, PermissionMode } from '../types';
+import { grantClaudeToolPermission } from '../biz/chatPermissions';
+import { safeLocalStorage } from '../biz/chatStorage';
 import { useFileMentions } from './useFileMentions';
 import { useSlashCommands } from './useSlashCommands';
 import { useImageUpload } from './useImageUpload';
 import { useChatCommands } from './useChatCommands';
 import { useChatSubmit } from './useChatSubmit';
+import type { Project, ProjectSession, SessionProvider } from '@/types';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('ChatComposerState');

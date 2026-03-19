@@ -1,9 +1,9 @@
 import { useCallback, useRef } from 'react';
-import { api, authenticatedFetch } from '@/utils/api';
-import type { Provider } from '../types';
 import type { SessionMessage } from '@shared/api/sessions';
-import { createLogger } from '@/lib/logger';
+import type { Provider } from '../types';
 import { MESSAGES_PER_PAGE } from '../biz/constants';
+import { api, authenticatedFetch } from '@/utils/api';
+import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('useMessageLoader');
 

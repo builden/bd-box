@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { FolderOpen } from 'lucide-react';
+import FolderBrowserModal from './FolderBrowserModal';
 import { Button, Input } from '@/shared/view/ui';
 import { browseFilesystemFolders } from '@/features/project-creation/data/workspaceApi';
 import { getSuggestionRootPath } from '@/features/project-creation/biz/pathUtils';
 import type { FolderSuggestion, WorkspaceType } from '@/features/project-creation/types/types';
-import FolderBrowserModal from './FolderBrowserModal';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('WorkspacePathField');

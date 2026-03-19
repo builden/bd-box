@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Dispatch, KeyboardEvent, RefObject, SetStateAction } from 'react';
-import { api } from '@/utils/api';
-import { escapeRegExp } from '../biz/chatFormatting';
-import type { Project } from '@/types';
-import { FileTreeResponse, FileTreeResponseSchema } from '@shared/api/files';
+import { FileTreeResponseSchema } from '@shared/api/files';
 import { validateResponse } from '@shared/api/validation';
+import { escapeRegExp } from '../biz/chatFormatting';
+import { api } from '@/utils/api';
+import type { Project } from '@/types';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('FileMentions');

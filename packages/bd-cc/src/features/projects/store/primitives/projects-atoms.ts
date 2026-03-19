@@ -1,9 +1,9 @@
 import { atomWithQuery } from 'jotai-tanstack-query';
-import { api } from '@/utils/api';
-import { queryKeys } from '@/lib/query-keys';
 import { ProjectListResponseSchema } from '@shared/api/projects';
 import { SessionsListResponseSchema } from '@shared/api/sessions';
 import { validateResponse } from '@shared/api/validation';
+import { queryKeys } from '@/lib/query-keys';
+import { api } from '@/utils/api';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('projects-atoms');

@@ -1,9 +1,9 @@
 import { ChevronDown, Plus } from 'lucide-react';
 import type { TFunction } from 'i18next';
+import SidebarSessionItem from './SidebarSessionItem';
 import { Button } from '@/shared/view/ui';
 import type { Project, ProjectSession, SessionProvider } from '@/types/app';
 import type { SessionWithProvider } from '@/features/projects/types';
-import SidebarSessionItem from './SidebarSessionItem';
 
 type SidebarProjectSessionsProps = {
   project: Project;

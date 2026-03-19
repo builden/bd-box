@@ -1,5 +1,8 @@
 import { Moon, Sun } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import QuickSettingsSection from './QuickSettingsSection';
+import QuickSettingsToggleRow from './QuickSettingsToggleRow';
+import QuickSettingsWhisperSection from './QuickSettingsWhisperSection';
 import { DarkModeToggle } from '@/shared/view/ui';
 import LanguageSelector from '@/shared/view/ui/LanguageSelector';
 import {
@@ -13,9 +16,6 @@ import type {
   PreferenceToggleKey,
   QuickSettingsPreferences,
 } from '@/features/quick-settings/types';
-import QuickSettingsSection from './QuickSettingsSection';
-import QuickSettingsToggleRow from './QuickSettingsToggleRow';
-import QuickSettingsWhisperSection from './QuickSettingsWhisperSection';
 
 type QuickSettingsContentProps = {
   isDarkMode: boolean;

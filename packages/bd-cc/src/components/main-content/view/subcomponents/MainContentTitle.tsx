@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import SessionProviderLogo from '@/features/chat/ui/parts/ProviderLogos/SessionProviderLogo';
 import type { AppTab, Project, ProjectSession } from '../../../../types/app';
+import SessionProviderLogo from '@/features/chat/ui/parts/ProviderLogos/SessionProviderLogo';
 import { usePlugins } from '@/store';
 
 type MainContentTitleProps = {

@@ -1,6 +1,6 @@
 import React from 'react';
-import type { SubagentChildTool } from '@/features/chat/types';
 import { CollapsibleSection } from './CollapsibleSection';
+import type { SubagentChildTool } from '@/features/chat/types';
 
 interface SubagentContainerProps {
   toolInput: unknown;

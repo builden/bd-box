@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
 import type { TFunction } from 'i18next';
+import SidebarProjectItem from './SidebarProjectItem';
+import SidebarProjectsState from './SidebarProjectsState';
 import type { LoadingProgress, Project, ProjectSession, SessionProvider } from '@/types/app';
 import type {
   LoadingSessionsByProject,
   MCPServerStatus,
   SessionWithProvider,
 } from '@/features/projects/types';
-import SidebarProjectItem from './SidebarProjectItem';
-import SidebarProjectsState from './SidebarProjectsState';
 
 export type SidebarProjectListProps = {
   projects: Project[];

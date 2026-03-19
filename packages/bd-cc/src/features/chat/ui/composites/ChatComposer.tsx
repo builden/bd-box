@@ -12,13 +12,13 @@ import type {
   TouchEvent,
 } from 'react';
 import MicButton from '../parts/MicButton/view/MicButton';
-import type { PendingPermissionRequest, PermissionMode, Provider } from '@/features/chat/types';
 import CommandMenu from './CommandMenu';
 import ClaudeStatus from './ClaudeStatus';
 import ImageAttachment from './ImageAttachment';
 import PermissionRequestsBanner from './PermissionRequestsBanner';
 import ChatInputControls from './ChatInputControls';
 import FileDropdown from './FileDropdown';
+import type { PendingPermissionRequest, PermissionMode, Provider } from '@/features/chat/types';
 
 interface MentionableFile {
   name: string;

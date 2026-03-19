@@ -1,15 +1,15 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import SidebarCollapsed from '../composites/SidebarCollapsed';
+import SidebarContent from '../composites/SidebarContent';
+import SidebarModals from '../composites/SidebarModals';
+import type { SidebarProjectListProps } from '../composites/SidebarProjectList';
 import { useDeviceSettings } from '@/hooks/useDeviceSettings';
 import { useVersionCheck } from '@/hooks/useVersionCheck';
 import { useSidebarController } from '@/features/projects/hooks/useSidebarController';
 import { useTaskMaster } from '@/contexts/TaskMasterContext';
 import type { Project, SessionProvider } from '@/types/app';
 import type { MCPServerStatus, SidebarProps } from '@/features/projects/types';
-import SidebarCollapsed from '../composites/SidebarCollapsed';
-import SidebarContent from '../composites/SidebarContent';
-import SidebarModals from '../composites/SidebarModals';
-import type { SidebarProjectListProps } from '../composites/SidebarProjectList';
 import { useTasksSettings, useUiPreferences } from '@/store';
 
 type TaskMasterSidebarContext = {

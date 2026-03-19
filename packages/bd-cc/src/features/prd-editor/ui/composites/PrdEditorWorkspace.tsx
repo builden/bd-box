@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
-import { ensurePrdExtension } from '@/features/prd-editor/biz/fileName';
 import GenerateTasksModal from './GenerateTasksModal';
 import PrdEditorBody from './PrdEditorBody';
 import PrdEditorFooter from './PrdEditorFooter';
 import PrdEditorHeader from './PrdEditorHeader';
+import { ensurePrdExtension } from '@/features/prd-editor/biz/fileName';
+import { cn } from '@/lib/utils';
 
 type PrdEditorWorkspaceProps = {
   content: string;

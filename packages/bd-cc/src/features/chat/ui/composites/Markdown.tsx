@@ -6,8 +6,8 @@ import rehypeKatex from 'rehype-katex';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTranslation } from 'react-i18next';
-import { normalizeInlineCodeFences } from '@/features/chat/biz/chatFormatting';
 import { copyTextToClipboard } from '../../../../utils/clipboard';
+import { normalizeInlineCodeFences } from '@/features/chat/biz/chatFormatting';
 
 type MarkdownProps = {
   children: React.ReactNode;

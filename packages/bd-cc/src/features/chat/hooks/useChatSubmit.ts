@@ -1,10 +1,10 @@
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 import type { FormEvent, MouseEvent, TouchEvent, KeyboardEvent } from 'react';
-import { authenticatedFetch } from '@/utils/api';
 import { safeLocalStorage } from '../biz/chatStorage';
 import { thinkingModes } from '../biz/thinkingModes';
 import { isTemporarySessionId } from '../biz/sessionId';
 import type { ChatMessage, ChatImage } from '../types';
+import { authenticatedFetch } from '@/utils/api';
 import type { Project, ProjectSession, SessionProvider, PermissionMode } from '@/types';
 import { createLogger } from '@/lib/logger';
 

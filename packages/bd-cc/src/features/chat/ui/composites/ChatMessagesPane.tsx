@@ -1,5 +1,3 @@
-import { getIntrinsicMessageKey } from '@/features/chat/biz/messageKeys';
-import type { ChatMessage } from '@/features/chat/types';
 import type { Dispatch, RefObject, SetStateAction } from 'react';
 import { useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7,6 +5,8 @@ import type { Project, ProjectSession, SessionProvider } from '../../../../types
 import AssistantThinkingIndicator from './AssistantThinkingIndicator';
 import MessageComponent from './MessageComponent';
 import ProviderSelectionEmptyState from './ProviderSelectionEmptyState';
+import type { ChatMessage } from '@/features/chat/types';
+import { getIntrinsicMessageKey } from '@/features/chat/biz/messageKeys';
 
 interface ChatMessagesPaneProps {
   scrollContainerRef: RefObject<HTMLDivElement | null>;

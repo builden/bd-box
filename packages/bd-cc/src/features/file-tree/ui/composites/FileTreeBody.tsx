@@ -1,9 +1,9 @@
 import type { ReactNode, RefObject } from 'react';
 import { Folder, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import type { FileTreeNode, FileTreeViewMode } from '@/features/file-tree/types/types';
 import FileTreeEmptyState from './FileTreeEmptyState';
 import FileTreeList from './FileTreeList';
+import type { FileTreeNode, FileTreeViewMode } from '@/features/file-tree/types/types';
 
 type FileTreeBodyProps = {
   files: FileTreeNode[];

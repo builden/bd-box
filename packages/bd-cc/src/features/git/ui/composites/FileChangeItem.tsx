@@ -1,8 +1,8 @@
 import React, { memo } from 'react';
 import { ChevronRight, Trash2 } from 'lucide-react';
+import GitDiffViewer from '../parts/GitDiffViewer';
 import type { FileStatusCode } from '@/features/git/types';
 import { getStatusBadgeClass, getStatusLabel } from '@/features/git/biz/gitPanelUtils';
-import GitDiffViewer from '../parts/GitDiffViewer';
 
 type FileChangeItemProps = {
   filePath: string;

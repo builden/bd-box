@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { version } from '../../package.json';
-import { ReleaseInfo } from '../types/sharedTypes';
 import { HealthCheckResponseSchema } from '@shared/api/system';
 import { validateResponse } from '@shared/api/validation';
+import { version } from '../../package.json';
+import { ReleaseInfo } from '../types/sharedTypes';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('useVersionCheck');

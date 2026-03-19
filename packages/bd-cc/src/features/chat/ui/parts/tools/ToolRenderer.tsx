@@ -1,8 +1,8 @@
 import React, { memo, useMemo, useCallback } from 'react';
-import type { Project } from '@/types/app';
-import type { SubagentChildTool } from '@/features/chat/types';
 import { getToolConfig } from './configs/toolConfigs';
 import { OneLineDisplay, CollapsibleDisplay, ToolDiffViewer, MarkdownContent, FileListContent, TodoListContent, TaskListContent, TextContent, QuestionAnswerContent, SubagentContainer } from './components';
+import type { Project } from '@/types/app';
+import type { SubagentChildTool } from '@/features/chat/types';
 
 type DiffLine = {
   type: string;

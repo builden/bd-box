@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
+import GithubAuthenticationCard from './GithubAuthenticationCard';
+import WorkspacePathField from './WorkspacePathField';
 import { Input } from '@/shared/view/ui';
 import { shouldShowGithubAuthentication } from '@/features/project-creation/biz/pathUtils';
 import type { GithubTokenCredential, TokenMode, WorkspaceType } from '@/features/project-creation/types/types';
-import GithubAuthenticationCard from './GithubAuthenticationCard';
-import WorkspacePathField from './WorkspacePathField';
 
 type StepConfigurationProps = {
   workspaceType: WorkspaceType;

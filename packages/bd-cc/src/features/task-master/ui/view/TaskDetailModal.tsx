@@ -15,11 +15,11 @@ import {
 } from 'lucide-react';
 import { useTaskMaster } from '../context/TaskMasterContext';
 import type { TaskId, TaskMasterTask, TaskReference } from '../types';
+import StatusSelect from './TaskStatusSelect';
 import { cn } from '@/lib/utils';
 import { createLogger } from '@/lib/logger';
 import { copyTextToClipboard } from '@/utils/clipboard';
 import { api } from '@/utils/api';
-import StatusSelect from './TaskStatusSelect';
 
 const logger = createLogger('TaskDetailModal');
 

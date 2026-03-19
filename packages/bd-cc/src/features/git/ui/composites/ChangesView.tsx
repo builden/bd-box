@@ -1,11 +1,11 @@
 import { GitBranch, GitCommit, RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { ConfirmationRequest, FileStatusCode, GitDiffMap, GitStatusResponse } from '@/features/git/types';
-import { getAllChangedFiles, hasChangedFiles } from '@/features/git/biz/gitPanelUtils';
 import CommitComposer from './CommitComposer';
 import FileChangeList from './FileChangeList';
 import FileSelectionControls from './FileSelectionControls';
 import FileStatusLegend from './FileStatusLegend';
+import { getAllChangedFiles, hasChangedFiles } from '@/features/git/biz/gitPanelUtils';
+import type { ConfirmationRequest, FileStatusCode, GitDiffMap, GitStatusResponse } from '@/features/git/types';
 
 type ChangesViewProps = {
   isMobile: boolean;

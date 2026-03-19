@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { z } from 'zod';
-import { authenticatedFetch } from '../../../utils/api';
-import type { ApiKeyItem, CreatedApiKey } from '../../../features/settings/ui/api-settings/types';
 import { ApiKeysListResponseSchema, CredentialsListResponseSchema, ApiKeySchema } from '@shared/api/settings';
 import { validateResponse } from '@shared/api/validation';
+import { authenticatedFetch } from '../../../utils/api';
+import type { ApiKeyItem, CreatedApiKey } from '../../../features/settings/ui/api-settings/types';
 import { copyTextToClipboard } from '../../../utils/clipboard';
 import { createLogger } from '@/lib/logger';
 

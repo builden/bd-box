@@ -1,6 +1,11 @@
 import { useCallback, useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, Check, X, Loader2, Folder, Upload } from 'lucide-react';
+import FileTreeBody from '../composites/FileTreeBody';
+import FileTreeDetailedColumns from '../composites/FileTreeDetailedColumns';
+import FileTreeHeader from '../composites/FileTreeHeader';
+import FileTreeLoadingState from '../composites/FileTreeLoadingState';
+import ImageViewer from '../composites/ImageViewer';
 import { cn } from '@/lib/utils';
 import { ICON_SIZE_CLASS, getFileIconData } from '@/features/file-tree/biz/fileIcons';
 import { useExpandedDirectories } from '@/features/file-tree/hooks/useExpandedDirectories';
@@ -13,11 +18,6 @@ import type { FileTreeImageSelection, FileTreeNode } from '@/features/file-tree/
 import { formatFileSize, formatRelativeTime, isImageFile } from '@/features/file-tree/biz/fileTreeUtils';
 import { Project } from '@/types/app';
 import { ScrollArea, Input } from '@/shared/view/ui';
-import FileTreeBody from '../composites/FileTreeBody';
-import FileTreeDetailedColumns from '../composites/FileTreeDetailedColumns';
-import FileTreeHeader from '../composites/FileTreeHeader';
-import FileTreeLoadingState from '../composites/FileTreeLoadingState';
-import ImageViewer from '../composites/ImageViewer';
 
 type FileTreeProps = {
   selectedProject: Project | null;

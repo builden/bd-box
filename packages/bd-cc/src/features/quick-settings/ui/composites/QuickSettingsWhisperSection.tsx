@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
+import QuickSettingsSection from './QuickSettingsSection';
 import { TOGGLE_ROW_CLASS, WHISPER_OPTIONS } from '@/features/quick-settings/biz/constants';
 import { useWhisperMode } from '@/store/ui-modes';
-import QuickSettingsSection from './QuickSettingsSection';
 
 export default function QuickSettingsWhisperSection() {
   const { t } = useTranslation('settings');

@@ -1,7 +1,7 @@
 import { History, RefreshCw } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import type { GitDiffMap, GitCommitSummary } from '@/features/git/types';
 import CommitHistoryItem from './CommitHistoryItem';
+import type { GitDiffMap, GitCommitSummary } from '@/features/git/types';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('HistoryView');

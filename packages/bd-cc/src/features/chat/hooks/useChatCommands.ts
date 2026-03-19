@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
+import type { ChatMessage } from '../types';
+import { escapeRegExp } from '../biz/chatFormatting';
+import type { SlashCommand } from './useSlashCommands';
 import { authenticatedFetch } from '@/utils/api';
 import { createLogger } from '@/lib/logger';
-import type { ChatMessage } from '../types';
-import type { SlashCommand } from './useSlashCommands';
-import { escapeRegExp } from '../biz/chatFormatting';
 
 const logger = createLogger('useChatCommands');
 

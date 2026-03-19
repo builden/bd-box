@@ -1,15 +1,15 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useCodeEditorDocument } from '@/features/code-editor/hooks/useCodeEditorDocument';
-import { useCodeEditorSettings } from '@/features/code-editor/hooks/useCodeEditorSettings';
-import { useEditorKeyboardShortcuts } from '@/features/code-editor/hooks/useEditorKeyboardShortcuts';
-import type { CodeEditorFile } from '@/features/code-editor/types/types';
-import { getEditorStyles } from '@/features/code-editor/biz/editorStyles';
 import MonacoEditorSurface from '../composites/MonacoEditorSurface';
 import CodeEditorFooter from '../composites/CodeEditorFooter';
 import CodeEditorHeader from '../composites/CodeEditorHeader';
 import CodeEditorLoadingState from '../composites/CodeEditorLoadingState';
 import CodeEditorBinaryFile from '../composites/CodeEditorBinaryFile';
+import { useCodeEditorDocument } from '@/features/code-editor/hooks/useCodeEditorDocument';
+import { useCodeEditorSettings } from '@/features/code-editor/hooks/useCodeEditorSettings';
+import { useEditorKeyboardShortcuts } from '@/features/code-editor/hooks/useEditorKeyboardShortcuts';
+import type { CodeEditorFile } from '@/features/code-editor/types/types';
+import { getEditorStyles } from '@/features/code-editor/biz/editorStyles';
 
 type CodeEditorProps = {
   file: CodeEditorFile;

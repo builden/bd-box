@@ -1,5 +1,5 @@
-import type { CliProvider, ProviderStatusMap } from '@/features/onboarding/types/types';
 import AgentConnectionCard from './AgentConnectionCard';
+import type { CliProvider, ProviderStatusMap } from '@/features/onboarding/types/types';
 
 type AgentConnectionsStepProps = {
   providerStatuses: ProviderStatusMap;

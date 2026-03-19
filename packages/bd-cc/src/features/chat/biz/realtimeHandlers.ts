@@ -1,6 +1,6 @@
 import type { ChatMessage } from '../types';
-import type { ProjectSession } from '@/types';
 import { safeLocalStorage } from './chatStorage';
+import type { ProjectSession } from '@/types';
 
 /**
  * 消息类型常量

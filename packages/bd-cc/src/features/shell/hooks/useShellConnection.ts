@@ -2,9 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { MutableRefObject } from 'react';
 import type { FitAddon } from '@xterm/addon-fit';
 import type { Terminal } from '@xterm/xterm';
-import type { Project, ProjectSession } from '@/types';
 import { TERMINAL_INIT_DELAY_MS } from '../biz/constants';
 import { getShellWebSocketUrl, parseShellMessage, sendSocketMessage } from '../biz/socket';
+import type { Project, ProjectSession } from '@/types';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('ShellConnection');

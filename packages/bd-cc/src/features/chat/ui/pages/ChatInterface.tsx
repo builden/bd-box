@@ -1,3 +1,7 @@
+import React, { useCallback, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import ChatComposer from '../composites/ChatComposer';
+import ChatMessagesPane from '../composites/ChatMessagesPane';
 import { useChatComposerState } from '@/features/chat/hooks/useChatComposerState';
 import { useChatProviderState } from '@/features/chat/hooks/useChatProviderState';
 import { useChatRealtimeHandlers } from '@/features/chat/hooks/useChatRealtimeHandlers';
@@ -5,10 +9,6 @@ import { useChatSessionState } from '@/features/chat/hooks/useChatSessionState';
 import type { ChatInterfaceProps, ChatMessage, Provider } from '@/features/chat/types';
 import QuickSettingsPanel from '@/features/quick-settings/ui/containers/QuickSettingsPanelView';
 import { useTasksSettings } from '@/store';
-import React, { useCallback, useEffect, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
-import ChatComposer from '../composites/ChatComposer';
-import ChatMessagesPane from '../composites/ChatMessagesPane';
 
 type PendingViewSession = {
   sessionId: string | null;

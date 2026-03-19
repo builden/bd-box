@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { TFunction } from 'i18next';
-import { api } from '@/utils/api';
-import type { Project, ProjectSession, SessionProvider } from '@/types';
 import type { Session } from '@shared/api/sessions';
 import { SessionsListResponseSchema } from '@shared/api/sessions';
 import { validateResponse } from '@shared/api/validation';
@@ -21,6 +19,8 @@ import {
   readProjectSortOrder,
   sortProjects,
 } from '../biz/sidebar-utils';
+import type { Project, ProjectSession, SessionProvider } from '@/types';
+import { api } from '@/utils/api';
 
 type SnippetHighlight = {
   start: number;

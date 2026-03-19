@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Dispatch, KeyboardEvent, RefObject, SetStateAction } from 'react';
 import Fuse from 'fuse.js';
-import { authenticatedFetch } from '@/utils/api';
 import { safeLocalStorage } from '../biz/chatStorage';
+import { authenticatedFetch } from '@/utils/api';
 import type { Project } from '@/types';
 import { createLogger } from '@/lib/logger';
 

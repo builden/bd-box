@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { authenticatedFetch } from '../../../utils/api';
 import { GitConfigSchema } from '@shared/api/users';
 import { validateResponse } from '@shared/api/validation';
+import { authenticatedFetch } from '../../../utils/api';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('useGitSettings');

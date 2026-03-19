@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import '@xterm/xterm/css/xterm.css';
+import ShellConnectionOverlay from '../composites/ShellConnectionOverlay';
+import ShellEmptyState from '../composites/ShellEmptyState';
+import ShellHeader from '../composites/ShellHeader';
+import ShellMinimalView from '../composites/ShellMinimalView';
+import TerminalShortcutsPanel from '../composites/TerminalShortcutsPanel';
 import type { Project, ProjectSession } from '@/types/app';
 import {
   PROMPT_BUFFER_SCAN_LINES,
@@ -13,11 +18,6 @@ import {
 import { useShellRuntime } from '@/features/shell/hooks/useShellRuntime';
 import { sendSocketMessage } from '@/features/shell/biz/socket';
 import { getSessionDisplayName } from '@/features/shell/biz/auth';
-import ShellConnectionOverlay from '../composites/ShellConnectionOverlay';
-import ShellEmptyState from '../composites/ShellEmptyState';
-import ShellHeader from '../composites/ShellHeader';
-import ShellMinimalView from '../composites/ShellMinimalView';
-import TerminalShortcutsPanel from '../composites/TerminalShortcutsPanel';
 
 type CliPromptOption = { number: string; label: string };
 

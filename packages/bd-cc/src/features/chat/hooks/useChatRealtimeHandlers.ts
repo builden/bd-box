@@ -4,9 +4,9 @@ import { decodeHtmlEntities, formatUsageLimitText } from '../biz/chatFormatting'
 import { safeLocalStorage } from '../biz/chatStorage';
 import { appendStreamingChunk, finalizeStreamingMessage } from '../biz/streaming';
 import type { ChatMessage, PendingPermissionRequest } from '../types';
+import { STREAM_CHUNK_DELAY_MS } from '../biz/constants';
 import type { Project, ProjectSession, SessionProvider } from '@/types';
 import { createLogger } from '@/lib/logger';
-import { STREAM_CHUNK_DELAY_MS } from '../biz/constants';
 
 const logger = createLogger('ChatRealtimeHandlers');
 

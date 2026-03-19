@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { z } from 'zod';
-import { api } from '@/utils/api';
-import type { Project } from '../../../types/app';
-import { FileTreeNodeSchema, FileTreeResponse, FileTreeResponseSchema } from '@shared/api/files';
+import { FileTreeNodeSchema, FileTreeResponseSchema } from '@shared/api/files';
 import { validateResponse } from '@shared/api/validation';
+import type { Project } from '../../../types/app';
+import { api } from '@/utils/api';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('FileTreeData');

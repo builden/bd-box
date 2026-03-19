@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { authenticatedFetch } from '../../../utils/api';
-import { DEFAULT_BRANCH, RECENT_COMMITS_LIMIT } from '@/features/git/biz/constants';
 import type {
   GitApiErrorResponse,
   GitBranchesResponse,
@@ -16,8 +15,9 @@ import type {
   GitStatusResponse,
   UseGitPanelControllerOptions,
 } from '../types/types';
-import { getAllChangedFiles, isAbortError, readJsonResponse } from '@/features/git/biz/gitPanelUtils';
 import { useSelectedProvider } from './useSelectedProvider';
+import { DEFAULT_BRANCH, RECENT_COMMITS_LIMIT } from '@/features/git/biz/constants';
+import { getAllChangedFiles, isAbortError, readJsonResponse } from '@/features/git/biz/gitPanelUtils';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('GitPanelController');

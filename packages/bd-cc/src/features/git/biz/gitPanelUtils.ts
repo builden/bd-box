@@ -1,5 +1,5 @@
-import { FILE_STATUS_BADGE_CLASSES, FILE_STATUS_GROUPS, FILE_STATUS_LABELS } from '@/features/git/biz/constants';
 import type { FileStatusCode, GitStatusResponse } from '../types/types';
+import { FILE_STATUS_BADGE_CLASSES, FILE_STATUS_GROUPS, FILE_STATUS_LABELS } from '@/features/git/biz/constants';
 
 /**
  * 判断是否为 abort 错误

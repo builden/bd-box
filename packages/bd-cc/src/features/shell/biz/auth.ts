@@ -1,5 +1,5 @@
-import type { ProjectSession } from '@/types';
 import { CODEX_DEVICE_AUTH_URL } from '../biz/constants';
+import type { ProjectSession } from '@/types';
 
 export function isCodexLoginCommand(command: string | null | undefined): boolean {
   return typeof command === 'string' && /\bcodex\s+login\b/i.test(command);

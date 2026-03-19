@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import JSZip from 'jszip';
+import type { Project } from '../../../types/app';
 import { api } from '@/utils/api';
 import { copyTextToClipboard } from '@/utils/clipboard';
 import { INVALID_FILENAME_CHARS, RESERVED_NAMES } from '@/features/file-tree/biz/constants';
 import type { FileTreeNode } from '@/features/file-tree/types/types';
-import type { Project } from '../../../types/app';
 
 export type ToastMessage = {
   message: string;

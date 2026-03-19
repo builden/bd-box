@@ -1,11 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { MutableRefObject } from 'react';
-import { api, authenticatedFetch } from '@/utils/api';
-import type { ChatMessage, Provider } from '../types';
 import type { SessionMessage } from '@shared/api/sessions';
-import { SessionMessagesResponseSchema } from '@shared/api/sessions';
-import { validateResponse } from '@shared/api/validation';
-import type { Project, ProjectSession } from '@/types';
+import type { ChatMessage, Provider } from '../types';
 import { safeLocalStorage } from '../biz/chatStorage';
 import {
   convertCursorSessionMessages,
@@ -13,8 +9,10 @@ import {
   createCachedDiffCalculator,
   type DiffCalculator,
 } from '../biz/messageTransforms';
-import { createLogger } from '@/lib/logger';
 import { MESSAGES_PER_PAGE, INITIAL_VISIBLE_MESSAGES } from '../biz/constants';
+import type { Project, ProjectSession } from '@/types';
+import { createLogger } from '@/lib/logger';
+import { api, authenticatedFetch } from '@/utils/api';
 
 const logger = createLogger('useChatSessionState');
 

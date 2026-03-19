@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAtom } from 'jotai';
-import { handlePositionAtom, handleYAtom } from '../primitives/drag-atoms';
+import type { MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
+import { handlePositionAtom } from '../primitives/drag-atoms';
 import type { QuickSettingsHandleStyle } from '../../types/types';
 import {
   DEFAULT_HANDLE_POSITION,
@@ -8,7 +9,6 @@ import {
   HANDLE_POSITION_MAX,
   HANDLE_POSITION_MIN,
 } from '../../biz/constants';
-import type { MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
 
 type StartDragEvent = ReactMouseEvent<HTMLButtonElement> | ReactTouchEvent<HTMLButtonElement>;
 type MoveDragEvent = MouseEvent | TouchEvent;

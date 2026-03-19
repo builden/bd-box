@@ -2,9 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FitAddon } from '@xterm/addon-fit';
 import type { Terminal } from '@xterm/xterm';
 import type { UseShellRuntimeOptions, UseShellRuntimeResult } from '../types';
-import { copyTextToClipboard } from '@/utils/clipboard';
 import { useShellConnection } from './useShellConnection';
 import { useShellTerminal } from './useShellTerminal';
+import { copyTextToClipboard } from '@/utils/clipboard';
 
 export function useShellRuntime({
   selectedProject,

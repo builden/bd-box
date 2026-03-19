@@ -1,6 +1,6 @@
 import type { ReactNode, RefObject } from 'react';
-import type { FileTreeNode as FileTreeNodeType, FileTreeViewMode } from '@/features/file-tree/types/types';
 import FileTreeNode from './FileTreeNode';
+import type { FileTreeNode as FileTreeNodeType, FileTreeViewMode } from '@/features/file-tree/types/types';
 
 type FileTreeListProps = {
   items: FileTreeNodeType[];
