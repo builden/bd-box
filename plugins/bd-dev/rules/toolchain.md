@@ -27,7 +27,7 @@
 
 ## 项目 Skill
 
-- 优先使用项目已有的 skill（如 `builden-dev:typescript-best-practices`）
+- 优先使用项目已有的 skill（如 `bd-dev:typescript-best-practices`）
 - 遇到特定技术问题时，先查找相关 skill
 
 ## 开发工具

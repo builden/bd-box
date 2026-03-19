@@ -181,7 +181,7 @@ description: 遇到任何 bug、测试失败或意外行为时，在提出修复
    - 如果可能的话使用自动化测试
    - 如果没有框架则使用一次性测试脚本
    - 修复之前**必须**有
-   - 使用 `builden-dev:test-driven-development` 技能来编写正确的失败测试
+   - 使用 `bd-dev:test-driven-development` 技能来编写正确的失败测试
 
 2. **实施单一修复**
    - 解决已识别的根本原因
@@ -292,8 +292,8 @@ description: 遇到任何 bug、测试失败或意外行为时，在提出修复
 
 **相关技能：**
 
-- **builden-dev:test-driven-development** - 用于创建失败测试用例（第四阶段，第 1 步）
-- **builden-dev:verification-before-completion** - 在声称成功之前验证修复有效
+- **bd-dev:test-driven-development** - 用于创建失败测试用例（第四阶段，第 1 步）
+- **bd-dev:verification-before-completion** - 在声称成功之前验证修复有效
 
 ## 现实世界的影响
 

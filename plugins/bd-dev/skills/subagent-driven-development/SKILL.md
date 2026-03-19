@@ -60,7 +60,7 @@ digraph process {
     "读取计划，提取所有任务完整文本，记录上下文，创建 TodoWrite" [shape=box];
     "还有更多任务？" [shape=diamond];
     "调度最终代码审查子代理用于整个实现" [shape=box];
-    "使用 builden-dev:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
+    "使用 bd-dev:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
 
     "读取计划，提取所有任务完整文本，记录上下文，创建 TodoWrite" -> "调度实施者子代理 (./implementer-prompt.md)";
     "调度实施者子代理 (./implementer-prompt.md)" -> "实施者子代理提问？";
@@ -79,7 +79,7 @@ digraph process {
     "在 TodoWrite 中标记任务完成" -> "还有更多任务？";
     "还有更多任务？" -> "调度实施者子代理 (./implementer-prompt.md)" [label="是"];
     "还有更多任务？" -> "调度最终代码审查子代理用于整个实现" [label="否"];
-    "调度最终代码审查子代理用于整个实现" -> "使用 builden-dev:finishing-a-development-branch";
+    "调度最终代码审查子代理用于整个实现" -> "使用 bd-dev:finishing-a-development-branch";
 }
 ```
 
@@ -241,15 +241,15 @@ digraph process {
 
 **必需的工作流技能：**
 
-- **builden-dev:using-git-worktrees** - 必需：在开始之前设置隔离工作空间
-- **builden-dev:writing-plans** - 创建此技能执行的计划
-- **builden-dev:requesting-code-review** - 审查子代理的代码审查模板
-- **builden-dev:finishing-a-development-branch** - 所有任务后完成开发
+- **bd-dev:using-git-worktrees** - 必需：在开始之前设置隔离工作空间
+- **bd-dev:writing-plans** - 创建此技能执行的计划
+- **bd-dev:requesting-code-review** - 审查子代理的代码审查模板
+- **bd-dev:finishing-a-development-branch** - 所有任务后完成开发
 
 **子代理应该使用：**
 
-- **builden-dev:test-driven-development** - 子代理为每个任务遵循 TDD
+- **bd-dev:test-driven-development** - 子代理为每个任务遵循 TDD
 
 **替代工作流：**
 
-- **builden-dev:executing-plans** - 用于并行会话而不是同会话执行
+- **bd-dev:executing-plans** - 用于并行会话而不是同会话执行
