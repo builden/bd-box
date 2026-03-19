@@ -15,6 +15,21 @@ import type { Session } from '../../shared/api/sessions';
 const logger = createLogger('services/project-sessions');
 
 /**
+ * Claude Code JSONL record type
+ * Based on observed format from ~/.claude/projects/*.jsonl
+ */
+interface JsonlEntry {
+  timestamp?: string;
+  type?: string;
+  message?: {
+    role?: string;
+    content?: string | Array<{ text?: string; thinking?: string }>;
+  };
+  sessionId?: string;
+  theta?: string;
+}
+
+/**
  * Parse JSONL session file
  *
  * Note: In new Claude Code format, each .jsonl file represents ONE session.
@@ -30,8 +45,8 @@ export async function parseJsonlSessions(
   const sessions: Session[] = [];
 
   try {
-    const fileContent = await fs.readFile(filePath, 'utf8');
-    const lines = fileContent.trim().split('\n');
+    // Use Bun's built-in JSONL parser
+    const entries = await Bun.JSONL.parse(await Bun.file(filePath).text());
     const config = await loadProjectConfig();
 
     // Extract sessionId from filename (e.g., "abc123.jsonl" -> "abc123")
@@ -43,37 +58,31 @@ export async function parseJsonlSessions(
     let messageCount = 0;
     let firstMessage: string | null = null;
 
-    for (const line of lines) {
-      if (!line.trim()) continue;
+    for (const entry of entries as JsonlEntry[]) {
+      // Track first timestamp as createdAt
+      if (!createdAt && entry.timestamp) {
+        createdAt = entry.timestamp;
+      }
 
-      try {
-        const entry = JSON.parse(line);
+      // Track last timestamp as lastMessage
+      if (entry.timestamp) {
+        lastMessage = entry.timestamp;
+      }
 
-        // Track first timestamp as createdAt
-        if (!createdAt && entry.timestamp) {
-          createdAt = entry.timestamp;
+      // Count user and assistant messages
+      // Handle multiple formats:
+      // 1. entry.type === 'user' or 'assistant' (direct type)
+      // 2. entry.type === 'message' with entry.message.role === 'user' or 'assistant'
+      const isUserMessage = entry.type === 'user' || (entry.type === 'message' && entry.message?.role === 'user');
+      const isAssistantMessage =
+        entry.type === 'assistant' || (entry.type === 'message' && entry.message?.role === 'assistant');
+
+      if (isUserMessage || isAssistantMessage) {
+        messageCount++;
+        if (!firstMessage && entry.timestamp) {
+          firstMessage = entry.timestamp;
         }
-
-        // Track last timestamp as lastMessage
-        if (entry.timestamp) {
-          lastMessage = entry.timestamp;
-        }
-
-        // Count user and assistant messages
-        // Handle multiple formats:
-        // 1. entry.type === 'user' or 'assistant' (direct type)
-        // 2. entry.type === 'message' with entry.message.role === 'user' or 'assistant'
-        const isUserMessage = entry.type === 'user' || (entry.type === 'message' && entry.message?.role === 'user');
-        const isAssistantMessage =
-          entry.type === 'assistant' || (entry.type === 'message' && entry.message?.role === 'assistant');
-
-        if (isUserMessage || isAssistantMessage) {
-          messageCount++;
-          if (!firstMessage && entry.timestamp) {
-            firstMessage = entry.timestamp;
-          }
-        }
-      } catch {}
+      }
     }
 
     // Each .jsonl file is one session
@@ -185,51 +194,55 @@ export async function getSessionMessages(
       if (fileSessionId !== sessionId) continue;
 
       const filePath = path.join(projectDir, file);
-      const fileContent = await fs.readFile(filePath, 'utf8');
-      const lines = fileContent.trim().split('\n');
+      const entries = await Bun.JSONL.parse(await Bun.file(filePath).text());
 
-      for (const line of lines) {
-        if (!line.trim()) continue;
+      for (const entry of entries as JsonlEntry[]) {
+        // Handle different message formats:
+        // 1. entry.type === 'message' with entry.message.role
+        // 2. entry.type === 'user' or 'assistant' directly
+        if (entry.type === 'message' || entry.type === 'user' || entry.type === 'assistant') {
+          let role: string;
+          if (entry.type === 'message' && entry.message?.role) {
+            role = entry.message.role;
+          } else if (entry.type === 'user') {
+            role = 'user';
+          } else if (entry.type === 'assistant') {
+            role = 'assistant';
+          } else {
+            continue; // Skip unknown message types
+          }
 
-        try {
-          const entry = JSON.parse(line);
-
-          // Handle different message formats:
-          // 1. entry.type === 'message' with entry.message.role
-          // 2. entry.type === 'user' or 'assistant' directly
-          if (entry.type === 'message' || entry.type === 'user' || entry.type === 'assistant') {
-            let role: string;
-            if (entry.type === 'message' && entry.message?.role) {
-              role = entry.message.role;
-            } else if (entry.type === 'user') {
-              role = 'user';
-            } else if (entry.type === 'assistant') {
-              role = 'assistant';
-            } else {
-              continue; // Skip unknown message types
-            }
-
-            let content = '';
-            // Extract content from message
-            if (entry.message?.content) {
-              const msgContent = entry.message.content;
-              if (typeof msgContent === 'string') {
-                content = msgContent;
-              } else if (Array.isArray(msgContent)) {
-                content = msgContent
-                  .filter((p: any) => p.text)
-                  .map((p: any) => p.text)
-                  .join('\n');
+          // Extract content from message - handle both text and thinking types
+          if (entry.message?.content) {
+            const msgContent = entry.message.content;
+            if (typeof msgContent === 'string') {
+              // Simple string content
+              messages.push({
+                type: 'message',
+                message: { role, content: msgContent },
+                timestamp: entry.timestamp || null,
+              });
+            } else if (Array.isArray(msgContent)) {
+              // Array content - may have both thinking and text parts
+              for (const part of msgContent) {
+                if (part.thinking) {
+                  messages.push({
+                    type: 'thinking',
+                    message: { role: 'assistant', content: part.thinking },
+                    timestamp: entry.timestamp || null,
+                  });
+                }
+                if (part.text) {
+                  messages.push({
+                    type: 'message',
+                    message: { role: 'assistant', content: part.text },
+                    timestamp: entry.timestamp || null,
+                  });
+                }
               }
             }
-
-            messages.push({
-              type: 'message',
-              message: { role, content },
-              timestamp: entry.timestamp || null,
-            });
           }
-        } catch {}
+        }
       }
     }
 
@@ -271,7 +284,7 @@ export async function deleteSession(
       if (!file.endsWith('.jsonl')) continue;
 
       const filePath = path.join(projectDir, file);
-      const fileContent = await fs.readFile(filePath, 'utf8');
+      const fileContent = await Bun.file(filePath).text();
       const lines = fileContent.trim().split('\n');
       const newLines: string[] = [];
       let inTargetSession = false;
@@ -306,7 +319,7 @@ export async function deleteSession(
       }
 
       if (sessionFound) {
-        await fs.writeFile(filePath, newLines.join('\n'), 'utf8');
+        await Bun.write(filePath, newLines.join('\n'));
       }
     }
 

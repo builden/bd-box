@@ -53,6 +53,8 @@ interface ChatComposerProps {
   tokenBudget: { used?: number; total?: number } | null;
   slashCommandsCount: number;
   onToggleCommandMenu: () => void;
+  showHiddenMessages: boolean;
+  onToggleHiddenMessages: () => void;
   hasInput: boolean;
   onClearInput: () => void;
   isUserScrolledUp: boolean;
@@ -110,6 +112,8 @@ export default function ChatComposer({
   tokenBudget,
   slashCommandsCount,
   onToggleCommandMenu,
+  showHiddenMessages,
+  onToggleHiddenMessages,
   hasInput,
   onClearInput,
   isUserScrolledUp,
@@ -192,6 +196,8 @@ export default function ChatComposer({
             tokenBudget={tokenBudget}
             slashCommandsCount={slashCommandsCount}
             onToggleCommandMenu={onToggleCommandMenu}
+            showHiddenMessages={showHiddenMessages}
+            onToggleHiddenMessages={onToggleHiddenMessages}
             hasInput={hasInput}
             onClearInput={onClearInput}
             isUserScrolledUp={isUserScrolledUp}

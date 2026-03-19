@@ -38,6 +38,7 @@ export interface ChatMessage {
   isStreaming?: boolean;
   isInteractivePrompt?: boolean;
   isToolUse?: boolean;
+  isHidden?: boolean;
   toolName?: string;
   toolInput?: unknown;
   toolResult?: ToolResult | null;

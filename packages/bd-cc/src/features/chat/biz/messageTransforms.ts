@@ -45,6 +45,25 @@ const CURSOR_INTERNAL_USER_BLOCK_PATTERNS = [
   /<environment_info>[\s\S]*?<\/environment_info>/gi,
 ];
 
+const HIDDEN_CONTENT_PREFIXES = [
+  '<command-name>',
+  '<command-message>',
+  '<command-args>',
+  '<local-command-stdout>',
+  '<system-reminder>',
+  'Caveat:',
+  'This session is being continued from a previous',
+  '[Request interrupted',
+] as const;
+
+/**
+ * Check if content should be hidden based on common prefixes
+ * Used to filter out system/internal messages from display
+ */
+const shouldSkipHiddenContent = (content: string): boolean => {
+  return HIDDEN_CONTENT_PREFIXES.some((prefix) => content.startsWith(prefix));
+};
+
 const extractCursorUserQuery = (rawText: string): string => {
   const userQueryMatches = [...rawText.matchAll(/<user_query>([\s\S]*?)<\/user_query>/gi)];
   if (userQueryMatches.length === 0) {
@@ -396,7 +415,11 @@ export const convertCursorSessionMessages = (blobs: CursorBlob[], projectPath: s
   return converted;
 };
 
-export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
+export interface ConvertSessionMessagesOptions {
+  includeHidden?: boolean;
+}
+
+export const convertSessionMessages = (rawMessages: any[], options?: ConvertSessionMessagesOptions): ChatMessage[] => {
   const converted: ChatMessage[] = [];
   const toolResults = new Map<
     string,
@@ -437,18 +460,10 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
         content = decodeHtmlEntities(String(message.message.content));
       }
 
-      const shouldSkip =
-        !content ||
-        content.startsWith('<command-name>') ||
-        content.startsWith('<command-message>') ||
-        content.startsWith('<command-args>') ||
-        content.startsWith('<local-command-stdout>') ||
-        content.startsWith('<system-reminder>') ||
-        content.startsWith('Caveat:') ||
-        content.startsWith('This session is being continued from a previous') ||
-        content.startsWith('[Request interrupted');
+      const shouldSkip = !content || shouldSkipHiddenContent(content);
+      const isHiddenMessage = shouldSkip && options?.includeHidden;
 
-      if (!shouldSkip) {
+      if (!shouldSkip || isHiddenMessage) {
         // Parse <task-notification> blocks into compact system messages
         const taskNotifRegex =
           /<task-notification>\s*<task-id>[^<]*<\/task-id>\s*<output-file>[^<]*<\/output-file>\s*<status>([^<]*)<\/status>\s*<summary>([^<]*)<\/summary>\s*<\/task-notification>/g;
@@ -462,12 +477,14 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
             timestamp: message.timestamp || new Date().toISOString(),
             isTaskNotification: true,
             taskStatus: status,
+            isHidden: isHiddenMessage,
           });
         } else {
           converted.push({
             type: 'user',
             content: unescapeWithMathProtection(content),
             timestamp: message.timestamp || new Date().toISOString(),
+            isHidden: isHiddenMessage,
           });
         }
       }
@@ -475,11 +492,24 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
     }
 
     if (message.type === 'thinking' && message.message?.content) {
+      // Thinking messages can be hidden based on showThinking preference
+      // When includeHidden is true, we mark them as isHidden so they can be shown
+      const content = message.message.content;
+      const shouldHideThinking = shouldSkipHiddenContent(content);
+
+      // Skip thinking messages with hidden prefixes when includeHidden is false
+      if (shouldHideThinking && !options?.includeHidden) {
+        return;
+      }
+
+      const isHiddenMessage = shouldHideThinking && options?.includeHidden;
+
       converted.push({
         type: 'assistant',
-        content: unescapeWithMathProtection(message.message.content),
+        content: unescapeWithMathProtection(content),
         timestamp: message.timestamp || new Date().toISOString(),
         isThinking: true,
+        isHidden: isHiddenMessage,
       });
       return;
     }
@@ -517,6 +547,28 @@ export const convertSessionMessages = (rawMessages: any[]): ChatMessage[] => {
     if (message.message?.role === 'assistant' && message.message?.content) {
       if (Array.isArray(message.message.content)) {
         message.message.content.forEach((part: any) => {
+          // Handle thinking content in assistant message content array
+          if (part.type === 'thinking' && part.thinking) {
+            const thinkingContent = part.thinking;
+            const shouldHideThinking = shouldSkipHiddenContent(thinkingContent);
+
+            // Skip thinking messages with hidden prefixes when includeHidden is false
+            if (shouldHideThinking && !options?.includeHidden) {
+              return;
+            }
+
+            const isHiddenMessage = shouldHideThinking && options?.includeHidden;
+
+            converted.push({
+              type: 'assistant',
+              content: unescapeWithMathProtection(thinkingContent),
+              timestamp: message.timestamp || new Date().toISOString(),
+              isThinking: true,
+              isHidden: isHiddenMessage,
+            });
+            return;
+          }
+
           if (part.type === 'text') {
             let text = part.text;
             if (typeof text === 'string') {

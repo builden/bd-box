@@ -86,6 +86,7 @@ export function useChatSessionState({
   const [isLoadingAllMessages, setIsLoadingAllMessages] = useState(false);
   const [loadAllJustFinished, setLoadAllJustFinished] = useState(false);
   const [showLoadAllOverlay, setShowLoadAllOverlay] = useState(false);
+  const [showHiddenMessages, setShowHiddenMessages] = useState(false);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -203,8 +204,8 @@ export function useChatSessionState({
   }, []);
 
   const convertedMessages = useMemo(() => {
-    return convertSessionMessages(sessionMessages);
-  }, [sessionMessages]);
+    return convertSessionMessages(sessionMessages, { includeHidden: showHiddenMessages });
+  }, [sessionMessages, showHiddenMessages]);
 
   const scrollToBottom = useCallback(() => {
     const container = scrollContainerRef.current;
@@ -547,11 +548,17 @@ export function useChatSessionState({
     }
   }, [pendingViewSessionRef, selectedSession?.id]);
 
+  // Track previous showHiddenMessages to detect changes
+  const prevShowHiddenMessagesRef = useRef(showHiddenMessages);
+
   useEffect(() => {
     // Only sync sessionMessages to chatMessages when:
     // 1. Not currently loading (to avoid overwriting user's just-sent message)
     // 2. SessionMessages actually changed (including from non-empty to empty)
     // 3. Either it's initial load OR sessionMessages increased (new messages from server)
+    // 4. OR showHiddenMessages toggled (to show/hide hidden messages)
+    const showHiddenMessagesChanged = showHiddenMessages !== prevShowHiddenMessagesRef.current;
+
     if (sessionMessages.length !== prevSessionMessagesLengthRef.current && !isLoading) {
       // Only update if this is initial load, sessionMessages grew, or was cleared to empty
       if (
@@ -564,7 +571,13 @@ export function useChatSessionState({
       }
       prevSessionMessagesLengthRef.current = sessionMessages.length;
     }
-  }, [convertedMessages, sessionMessages.length, isLoading, setChatMessages]);
+
+    // Update chatMessages when showHiddenMessages toggles
+    if (showHiddenMessagesChanged && !isLoading) {
+      setChatMessages(convertedMessages);
+      prevShowHiddenMessagesRef.current = showHiddenMessages;
+    }
+  }, [convertedMessages, sessionMessages.length, isLoading, setChatMessages, showHiddenMessages]);
 
   useEffect(() => {
     if (selectedProject && chatMessages.length > 0) {
@@ -948,6 +961,8 @@ export function useChatSessionState({
     isLoadingAllMessages,
     loadAllJustFinished,
     showLoadAllOverlay,
+    showHiddenMessages,
+    setShowHiddenMessages,
     claudeStatus,
     setClaudeStatus,
     createDiff,

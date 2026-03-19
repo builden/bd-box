@@ -101,6 +101,8 @@ function ChatInterface({
     isLoadingAllMessages,
     loadAllJustFinished,
     showLoadAllOverlay,
+    showHiddenMessages,
+    setShowHiddenMessages,
     claudeStatus,
     setClaudeStatus,
     createDiff,
@@ -355,6 +357,8 @@ function ChatInterface({
           tokenBudget={tokenBudget}
           slashCommandsCount={slashCommandsCount}
           onToggleCommandMenu={handleToggleCommandMenu}
+          showHiddenMessages={showHiddenMessages}
+          onToggleHiddenMessages={() => setShowHiddenMessages(!showHiddenMessages)}
           hasInput={Boolean(input.trim())}
           onClearInput={handleClearInput}
           isUserScrolledUp={isUserScrolledUp}

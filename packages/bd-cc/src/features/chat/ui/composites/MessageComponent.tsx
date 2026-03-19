@@ -107,7 +107,11 @@ const MessageComponent = memo(
     }, [autoExpandTools, isExpanded, message.isToolUse]);
 
     const formattedTime = useMemo(() => new Date(message.timestamp).toLocaleTimeString(), [message.timestamp]);
-    const shouldHideThinkingMessage = Boolean(message.isThinking && !showThinking);
+    // Hide thinking messages only if:
+    // 1. showThinking is false AND
+    // 2. The message is NOT marked as hidden (isHidden)
+    // This allows hidden thinking messages to be shown when "show hidden messages" is enabled
+    const shouldHideThinkingMessage = Boolean(message.isThinking && !showThinking && !message.isHidden);
 
     if (shouldHideThinkingMessage) {
       return null;
@@ -117,7 +121,7 @@ const MessageComponent = memo(
       <div
         ref={messageRef}
         data-message-timestamp={message.timestamp || undefined}
-        className={`chat-message ${message.type} ${isGrouped ? 'grouped' : ''} ${message.type === 'user' ? 'flex justify-end px-3 sm:px-0' : 'px-3 sm:px-0'}`}
+        className={`chat-message ${message.type} ${isGrouped ? 'grouped' : ''} ${message.type === 'user' ? 'flex justify-end px-3 sm:px-0' : 'px-3 sm:px-0'} ${message.isHidden ? 'rounded-lg bg-gray-100/60 dark:bg-gray-800/40' : ''}`}
       >
         {message.type === 'user' ? (
           /* User message bubble on the right */

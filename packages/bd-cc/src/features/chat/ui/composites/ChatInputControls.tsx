@@ -13,6 +13,8 @@ interface ChatInputControlsProps {
   tokenBudget: { used?: number; total?: number } | null;
   slashCommandsCount: number;
   onToggleCommandMenu: () => void;
+  showHiddenMessages: boolean;
+  onToggleHiddenMessages: () => void;
   hasInput: boolean;
   onClearInput: () => void;
   isUserScrolledUp: boolean;
@@ -29,6 +31,8 @@ export default function ChatInputControls({
   tokenBudget,
   slashCommandsCount,
   onToggleCommandMenu,
+  showHiddenMessages,
+  onToggleHiddenMessages,
   hasInput,
   onClearInput,
   isUserScrolledUp,
@@ -87,6 +91,27 @@ export default function ChatInputControls({
         used={tokenBudget?.used || 0}
         total={tokenBudget?.total || parseInt(import.meta.env.VITE_CONTEXT_WINDOW || '160000') || 160000}
       />
+
+      <button
+        type="button"
+        onClick={onToggleHiddenMessages}
+        className={`relative flex h-7 w-7 items-center justify-center rounded-lg transition-colors sm:h-8 sm:w-8 ${
+          showHiddenMessages
+            ? 'bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-900/50'
+            : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
+        }`}
+        title={showHiddenMessages ? t('input.hideHiddenMessages') : t('input.showHiddenMessages')}
+      >
+        <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+          />
+        </svg>
+      </button>
 
       <button
         type="button"
