@@ -93,7 +93,7 @@ bun add -D typescript-eslint
 {
   "scripts": {
     "lint": "eslint . --fix",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css,scss,less,html,vue,yaml,toml}\""
+    "format": "prettier --write"
   }
 }
 ```
