@@ -822,10 +822,11 @@ function EffectComponent() {
 
 ### 核心 API
 
-| API                               | 用途                                 |
-| --------------------------------- | ------------------------------------ |
-| `atomWithLocation()`              | 创建与 `window.location` 同步的 atom |
-| `atomWithHash(key, initialValue)` | 创建与 URL hash 双向绑定的 atom      |
+| API                                       | 用途                                 |
+| ----------------------------------------- | ------------------------------------ |
+| `atomWithLocation()`                      | 创建与 `window.location` 同步的 atom |
+| `atomWithHash(key, initialValue)`         | 创建与 URL hash 双向绑定的 atom      |
+| `atomWithSearchParams(key, initialValue)` | 创建与 URL search 双向绑定的 atom    |
 
 ### atomWithLocation（URL 路径同步）
 
@@ -874,6 +875,74 @@ function FilterPage() {
 }
 ```
 
+### atomWithSearchParams（URL Query 参数同步）
+
+```typescript
+import { atomWithSearchParams } from 'jotai-location';
+
+// ✅ 正确：与 URL search 参数双向绑定
+export const pageAtom = atomWithSearchParams('page', '1');
+export const categoryAtom = atomWithSearchParams('category', 'all');
+
+function Pagination() {
+  const [page, setPage] = useAtom(pageAtom);
+  const [category, setCategory] = useAtom(categoryAtom);
+
+  return (
+    <>
+      <span>Page: {page}</span>
+      <button onClick={() => setPage('1')}>1</button>
+      <button onClick={() => setPage('2')}>2</button>
+      <select value={category} onChange={(e) => setCategory(e.target.value)}>
+        <option value="all">All</option>
+        <option value="active">Active</option>
+      </select>
+    </>
+  );
+}
+```
+
+**API 签名**：
+
+```typescript
+atomWithSearchParams<Key extends string>(
+  key: Key,
+  initialValue: string | null,
+  options?: {
+    replace?: boolean;           // 使用 replaceState 而非 pushState
+    delayInit?: boolean;          // 延迟到 onMount 初始化
+    serialize?: (value: string | null) => string;
+    deserialize?: (search: string) => string | null;
+  }
+): PrimitiveAtom<string | null>
+```
+
+**选项说明**：
+
+| 选项          | 类型                         | 默认值       | 说明                         |
+| ------------- | ---------------------------- | ------------ | ---------------------------- |
+| `replace`     | `boolean`                    | `false`      | `true` 使用 `replaceState`   |
+| `delayInit`   | `boolean`                    | `false`      | `true` 延迟到 onMount 初始化 |
+| `serialize`   | `(v) => string`              | 直接转字符串 | 自定义序列化                 |
+| `deserialize` | `(search) => string \| null` | 解析参数     | 自定义反序列化               |
+
+**SSR 注意事项**：
+
+```typescript
+// ❌ 错误：SSR 时 window 未定义会报错
+export const searchAtom = atomWithSearchParams('q', '');
+
+// ✅ 正确：使用 delayInit 延迟初始化
+export const searchAtom = atomWithSearchParams('q', '', { delayInit: true });
+
+// ✅ 正确：结合 useHydrateAtoms 做 SSR 水合
+function SearchPage({ initialQuery }) {
+  useHydrateAtoms([[searchAtom, initialQuery]]);
+  const [query] = useAtom(searchAtom);
+  // ...
+}
+```
+
 ### 与自定义 useUrlState 对比
 
 | 特性         | jotai-location   | 自定义 useUrlState   |
@@ -918,12 +987,13 @@ function useUrlState<T>(key: string, defaultValue: T, validator: (v: unknown) =>
 
 ### 场景选择指南
 
-| 需求                         | 推荐方案             |
-| ---------------------------- | -------------------- |
-| 简单 URL 参数（count, page） | `atomWithHash`       |
-| 需要全局 URL 状态            | `atomWithLocation`   |
-| SSR 兼容 + 参数验证          | 自定义 `useUrlState` |
-| 复杂 URL 参数结构            | 自定义 `useUrlState` |
+| 需求                            | 推荐方案               |
+| ------------------------------- | ---------------------- |
+| 简单 URL 参数（count, page）    | `atomWithHash`         |
+| Query 参数（q, page, category） | `atomWithSearchParams` |
+| 需要全局 URL 状态               | `atomWithLocation`     |
+| SSR 兼容 + 参数验证             | 自定义 `useUrlState`   |
+| 复杂 URL 参数结构               | 自定义 `useUrlState`   |
 
 ## jotai-optics（透镜/路径访问）
 
