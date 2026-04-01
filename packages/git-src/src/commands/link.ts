@@ -26,7 +26,14 @@ export async function linkRepo(repoName: string, config?: Config): Promise<void>
   }
 
   // Create symlink
-  symlinkSync(repo.path, linkPath);
+  try {
+    symlinkSync(repo.path, linkPath);
+  } catch (error: unknown) {
+    if (typeof error === 'object' && error !== null && (error as { code?: string }).code === 'EEXIST') {
+      throw new Error(`Already linked at ${linkPath}`);
+    }
+    throw error;
+  }
   configInstance.addLinkedPath(repo.fullName, linkPath);
   console.log(pc.green(`Linked ${repo.fullName} → ${linkPath}`));
 }

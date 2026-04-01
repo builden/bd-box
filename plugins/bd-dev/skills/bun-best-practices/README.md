@@ -18,9 +18,10 @@ bun-best-practices/
     │   └── gitignore.md        # 测试输出忽略
     ├── coding/                 # 编码测试（Level 2 入口）
     │   ├── index.md            # 编码入口
-    │   ├── testing.md           # 测试框架
+    │   ├── testing.md           # 测试框架（含分层策略）
     │   ├── performance.md      # 性能测试
     │   ├── playwright.md        # E2E 测试
+    │   ├── lightpanda.md        # Lightpanda 轻量级测试
     │   └── refactoring.md      # 重构规范
     ├── debugging/              # 调试阶段（Level 2 入口）
     │   ├── index.md            # 调试入口
@@ -41,9 +42,10 @@ bun-best-practices/
 | **搭建** | setup/lint.md                      | ESLint + Prettier + Husky 配置    | 配置 lint     |
 | **搭建** | setup/release.md                   | release-it 版本发布配置           | 发布时        |
 | **编码** | coding/index.md                    | 编码入口：测试、重构              | 编写代码时    |
-| **编码** | coding/testing.md                  | 测试框架、覆盖率要求              | 写测试时      |
+| **编码** | coding/testing.md                  | 测试框架、覆盖率要求、分层策略    | 写测试时      |
 | **编码** | coding/performance.md              | 性能基准测试                      | 优化性能时    |
 | **编码** | coding/playwright.md               | E2E 测试                          | 写 E2E 时     |
+| **编码** | coding/lightpanda.md               | Lightpanda 轻量级浏览器           | 快速集成测试  |
 | **编码** | coding/refactoring.md              | 大型重构规范                      | 重构时        |
 | **调试** | debugging/index.md                 | 调试入口：日志、方法论            | 排查问题时    |
 | **调试** | debugging/logging.md               | 日志规范：工具、级别              | 添加日志时    |
@@ -144,6 +146,7 @@ Claude Code 按需加载这些规范的方式：
 | 排查生产问题    | debugging/logging.md → debugging/debugging.md |
 | 性能优化        | coding/performance.md                         |
 | E2E 测试        | coding/testing.md → coding/playwright.md      |
+| 轻量级测试      | coding/testing.md → coding/lightpanda.md      |
 | 大型重构        | coding/refactoring.md                         |
 | 遇到错误        | troubleshooting/common-mistakes.md            |
 
@@ -199,7 +202,8 @@ graph TB
         C2[coding/testing.md]
         C3[coding/performance.md]
         C4[coding/playwright.md]
-        C5[coding/refactoring.md]
+        C5[coding/lightpanda.md]
+        C6[coding/refactoring.md]
     end
 
     subgraph 调试阶段
@@ -264,6 +268,8 @@ graph TB
 | 配置测试输出忽略     | setup/gitignore.md                            |
 | 搭建测试框架         | coding/testing.md                             |
 | 编写单元测试         | coding/testing.md                             |
+| 快速视觉验证         | coding/testing.md (cmux browser)              |
+| 轻量级集成测试       | coding/testing.md → coding/lightpanda.md      |
 | 优化算法性能         | coding/performance.md                         |
 | E2E 测试             | coding/testing.md → coding/playwright.md      |
 | 大型重构             | coding/refactoring.md                        |

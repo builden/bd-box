@@ -4,14 +4,66 @@
 
 ## 目录
 
+- [测试分层策略](#测试分层策略)
 - [测试分类](#测试分类)
 - [测试优先级](#测试优先级)
 - [覆盖率要求](#覆盖率要求)
 - [目录结构](#目录结构)
 - [运行命令](#运行命令)
 - [基础配置](#基础配置)（bun test）
+- [开发阶段工具](#开发阶段工具)
 - [性能测试](./performance.md)（Mitata）
 - [Playwright E2E](./playwright.md)
+- [Lightpanda 轻量级测试](./lightpanda.md)
+
+---
+
+## 测试分层策略
+
+### 测试金字塔
+
+```
+           ┌─────────────────────┐
+           │      Playwright      │  2% 复杂交互（拖拽、动画、多浏览器）
+           │    (tests/e2e/)     │
+           ├─────────────────────┤
+           │     Lightpanda       │  8% 非拖拽复杂交互（可选）
+           │   (tests/light/)    │
+           ├─────────────────────┤
+           │    Happy DOM +       │  90% 组件/函数测试
+           │   Testing Library    │
+           └─────────────────────┘
+```
+
+### 工具选择原则
+
+| 工具             | 使用场景                             | 速度            | 限制             |
+| ---------------- | ------------------------------------ | --------------- | ---------------- |
+| **Happy DOM**    | 渲染、props 响应、状态变化、简单事件 | ⚡⚡⚡ (~200ms) | 无真实浏览器 API |
+| **cmux browser** | CSS、布局、快速视觉验证              | ⚡⚡⚡ (即时)   | 仅限 cmux 环境   |
+| **Lightpanda**   | 复杂交互但非拖拽（可选）             | ⚡⚡ (~5s)      | Web API 仍在完善 |
+| **Playwright**   | 拖拽、动画、多浏览器验证             | ⚡ (~20s)       | 启动慢           |
+
+### 开发流程中的工具选择
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  写代码 → Happy DOM 单元测试 → cmux 快速验证 → 提交             │
+│       │                              │                          │
+│       └→ bun test (通过) → E2E 测试 → push                      │
+│                      │                                          │
+│                      └→ 问题？→ 按需选择调试工具                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 调试优先级
+
+| 优先级 | 手段       | 工具                                   |
+| ------ | ---------- | -------------------------------------- |
+| 1      | 日志       | pino                                   |
+| 2      | 写测试复现 | Happy DOM + Testing Library            |
+| 3      | 阅读源码   | LSP                                    |
+| 4      | 浏览器调试 | cmux browser / Lightpanda / Playwright |
 
 ---
 
@@ -182,10 +234,15 @@ src/
   utils.test.ts      # 单元测试（源码同级）
 
 tests/
+  unit/              # Happy DOM 组件测试
+    components/      # 复杂组件的多场景测试
+    hooks/           # Hook 测试
   api/               # API 端点测试
     *.api.ts
   integration/       # 集成测试
     *.spec.ts
+  light/             # Lightpanda 测试（可选）
+    *.light.ts
   e2e/               # Playwright 测试（E2E + 冒烟）
     *.e2e.ts         # 普通 E2E 测试
     *.smoke.e2e.ts   # 冒烟测试（带 UI，方便人工确认）
@@ -195,6 +252,13 @@ tests/
   test-results/      # Playwright 输出目录（已加入 .gitignore）
   playwright.config.ts
 ```
+
+**单元测试位置原则**：
+
+| 位置                | 适用场景             |
+| ------------------- | -------------------- |
+| 源码同级 `.test.ts` | 简单组件、函数、工具 |
+| `tests/unit/`       | 复杂组件的多场景测试 |
 
 **重要约束**：
 
@@ -206,7 +270,9 @@ tests/
 ## 运行命令
 
 ```bash
-bun test              # 单元测试 + API 测试 + 集成测试
+bun test              # 单元测试 + 集成测试（源码同级 .test.ts）
+bun test tests/unit/  # Happy DOM 组件测试
+bun run test:api     # API 测试（需要服务器运行）
 bun run test:e2e     # Playwright E2E 测试（无 UI，CI/CD 用）
 bun run test:smoke   # 冒烟测试（带 UI，人工确认用）
 bun run test:bench   # 性能测试（Mitata）
@@ -214,6 +280,8 @@ bun run test:bench   # 性能测试（Mitata）
 
 | 命令         | UI  | 用途                   |
 | ------------ | --- | ---------------------- |
+| `bun test`   | 无  | 单元测试 + 集成测试    |
+| `test:api`   | 无  | API 测试（依赖服务器） |
 | `test:e2e`   | 无  | CI/CD、自动化流水线    |
 | `test:smoke` | 有  | 本地提交前人工二次确认 |
 
@@ -408,3 +476,103 @@ test('slow test', async () => {
 ## Playwright E2E 测试
 
 详见 [playwright.md](playwright.md)。
+
+---
+
+## 开发阶段工具
+
+开发阶段可以使用以下工具进行快速验证和调试。
+
+### cmux browser
+
+cmux 内置 WKWebView 浏览器，适合快速视觉验证。
+
+**适用场景**：
+
+- CSS/布局验证
+- 组件渲染效果检查
+- 简单交互测试
+
+**常用命令**：
+
+```bash
+# 打开页面
+cmux browser open http://localhost:5173
+
+# 获取页面快照（交互式 accessibility tree）
+cmux browser surface:2 snapshot --interactive
+
+# 点击元素
+cmux browser surface:2 click "#button-id"
+
+# 填写表单
+cmux browser surface:2 fill "#email" --text "test@example.com"
+
+# 执行 JavaScript
+cmux browser surface:2 eval "document.title"
+
+# 截图
+cmux browser surface:2 screenshot
+
+# 等待页面加载
+cmux browser surface:2 wait --load-state complete --timeout-ms 15000
+```
+
+**surface:N 说明**：cmux 中的每个浏览器页面称为 surface，N 是页面索引。
+
+### Lightpanda
+
+轻量级头戴浏览器，CDP 协议兼容，启动极快。
+
+**适用场景**：
+
+- 复杂交互但非拖拽（表单验证、异步操作）
+- 需要更快反馈的集成测试
+
+**安装**：
+
+```bash
+# macOS
+curl -L https://github.com/lightpanda-io/browser/releases/latest/download/lipanda-macos.tar.gz | tar xz
+
+# 启动本地 CDP server
+./lightpanda serve --port 9222
+```
+
+**Playwright 连接 Lightpanda**：
+
+```typescript
+const browser = await chromium.connectOverCDP('http://localhost:9222');
+```
+
+详见 [lightpanda.md](lightpanda.md)。
+
+### Happy DOM 单元测试示例
+
+```typescript
+// src/features/editor/components/Button.test.tsx
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect } from 'bun:test';
+
+describe('Button', () => {
+  it('renders with correct text', () => {
+    render(<Button>Click me</Button>);
+    expect(screen.getByRole('button')).toHaveTextContent('Click me');
+  });
+
+  it('calls onClick when clicked', async () => {
+    const handleClick = vi.fn();
+    render(<Button onClick={handleClick}>Click me</Button>);
+
+    await userEvent.click(screen.getByRole('button'));
+    expect(handleClick).toHaveBeenCalledOnce();
+  });
+});
+```
+
+---
+
+## Lightpanda 轻量级测试
+
+详见 [lightpanda.md](lightpanda.md)。
