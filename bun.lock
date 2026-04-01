@@ -219,7 +219,7 @@
     },
     "packages/bd-utils": {
       "name": "@builden/bd-utils",
-      "version": "1.0.0",
+      "version": "0.0.1",
       "dependencies": {
         "open": "^11.0.0",
       },
@@ -239,12 +239,12 @@
     },
     "packages/git-src": {
       "name": "@builden/git-src",
-      "version": "1.0.5",
+      "version": "1.1.0",
       "bin": {
         "git-src": "./dist/index.js",
       },
       "dependencies": {
-        "@builden/bd-utils": "workspace:*",
+        "@builden/bd-utils": "^0.0.1",
         "cli-table3": "^0.6.5",
         "commander": "^12.1.0",
         "execa": "^9.5.2",
@@ -5153,6 +5153,8 @@
     "@babel/template/@babel/code-frame": ["@babel/code-frame@7.29.0", "https://registry.npmmirror.com/@babel/code-frame/-/code-frame-7.29.0.tgz", { "dependencies": { "@babel/helper-validator-identifier": "^7.28.5", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw=="],
 
     "@babel/traverse/@babel/code-frame": ["@babel/code-frame@7.29.0", "https://registry.npmmirror.com/@babel/code-frame/-/code-frame-7.29.0.tgz", { "dependencies": { "@babel/helper-validator-identifier": "^7.28.5", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw=="],
+
+    "@builden/git-src/@builden/bd-utils": ["@builden/bd-utils@0.0.1", "", { "dependencies": { "open": "^11.0.0" }, "peerDependencies": { "execa": "^9.0.0", "jotai": "^2.0.0", "ora": "^8.0.0", "picocolors": "^1.0.0" } }, "sha512-PWxktWBTK8gqZpS8q0XDyGiRQat8qufus0+U0TQgCGgv3YLKBJmmBrY/v7V0Ju/x1OlTpzdXaK/SaLnSoitegw=="],
 
     "@chevrotain/cst-dts-gen/lodash-es": ["lodash-es@4.17.21", "https://registry.npmmirror.com/lodash-es/-/lodash-es-4.17.21.tgz", {}, "sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw=="],
 

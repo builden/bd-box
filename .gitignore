@@ -45,3 +45,5 @@ coverage/
 # electrobun
 artifacts/
 **/bd-color-desktop/build/
+
+.git-src/
