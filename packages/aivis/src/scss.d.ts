@@ -1,0 +1,1 @@
+// SCSS type declarations
