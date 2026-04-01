@@ -1,6 +1,8 @@
-import pc from "picocolors";
-import { execa } from "execa";
-import { Config } from "../lib/config";
+import pc from 'picocolors';
+import { execa } from 'execa';
+import { Config } from '../lib/config';
+import { existsSync, rmSync } from 'fs';
+import { dirname } from 'path';
 
 export async function removeRepo(repoName: string): Promise<void> {
   const config = new Config();
@@ -14,13 +16,33 @@ export async function removeRepo(repoName: string): Promise<void> {
   console.log(`Removing ${repo.fullName}...`);
 
   try {
-    // Remove from filesystem
-    await execa("rm", ["-rf", repo.path]);
+    // 1. 删除所有 linkedPaths 中的 symlink
+    for (const linkPath of repo.linkedPaths) {
+      if (existsSync(linkPath)) {
+        rmSync(linkPath);
+        console.log(`Removed symlink: ${linkPath}`);
 
-    // Remove from config
+        // 尝试删除父目录（如为空）
+        const parentDir = dirname(linkPath);
+        try {
+          const dirContents = (await import('fs')).readdirSync(parentDir);
+          if (dirContents.length === 0) {
+            rmSync(parentDir);
+            console.log(`Removed empty directory: ${parentDir}`);
+          }
+        } catch {
+          // ignore - directory not empty or other error
+        }
+      }
+    }
+
+    // 2. 删除仓库本身
+    await execa('rm', ['-rf', repo.path]);
+
+    // 3. 从配置移除
     config.removeRepo(repo.fullName);
 
-    console.log(`Removed ${repo.fullName}`);
+    console.log(pc.green(`Removed ${repo.fullName}`));
   } catch (error) {
     console.error(`Failed to remove ${repo.fullName}`);
     throw error;
