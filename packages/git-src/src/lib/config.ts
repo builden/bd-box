@@ -1,6 +1,6 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
-import { dirname } from "path";
-import { homedir } from "os";
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { dirname } from 'path';
+import { homedir } from 'os';
 
 export interface Repo {
   id: string;
@@ -12,6 +12,7 @@ export interface Repo {
   tags: string[];
   addedAt: string;
   updatedAt: string;
+  linkedPaths: string[];
 }
 
 export interface GitSrcConfig {
@@ -24,7 +25,7 @@ export interface UpdateRepoOptions {
 }
 
 const DEFAULT_CONFIG: GitSrcConfig = {
-  version: "1.0.0",
+  version: '1.0.0',
   repos: [],
 };
 
@@ -40,13 +41,23 @@ export class Config {
   private load(): GitSrcConfig {
     try {
       if (existsSync(this.configPath)) {
-        const content = readFileSync(this.configPath, "utf-8");
-        return JSON.parse(content);
+        const content = readFileSync(this.configPath, 'utf-8');
+        const config = JSON.parse(content);
+        // Ensure old data has linkedPaths field
+        config.repos = config.repos.map((r: Repo) => ({
+          ...r,
+          linkedPaths: r.linkedPaths || [],
+        }));
+        return config;
       }
     } catch {
       // ignore error, return default
     }
-    return { ...DEFAULT_CONFIG };
+    // Create a deep copy to avoid sharing the repos array with DEFAULT_CONFIG
+    return {
+      ...DEFAULT_CONFIG,
+      repos: [...DEFAULT_CONFIG.repos],
+    };
   }
 
   private save(): void {
@@ -62,7 +73,12 @@ export class Config {
   }
 
   addRepo(repo: Repo): void {
-    this.config.repos.push(repo);
+    // Ensure repo has linkedPaths field with default empty array
+    const repoWithLinkedPaths = {
+      ...repo,
+      linkedPaths: repo.linkedPaths || [],
+    };
+    this.config.repos.push(repoWithLinkedPaths);
     this.save();
   }
 
@@ -81,6 +97,26 @@ export class Config {
       if (options.tags !== undefined) {
         repo.tags = options.tags;
       }
+      repo.updatedAt = new Date().toISOString();
+      this.save();
+    }
+  }
+
+  addLinkedPath(fullName: string, linkPath: string): void {
+    const repo = this.config.repos.find((r) => r.fullName === fullName);
+    if (repo) {
+      if (!repo.linkedPaths.includes(linkPath)) {
+        repo.linkedPaths.push(linkPath);
+        repo.updatedAt = new Date().toISOString();
+        this.save();
+      }
+    }
+  }
+
+  removeLinkedPath(fullName: string, linkPath: string): void {
+    const repo = this.config.repos.find((r) => r.fullName === fullName);
+    if (repo) {
+      repo.linkedPaths = repo.linkedPaths.filter((p) => p !== linkPath);
       repo.updatedAt = new Date().toISOString();
       this.save();
     }
