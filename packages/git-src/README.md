@@ -27,6 +27,7 @@ git-src add react
 git-src add facebook/react
 git-src add https://github.com/vuejs/vue
 git-src add react --tag important  # Add with tag
+git-src add react --link          # Add and link to current directory
 
 # List repositories
 git-src ls
@@ -64,7 +65,10 @@ git-src tag react        # List tags
 git-src tag react important --delete
 
 # Remove
-git-src rm react
+git-src rm react  # Removes repo and cleans up all symlinks
+
+# Link repository
+git-src link react  # Create symlink in current directory
 
 # Upgrade
 git-src upgrade  # Self-upgrade to latest version
@@ -80,3 +84,5 @@ git-src upgrade  # Self-upgrade to latest version
 - Bun-style colorful output
 - Table display with repo URL links
 - Version read from package.json
+- Symlink support: link repos to project directories
+- Automatic symlink cleanup when removing repos
