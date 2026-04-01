@@ -40,6 +40,20 @@ git-src add facebook/react
 
 # 带标签
 git-src add vue --tag frontend
+
+# 添加并链接到当前目录
+git-src add facebook/react --link
+```
+
+### 链接仓库
+
+将已安装的仓库链接到当前项目目录：
+
+```bash
+# 链接仓库到当前目录
+git-src link facebook/react
+
+# 链接后会在当前目录创建 .git-src/facebook/react -> ~/.git-src/facebook/react
 ```
 
 ### 打开仓库
@@ -50,6 +64,13 @@ git-src open vue
 
 # 通配符（交互式选择）
 git-src open re*
+```
+
+### 删除仓库
+
+```bash
+# 删除仓库（同时清理所有 symlink）
+git-src rm facebook/react
 ```
 
 ## 检查更新
@@ -103,9 +124,13 @@ git-src upgrade
 git-src query <关键词>  # 搜索仓库
 git-src open <名称>     # 在编辑器中打开
 git-src add <repo>      # 添加新仓库
+git-src add <repo> -l   # 添加并链接到当前目录
+git-src link <repo>     # 链接仓库到当前目录
+git-src rm <repo>       # 删除仓库
 ```
 
 ## 存储位置
 
 - 仓库存储：`~/.git-src/{owner}/{repo}`
 - 配置文件：`~/.git-src/config.json`
+- 链接存储：`<cwd>/.git-src/{owner}/{repo}` (symlink)
