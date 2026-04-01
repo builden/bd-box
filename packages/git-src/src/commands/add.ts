@@ -1,8 +1,10 @@
-import { execa } from "execa";
-import ora from "ora";
-import { Config, Repo } from "../lib/config";
-import { existsSync, mkdirSync } from "fs";
-import { homedir } from "os";
+import { execa } from 'execa';
+import ora from 'ora';
+import pc from 'picocolors';
+import { Config, Repo } from '../lib/config';
+import { existsSync, mkdirSync } from 'fs';
+import { homedir } from 'os';
+import { linkRepo } from './link';
 
 export interface ParseResult {
   owner: string;
@@ -17,9 +19,9 @@ export function parseRepoInput(input: string): ParseResult {
   if (gitMatch) {
     return {
       owner: gitMatch[1],
-      name: gitMatch[2].replace(/\.git$/, ""),
-      fullName: `${gitMatch[1]}/${gitMatch[2].replace(/\.git$/, "")}`,
-      url: `https://github.com/${gitMatch[1]}/${gitMatch[2].replace(/\.git$/, "")}`,
+      name: gitMatch[2].replace(/\.git$/, ''),
+      fullName: `${gitMatch[1]}/${gitMatch[2].replace(/\.git$/, '')}`,
+      url: `https://github.com/${gitMatch[1]}/${gitMatch[2].replace(/\.git$/, '')}`,
     };
   }
 
@@ -28,28 +30,28 @@ export function parseRepoInput(input: string): ParseResult {
   if (urlMatch) {
     return {
       owner: urlMatch[1],
-      name: urlMatch[2].replace(/\.git$/, ""),
-      fullName: `${urlMatch[1]}/${urlMatch[2].replace(/\.git$/, "")}`,
-      url: `https://github.com/${urlMatch[1]}/${urlMatch[2].replace(/\.git$/, "")}`,
+      name: urlMatch[2].replace(/\.git$/, ''),
+      fullName: `${urlMatch[1]}/${urlMatch[2].replace(/\.git$/, '')}`,
+      url: `https://github.com/${urlMatch[1]}/${urlMatch[2].replace(/\.git$/, '')}`,
     };
   }
 
   // Handle owner/repo format
-  if (input.includes("/")) {
-    const [owner, name] = input.split("/");
+  if (input.includes('/')) {
+    const [owner, name] = input.split('/');
     return { owner, name, fullName: `${owner}/${name}`, url: `https://github.com/${owner}/${name}` };
   }
 
   // Simple repo name - assume facebook as default
   return {
-    owner: "facebook",
+    owner: 'facebook',
     name: input,
     fullName: `facebook/${input}`,
     url: `https://github.com/facebook/${input}`,
   };
 }
 
-export async function addRepo(input: string, options: { tag?: string } = {}): Promise<void> {
+export async function addRepo(input: string, options: { tag?: string; link?: boolean } = {}): Promise<void> {
   const parsed = parseRepoInput(input);
   const config = new Config();
 
@@ -72,12 +74,12 @@ export async function addRepo(input: string, options: { tag?: string } = {}): Pr
   const spinner = ora(`Cloning ${parsed.fullName}...`).start();
 
   try {
-    await execa("git", ["clone", "--depth", "1", parsed.url, repoPath], {
+    await execa('git', ['clone', '--depth', '1', parsed.url, repoPath], {
       cwd: basePath,
     });
 
     const repos = config.getRepos();
-    const newId = String(repos.length + 1).padStart(3, "0");
+    const newId = String(repos.length + 1).padStart(3, '0');
 
     const tags = options.tag ? [options.tag] : [];
     const newRepo: Repo = {
@@ -90,11 +92,21 @@ export async function addRepo(input: string, options: { tag?: string } = {}): Pr
       tags,
       addedAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      linkedPaths: [],
     };
 
     config.addRepo(newRepo);
 
     spinner.succeed(`Cloned ${parsed.fullName}`);
+
+    // link option
+    if (options.link) {
+      try {
+        await linkRepo(parsed.fullName, config);
+      } catch {
+        console.log(pc.yellow(`Warning: link failed, repository added but not linked`));
+      }
+    }
   } catch (error) {
     spinner.fail(`Failed to clone ${parsed.fullName}`);
     throw error;
