@@ -9,7 +9,7 @@ import type { ComponentType } from './types';
 // Each component type gets a skeleton wireframe that scales to the given dimensions.
 // Uses inline styles referencing CSS custom properties from the layout mode overlay.
 
-type SkeletonProps = { width: number; height: number; text?: string };
+type SkeletonProps = { width: number; height: number; text?: string; _width?: number; _height?: number };
 
 function Bar({ w, h = 3, strong }: { w: number | string; h?: number; strong?: boolean }) {
   return (

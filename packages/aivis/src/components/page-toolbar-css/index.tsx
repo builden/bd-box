@@ -611,7 +611,7 @@ export function PageFeedbackToolbarCSS({
   const editPopupRef = useRef<AnnotationPopupCSSHandle>(null);
   const scrollTimeoutRef = useRef<ReturnType<typeof originalSetTimeout> | null>(null);
 
-  const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
+  const pathname = typeof window !== 'undefined' ? (window.location.pathname ?? '/') : '/';
 
   // Handle showSettings changes with exit animation
   useEffect(() => {
@@ -750,7 +750,7 @@ export function PageFeedbackToolbarCSS({
             // 3. Annotations marked as synced to THIS session but missing from server
             //    (handles server-side deletion)
             const allLocalAnnotations = loadAnnotations<Annotation>(pathname);
-            const serverIds = new Set(session.annotations.map((a) => a.id));
+            const serverIds = new Set(session.annotations.map((a: Annotation) => a.id));
             const localToMerge = allLocalAnnotations.filter((a) => {
               // If it exists on server, don't re-upload
               if (serverIds.has(a.id)) return false;
@@ -1006,7 +1006,7 @@ export function PageFeedbackToolbarCSS({
             const newSession = await createSession(endpoint, pageUrl);
             sessionId = newSession.id;
             setCurrentSessionId(sessionId);
-            saveSessionId(pathname, sessionId);
+            saveSessionId(pathname ?? '/', sessionId);
           }
 
           // Find annotations that need syncing
@@ -3714,7 +3714,7 @@ export function PageFeedbackToolbarCSS({
             }}
             isDarkMode={isDarkMode}
             sectionCount={rearrangeState?.sections.length ?? 0}
-            onDetectSections={() => {
+            _onDetectSections={() => {
               const sections = detectPageSections();
               const existing = rearrangeState?.sections ?? [];
               const existingSelectors = new Set(existing.map((s) => s.selector));
@@ -3759,7 +3759,7 @@ export function PageFeedbackToolbarCSS({
             }}
             wireframePurpose={wireframePurpose}
             onWireframePurposeChange={setWireframePurpose}
-            Tooltip={HelpTooltip}
+            _Tooltip={HelpTooltip}
             onDragStart={(type, e) => {
               e.preventDefault();
               const def = DEFAULT_SIZES[type];
@@ -3841,7 +3841,7 @@ export function PageFeedbackToolbarCSS({
 
           <SettingsPanel
             settings={settings}
-            onSettingsChange={(patch) => setSettings((s) => ({ ...s, ...patch }))}
+            onSettingsChange={(patch: Partial<ToolbarSettings>) => setSettings((s) => ({ ...s, ...patch }))}
             isDarkMode={isDarkMode}
             onToggleTheme={toggleTheme}
             isDevMode={isDevMode}
@@ -4064,9 +4064,11 @@ export function PageFeedbackToolbarCSS({
                 renumberFrom={renumberFrom}
                 markerClickBehavior={settings.markerClickBehavior}
                 tooltipStyle={getTooltipPosition(annotation)}
-                onHoverEnter={(a) => !markersExiting && a.id !== recentlyAddedIdRef.current && handleMarkerHover(a)}
+                onHoverEnter={(a: Annotation) =>
+                  !markersExiting && a.id !== recentlyAddedIdRef.current && handleMarkerHover(a)
+                }
                 onHoverLeave={() => handleMarkerHover(null)}
-                onClick={(a) =>
+                onClick={(a: Annotation) =>
                   settings.markerClickBehavior === 'delete' ? deleteAnnotation(a.id) : startEditAnnotation(a)
                 }
                 onContextMenu={startEditAnnotation}
@@ -4098,9 +4100,11 @@ export function PageFeedbackToolbarCSS({
                 renumberFrom={renumberFrom}
                 markerClickBehavior={settings.markerClickBehavior}
                 tooltipStyle={getTooltipPosition(annotation)}
-                onHoverEnter={(a) => !markersExiting && a.id !== recentlyAddedIdRef.current && handleMarkerHover(a)}
+                onHoverEnter={(a: Annotation) =>
+                  !markersExiting && a.id !== recentlyAddedIdRef.current && handleMarkerHover(a)
+                }
                 onHoverLeave={() => handleMarkerHover(null)}
-                onClick={(a) =>
+                onClick={(a: Annotation) =>
                   settings.markerClickBehavior === 'delete' ? deleteAnnotation(a.id) : startEditAnnotation(a)
                 }
                 onContextMenu={startEditAnnotation}
@@ -4501,3 +4505,6 @@ export function PageFeedbackToolbarCSS({
 }
 
 export default PageFeedbackToolbarCSS;
+
+/** Alias for PageFeedbackToolbarCSS */
+export const Agentation = PageFeedbackToolbarCSS;
