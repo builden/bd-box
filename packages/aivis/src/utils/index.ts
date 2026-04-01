@@ -5,3 +5,4 @@ export * from './react-detection';
 export * from './source-location';
 export * from './storage';
 export * from './sync';
+export * from './screenshot';
