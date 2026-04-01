@@ -2,15 +2,15 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use bd-dev:executing-plans to implement this plan task-by-task.
 
-**目标：** 创建 Aivis 包，实现标注问题、样式调整、第三方提取三大功能
+**目标：** 基于 agentation 源码复刻 + 扩展，创建 Aivis 视觉反馈工具
 
-**架构：** monorepo 分层架构（core/react/injection 三层），core 纯逻辑无 DOM 依赖，react/injection 分别对应内置/注入模式
+**架构：** 以 agentation 为基础，复刻其完整功能（标注、样式提取、输出），然后扩展样式修改和 CDP 注入能力
 
-**技术栈：** TypeScript + React 18 + Bun + CDP (Chrome DevTools Protocol)
+**技术栈：** TypeScript + React 18 + SCSS + Bun
 
 ---
 
-## 阶段一：创建项目骨架
+## 阶段一：复刻 agentation（完美复刻样式、布局、交互）
 
 ### 任务 1：初始化 aivis 包结构
 
@@ -18,6 +18,8 @@
 
 - 创建：`packages/aivis/package.json`
 - 创建：`packages/aivis/tsconfig.json`
+- 创建：`packages/aivis/tsup.config.ts`
+- 创建：`packages/aivis/vitest.config.ts`
 
 **步骤 1：创建 package.json**
 
@@ -25,35 +27,41 @@
 {
   "name": "@builden/aivis",
   "version": "1.0.0",
-  "type": "module",
-  "files": ["dist"],
+  "description": "Visual feedback for AI coding agents",
+  "sideEffects": false,
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./src/index.ts"
-    },
-    "./core": {
-      "types": "./dist/core/index.d.ts",
-      "import": "./src/core/index.ts"
-    },
-    "./react": {
-      "types": "./dist/react/index.d.ts",
-      "import": "./src/react/index.ts"
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
     }
   },
+  "files": ["dist"],
   "scripts": {
-    "test": "bun test",
-    "build": "bun build.ts",
-    "typecheck": "tsc --noEmit"
-  },
-  "devDependencies": {
-    "@builden/bd-utils": "workspace:*",
-    "@types/bun": "^1.0.0",
-    "react": "^18.0.0",
-    "typescript": "^5.0.0"
+    "build": "tsup",
+    "watch": "tsup --watch",
+    "dev": "pnpm build && pnpm watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm build"
   },
   "peerDependencies": {
-    "react": "^18.0.0"
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": { "optional": true },
+    "react-dom": { "optional": true }
   }
 }
 ```
@@ -77,950 +85,342 @@
 }
 ```
 
-**步骤 3：提交**
+**步骤 3：创建 tsup.config.ts**
+
+```typescript
+import { defineConfig } from 'tsup';
+
+export default defineConfig({
+  entry: ['src/index.ts'],
+  format: ['esm', 'cjs'],
+  dts: true,
+  splitting: false,
+  sourcemap: true,
+  clean: true,
+});
+```
+
+**步骤 4：创建 vitest.config.ts**
+
+```typescript
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    environment: 'jsdom',
+    globals: true,
+  },
+});
+```
+
+**步骤 5：提交**
 
 ```bash
-git add packages/aivis/package.json packages/aivis/tsconfig.json
+git add packages/aivis/package.json packages/aivis/tsconfig.json packages/aivis/tsup.config.ts packages/aivis/vitest.config.ts
 git commit -m "chore(aivis): init package structure"
 ```
 
 ---
 
-## 阶段二：实现 aivis-core
+### 任务 2：复刻 types.ts
 
-### 任务 2：创建 protocol 模块
+**源文件：** `/Users/builden/.git-src/benjitaylor/agentation/package/src/types.ts`
 
 **文件：**
 
-- 创建：`packages/aivis/src/core/protocol.ts`
-- 创建：`packages/aivis/src/core/protocol.test.ts`
+- 创建：`packages/aivis/src/types.ts`
 
-**步骤 1：编写失败的测试**
+**步骤 1：复制源码**
 
-```typescript
-import { describe, it, expect } from 'bun:test';
-import type { AivisMessage, AnnotationData, StyleChangeData, ExtractData } from './protocol';
+直接复制 agentation 的 `types.ts`，这是 Annotation、Session 等核心类型定义。
 
-describe('AivisMessage', () => {
-  it('should validate annotation message', () => {
-    const msg: AnnotationData = {
-      type: 'annotation',
-      selector: '.btn-primary',
-      position: { x: 100, y: 200, width: 80, height: 40, top: 200, left: 100, right: 180, bottom: 240 },
-      comment: '这个按钮太小了',
-    };
-    expect(msg.type).toBe('annotation');
-    expect(msg.selector).toBe('.btn-primary');
-  });
-
-  it('should validate style-change message', () => {
-    const msg: StyleChangeData = {
-      type: 'style-change',
-      selector: '.sidebar > .nav-item',
-      changes: { padding: '8px → 16px', color: '#666 → #333' },
-    };
-    expect(msg.type).toBe('style-change');
-  });
-
-  it('should validate extract message', () => {
-    const msg: ExtractData = {
-      type: 'extract',
-      selector: '.nav-item',
-      computedStyles: { padding: '12px', color: '#333', 'font-size': '14px' },
-      comment: '导航项的样式',
-    };
-    expect(msg.type).toBe('extract');
-  });
-});
-```
-
-**步骤 2：运行测试验证失败**
-
-运行：`cd ~/Develop/my-proj/bd-box && bun test packages/aivis/src/core/protocol.test.ts`
-预期：FAIL - protocol.ts 不存在
-
-**步骤 3：编写实现**
-
-```typescript
-// packages/aivis/src/core/protocol.ts
-
-export type AnnotationData = {
-  type: 'annotation';
-  selector: string;
-  position: DOMRect;
-  comment?: string;
-};
-
-export type StyleChangeData = {
-  type: 'style-change';
-  selector: string;
-  changes: Record<string, string>;
-};
-
-export type ExtractData = {
-  type: 'extract';
-  selector: string;
-  computedStyles: Record<string, string>;
-  comment?: string;
-};
-
-export type AivisMessage = AnnotationData | StyleChangeData | ExtractData;
-
-export function isAivisMessage(value: unknown): value is AivisMessage {
-  if (typeof value !== 'object' || value === null) return false;
-  const obj = value as Record<string, unknown>;
-  if (obj.type === 'annotation') {
-    return typeof obj.selector === 'string' && obj.position !== undefined;
-  }
-  if (obj.type === 'style-change') {
-    return typeof obj.selector === 'string' && typeof obj.changes === 'object';
-  }
-  if (obj.type === 'extract') {
-    return typeof obj.selector === 'string' && typeof obj.computedStyles === 'object';
-  }
-  return false;
-}
-```
-
-**步骤 4：运行测试验证通过**
-
-运行：`bun test packages/aivis/src/core/protocol.test.ts`
-预期：PASS
-
-**步骤 5：提交**
+**步骤 2：提交**
 
 ```bash
-git add packages/aivis/src/core/protocol.ts packages/aivis/src/core/protocol.test.ts
-git commit -m "feat(aivis-core): add protocol module for message types"
+git add packages/aivis/src/types.ts
+git commit -m "feat(aivis): replicate types from agentation"
 ```
 
 ---
 
-### 任务 3：创建 selector 模块
+### 任务 3：复刻 icons.tsx
+
+**源文件：** `/Users/builden/.git-src/benjitaylor/agentation/package/src/components/icons.tsx` (44KB)
 
 **文件：**
 
-- 创建：`packages/aivis/src/core/selector.ts`
-- 创建：`packages/aivis/src/core/selector.test.ts`
+- 创建：`packages/aivis/src/components/icons.tsx`
 
-**步骤 1：编写失败的测试**
+**步骤 1：复制源码**
 
-```typescript
-import { describe, it, expect } from 'bun:test';
-import { generateSelector, getElementPath } from './selector';
+复制完整的 icons.tsx，包含所有 SVG 图标。
 
-describe('generateSelector', () => {
-  it('should generate selector with data-aivis-id', () => {
-    const element = {
-      getAttribute: (name: string) => (name === 'data-aivis-id' ? 'abc123' : null),
-      tagName: 'DIV',
-      className: '',
-      id: '',
-    } as unknown as Element;
-    expect(generateSelector(element)).toBe('[data-aivis-id="abc123"]');
-  });
-
-  it('should generate selector with id', () => {
-    const element = {
-      getAttribute: () => null,
-      tagName: 'DIV',
-      className: '',
-      id: 'main-content',
-    } as unknown as Element;
-    expect(generateSelector(element)).toBe('div#main-content');
-  });
-
-  it('should generate selector with class', () => {
-    const element = {
-      getAttribute: () => null,
-      tagName: 'BUTTON',
-      className: 'btn primary',
-      id: '',
-    } as unknown as Element;
-    expect(generateSelector(element)).toBe('button.btn.primary');
-  });
-});
-```
-
-**步骤 2：运行测试验证失败**
-
-运行：`bun test packages/aivis/src/core/selector.test.ts`
-预期：FAIL - selector.ts 不存在
-
-**步骤 3：编写实现**
-
-```typescript
-// packages/aivis/src/core/selector.ts
-
-export function generateSelector(element: Element): string {
-  // 优先使用 data-aivis-id
-  const aivisId = element.getAttribute('data-aivis-id');
-  if (aivisId) {
-    return `[data-aivis-id="${aivisId}"]`;
-  }
-
-  // 其次使用 id
-  const id = element.id;
-  if (id) {
-    return `${element.tagName.toLowerCase()}#${id}`;
-  }
-
-  // 最后使用 class
-  const classes = element.className.trim().split(/\s+/).filter(Boolean);
-  if (classes.length > 0) {
-    const classSelector = classes.map((c) => `.${c}`).join('');
-    return `${element.tagName.toLowerCase()}${classSelector}`;
-  }
-
-  // 兜底：tag name only
-  return element.tagName.toLowerCase();
-}
-
-export function getElementPath(element: Element): string {
-  const path: string[] = [];
-  let current: Element | null = element;
-
-  while (current && current !== document.body) {
-    const selector = generateSelector(current);
-    path.unshift(selector);
-    current = current.parentElement;
-  }
-
-  return path.join(' > ');
-}
-```
-
-**步骤 4：运行测试验证通过**
-
-运行：`bun test packages/aivis/src/core/selector.test.ts`
-预期：PASS
-
-**步骤 5：提交**
+**步骤 2：提交**
 
 ```bash
-git add packages/aivis/src/core/selector.ts packages/aivis/src/core/selector.test.ts
-git commit -m "feat(aivis-core): add selector module for CSS selector generation"
+git add packages/aivis/src/components/icons.tsx
+git commit -m "feat(aivis): replicate icons from agentation"
 ```
 
 ---
 
-### 任务 4：创建 extractor 模块
+### 任务 4：复刻 utils 目录
+
+**源目录：** `/Users/builden/.git-src/benjitaylor/agentation/package/src/utils/`
 
 **文件：**
 
-- 创建：`packages/aivis/src/core/extractor.ts`
-- 创建：`packages/aivis/src/core/extractor.test.ts`
+- 创建：`packages/aivis/src/utils/element-identification.ts`
+- 创建：`packages/aivis/src/utils/freeze-animations.ts`
+- 创建：`packages/aivis/src/utils/generate-output.ts`
+- 创建：`packages/aivis/src/utils/react-detection.ts`
+- 创建：`packages/aivis/src/utils/screenshot.ts`
+- 创建：`packages/aivis/src/utils/source-location.ts`
+- 创建：`packages/aivis/src/utils/storage.ts`
+- 创建：`packages/aivis/src/utils/sync.ts`
+- 创建：`packages/aivis/src/utils/index.ts`
 
-**步骤 1：编写失败的测试**
+**步骤 1：逐一复制**
 
-```typescript
-import { describe, it, expect } from 'bun:test';
-import { extractComputedStyles } from './extractor';
+按顺序复制每个文件，保持功能完整。
 
-describe('extractComputedStyles', () => {
-  it('should extract padding and color', () => {
-    const mockElement = {
-      tagName: 'DIV',
-      className: 'test',
-      id: '',
-      getAttribute: () => null,
-    } as unknown as Element;
-
-    const mockComputedStyle = {
-      padding: '16px',
-      color: '#333333',
-      fontSize: '14px',
-    };
-
-    const result = extractComputedStyles(mockElement, mockComputedStyle as unknown as CSSStyleDeclaration);
-    expect(result.padding).toBe('16px');
-    expect(result.color).toBe('#333333');
-  });
-
-  it('should return empty object for null element', () => {
-    const result = extractComputedStyles(null as unknown as Element, {} as CSSStyleDeclaration);
-    expect(Object.keys(result)).toHaveLength(0);
-  });
-});
-```
-
-**步骤 2：运行测试验证失败**
-
-运行：`bun test packages/aivis/src/core/extractor.test.ts`
-预期：FAIL
-
-**步骤 3：编写实现**
-
-```typescript
-// packages/aivis/src/core/extractor.ts
-
-export type ExtractedStyles = {
-  padding?: string;
-  margin?: string;
-  color?: string;
-  backgroundColor?: string;
-  fontSize?: string;
-  width?: string;
-  height?: string;
-  display?: string;
-  flexDirection?: string;
-  gap?: string;
-};
-
-const STYLE_KEYS = [
-  'padding',
-  'margin',
-  'color',
-  'backgroundColor',
-  'fontSize',
-  'width',
-  'height',
-  'display',
-  'flexDirection',
-  'gap',
-] as const;
-
-export function extractComputedStyles(element: Element | null, computedStyle: CSSStyleDeclaration): ExtractedStyles {
-  if (!element) return {};
-
-  const result: ExtractedStyles = {};
-
-  for (const key of STYLE_KEYS) {
-    const value = computedStyle.getPropertyValue(key.replace(/([A-Z])/g, '-$1').toLowerCase());
-    if (value) {
-      (result as Record<string, string>)[key] = value;
-    }
-  }
-
-  return result;
-}
-
-export function stylesToCSSRule(selector: string, styles: ExtractedStyles): string {
-  const props = Object.entries(styles)
-    .map(([key, value]) => {
-      const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
-      return `  ${cssKey}: ${value};`;
-    })
-    .join('\n');
-
-  return `${selector} {\n${props}\n}`;
-}
-```
-
-**步骤 4：运行测试验证通过**
-
-运行：`bun test packages/aivis/src/core/extractor.test.ts`
-预期：PASS
-
-**步骤 5：提交**
+**步骤 2：提交**
 
 ```bash
-git add packages/aivis/src/core/extractor.ts packages/aivis/src/core/extractor.test.ts
-git commit -m "feat(aivis-core): add extractor module for CSS style extraction"
+git add packages/aivis/src/utils/
+git commit -m "feat(aivis): replicate utils from agentation"
 ```
 
 ---
 
-### 任务 5：创建 annotation 模块
+### 任务 5：复刻基础组件（checkbox、switch、tooltip、help-tooltip）
+
+**源目录：** `/Users/builden/.git-src/benjitaylor/agentation/package/src/components/`
 
 **文件：**
 
-- 创建：`packages/aivis/src/core/annotation.ts`
-- 创建：`packages/aivis/src/core/annotation.test.ts`
+- 创建：`packages/aivis/src/components/checkbox/index.tsx`
+- 创建：`packages/aivis/src/components/checkbox/styles.module.scss`
+- 创建：`packages/aivis/src/components/switch/index.tsx`
+- 创建：`packages/aivis/src/components/switch/styles.module.scss`
+- 创建：`packages/aivis/src/components/tooltip/index.tsx`
+- 创建：`packages/aivis/src/components/help-tooltip/index.tsx`
+- 创建：`packages/aivis/src/components/help-tooltip/styles.module.scss`
+- 创建：`packages/aivis/src/components/icon-transitions.module.scss`
 
-**步骤 1：编写失败的测试**
+**步骤 1：复制组件和样式**
 
-```typescript
-import { describe, it, expect } from 'bun:test';
-import { AnnotationState, createAnnotationMachine } from './annotation';
+逐一复制每个基础组件及其 SCSS 样式。
 
-describe('AnnotationState', () => {
-  it('should start in idle state', () => {
-    const state = new AnnotationState();
-    expect(state.mode).toBe('idle');
-    expect(state.selectedElement).toBeNull();
-  });
-
-  it('should transition to selecting mode', () => {
-    const state = new AnnotationState();
-    state.startSelecting();
-    expect(state.mode).toBe('selecting');
-  });
-
-  it('should add annotation', () => {
-    const state = new AnnotationState();
-    state.addAnnotation({
-      id: '1',
-      selector: '.btn',
-      position: { x: 0, y: 0, width: 0, height: 0, top: 0, left: 0, right: 0, bottom: 0 },
-      comment: 'test',
-    });
-    expect(state.annotations).toHaveLength(1);
-  });
-});
-```
-
-**步骤 2：运行测试验证失败**
-
-运行：`bun test packages/aivis/src/core/annotation.test.ts`
-预期：FAIL
-
-**步骤 3：编写实现**
-
-```typescript
-// packages/aivis/src/core/annotation.ts
-
-import type { DOMRect } from './protocol';
-
-export type AnnotationMode = 'idle' | 'selecting' | 'editing' | 'extracting';
-
-export type Annotation = {
-  id: string;
-  selector: string;
-  position: DOMRect;
-  comment?: string;
-  timestamp: number;
-};
-
-export class AnnotationState {
-  mode: AnnotationMode = 'idle';
-  selectedElement: Element | null = null;
-  annotations: Annotation[] = [];
-  pendingComment: string = '';
-
-  startSelecting(): void {
-    this.mode = 'selecting';
-    this.selectedElement = null;
-  }
-
-  startEditing(element: Element): void {
-    this.mode = 'editing';
-    this.selectedElement = element;
-  }
-
-  startExtracting(): void {
-    this.mode = 'extracting';
-    this.selectedElement = null;
-  }
-
-  reset(): void {
-    this.mode = 'idle';
-    this.selectedElement = null;
-    this.pendingComment = '';
-  }
-
-  addAnnotation(data: Omit<Annotation, 'id' | 'timestamp'>): Annotation {
-    const annotation: Annotation = {
-      ...data,
-      id: crypto.randomUUID(),
-      timestamp: Date.now(),
-    };
-    this.annotations.push(annotation);
-    return annotation;
-  }
-
-  removeAnnotation(id: string): void {
-    this.annotations = this.annotations.filter((a) => a.id !== id);
-  }
-
-  clearAnnotations(): void {
-    this.annotations = [];
-  }
-}
-
-export function createAnnotationMachine() {
-  return new AnnotationState();
-}
-```
-
-**步骤 4：运行测试验证通过**
-
-运行：`bun test packages/aivis/src/core/annotation.test.ts`
-预期：PASS
-
-**步骤 5：提交**
+**步骤 2：提交**
 
 ```bash
-git add packages/aivis/src/core/annotation.ts packages/aivis/src/core/annotation.test.ts
-git commit -m "feat(aivis-core): add annotation state machine"
+git add packages/aivis/src/components/checkbox/ packages/aivis/src/components/switch/ packages/aivis/src/components/tooltip/ packages/aivis/src/components/help-tooltip/ packages/aivis/src/components/icon-transitions.module.scss
+git commit -m "feat(aivis): replicate base components from agentation"
 ```
 
 ---
 
-### 任务 6：创建 core 导出入口
+### 任务 6：复刻 annotation-popup-css
+
+**源文件：** `/Users/builden/.git-src/benjitaylor/agentation/package/src/components/annotation-popup-css/`
 
 **文件：**
 
-- 创建：`packages/aivis/src/core/index.ts`
+- 创建：`packages/aivis/src/components/annotation-popup-css/index.tsx`
+- 创建：`packages/aivis/src/components/annotation-popup-css/styles.module.scss`
 
-**步骤 1：创建 index.ts**
+**步骤 1：复制弹窗组件**
 
-```typescript
-// packages/aivis/src/core/index.ts
+这是标注输入弹窗的核心组件，10319 行。
 
-export { generateSelector, getElementPath } from './selector';
-export { extractComputedStyles, stylesToCSSRule } from './extractor';
-export type { ExtractedStyles } from './extractor';
-export { createAnnotationMachine, type AnnotationState, type AnnotationMode, type Annotation } from './annotation';
-export type { AivisMessage, AnnotationData, StyleChangeData, ExtractData } from './protocol';
+**步骤 2：提交**
+
+```bash
+git add packages/aivis/src/components/annotation-popup-css/
+git commit -m "feat(aivis): replicate annotation popup from agentation"
 ```
 
-**步骤 2：运行 typecheck**
+---
 
-运行：`cd ~/Develop/my-proj/bd-box && bun run typecheck`
-预期：PASS
+### 任务 7：复刻 annotation-marker
+
+**源文件：** `/Users/builden/.git-src/benjitaylor/agentation/package/src/components/page-toolbar-css/annotation-marker/`
+
+**文件：**
+
+- 创建：`packages/aivis/src/components/annotation-marker/index.tsx`
+- 创建：`packages/aivis/src/components/annotation-marker/styles.module.scss`
+
+**步骤 1：复制标注标记组件**
+
+**步骤 2：提交**
+
+```bash
+git add packages/aivis/src/components/annotation-marker/
+git commit -m "feat(aivis): replicate annotation marker from agentation"
+```
+
+---
+
+### 任务 8：复刻 settings-panel
+
+**源文件：** `/Users/builden/.git-src/benjitaylor/agentation/package/src/components/page-toolbar-css/settings-panel/`
+
+**文件：**
+
+- 创建：`packages/aivis/src/components/settings-panel/index.tsx`
+- 创建：`packages/aivis/src/components/settings-panel/styles.module.scss`
+- 创建：`packages/aivis/src/components/settings-panel/checkbox-field/index.tsx`
+- 创建：`packages/aivis/src/components/settings-panel/checkbox-field/styles.module.scss`
+
+**步骤 1：复制设置面板组件**
+
+**步骤 2：提交**
+
+```bash
+git add packages/aivis/src/components/settings-panel/
+git commit -m "feat(aivis): replicate settings panel from agentation"
+```
+
+---
+
+### 任务 9：复刻 page-toolbar-css（核心主件）
+
+**源文件：** `/Users/builden/.git-src/benjitaylor/agentation/package/src/components/page-toolbar-css/`
+
+**文件：**
+
+- 创建：`packages/aivis/src/components/page-toolbar-css/index.tsx`
+- 创建：`packages/aivis/src/components/page-toolbar-css/styles.module.scss` (2223 行)
+
+**步骤 1：复制主工具栏组件**
+
+这是 4709 行的核心组件，包含：
+
+- 工具栏 Toolbar
+- 标注标记层 MarkersLayer
+- Hover 高亮
+- 点击处理
+- 设置面板
+- 输出生成
+
+**步骤 2：运行测试验证**
+
+```bash
+cd ~/Develop/my-proj/bd-box && bun test packages/aivis
+```
 
 **步骤 3：提交**
 
 ```bash
-git add packages/aivis/src/core/index.ts
-git commit -m "feat(aivis-core): export core modules"
+git add packages/aivis/src/components/page-toolbar-css/
+git commit -m "feat(aivis): replicate page toolbar from agentation"
 ```
 
 ---
 
-## 阶段三：实现 aivis-react
+### 任务 10：复刻 design-mode（可选高级功能）
 
-### 任务 7：创建 React 基础组件
+**源目录：** `/Users/builden/.git-src/benjitaylor/agentation/package/src/components/design-mode/`
 
 **文件：**
 
-- 创建：`packages/aivis/src/react/AivisPanel.tsx`
-- 创建：`packages/aivis/src/react/AivisPanel.test.tsx`
+- 创建：`packages/aivis/src/components/design-mode/index.tsx`
+- 创建：`packages/aivis/src/components/design-mode/styles.module.scss`
+- 创建：`packages/aivis/src/components/design-mode/palette.tsx`
+- 创建：`packages/aivis/src/components/design-mode/rearrange.tsx`
+- 创建：`packages/aivis/src/components/design-mode/skeletons.tsx`
+- 创建：`packages/aivis/src/components/design-mode/spatial.ts`
+- 创建：`packages/aivis/src/components/design-mode/output.ts`
+- 创建：`packages/aivis/src/components/design-mode/section-detection.ts`
+- 创建：`packages/aivis/src/components/design-mode/types.ts`
 
-**步骤 1：编写失败的测试**
+**步骤 1：复制设计模式组件**
 
-```tsx
-import { describe, it, expect } from 'bun:test';
-import { render } from 'bun:test';
-import { AivisPanel } from './AivisPanel';
+包含 palette（调色板）、rearrange（重排）、skeletons（骨架屏）等高级功能。
 
-describe('AivisPanel', () => {
-  it('should render panel', () => {
-    const { container } = render(<AivisPanel />);
-    expect(container.textContent).toContain('Aivis');
-  });
-});
-```
-
-**步骤 2：运行测试验证失败**
-
-运行：`bun test packages/aivis/src/react/AivisPanel.test.tsx`
-预期：FAIL - 文件不存在
-
-**步骤 3：创建组件实现**
-
-```tsx
-// packages/aivis/src/react/AivisPanel.tsx
-
-import React from 'react';
-import { Toolbar } from './Toolbar';
-import { AnnotationLayer } from './AnnotationLayer';
-import { useAnnotation } from './hooks';
-
-export type AivisPanelProps = {
-  mode?: 'embedded' | 'injection';
-};
-
-export function AivisPanel({ mode = 'embedded' }: AivisPanelProps) {
-  const { state, actions } = useAnnotation();
-
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        bottom: 16,
-        right: 16,
-        zIndex: 2147483647,
-        fontFamily: 'system-ui, sans-serif',
-        fontSize: 14,
-      }}
-    >
-      {state.mode !== 'idle' && <AnnotationLayer state={state} />}
-      <Toolbar state={state} actions={actions} />
-    </div>
-  );
-}
-```
-
-**步骤 4：创建 Toolbar 组件**
-
-```tsx
-// packages/aivis/src/react/Toolbar.tsx
-
-import React from 'react';
-import type { AnnotationMode } from '../core/annotation';
-
-type ToolbarProps = {
-  state: { mode: AnnotationMode };
-  actions: {
-    startSelecting: () => void;
-    startEditing: () => void;
-    startExtracting: () => void;
-    reset: () => void;
-    copyFeedback: () => void;
-  };
-};
-
-export function Toolbar({ state, actions }: ToolbarProps) {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        gap: 8,
-        padding: '8px 12px',
-        background: '#1a1a1a',
-        borderRadius: 8,
-        color: 'white',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-      }}
-    >
-      <button onClick={actions.startSelecting} title="标注">
-        📍
-      </button>
-      <button onClick={actions.startEditing} title="编辑样式">
-        ✏️
-      </button>
-      <button onClick={actions.startExtracting} title="提取样式">
-        📋
-      </button>
-      <button onClick={actions.copyFeedback} title="复制反馈">
-        📤
-      </button>
-      <button onClick={actions.reset} title="重置">
-        ✕
-      </button>
-    </div>
-  );
-}
-```
-
-**步骤 5：创建 AnnotationLayer 组件**
-
-```tsx
-// packages/aivis/src/react/AnnotationLayer.tsx
-
-import React from 'react';
-import type { AnnotationState } from '../core/annotation';
-
-type AnnotationLayerProps = {
-  state: AnnotationState;
-};
-
-export function AnnotationLayer({ state }: AnnotationLayerProps) {
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        pointerEvents: 'none',
-        zIndex: 2147483646,
-      }}
-    >
-      {state.annotations.map((annotation) => (
-        <div
-          key={annotation.id}
-          style={{
-            position: 'absolute',
-            left: annotation.position.left,
-            top: annotation.position.top,
-            width: annotation.position.width,
-            height: annotation.position.height,
-            border: '2px solid #ff6b6b',
-            background: 'rgba(255,107,107,0.1)',
-            borderRadius: 4,
-            pointerEvents: 'auto',
-            cursor: 'pointer',
-          }}
-          title={annotation.comment}
-        />
-      ))}
-    </div>
-  );
-}
-```
-
-**步骤 6：创建 hooks**
-
-```tsx
-// packages/aivis/src/react/hooks.ts
-
-import { useState, useCallback } from 'react';
-import { createAnnotationMachine, generateSelector } from '../core';
-import type { AnnotationState, AnnotationMode } from '../core/annotation';
-
-export function useAnnotation() {
-  const [state, setState] = useState<AnnotationState>(() => createAnnotationMachine());
-
-  const updateState = useCallback((updater: (s: AnnotationState) => void) => {
-    setState((prev) => {
-      const next = createAnnotationMachine();
-      Object.assign(next, prev);
-      updater(next);
-      return next;
-    });
-  }, []);
-
-  const startSelecting = useCallback(() => {
-    updateState((s) => s.startSelecting());
-  }, [updateState]);
-
-  const startEditing = useCallback(() => {
-    updateState((s) => s.startEditing(document.body));
-  }, [updateState]);
-
-  const startExtracting = useCallback(() => {
-    updateState((s) => s.startExtracting());
-  }, [updateState]);
-
-  const reset = useCallback(() => {
-    updateState((s) => s.reset());
-  }, [updateState]);
-
-  const addAnnotation = useCallback(
-    (element: Element, comment: string) => {
-      updateState((s) => {
-        s.addAnnotation({
-          selector: generateSelector(element),
-          position: element.getBoundingClientRect(),
-          comment,
-        });
-      });
-    },
-    [updateState]
-  );
-
-  const copyFeedback = useCallback(() => {
-    const lines = state.annotations.map((a) => {
-      let line = `- Selector: ${a.selector}`;
-      if (a.comment) line += `\n  Comment: ${a.comment}`;
-      return line;
-    });
-    const text = `## Feedback\n${lines.join('\n')}`;
-    navigator.clipboard.writeText(text);
-  }, [state.annotations]);
-
-  return {
-    state,
-    actions: {
-      startSelecting,
-      startEditing,
-      startExtracting,
-      reset,
-      addAnnotation,
-      copyFeedback,
-    },
-  };
-}
-```
-
-**步骤 7：运行测试验证通过**
-
-运行：`bun test packages/aivis/src/react/AivisPanel.test.tsx`
-预期：PASS
-
-**步骤 8：提交**
+**步骤 2：提交**
 
 ```bash
-git add packages/aivis/src/react/
-git commit -m "feat(aivis-react): add AivisPanel and Toolbar components"
+git add packages/aivis/src/components/design-mode/
+git commit -m "feat(aivis): replicate design mode from agentation"
 ```
 
 ---
 
-## 阶段四：实现 aivis-injection
+### 任务 11：创建主入口
 
-### 任务 8：创建注入模式 bundle
+**文件：**
+
+- 创建：`packages/aivis/src/components/index.ts`
+- 创建：`packages/aivis/src/index.ts`
+
+**步骤 1：复制入口文件**
+
+复制 agentation 的入口文件结构。
+
+**步骤 2：提交**
+
+```bash
+git add packages/aivis/src/components/index.ts packages/aivis/src/index.ts
+git commit -m "feat(aivis): replicate entry points from agentation"
+```
+
+---
+
+## 阶段二：扩展功能
+
+### 任务 12：添加样式修改能力
+
+在 page-toolbar-css 的编辑模式下，添加直接修改 CSS 属性的能力。
+
+**文件：**
+
+- 修改：`packages/aivis/src/components/page-toolbar-css/index.tsx`
+- 添加：`packages/aivis/src/components/style-editor/index.tsx`
+
+**步骤 1：扩展编辑模式**
+
+在原有 annotation-edit 模式上，添加 style-edit 模式，允许：
+
+- 选择元素
+- 修改 padding、margin、color 等属性
+- 实时预览
+- 复制 diff
+
+**步骤 2：提交**
+
+```bash
+git add packages/aivis/src/components/style-editor/
+git commit -m "feat(aivis): add style editing capability"
+```
+
+---
+
+### 任务 13：添加 CDP 注入模式
 
 **文件：**
 
 - 创建：`packages/aivis/src/injection/index.ts`
 - 创建：`packages/aivis/build-injection.ts`
 
-**步骤 1：创建注入脚本**
+**步骤 1：创建 IIFE bundle**
 
-```typescript
-// packages/aivis/src/injection/index.ts
+创建可注入的 JS bundle，支持 CDP 注入到第三方页面。
 
-import type { AivisMessage } from '../core/protocol';
-
-declare global {
-  interface Window {
-    __aivisOverlay?: HTMLDivElement;
-    __aivisState?: {
-      mode: 'idle' | 'selecting' | 'editing' | 'extracting';
-    };
-  }
-}
-
-const STYLES = `
-  .aivis-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 2147483646;
-    pointer-events: none;
-  }
-  .aivis-marker {
-    position: absolute;
-    border: 2px solid #ff6b6b;
-    background: rgba(255,107,107,0.1);
-    border-radius: 4px;
-    pointer-events: auto;
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-  .aivis-marker:hover {
-    background: rgba(255,107,107,0.3);
-  }
-`;
-
-export function initInjection(): void {
-  // 注入样式
-  const style = document.createElement('style');
-  style.textContent = STYLES;
-  document.head.appendChild(style);
-
-  // 创建 overlay
-  const overlay = document.createElement('div');
-  overlay.className = 'aivis-overlay';
-  document.body.appendChild(overlay);
-  window.__aivisOverlay = overlay;
-
-  window.__aivisState = { mode: 'idle' };
-
-  // 点击监听
-  document.addEventListener('click', handleClick, true);
-}
-
-function handleClick(e: MouseEvent): void {
-  if (window.__aivisState?.mode === 'idle') return;
-
-  const target = e.target as Element;
-  if (!target || target === document.body) return;
-
-  const rect = target.getBoundingClientRect();
-  console.log('[Aivis] Clicked:', {
-    selector: getSelector(target),
-    rect,
-  });
-}
-
-function getSelector(element: Element): string {
-  const aivisId = element.getAttribute('data-aivis-id');
-  if (aivisId) return `[data-aivis-id="${aivisId}"]`;
-
-  const id = element.id;
-  if (id) return `${element.tagName.toLowerCase()}#${id}`;
-
-  const classes = element.className.trim().split(/\s+/).filter(Boolean);
-  if (classes.length > 0) {
-    return `${element.tagName.toLowerCase()}.${classes.join('.')}`;
-  }
-
-  return element.tagName.toLowerCase();
-}
-
-export function destroyInjection(): void {
-  document.removeEventListener('click', handleClick, true);
-  window.__aivisOverlay?.remove();
-  window.__aivisState = undefined;
-}
-
-// IIFE 入口
-if (typeof window !== 'undefined') {
-  initInjection();
-}
-```
-
-**步骤 2：创建构建配置**
-
-```typescript
-// packages/aivis/build-injection.ts
-
-import { build } from 'bun';
-
-await build({
-  entrypoints: ['src/injection/index.ts'],
-  outdir: 'dist/injection',
-  format: 'iife',
-  minify: true,
-  target: 'browser',
-  define: {
-    'process.env.NODE_ENV': '"production"',
-  },
-});
-```
-
-**步骤 3：更新 package.json scripts**
-
-```json
-{
-  "scripts": {
-    "build": "bun build.ts",
-    "build:injection": "bun build-injection.ts",
-    "test": "bun test"
-  }
-}
-```
-
-**步骤 4：提交**
+**步骤 2：提交**
 
 ```bash
 git add packages/aivis/src/injection/ packages/aivis/build-injection.ts
-git commit -m "feat(aivis-injection): add injection bundle for CDP"
-```
-
----
-
-## 阶段五：聚合导出
-
-### 任务 9：创建主包入口
-
-**文件：**
-
-- 创建：`packages/aivis/src/index.ts`
-
-**步骤 1：创建 index.ts**
-
-```typescript
-// packages/aivis/src/index.ts
-
-// Core
-export { generateSelector, getElementPath } from './core/selector';
-export { extractComputedStyles, stylesToCSSRule } from './core/extractor';
-export type { ExtractedStyles } from './core/extractor';
-export { createAnnotationMachine } from './core/annotation';
-export type { AnnotationState, AnnotationMode, Annotation } from './core/annotation';
-export type { AivisMessage, AnnotationData, StyleChangeData, ExtractData } from './core/protocol';
-
-// React
-export { AivisPanel } from './react/AivisPanel';
-export type { AivisPanelProps } from './react/AivisPanel';
-export { Toolbar } from './react/Toolbar';
-export { AnnotationLayer } from './react/AnnotationLayer';
-export { useAnnotation } from './react/hooks';
-
-// Injection
-export { initInjection, destroyInjection } from './injection/index';
-```
-
-**步骤 2：运行 typecheck**
-
-运行：`bun run typecheck`
-预期：PASS
-
-**步骤 3：提交**
-
-```bash
-git add packages/aivis/src/index.ts
-git commit -m "feat(aivis): aggregate exports from core/react/injection"
+git commit -m "feat(aivis): add CDP injection bundle"
 ```
 
 ---
 
 ## 验证阶段
 
-### 任务 10：运行完整测试
+### 任务 14：运行完整测试
 
 **步骤 1：运行所有测试**
 
@@ -1045,11 +445,22 @@ cd packages/aivis && bun run build
 
 ## 交付清单
 
-- [ ] `packages/aivis/src/core/` - 核心逻辑（protocol, selector, extractor, annotation）
-- [ ] `packages/aivis/src/react/` - React 组件（AivisPanel, Toolbar, AnnotationLayer, hooks）
-- [ ] `packages/aivis/src/injection/` - 注入模式脚本
-- [ ] 所有模块通过 typecheck
+- [ ] `packages/aivis/src/types.ts` - 核心类型定义
+- [ ] `packages/aivis/src/utils/` - 工具函数（element-identification, freeze-animations, generate-output, react-detection, source-location, storage, sync）
+- [ ] `packages/aivis/src/components/icons.tsx` - SVG 图标
+- [ ] `packages/aivis/src/components/checkbox/` - 复选框组件
+- [ ] `packages/aivis/src/components/switch/` - 开关组件
+- [ ] `packages/aivis/src/components/tooltip/` - 提示组件
+- [ ] `packages/aivis/src/components/help-tooltip/` - 帮助提示组件
+- [ ] `packages/aivis/src/components/annotation-popup-css/` - 标注弹窗
+- [ ] `packages/aivis/src/components/annotation-marker/` - 标注标记
+- [ ] `packages/aivis/src/components/settings-panel/` - 设置面板
+- [ ] `packages/aivis/src/components/page-toolbar-css/` - 主工具栏（核心）
+- [ ] `packages/aivis/src/components/design-mode/` - 设计模式
+- [ ] 样式修改能力
+- [ ] CDP 注入能力
 - [ ] 所有测试通过
+- [ ] 构建成功
 
 ---
 
