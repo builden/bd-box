@@ -112,7 +112,7 @@ export function StyleEditor({ element, onClose, onCopyDiff, isDarkMode = true }:
   const [modifiedValues, setModifiedValues] = useState<Record<string, string>>({});
   const [elementPath, setElementPath] = useState<string>('');
   const [showCopied, setShowCopied] = useState(false);
-  const exitTimerRef = useRef<ReturnType<typeof originalSetTimeout>>();
+  const exitTimerRef = useRef<ReturnType<typeof originalSetTimeout> | undefined>(undefined);
 
   // Mount/unmount animation
   useEffect(() => {

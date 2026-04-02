@@ -4,7 +4,6 @@
 // Protect stroke-based icons from host page `svg { fill: currentColor }` rules.
 // Scoped to agentation's own containers to avoid breaking host SVGs that use
 // fill="none" with CSS-based fills (e.g. Tailwind's fill-current).
-// See: https://github.com/benjitaylor/agentation/issues/58
 .popup {
   svg[fill='none'] {
     fill: none !important;

@@ -5,7 +5,6 @@
 // Using !important ensures host rules like `svg * { opacity: 1 !important }` can't
 // force both icon states visible simultaneously (class specificity 0,1,0 beats
 // element selectors like `svg *` at 0,0,1 even when both use !important).
-// See: https://github.com/benjitaylor/agentation/issues/58
 
 // Opacity + transform transitions (copy, send icons)
 .iconState {

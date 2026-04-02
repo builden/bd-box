@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import type { ComponentType } from './types';
 
 // =============================================================================
@@ -1714,7 +1715,7 @@ function ContactSkeleton({ width, height }: SkeletonProps) {
 
 // --- Skeleton registry ---
 
-const SKELETON_RENDERERS: Partial<Record<ComponentType, (props: SkeletonProps) => JSX.Element>> = {
+const SKELETON_RENDERERS: Partial<Record<ComponentType, (props: SkeletonProps) => React.ReactElement>> = {
   navigation: NavigationSkeleton,
   hero: HeroSkeleton,
   sidebar: SidebarSkeleton,

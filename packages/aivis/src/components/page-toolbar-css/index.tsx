@@ -312,6 +312,8 @@ export type PageFeedbackToolbarCSSProps = {
   webhookUrl?: string;
   /** Custom class name applied to the toolbar container. Use to adjust positioning or z-index. */
   className?: string;
+  /** Initial position of the toolbar. Defaults to bottom-right corner. */
+  initialPosition?: { bottom?: string; right?: string; top?: string; left?: string };
 };
 
 /** Alias for PageFeedbackToolbarCSSProps */
@@ -337,6 +339,7 @@ export function PageFeedbackToolbarCSS({
   onSessionCreated,
   webhookUrl,
   className: userClassName,
+  initialPosition,
 }: PageFeedbackToolbarCSSProps = {}) {
   const [isActive, setIsActive] = useState(false);
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
@@ -460,7 +463,7 @@ export function PageFeedbackToolbarCSS({
   const rearrangeSelectedIdsRef = useRef<Set<string>>(new Set());
   // Track start positions for cross-drag (set when drag starts)
   const crossDragStartRef = useRef<Map<string, { x: number; y: number }> | null>(null);
-  const designExitTimer = useRef<ReturnType<typeof originalSetTimeout>>();
+  const designExitTimer = useRef<ReturnType<typeof originalSetTimeout> | undefined>(undefined);
 
   // Delay blank canvas .visible by one frame when becoming visible so CSS transition fires
   const canvasShouldBeVisible = isDesignMode && isActive && !designOverlayExiting && blankCanvas;
@@ -479,7 +482,7 @@ export function PageFeedbackToolbarCSS({
   // Shadow annotation tracking (design → server sync)
   const placementAnnotationMap = useRef(new Map<string, string>()); // placementId → server annotationId
   const rearrangeAnnotationMap = useRef(new Map<string, string>()); // sectionId → server annotationId
-  const rearrangeDebounceTimer = useRef<ReturnType<typeof originalSetTimeout>>();
+  const rearrangeDebounceTimer = useRef<ReturnType<typeof originalSetTimeout> | undefined>(undefined);
 
   // Draw mode state
   const [isDrawMode, setIsDrawMode] = useState(false);
@@ -544,7 +547,7 @@ export function PageFeedbackToolbarCSS({
 
   const [settings, setSettings] = useState<ToolbarSettings>(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem('feedback-toolbar-settings') ?? '');
+      const saved = JSON.parse(localStorage.getItem('aivis-toolbar-settings') ?? '');
       return {
         ...DEFAULT_SETTINGS,
         ...saved,
@@ -680,7 +683,7 @@ export function PageFeedbackToolbarCSS({
 
     // Load saved theme preference, default to dark mode
     try {
-      const savedTheme = localStorage.getItem('feedback-toolbar-theme');
+      const savedTheme = localStorage.getItem('aivis-toolbar-theme');
       if (savedTheme !== null) {
         setIsDarkMode(savedTheme === 'dark');
       }
@@ -691,7 +694,7 @@ export function PageFeedbackToolbarCSS({
 
     // Load saved toolbar position
     try {
-      const savedPosition = localStorage.getItem('feedback-toolbar-position');
+      const savedPosition = localStorage.getItem('aivis-toolbar-position');
       if (savedPosition) {
         const pos = JSON.parse(savedPosition);
         if (typeof pos.x === 'number' && typeof pos.y === 'number') {
@@ -706,14 +709,14 @@ export function PageFeedbackToolbarCSS({
   // Save settings
   useEffect(() => {
     if (mounted) {
-      localStorage.setItem('feedback-toolbar-settings', JSON.stringify(settings));
+      localStorage.setItem('aivis-toolbar-settings', JSON.stringify(settings));
     }
   }, [settings, mounted]);
 
   // Save theme preference
   useEffect(() => {
     if (mounted) {
-      localStorage.setItem('feedback-toolbar-theme', isDarkMode ? 'dark' : 'light');
+      localStorage.setItem('aivis-toolbar-theme', isDarkMode ? 'dark' : 'light');
     }
   }, [isDarkMode, mounted]);
 
@@ -725,7 +728,7 @@ export function PageFeedbackToolbarCSS({
 
     // Save position when dragging ends (transition from true to false)
     if (wasDragging && !isDraggingToolbar && toolbarPosition && mounted) {
-      localStorage.setItem('feedback-toolbar-position', JSON.stringify(toolbarPosition));
+      localStorage.setItem('aivis-toolbar-position', JSON.stringify(toolbarPosition));
     }
   }, [isDraggingToolbar, toolbarPosition, mounted]);
 
@@ -3485,7 +3488,7 @@ export function PageFeedbackToolbarCSS({
                 right: 'auto',
                 bottom: 'auto',
               }
-            : undefined
+            : initialPosition
         }
       >
         {/* Morphing container */}

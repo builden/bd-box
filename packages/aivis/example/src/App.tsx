@@ -1,8 +1,11 @@
-import { Agentation } from '@/index';
+import { Agentation } from 'agentation';
+import { Agentation as Aivis } from '@/index';
 
 export function App() {
   return (
     <>
+      <Aivis initialPosition={{ bottom: '40px' }} />
+
       <Agentation />
 
       <div className="page">

@@ -734,7 +734,7 @@ function RollingCount({ value, suffix }: { value: number; suffix?: string }) {
   const [dir, setDir] = useState<'up' | 'down'>('up');
   const cur = useRef(value);
   const curSuffix = useRef(suffix);
-  const timer = useRef<ReturnType<typeof originalSetTimeout>>();
+  const timer = useRef<ReturnType<typeof originalSetTimeout> | undefined>(undefined);
 
   const suffixChanged = prev !== null && prevSuffix !== suffix;
 
@@ -850,7 +850,7 @@ export function DesignPalette({
   const lastFooterCount = useRef(0);
   const lastFooterSuffix = useRef('');
   const rafRef = useRef(0);
-  const exitTimerRef = useRef<ReturnType<typeof originalSetTimeout>>();
+  const exitTimerRef = useRef<ReturnType<typeof originalSetTimeout> | undefined>(undefined);
   const placeScrollRef = useRef<HTMLDivElement>(null);
   const [placeFade, setPlaceFade] = useState('');
 
@@ -953,10 +953,7 @@ export function DesignPalette({
       <div className={styles.paletteHeader}>
         <div className={styles.paletteHeaderTitle}>Layout Mode</div>
         <div className={styles.paletteHeaderDesc}>
-          Rearrange and resize existing elements, add new components, and explore layout ideas. Agent results may vary.{' '}
-          <a href="https://agentation.dev/features#layout-mode" target="_blank" rel="noopener noreferrer">
-            Learn more.
-          </a>
+          Rearrange and resize existing elements, add new components, and explore layout ideas. Agent results may vary.
         </div>
       </div>
 

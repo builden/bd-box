@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { COMPONENT_MAP, DEFAULT_SIZES, type ComponentType, type DesignPlacement } from './types';
 import { Skeleton } from './skeletons';
 import { AnnotationPopupCSS } from '../annotation-popup-css';
@@ -722,7 +722,7 @@ export function DesignMode({
   const scrollY = typeof window !== 'undefined' ? window.scrollY : 0;
   const cornerHandles: HandleDir[] = ['nw', 'ne', 'se', 'sw'];
   const arrowColor = wireframe ? '#f97316' : '#3c82f7';
-  const edgeHandles: { dir: HandleDir; cls: string; arrow: JSX.Element }[] = [
+  const edgeHandles: { dir: HandleDir; cls: string; arrow: React.ReactElement }[] = [
     {
       dir: 'n',
       cls: styles.edgeN,
