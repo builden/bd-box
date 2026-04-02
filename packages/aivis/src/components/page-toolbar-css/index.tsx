@@ -71,8 +71,6 @@ import {
   updateAnnotation as updateAnnotationOnServer,
   deleteAnnotation as deleteAnnotationFromServer,
 } from '../../utils/sync';
-import { getReactComponentName } from '../../utils/react-detection';
-import { getSourceLocation, findNearestComponentSource, formatSourceLocation } from '../../utils/source-location';
 import {
   freeze as freezeAll,
   unfreeze as unfreezeAll,
@@ -80,233 +78,44 @@ import {
   originalSetInterval,
   originalRequestAnimationFrame,
 } from '../../utils/freeze-animations';
+import {
+  identifyElementWithReact,
+  isValidUrl,
+  deepElementFromPoint,
+  isElementFixed,
+  isRenderableAnnotation,
+  detectSourceFile,
+} from '../../utils/toolbar-helpers';
 
 import type { Annotation } from '../../types';
 import styles from './styles.module.scss';
 import { generateOutput } from '../../utils/generate-output';
 import { AnnotationMarker, ExitingMarker, PendingMarker } from '../annotation-marker';
 import { SettingsPanel } from '../settings-panel';
+import { getTooltipPosition } from './tooltip-position';
+import {
+  COLOR_OPTIONS,
+  ANIMATION,
+  DRAG,
+  DEFAULT_SETTINGS,
+  OUTPUT_TO_REACT_MODE,
+  injectAgentationColorTokens,
+} from './constants';
+import type { OutputDetailLevel, ReactComponentMode, ToolbarMode, ToolbarSettings, HoverInfo } from './types';
 
-/**
- * Composes element identification with React component detection.
- * This is the boundary where we combine framework-agnostic element ID
- * with React-specific component name detection.
- */
-function identifyElementWithReact(
-  element: HTMLElement,
-  reactMode: ReactComponentMode = 'filtered'
-): {
-  /** Combined name for display (React path + element) */
-  name: string;
-  /** Raw element name without React path */
-  elementName: string;
-  /** DOM path */
-  path: string;
-  /** React component path (e.g., '<SideNav> <LinkComponent>') */
-  reactComponents: string | null;
-} {
-  const { name: elementName, path } = identifyElement(element);
+// Re-export types and constants for external modules
+export type { OutputDetailLevel, ReactComponentMode, ToolbarMode, ToolbarSettings };
+export { COLOR_OPTIONS };
 
-  // If React detection is off, just return element info
-  if (reactMode === 'off') {
-    return { name: elementName, elementName, path, reactComponents: null };
-  }
-
-  const reactInfo = getReactComponentName(element, { mode: reactMode });
-
-  return {
-    name: reactInfo.path ? `${reactInfo.path} ${elementName}` : elementName,
-    elementName,
-    path,
-    reactComponents: reactInfo.path,
-  };
-}
+// Inject color tokens on module load
+injectAgentationColorTokens();
 
 // Module-level flag to prevent re-animating on SPA page navigation
 let hasPlayedEntranceAnimation = false;
 
 // =============================================================================
-// Types
-// =============================================================================
-
-type HoverInfo = {
-  element: string;
-  elementName: string;
-  elementPath: string;
-  rect: DOMRect | null;
-  reactComponents?: string | null;
-};
-
-export type OutputDetailLevel = 'compact' | 'standard' | 'detailed' | 'forensic';
-// ReactComponentMode is now derived from outputDetail when reactEnabled is true
-export type ReactComponentMode = 'smart' | 'filtered' | 'all' | 'off';
-type MarkerClickBehavior = 'edit' | 'delete';
-
-// Toolbar mode - mutually exclusive
-export type ToolbarMode = 'annotation' | 'style' | 'layout' | null;
-
-export type ToolbarSettings = {
-  outputDetail: OutputDetailLevel;
-  autoClearAfterCopy: boolean;
-  annotationColorId: string;
-  blockInteractions: boolean;
-  reactEnabled: boolean;
-  markerClickBehavior: MarkerClickBehavior;
-  webhookUrl: string;
-  webhooksEnabled: boolean;
-};
-
-const DEFAULT_SETTINGS: ToolbarSettings = {
-  outputDetail: 'standard',
-  autoClearAfterCopy: false,
-  annotationColorId: 'blue',
-  blockInteractions: true,
-  reactEnabled: true,
-  markerClickBehavior: 'edit',
-  webhookUrl: '',
-  webhooksEnabled: true,
-};
-
-// Simple URL validation - checks for valid http(s) URL format
-const isValidUrl = (url: string): boolean => {
-  if (!url || !url.trim()) return false;
-  try {
-    const parsed = new URL(url.trim());
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-  } catch {
-    return false;
-  }
-};
-
-// Maps output detail level to React detection mode
-const OUTPUT_TO_REACT_MODE: Record<OutputDetailLevel, ReactComponentMode> = {
-  compact: 'off',
-  standard: 'filtered',
-  detailed: 'smart',
-  forensic: 'all',
-};
-
-export const COLOR_OPTIONS = [
-  { id: 'indigo', label: 'Indigo', srgb: '#6155F5', p3: 'color(display-p3 0.38 0.33 0.96)' },
-  { id: 'blue', label: 'Blue', srgb: '#0088FF', p3: 'color(display-p3 0.00 0.53 1.00)' },
-  { id: 'cyan', label: 'Cyan', srgb: '#00C3D0', p3: 'color(display-p3 0.00 0.76 0.82)' },
-  { id: 'green', label: 'Green', srgb: '#34C759', p3: 'color(display-p3 0.20 0.78 0.35)' },
-  { id: 'yellow', label: 'Yellow', srgb: '#FFCC00', p3: 'color(display-p3 1.00 0.80 0.00)' },
-  { id: 'orange', label: 'Orange', srgb: '#FF8D28', p3: 'color(display-p3 1.00 0.55 0.16)' },
-  { id: 'red', label: 'Red', srgb: '#FF383C', p3: 'color(display-p3 1.00 0.22 0.24)' },
-];
-
-// Animation durations (ms)
-const ANIMATION = {
-  MARKER_ENTER: 350,
-  MARKER_EXIT: 250,
-  TOOLBAR_ENTRANCE: 750,
-  PENDING_EXIT: 150,
-  DESIGN_CLEAR: 200,
-  REARRANGE_TRANSITION: 450,
-  CLEARED_FEEDBACK: 1500,
-  RECENTLY_ADDED: 300,
-  EDIT_EXIT: 150,
-  DESIGN_OVERLAY_EXIT: 300,
-} as const;
-
-// Drag thresholds
-const DRAG = {
-  MULTI_SELECT_THRESHOLD: 8,
-  TOOLBAR_THRESHOLD: 10,
-  ELEMENT_UPDATE_THROTTLE: 50,
-} as const;
-
-// Tooltip layout
-const TOOLTIP = {
-  MAX_WIDTH: 200,
-  ESTIMATED_HEIGHT: 80,
-  MARKER_SIZE: 22,
-  GAP: 10,
-  EDGE_PADDING: 10,
-} as const;
-
-const injectAgentationColorTokens = () => {
-  if (typeof document === 'undefined') return;
-  if (document.getElementById('agentation-color-tokens')) return;
-  const style = document.createElement('style');
-  style.id = 'agentation-color-tokens';
-  style.textContent = [
-    ...COLOR_OPTIONS.map(
-      (c) => `
-      [data-agentation-accent="${c.id}"] {
-        --agentation-color-accent: ${c.srgb};
-      }
-
-      @supports (color: color(display-p3 0 0 0)) {
-        [data-agentation-accent="${c.id}"] {
-          --agentation-color-accent: ${c.p3};
-        }
-      }
-    `
-    ),
-    `:root {
-      ${COLOR_OPTIONS.map((c) => `--agentation-color-${c.id}: ${c.srgb};`).join('\n')}
-    }`,
-    `@supports (color: color(display-p3 0 0 0)) {
-      :root {
-        ${COLOR_OPTIONS.map((c) => `--agentation-color-${c.id}: ${c.p3};`).join('\n')}
-      }
-    }`,
-  ].join('');
-  document.head.appendChild(style);
-};
-
-injectAgentationColorTokens();
-
-// =============================================================================
 // Utils
 // =============================================================================
-
-/**
- * Recursively pierces shadow DOMs to find the deepest element at a point.
- * document.elementFromPoint() stops at shadow hosts, so we need to
- * recursively check inside open shadow roots to find the actual target.
- */
-function deepElementFromPoint(x: number, y: number): HTMLElement | null {
-  let element = document.elementFromPoint(x, y) as HTMLElement | null;
-  if (!element) return null;
-
-  // Keep drilling down through shadow roots
-  while (element?.shadowRoot) {
-    const deeper = element.shadowRoot.elementFromPoint(x, y) as HTMLElement | null;
-    if (!deeper || deeper === element) break;
-    element = deeper;
-  }
-
-  return element;
-}
-
-function isElementFixed(element: HTMLElement): boolean {
-  let current: HTMLElement | null = element;
-  while (current && current !== document.body) {
-    const style = window.getComputedStyle(current);
-    const position = style.position;
-    if (position === 'fixed' || position === 'sticky') {
-      return true;
-    }
-    current = current.parentElement;
-  }
-  return false;
-}
-
-function isRenderableAnnotation(annotation: Annotation): boolean {
-  return annotation.status !== 'resolved' && annotation.status !== 'dismissed';
-}
-
-function detectSourceFile(element: Element): string | undefined {
-  const result = getSourceLocation(element as HTMLElement);
-  const loc = result.found ? result : findNearestComponentSource(element as HTMLElement);
-  if (loc.found && loc.source) {
-    return formatSourceLocation(loc.source, 'path');
-  }
-  return undefined;
-}
 
 // =============================================================================
 // Types for Props
@@ -3474,44 +3283,6 @@ export function PageFeedbackToolbarCSS({
   );
   const hasVisibleAnnotations = visibleAnnotations.length > 0;
   const exitingAnnotationsList = annotations.filter((a) => exitingMarkers.has(a.id));
-
-  // Helper function to calculate viewport-aware tooltip positioning
-  const getTooltipPosition = (annotation: Annotation): React.CSSProperties => {
-    // Tooltip dimensions (from CSS)
-    const { MAX_WIDTH, ESTIMATED_HEIGHT, MARKER_SIZE, GAP, EDGE_PADDING } = TOOLTIP;
-
-    // Convert percentage-based x to pixels
-    const markerX = (annotation.x / 100) * window.innerWidth;
-    const markerY = typeof annotation.y === 'string' ? parseFloat(annotation.y) : annotation.y;
-
-    const styles: React.CSSProperties = {};
-
-    // Vertical positioning: flip if near bottom
-    const spaceBelow = window.innerHeight - markerY - MARKER_SIZE - GAP;
-    if (spaceBelow < ESTIMATED_HEIGHT) {
-      // Show above marker
-      styles.top = 'auto';
-      styles.bottom = `calc(100% + ${GAP}px)`;
-    }
-    // If enough space below, use default CSS (top: calc(100% + 10px))
-
-    // Horizontal positioning: adjust if near edges
-    const centerX = markerX - MAX_WIDTH / 2;
-    const edgePadding = EDGE_PADDING;
-
-    if (centerX < edgePadding) {
-      // Too close to left edge
-      const offset = edgePadding - centerX;
-      styles.left = `calc(50% + ${offset}px)`;
-    } else if (centerX + MAX_WIDTH > window.innerWidth - edgePadding) {
-      // Too close to right edge
-      const overflow = centerX + MAX_WIDTH - (window.innerWidth - edgePadding);
-      styles.left = `calc(50% - ${overflow}px)`;
-    }
-    // If centered position is fine, use default CSS (left: 50%)
-
-    return styles;
-  };
 
   return createPortal(
     <div
