@@ -166,6 +166,7 @@ import { useEditPopupPosition } from './useEditPopupPosition';
 import { useHealthCheck } from './useHealthCheck';
 import { useToolbarConstrain } from './useToolbarConstrain';
 import { useScrollTracking } from './useScrollTracking';
+import { useStopEventPropagation } from './useStopEventPropagation';
 import {
   COLOR_OPTIONS,
   ANIMATION,
@@ -238,20 +239,7 @@ export function PageFeedbackToolbarCSS({
   // modals, dropdowns, and drawers. We attach to body (not a wrapper div) so
   // React's synthetic event delegation (which also listens on body/root) still
   // works — we only block propagation from body → document/window.
-  const portalWrapperRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const stop = (e: Event) => {
-      const wrapper = portalWrapperRef.current;
-      if (wrapper && wrapper.contains(e.target as Node)) {
-        e.stopPropagation();
-      }
-    };
-    const events = ['mousedown', 'click', 'pointerdown'] as const;
-    events.forEach((evt) => document.body.addEventListener(evt, stop));
-    return () => {
-      events.forEach((evt) => document.body.removeEventListener(evt, stop));
-    };
-  }, []);
+  const portalWrapperRef = useStopEventPropagation();
 
   // Unified marker visibility state - controls both toolbar and eye toggle
   const [markersVisible, setMarkersVisible] = useAtom(markersVisibleAtom);
