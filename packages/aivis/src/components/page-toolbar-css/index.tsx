@@ -165,6 +165,7 @@ import { useThemePersistence } from './useTheme';
 import { useEditPopupPosition } from './useEditPopupPosition';
 import { useHealthCheck } from './useHealthCheck';
 import { useToolbarConstrain } from './useToolbarConstrain';
+import { useScrollTracking } from './useScrollTracking';
 import {
   COLOR_OPTIONS,
   ANIMATION,
@@ -460,7 +461,6 @@ export function PageFeedbackToolbarCSS({
 
   const popupRef = useRef<AnnotationPopupCSSHandle>(null);
   const editPopupRef = useRef<AnnotationPopupCSSHandle>(null);
-  const scrollTimeoutRef = useRef<ReturnType<typeof originalSetTimeout> | null>(null);
 
   const pathname = typeof window !== 'undefined' ? (window.location.pathname ?? '/') : '/';
 
@@ -930,28 +930,10 @@ export function PageFeedbackToolbarCSS({
   }, [enableDemoMode, mounted, demoAnnotations, demoDelay]);
 
   // Track scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-      setIsScrolling(true);
-
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-
-      scrollTimeoutRef.current = originalSetTimeout(() => {
-        setIsScrolling(false);
-      }, 150);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-  }, []);
+  useScrollTracking({
+    onScrollYChange: setScrollY,
+    onIsScrollingChange: setIsScrolling,
+  });
 
   // Save annotations (preserving sync markers if connected to a session)
   useEffect(() => {
