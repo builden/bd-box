@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
-import { useAtom } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import { createPortal } from 'react-dom';
 
 import { AnnotationPopupCSSHandle } from '../annotation-popup-css';
@@ -137,6 +137,9 @@ import {
   hoveredTargetElementsAtom,
   designPlacementsAtom,
   activeDesignComponentAtom,
+  visibleAnnotationsAtom,
+  hasVisibleAnnotationsAtom,
+  hasAnnotationsAtom,
   rearrangeStateAtom,
   styleEditorElementAtom,
   drawStrokesAtom,
@@ -3197,13 +3200,9 @@ export function PageFeedbackToolbarCSS({
   if (!mounted) return null;
   if (isToolbarHidden) return null;
 
-  const hasAnnotations = annotations.length > 0;
-
-  // Filter annotations for rendering (exclude exiting ones from normal flow)
-  const visibleAnnotations = annotations.filter(
-    (a) => !exitingMarkers.has(a.id) && a.kind !== 'placement' && a.kind !== 'rearrange'
-  );
-  const hasVisibleAnnotations = visibleAnnotations.length > 0;
+  const visibleAnnotations = useAtomValue(visibleAnnotationsAtom);
+  const hasVisibleAnnotations = useAtomValue(hasVisibleAnnotationsAtom);
+  const hasAnnotations = useAtomValue(hasAnnotationsAtom);
   const exitingAnnotationsList = annotations.filter((a) => exitingMarkers.has(a.id));
 
   return createPortal(
