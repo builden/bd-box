@@ -24,12 +24,7 @@ import designStyles from '../design-mode/styles.module.scss';
 import { RearrangeOverlay } from '../design-mode/rearrange';
 import { generateDesignOutput, generateRearrangeOutput } from '../design-mode/output';
 import { detectPageSections } from '../design-mode/section-detection';
-import {
-  DEFAULT_SIZES,
-  type DesignPlacement,
-  type ComponentType as DesignComponentType,
-  type RearrangeState,
-} from '../design-mode/types';
+import { DEFAULT_SIZES, type DesignPlacement, type RearrangeState } from '../design-mode/types';
 import { StyleEditor, type StyleChange } from '../style-editor';
 import {
   identifyElement,
@@ -129,6 +124,23 @@ import {
   renumberFromAtom,
   hoverInfoAtom,
   pendingAnnotationAtom,
+  annotationsAtom,
+  showMarkersAtom,
+  hoverPositionAtom,
+  animatedMarkersAtom,
+  exitingMarkersAtom,
+  editingAnnotationAtom,
+  editingTargetElementAtom,
+  editingTargetElementsAtom,
+  pendingMultiSelectElementsAtom,
+  hoveredTargetElementAtom,
+  hoveredTargetElementsAtom,
+  designPlacementsAtom,
+  activeDesignComponentAtom,
+  rearrangeStateAtom,
+  styleEditorElementAtom,
+  drawStrokesAtom,
+  toolbarPositionAtom,
 } from '../../atoms/toolbarAtoms';
 
 import type { Annotation } from '../../types';
@@ -210,8 +222,8 @@ export function PageFeedbackToolbarCSS({
   initialPosition,
 }: PageFeedbackToolbarCSSProps = {}) {
   const [isActive, setIsActive] = useAtom(isActiveAtom);
-  const [annotations, setAnnotations] = useState<Annotation[]>([]);
-  const [showMarkers, setShowMarkers] = useState(true);
+  const [annotations, setAnnotations] = useAtom(annotationsAtom);
+  const [showMarkers, setShowMarkers] = useAtom(showMarkersAtom);
   const [isToolbarHidden, setIsToolbarHidden] = useAtom(isToolbarHiddenAtom);
   const [isToolbarHiding, setIsToolbarHiding] = useAtom(isToolbarHidingAtom);
 
@@ -240,20 +252,20 @@ export function PageFeedbackToolbarCSS({
   const [markersVisible, setMarkersVisible] = useAtom(markersVisibleAtom);
   const [markersExiting, setMarkersExiting] = useAtom(markersExitingAtom);
   const [hoverInfo, setHoverInfo] = useAtom(hoverInfoAtom);
-  const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
+  const [hoverPosition, setHoverPosition] = useAtom(hoverPositionAtom);
   const [pendingAnnotation, setPendingAnnotation] = useAtom(pendingAnnotationAtom);
   const [copied, setCopied] = useAtom(copiedAtom);
   const [sendState, setSendState] = useAtom(sendStateAtom);
   const [, setCleared] = useState(false);
   const [isClearing, setIsClearing] = useAtom(isClearingAtom);
   const [hoveredMarkerId, setHoveredMarkerId] = useAtom(hoveredMarkerIdAtom);
-  const [hoveredTargetElement, setHoveredTargetElement] = useState<HTMLElement | null>(null);
-  const [hoveredTargetElements, setHoveredTargetElements] = useState<HTMLElement[]>([]); // For cmd+shift+click multi-select hover
+  const [hoveredTargetElement, setHoveredTargetElement] = useAtom(hoveredTargetElementAtom);
+  const [hoveredTargetElements, setHoveredTargetElements] = useAtom(hoveredTargetElementsAtom);
   const [deletingMarkerId, setDeletingMarkerId] = useAtom(deletingMarkerIdAtom);
   const [renumberFrom, setRenumberFrom] = useAtom(renumberFromAtom);
-  const [editingAnnotation, setEditingAnnotation] = useState<Annotation | null>(null);
-  const [editingTargetElement, setEditingTargetElement] = useState<HTMLElement | null>(null);
-  const [editingTargetElements, setEditingTargetElements] = useState<HTMLElement[]>([]); // For cmd+shift+click multi-select
+  const [editingAnnotation, setEditingAnnotation] = useAtom(editingAnnotationAtom);
+  const [editingTargetElement, setEditingTargetElement] = useAtom(editingTargetElementAtom);
+  const [editingTargetElements, setEditingTargetElements] = useAtom(editingTargetElementsAtom);
   const [scrollY, setScrollY] = useAtom(scrollYAtom);
   const [isScrolling, setIsScrolling] = useAtom(isScrollingAtom);
   const [mounted, setMounted] = useAtom(mountedAtom);
@@ -266,8 +278,8 @@ export function PageFeedbackToolbarCSS({
   // Layout mode state
   const [toolbarMode, setToolbarMode] = useAtom(toolbarModeAtom);
   const [designOverlayExiting, setDesignOverlayExiting] = useAtom(designOverlayExitingAtom);
-  const [designPlacements, setDesignPlacements] = useState<DesignPlacement[]>([]);
-  const [activeDesignComponent, setActiveDesignComponent] = useState<DesignComponentType | null>(null);
+  const [designPlacements, setDesignPlacements] = useAtom(designPlacementsAtom);
+  const [activeDesignComponent, setActiveDesignComponent] = useAtom(activeDesignComponentAtom);
   const designPlacementsLoaded = useRef(false);
   // Sub-mode state removed — unified mode renders both overlays simultaneously
   const [blankCanvas, setBlankCanvas] = useAtom(blankCanvasAtom);
@@ -276,7 +288,7 @@ export function PageFeedbackToolbarCSS({
   const [canvasPurpose, _setCanvasPurpose] = useState<import('../design-mode/types').CanvasPurpose>('new-page');
   const [wireframePurpose, setWireframePurpose] = useAtom(wireframePurposeAtom);
   const [designInteracting, setDesignInteracting] = useAtom(designInteractingAtom);
-  const [rearrangeState, setRearrangeState] = useState<RearrangeState | null>(null);
+  const [rearrangeState, setRearrangeState] = useAtom(rearrangeStateAtom);
   const rearrangeLoaded = useRef(false);
   // Stash explore/wireframe state for full isolation between modes
   const exploreStashRef = useRef<{ rearrange: RearrangeState | null; placements: DesignPlacement[] }>({
@@ -289,7 +301,7 @@ export function PageFeedbackToolbarCSS({
   });
 
   // Style editor state
-  const [styleEditorElement, setStyleEditorElement] = useState<HTMLElement | null>(null);
+  const [styleEditorElement, setStyleEditorElement] = useAtom(styleEditorElementAtom);
 
   // Derived mode booleans
   const isDesignMode = toolbarMode === 'layout';
@@ -329,9 +341,7 @@ export function PageFeedbackToolbarCSS({
 
   // Draw mode state
   const [isDrawMode, setIsDrawMode] = useAtom(isDrawModeAtom);
-  const [drawStrokes, setDrawStrokes] = useState<
-    Array<{ id: string; points: Array<{ x: number; y: number }>; color: string; fixed: boolean }>
-  >([]);
+  const [drawStrokes, setDrawStrokes] = useAtom(drawStrokesAtom);
   const drawStrokesRef = useRef(drawStrokes);
   drawStrokesRef.current = drawStrokes;
   const [hoveredDrawingIdx, _setHoveredDrawingIdx] = useAtom(hoveredDrawingIdxAtom);
@@ -341,15 +351,7 @@ export function PageFeedbackToolbarCSS({
   const tooltipSessionTimerRef = useRef<ReturnType<typeof originalSetTimeout> | null>(null);
 
   // Cmd+shift+click multi-select state
-  const [pendingMultiSelectElements, setPendingMultiSelectElements] = useState<
-    Array<{
-      element: HTMLElement;
-      rect: DOMRect;
-      name: string;
-      path: string;
-      reactComponents?: string;
-    }>
-  >([]);
+  const [pendingMultiSelectElements, setPendingMultiSelectElements] = useAtom(pendingMultiSelectElementsAtom);
   const modifiersHeldRef = useRef({ cmd: false, shift: false });
 
   // Hide tooltips after button click until mouse leaves
@@ -426,10 +428,7 @@ export function PageFeedbackToolbarCSS({
   const [connectionStatus, setConnectionStatus] = useAtom(connectionStatusAtom);
 
   // Draggable toolbar state
-  const [toolbarPosition, setToolbarPosition] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
+  const [toolbarPosition, setToolbarPosition] = useAtom(toolbarPositionAtom);
   const [isDraggingToolbar, setIsDraggingToolbar] = useAtom(isDraggingToolbarAtom);
   const [dragStartPos, setDragStartPos] = useState<{
     x: number;
@@ -440,8 +439,8 @@ export function PageFeedbackToolbarCSS({
   const justFinishedToolbarDragRef = useRef(false);
 
   // For animations - track which markers have animated in and which are exiting
-  const [animatedMarkers, setAnimatedMarkers] = useState<Set<string>>(new Set());
-  const [exitingMarkers, setExitingMarkers] = useState<Set<string>>(new Set());
+  const [animatedMarkers, setAnimatedMarkers] = useAtom(animatedMarkersAtom);
+  const [exitingMarkers, setExitingMarkers] = useAtom(exitingMarkersAtom);
   const [pendingExiting, setPendingExiting] = useAtom(pendingExitingAtom);
   const [editExiting, setEditExiting] = useAtom(editExitingAtom);
 
