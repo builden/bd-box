@@ -36,11 +36,18 @@ const EDITABLE_PROPERTIES = [
   'backgroundColor',
   'fontSize',
   'fontWeight',
-  'padding',
-  'margin',
+  'lineHeight',
+  'textAlign',
   'borderRadius',
+  'borderWidth',
+  'borderColor',
+  'boxShadow',
   'width',
   'height',
+  'minWidth',
+  'maxWidth',
+  'minHeight',
+  'maxHeight',
   'display',
   'flexDirection',
   'justifyContent',
@@ -53,19 +60,35 @@ const EDITABLE_PROPERTIES = [
   'right',
   'bottom',
   'left',
+  // Box model - handled specially
+  'marginTop',
+  'marginRight',
+  'marginBottom',
+  'marginLeft',
+  'paddingTop',
+  'paddingRight',
+  'paddingBottom',
+  'paddingLeft',
 ] as const;
 
 // Property display names and units
-const PROPERTY_CONFIG: Record<string, { label: string; unit?: string; colorInput?: boolean }> = {
+const PROPERTY_CONFIG: Record<string, { label: string; unit?: string; colorInput?: boolean; isBoxSide?: boolean }> = {
   color: { label: 'Color', colorInput: true },
   backgroundColor: { label: 'Background', colorInput: true },
   fontSize: { label: 'Font Size', unit: 'px' },
   fontWeight: { label: 'Font Weight' },
-  padding: { label: 'Padding', unit: 'px' },
-  margin: { label: 'Margin', unit: 'px' },
+  lineHeight: { label: 'Line Height' },
+  textAlign: { label: 'Text Align' },
   borderRadius: { label: 'Border Radius', unit: 'px' },
+  borderWidth: { label: 'Border Width', unit: 'px' },
+  borderColor: { label: 'Border Color', colorInput: true },
+  boxShadow: { label: 'Box Shadow' },
   width: { label: 'Width', unit: 'px' },
   height: { label: 'Height', unit: 'px' },
+  minWidth: { label: 'Min Width', unit: 'px' },
+  maxWidth: { label: 'Max Width', unit: 'px' },
+  minHeight: { label: 'Min Height', unit: 'px' },
+  maxHeight: { label: 'Max Height', unit: 'px' },
   display: { label: 'Display' },
   flexDirection: { label: 'Flex Direction' },
   justifyContent: { label: 'Justify Content' },
@@ -78,6 +101,15 @@ const PROPERTY_CONFIG: Record<string, { label: string; unit?: string; colorInput
   right: { label: 'Right', unit: 'px' },
   bottom: { label: 'Bottom', unit: 'px' },
   left: { label: 'Left', unit: 'px' },
+  // Box model sides
+  marginTop: { label: 'Margin Top', unit: 'px', isBoxSide: true },
+  marginRight: { label: 'Margin Right', unit: 'px', isBoxSide: true },
+  marginBottom: { label: 'Margin Bottom', unit: 'px', isBoxSide: true },
+  marginLeft: { label: 'Margin Left', unit: 'px', isBoxSide: true },
+  paddingTop: { label: 'Padding Top', unit: 'px', isBoxSide: true },
+  paddingRight: { label: 'Padding Right', unit: 'px', isBoxSide: true },
+  paddingBottom: { label: 'Padding Bottom', unit: 'px', isBoxSide: true },
+  paddingLeft: { label: 'Padding Left', unit: 'px', isBoxSide: true },
 };
 
 // =============================================================================
@@ -98,6 +130,249 @@ function generateDiffText(selector: string, changes: StyleChange['changes']): st
     lines.push(`+ ${change.property}: ${change.newValue};`);
   }
   return lines.join('\n');
+}
+
+// =============================================================================
+// Box Model Editor Component (Chrome DevTools Style)
+// =============================================================================
+
+type BoxModelEditorProps = {
+  computedStyles: Record<string, string>;
+  modifiedValues: Record<string, string>;
+  onValueChange: (property: string, value: string) => void;
+  isDarkMode?: boolean;
+};
+
+function BoxModelEditor({ computedStyles, modifiedValues, onValueChange, isDarkMode = true }: BoxModelEditorProps) {
+  const [activeSide, setActiveSide] = useState<string | null>(null);
+  const [inputValue, setInputValue] = useState('');
+
+  const getValue = (prop: string) => modifiedValues[prop] ?? computedStyles[prop] ?? '';
+
+  // Margin values
+  const marginTop = getValue('marginTop');
+  const marginRight = getValue('marginRight');
+  const marginBottom = getValue('marginBottom');
+  const marginLeft = getValue('marginLeft');
+  // Padding values
+  const paddingTop = getValue('paddingTop');
+  const paddingRight = getValue('paddingRight');
+  const paddingBottom = getValue('paddingBottom');
+  const paddingLeft = getValue('paddingLeft');
+  // Border values
+  const borderTop = getValue('borderTopWidth') || getValue('borderWidth') || '0px';
+  const borderRight = getValue('borderRightWidth') || getValue('borderWidth') || '0px';
+  const borderBottom = getValue('borderBottomWidth') || getValue('borderWidth') || '0px';
+  const borderLeft = getValue('borderLeftWidth') || getValue('borderWidth') || '0px';
+
+  const handleSideClick = (side: string) => {
+    setActiveSide(side);
+    const current = getValue(side);
+    setInputValue(current);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
+
+  const handleInputBlur = () => {
+    if (activeSide) {
+      onValueChange(activeSide, inputValue);
+      setActiveSide(null);
+    }
+  };
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      if (activeSide) {
+        onValueChange(activeSide, inputValue);
+        setActiveSide(null);
+      }
+    } else if (e.key === 'Escape') {
+      setActiveSide(null);
+      setInputValue('');
+    }
+  };
+
+  // Chrome DevTools style: nested boxes from margin → border → padding → content
+  // Colors: margin (yellow), border (orange), padding (green), content (gray)
+
+  return (
+    <div className={`${styles.boxModelEditor} ${!isDarkMode ? styles.light : ''}`}>
+      <div className={styles.boxModelTitle}>Box Model</div>
+
+      <div className={styles.boxModelWrapper}>
+        {/* Margin layer - yellow */}
+        <div className={styles.boxModelMargin}>
+          {/* Margin top */}
+          <button
+            className={styles.boxSideTop}
+            onClick={() => handleSideClick('marginTop')}
+            data-active={activeSide === 'marginTop'}
+            data-type="margin"
+          >
+            <span className={styles.boxLabel}>m</span>
+            <span className={styles.boxValue}>{marginTop || 'auto'}</span>
+          </button>
+
+          <div className={styles.boxModelMarginMiddle}>
+            {/* Margin left */}
+            <button
+              className={styles.boxSideLeft}
+              onClick={() => handleSideClick('marginLeft')}
+              data-active={activeSide === 'marginLeft'}
+              data-type="margin"
+            >
+              <span className={styles.boxLabel}>m</span>
+              <span className={styles.boxValue}>{marginLeft || 'auto'}</span>
+            </button>
+
+            {/* Border layer - orange */}
+            <div className={styles.boxModelBorder}>
+              {/* Border top */}
+              <button
+                className={styles.boxSideTop}
+                onClick={() => handleSideClick('borderTop')}
+                data-active={activeSide === 'borderTop'}
+                data-type="border"
+              >
+                <span className={styles.boxLabel}>b</span>
+                <span className={styles.boxValue}>{borderTop}</span>
+              </button>
+
+              <div className={styles.boxModelBorderMiddle}>
+                {/* Border left */}
+                <button
+                  className={styles.boxSideLeft}
+                  onClick={() => handleSideClick('borderLeft')}
+                  data-active={activeSide === 'borderLeft'}
+                  data-type="border"
+                >
+                  <span className={styles.boxLabel}>b</span>
+                  <span className={styles.boxValue}>{borderLeft}</span>
+                </button>
+
+                {/* Padding layer - green */}
+                <div className={styles.boxModelPadding}>
+                  {/* Padding top */}
+                  <button
+                    className={styles.boxSideTop}
+                    onClick={() => handleSideClick('paddingTop')}
+                    data-active={activeSide === 'paddingTop'}
+                    data-type="padding"
+                  >
+                    <span className={styles.boxLabel}>p</span>
+                    <span className={styles.boxValue}>{paddingTop || '0'}</span>
+                  </button>
+
+                  <div className={styles.boxModelPaddingMiddle}>
+                    {/* Padding left */}
+                    <button
+                      className={styles.boxSideLeft}
+                      onClick={() => handleSideClick('paddingLeft')}
+                      data-active={activeSide === 'paddingLeft'}
+                      data-type="padding"
+                    >
+                      <span className={styles.boxLabel}>p</span>
+                      <span className={styles.boxValue}>{paddingLeft || '0'}</span>
+                    </button>
+
+                    {/* Content */}
+                    <div className={styles.boxModelContent}>
+                      <span>内容</span>
+                    </div>
+
+                    {/* Padding right */}
+                    <button
+                      className={styles.boxSideLeft}
+                      onClick={() => handleSideClick('paddingRight')}
+                      data-active={activeSide === 'paddingRight'}
+                      data-type="padding"
+                    >
+                      <span className={styles.boxValue}>{paddingRight || '0'}</span>
+                      <span className={styles.boxLabel}>p</span>
+                    </button>
+                  </div>
+
+                  {/* Padding bottom */}
+                  <button
+                    className={styles.boxSideTop}
+                    onClick={() => handleSideClick('paddingBottom')}
+                    data-active={activeSide === 'paddingBottom'}
+                    data-type="padding"
+                  >
+                    <span className={styles.boxValue}>{paddingBottom || '0'}</span>
+                    <span className={styles.boxLabel}>p</span>
+                  </button>
+                </div>
+
+                {/* Border right */}
+                <button
+                  className={styles.boxSideLeft}
+                  onClick={() => handleSideClick('borderRight')}
+                  data-active={activeSide === 'borderRight'}
+                  data-type="border"
+                >
+                  <span className={styles.boxValue}>{borderRight}</span>
+                  <span className={styles.boxLabel}>b</span>
+                </button>
+              </div>
+
+              {/* Border bottom */}
+              <button
+                className={styles.boxSideTop}
+                onClick={() => handleSideClick('borderBottom')}
+                data-active={activeSide === 'borderBottom'}
+                data-type="border"
+              >
+                <span className={styles.boxValue}>{borderBottom}</span>
+                <span className={styles.boxLabel}>b</span>
+              </button>
+            </div>
+
+            {/* Margin right */}
+            <button
+              className={styles.boxSideLeft}
+              onClick={() => handleSideClick('marginRight')}
+              data-active={activeSide === 'marginRight'}
+              data-type="margin"
+            >
+              <span className={styles.boxValue}>{marginRight || 'auto'}</span>
+              <span className={styles.boxLabel}>m</span>
+            </button>
+          </div>
+
+          {/* Margin bottom */}
+          <button
+            className={styles.boxSideTop}
+            onClick={() => handleSideClick('marginBottom')}
+            data-active={activeSide === 'marginBottom'}
+            data-type="margin"
+          >
+            <span className={styles.boxValue}>{marginBottom || 'auto'}</span>
+            <span className={styles.boxLabel}>m</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Input for editing */}
+      {activeSide && (
+        <div className={styles.boxModelInputWrapper}>
+          <span className={styles.boxModelInputLabel}>{activeSide.replace(/([A-Z])/g, ' ')}</span>
+          <input
+            type="text"
+            className={styles.boxModelInput}
+            value={inputValue}
+            onChange={handleInputChange}
+            onBlur={handleInputBlur}
+            onKeyDown={handleInputKeyDown}
+            placeholder="e.g. 10px"
+            autoFocus
+          />
+        </div>
+      )}
+    </div>
+  );
 }
 
 // =============================================================================
@@ -234,10 +509,22 @@ export function StyleEditor({ element, onClose, onCopyDiff, isDarkMode = true }:
 
   if (!mounted) return null;
 
+  // Box model properties are handled by BoxModelEditor
+  const boxModelProperties = new Set([
+    'marginTop',
+    'marginRight',
+    'marginBottom',
+    'marginLeft',
+    'paddingTop',
+    'paddingRight',
+    'paddingBottom',
+    'paddingLeft',
+  ]);
+
   const filteredProperties = EDITABLE_PROPERTIES.filter((prop) => {
-    // Show property if it has a computed value or if it's commonly used
+    if (boxModelProperties.has(prop)) return false;
     const hasValue = computedStyles[prop] && computedStyles[prop] !== '';
-    const isCommon = ['color', 'backgroundColor', 'fontSize', 'padding', 'margin', 'borderRadius'].includes(prop);
+    const isCommon = ['color', 'backgroundColor', 'fontSize', 'borderRadius'].includes(prop);
     return hasValue || isCommon;
   });
 
@@ -270,6 +557,14 @@ export function StyleEditor({ element, onClose, onCopyDiff, isDarkMode = true }:
             {element.id && <span> #{element.id}</span>}
             <div className={styles.elementPath}>{elementPath}</div>
           </div>
+
+          {/* Box Model Visual Editor */}
+          <BoxModelEditor
+            computedStyles={computedStyles}
+            modifiedValues={modifiedValues}
+            onValueChange={handleValueChange}
+            isDarkMode={isDarkMode}
+          />
 
           {/* Styles List */}
           <div className={styles.stylesList}>

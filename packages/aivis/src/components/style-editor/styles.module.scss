@@ -43,6 +43,9 @@
     --agentation-accent: #0088ff;
     --agentation-success: #34c759;
     --agentation-hover: rgba(255, 255, 255, 0.05);
+    --agentation-box-model-margin: rgba(249, 191, 71, 0.3);
+    --agentation-box-model-border: rgba(255, 152, 0, 0.4);
+    --agentation-box-model-padding: rgba(52, 199, 89, 0.35);
   }
 
   &.light {
@@ -55,6 +58,9 @@
     --agentation-accent: #0088ff;
     --agentation-success: #34c759;
     --agentation-hover: rgba(0, 0, 0, 0.03);
+    --agentation-box-model-margin: rgba(249, 191, 71, 0.25);
+    --agentation-box-model-border: rgba(255, 152, 0, 0.3);
+    --agentation-box-model-padding: rgba(52, 199, 89, 0.25);
   }
 }
 
@@ -334,6 +340,239 @@
   font-size: 13px;
   font-weight: 500;
   animation: fadeIn 0.2s ease-out;
+}
+
+// =============================================================================
+// Box Model Editor - Chrome DevTools Style
+// =============================================================================
+
+.boxModelEditor {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--agentation-border);
+  background: var(--agentation-bg);
+}
+
+.boxModelTitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--agentation-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+// Wrapper for the entire box model
+.boxModelWrapper {
+  display: flex;
+  justify-content: center;
+}
+
+// Margin layer (outermost) - yellow
+.boxModelMargin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--agentation-box-model-margin);
+  border: 2px solid #f9bf47;
+  border-radius: 4px;
+}
+
+.boxModelMarginMiddle {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+// Border layer - orange
+.boxModelBorder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  background: var(--agentation-box-model-border);
+  border-left: 2px solid #ff9800;
+  border-right: 2px solid #ff9800;
+}
+
+.boxModelBorderMiddle {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+  width: 100%;
+}
+
+// Padding layer (inner) - green
+.boxModelPadding {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  background: var(--agentation-box-model-padding);
+  border: 2px solid #34c759;
+}
+
+.boxModelPaddingMiddle {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+  width: 100%;
+}
+
+// Content area
+.boxModelContent {
+  flex: 1;
+  min-width: 60px;
+  min-height: 40px;
+  background: var(--agentation-input-bg);
+  border: 1px solid var(--agentation-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  span {
+    font-size: 10px;
+    color: var(--agentation-text-muted);
+  }
+}
+
+// Side buttons (top/bottom bars)
+.boxSideTop {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  &[data-active='true'] {
+    background: var(--agentation-accent);
+
+    .boxValue,
+    .boxLabel {
+      color: white;
+    }
+  }
+
+  &[data-type='margin'] {
+    .boxValue {
+      color: #f9bf47;
+    }
+  }
+
+  &[data-type='border'] {
+    .boxValue {
+      color: #ff9800;
+    }
+  }
+
+  &[data-type='padding'] {
+    .boxValue {
+      color: #34c759;
+    }
+  }
+}
+
+// Side buttons (left/right bars)
+.boxSideLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px;
+  min-width: 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  &[data-active='true'] {
+    background: var(--agentation-accent);
+
+    .boxValue,
+    .boxLabel {
+      color: white;
+    }
+  }
+
+  &[data-type='margin'] {
+    .boxValue {
+      color: #f9bf47;
+      writing-mode: vertical-rl;
+    }
+  }
+
+  &[data-type='border'] {
+    .boxValue {
+      color: #ff9800;
+      writing-mode: vertical-rl;
+    }
+  }
+
+  &[data-type='padding'] {
+    .boxValue {
+      color: #34c759;
+      writing-mode: vertical-rl;
+    }
+  }
+}
+
+.boxLabel {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--agentation-text-muted);
+  text-transform: uppercase;
+}
+
+.boxValue {
+  font-size: 10px;
+  font-family: 'SF Mono', Monaco, monospace;
+  font-weight: 500;
+}
+
+// Input section
+.boxModelInputWrapper {
+  margin-top: 12px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.boxModelInputLabel {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--agentation-text-muted);
+  text-transform: capitalize;
+}
+
+.boxModelInput {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-family: 'SF Mono', Monaco, monospace;
+  background: var(--agentation-input-bg);
+  border: 1px solid var(--agentation-accent);
+  border-radius: 4px;
+  color: var(--agentation-text);
+  text-align: center;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 136, 255, 0.2);
+  }
 }
 
 // Animations

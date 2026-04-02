@@ -504,19 +504,61 @@ export function getDetailedComputedStyles(target: HTMLElement): Record<string, s
     properties = ['color', 'fontSize', 'fontWeight', 'fontFamily', 'lineHeight'];
   } else if (tag === 'button' || (tag === 'a' && target.getAttribute('role') === 'button')) {
     // Appearance and spacing for interactive elements
-    properties = ['backgroundColor', 'color', 'padding', 'borderRadius', 'fontSize'];
+    properties = [
+      'backgroundColor',
+      'color',
+      'paddingTop',
+      'paddingRight',
+      'paddingBottom',
+      'paddingLeft',
+      'borderRadius',
+      'fontSize',
+    ];
   } else if (FORM_INPUT_ELEMENTS.has(tag)) {
     // Form styling
-    properties = ['backgroundColor', 'color', 'padding', 'borderRadius', 'fontSize'];
+    properties = [
+      'backgroundColor',
+      'color',
+      'paddingTop',
+      'paddingRight',
+      'paddingBottom',
+      'paddingLeft',
+      'borderRadius',
+      'fontSize',
+    ];
   } else if (MEDIA_ELEMENTS.has(tag)) {
     // Dimensions for media
     properties = ['width', 'height', 'objectFit', 'borderRadius'];
   } else if (CONTAINER_ELEMENTS.has(tag)) {
     // Layout-focused for containers
-    properties = ['display', 'padding', 'margin', 'gap', 'backgroundColor'];
+    properties = [
+      'display',
+      'paddingTop',
+      'paddingRight',
+      'paddingBottom',
+      'paddingLeft',
+      'marginTop',
+      'marginRight',
+      'marginBottom',
+      'marginLeft',
+      'gap',
+      'backgroundColor',
+    ];
   } else {
     // Default fallback
-    properties = ['color', 'fontSize', 'margin', 'padding', 'backgroundColor'];
+    properties = [
+      'color',
+      'fontSize',
+      'marginTop',
+      'marginRight',
+      'marginBottom',
+      'marginLeft',
+      'paddingTop',
+      'paddingRight',
+      'paddingBottom',
+      'paddingLeft',
+      'backgroundColor',
+    ];
   }
 
   for (const prop of properties) {
