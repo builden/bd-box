@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import { useAtom } from 'jotai';
 import { createPortal } from 'react-dom';
 
 import { AnnotationPopupCSS, AnnotationPopupCSSHandle } from '../annotation-popup-css';
@@ -61,7 +62,6 @@ import {
   loadWireframeState,
   saveWireframeState,
   clearWireframeState,
-  loadToolbarHidden,
   saveToolbarHidden,
 } from '../../utils/storage';
 import {
@@ -87,6 +87,49 @@ import {
   detectSourceFile,
 } from '../../utils/toolbar-helpers';
 import { fireWebhook as fireWebhookUtil } from '../../utils/webhook';
+import {
+  isActiveAtom,
+  toolbarModeAtom,
+  markersVisibleAtom,
+  markersExitingAtom,
+  editExitingAtom,
+  isFrozenAtom,
+  showSettingsAtom,
+  showSettingsVisibleAtom,
+  settingsPageAtom,
+  tooltipsHiddenAtom,
+  tooltipSessionActiveAtom,
+  copiedAtom,
+  sendStateAtom,
+  isClearingAtom,
+  scrollYAtom,
+  isScrollingAtom,
+  mountedAtom,
+  pendingExitingAtom,
+  isDraggingAtom,
+  isToolbarHiddenAtom,
+  isToolbarHidingAtom,
+  showEntranceAnimationAtom,
+  blankCanvasAtom,
+  canvasReadyAtom,
+  canvasOpacityAtom,
+  designInteractingAtom,
+  wireframePurposeAtom,
+  designOverlayExitingAtom,
+  designDeselectSignalAtom,
+  rearrangeDeselectSignalAtom,
+  designClearSignalAtom,
+  rearrangeClearSignalAtom,
+  isDarkModeAtom,
+  currentSessionIdAtom,
+  connectionStatusAtom,
+  isDraggingToolbarAtom,
+  isDrawModeAtom,
+  hoveredDrawingIdxAtom,
+  hoveredMarkerIdAtom,
+  deletingMarkerIdAtom,
+  renumberFromAtom,
+} from '../../atoms/toolbarAtoms';
 
 import type { Annotation } from '../../types';
 import styles from './styles.module.scss';
@@ -96,7 +139,7 @@ import { SettingsPanel } from '../settings-panel';
 import { AnnotationMarkerList } from './AnnotationMarkerList';
 import { EditAnnotationOutline } from './EditAnnotationOutline';
 import { getTooltipPosition } from './tooltip-position';
-import { useThemePersistence, loadInitialTheme } from './useTheme';
+import { useThemePersistence } from './useTheme';
 import {
   COLOR_OPTIONS,
   ANIMATION,
@@ -158,11 +201,11 @@ export function PageFeedbackToolbarCSS({
   className: userClassName,
   initialPosition,
 }: PageFeedbackToolbarCSSProps = {}) {
-  const [isActive, setIsActive] = useState(false);
+  const [isActive, setIsActive] = useAtom(isActiveAtom);
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const [showMarkers, setShowMarkers] = useState(true);
-  const [isToolbarHidden, setIsToolbarHidden] = useState(() => loadToolbarHidden());
-  const [isToolbarHiding, setIsToolbarHiding] = useState(false);
+  const [isToolbarHidden, setIsToolbarHidden] = useAtom(isToolbarHiddenAtom);
+  const [isToolbarHiding, setIsToolbarHiding] = useAtom(isToolbarHidingAtom);
 
   // Stop native events from bubbling past document.body when they originate
   // inside the toolbar portal. Without this, clicks on the toolbar propagate to
@@ -186,8 +229,8 @@ export function PageFeedbackToolbarCSS({
   }, []);
 
   // Unified marker visibility state - controls both toolbar and eye toggle
-  const [markersVisible, setMarkersVisible] = useState(false);
-  const [markersExiting, setMarkersExiting] = useState(false);
+  const [markersVisible, setMarkersVisible] = useAtom(markersVisibleAtom);
+  const [markersExiting, setMarkersExiting] = useAtom(markersExitingAtom);
   const [hoverInfo, setHoverInfo] = useState<HoverInfo | null>(null);
   const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
   const [pendingAnnotation, setPendingAnnotation] = useState<{
@@ -220,40 +263,40 @@ export function PageFeedbackToolbarCSS({
     // Element reference for single-select (for live position queries)
     targetElement?: HTMLElement;
   } | null>(null);
-  const [copied, setCopied] = useState(false);
-  const [sendState, setSendState] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
+  const [copied, setCopied] = useAtom(copiedAtom);
+  const [sendState, setSendState] = useAtom(sendStateAtom);
   const [, setCleared] = useState(false);
-  const [isClearing, setIsClearing] = useState(false);
-  const [hoveredMarkerId, setHoveredMarkerId] = useState<string | null>(null);
+  const [isClearing, setIsClearing] = useAtom(isClearingAtom);
+  const [hoveredMarkerId, setHoveredMarkerId] = useAtom(hoveredMarkerIdAtom);
   const [hoveredTargetElement, setHoveredTargetElement] = useState<HTMLElement | null>(null);
   const [hoveredTargetElements, setHoveredTargetElements] = useState<HTMLElement[]>([]); // For cmd+shift+click multi-select hover
-  const [deletingMarkerId, setDeletingMarkerId] = useState<string | null>(null);
-  const [renumberFrom, setRenumberFrom] = useState<number | null>(null);
+  const [deletingMarkerId, setDeletingMarkerId] = useAtom(deletingMarkerIdAtom);
+  const [renumberFrom, setRenumberFrom] = useAtom(renumberFromAtom);
   const [editingAnnotation, setEditingAnnotation] = useState<Annotation | null>(null);
   const [editingTargetElement, setEditingTargetElement] = useState<HTMLElement | null>(null);
   const [editingTargetElements, setEditingTargetElements] = useState<HTMLElement[]>([]); // For cmd+shift+click multi-select
-  const [scrollY, setScrollY] = useState(0);
-  const [isScrolling, setIsScrolling] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const [isFrozen, setIsFrozen] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showSettingsVisible, setShowSettingsVisible] = useState(false);
-  const [settingsPage, setSettingsPage] = useState<'main' | 'automations'>('main');
-  const [tooltipsHidden, setTooltipsHidden] = useState(false);
+  const [scrollY, setScrollY] = useAtom(scrollYAtom);
+  const [isScrolling, setIsScrolling] = useAtom(isScrollingAtom);
+  const [mounted, setMounted] = useAtom(mountedAtom);
+  const [isFrozen, setIsFrozen] = useAtom(isFrozenAtom);
+  const [showSettings, setShowSettings] = useAtom(showSettingsAtom);
+  const [showSettingsVisible, setShowSettingsVisible] = useAtom(showSettingsVisibleAtom);
+  const [settingsPage, setSettingsPage] = useAtom(settingsPageAtom);
+  const [tooltipsHidden, setTooltipsHidden] = useAtom(tooltipsHiddenAtom);
 
   // Layout mode state
-  const [toolbarMode, setToolbarMode] = useState<ToolbarMode>(null);
-  const [designOverlayExiting, setDesignOverlayExiting] = useState(false);
+  const [toolbarMode, setToolbarMode] = useAtom(toolbarModeAtom);
+  const [designOverlayExiting, setDesignOverlayExiting] = useAtom(designOverlayExitingAtom);
   const [designPlacements, setDesignPlacements] = useState<DesignPlacement[]>([]);
   const [activeDesignComponent, setActiveDesignComponent] = useState<DesignComponentType | null>(null);
   const designPlacementsLoaded = useRef(false);
   // Sub-mode state removed — unified mode renders both overlays simultaneously
-  const [blankCanvas, setBlankCanvas] = useState(false);
-  const [canvasReady, setCanvasReady] = useState(false); // delays .visible by one frame on mount
-  const [canvasOpacity, setCanvasOpacity] = useState(1);
+  const [blankCanvas, setBlankCanvas] = useAtom(blankCanvasAtom);
+  const [canvasReady, setCanvasReady] = useAtom(canvasReadyAtom); // delays .visible by one frame on mount
+  const [canvasOpacity, setCanvasOpacity] = useAtom(canvasOpacityAtom);
   const [canvasPurpose, _setCanvasPurpose] = useState<import('../design-mode/types').CanvasPurpose>('new-page');
-  const [wireframePurpose, setWireframePurpose] = useState('');
-  const [designInteracting, setDesignInteracting] = useState(false);
+  const [wireframePurpose, setWireframePurpose] = useAtom(wireframePurposeAtom);
+  const [designInteracting, setDesignInteracting] = useAtom(designInteractingAtom);
   const [rearrangeState, setRearrangeState] = useState<RearrangeState | null>(null);
   const rearrangeLoaded = useRef(false);
   // Stash explore/wireframe state for full isolation between modes
@@ -275,10 +318,10 @@ export function PageFeedbackToolbarCSS({
   const isAnnotationMode = toolbarMode === 'annotation';
 
   // Cross-overlay deselect signals — bump one to deselect the other
-  const [designDeselectSignal, setDesignDeselectSignal] = useState(0);
-  const [rearrangeDeselectSignal, setRearrangeDeselectSignal] = useState(0);
-  const [designClearSignal, setDesignClearSignal] = useState(0);
-  const [rearrangeClearSignal, setRearrangeClearSignal] = useState(0);
+  const [designDeselectSignal, setDesignDeselectSignal] = useAtom(designDeselectSignalAtom);
+  const [rearrangeDeselectSignal, setRearrangeDeselectSignal] = useAtom(rearrangeDeselectSignalAtom);
+  const [designClearSignal, setDesignClearSignal] = useAtom(designClearSignalAtom);
+  const [rearrangeClearSignal, setRearrangeClearSignal] = useAtom(rearrangeClearSignalAtom);
   // Track selections for cross-overlay drag coordination
   const designSelectedIdsRef = useRef<Set<string>>(new Set());
   const rearrangeSelectedIdsRef = useRef<Set<string>>(new Set());
@@ -306,16 +349,16 @@ export function PageFeedbackToolbarCSS({
   const rearrangeDebounceTimer = useRef<ReturnType<typeof originalSetTimeout> | undefined>(undefined);
 
   // Draw mode state
-  const [isDrawMode, setIsDrawMode] = useState(false);
+  const [isDrawMode, setIsDrawMode] = useAtom(isDrawModeAtom);
   const [drawStrokes, setDrawStrokes] = useState<
     Array<{ id: string; points: Array<{ x: number; y: number }>; color: string; fixed: boolean }>
   >([]);
   const drawStrokesRef = useRef(drawStrokes);
   drawStrokesRef.current = drawStrokes;
-  const [hoveredDrawingIdx, _setHoveredDrawingIdx] = useState<number | null>(null);
+  const [hoveredDrawingIdx, _setHoveredDrawingIdx] = useAtom(hoveredDrawingIdxAtom);
   const drawCanvasRef = useRef<HTMLCanvasElement>(null);
 
-  const [tooltipSessionActive, setTooltipSessionActive] = useState(false);
+  const [tooltipSessionActive, setTooltipSessionActive] = useAtom(tooltipSessionActiveAtom);
   const tooltipSessionTimerRef = useRef<ReturnType<typeof originalSetTimeout> | null>(null);
 
   // Cmd+shift+click multi-select state
@@ -374,8 +417,8 @@ export function PageFeedbackToolbarCSS({
       return DEFAULT_SETTINGS;
     }
   });
-  const [isDarkMode, setIsDarkMode] = useState(loadInitialTheme);
-  const [showEntranceAnimation, setShowEntranceAnimation] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useAtom(isDarkModeAtom);
+  const [showEntranceAnimation, setShowEntranceAnimation] = useAtom(showEntranceAnimationAtom);
 
   const toggleTheme = () => {
     portalWrapperRef.current?.classList.add(styles.disableTransitions);
@@ -396,18 +439,16 @@ export function PageFeedbackToolbarCSS({
     isDevMode && settings.reactEnabled ? OUTPUT_TO_REACT_MODE[settings.outputDetail] : 'off';
 
   // Server sync state
-  const [currentSessionId, setCurrentSessionId] = useState<string | null>(initialSessionId ?? null);
+  const [currentSessionId, setCurrentSessionId] = useAtom(currentSessionIdAtom);
   const sessionInitializedRef = useRef(false);
-  const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected'>(
-    endpoint ? 'connecting' : 'disconnected'
-  );
+  const [connectionStatus, setConnectionStatus] = useAtom(connectionStatusAtom);
 
   // Draggable toolbar state
   const [toolbarPosition, setToolbarPosition] = useState<{
     x: number;
     y: number;
   } | null>(null);
-  const [isDraggingToolbar, setIsDraggingToolbar] = useState(false);
+  const [isDraggingToolbar, setIsDraggingToolbar] = useAtom(isDraggingToolbarAtom);
   const [dragStartPos, setDragStartPos] = useState<{
     x: number;
     y: number;
@@ -419,11 +460,11 @@ export function PageFeedbackToolbarCSS({
   // For animations - track which markers have animated in and which are exiting
   const [animatedMarkers, setAnimatedMarkers] = useState<Set<string>>(new Set());
   const [exitingMarkers, setExitingMarkers] = useState<Set<string>>(new Set());
-  const [pendingExiting, setPendingExiting] = useState(false);
-  const [editExiting, setEditExiting] = useState(false);
+  const [pendingExiting, setPendingExiting] = useAtom(pendingExitingAtom);
+  const [editExiting, setEditExiting] = useAtom(editExitingAtom);
 
   // Multi-select drag state - use refs for all drag visuals to avoid re-renders
-  const [isDragging, setIsDragging] = useState(false);
+  const [isDragging, setIsDragging] = useAtom(isDraggingAtom);
   const mouseDownPosRef = useRef<{ x: number; y: number } | null>(null);
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const dragRectRef = useRef<HTMLDivElement | null>(null);
