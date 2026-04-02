@@ -196,6 +196,36 @@ export const COLOR_OPTIONS = [
   { id: 'red', label: 'Red', srgb: '#FF383C', p3: 'color(display-p3 1.00 0.22 0.24)' },
 ];
 
+// Animation durations (ms)
+const ANIMATION = {
+  MARKER_ENTER: 350,
+  MARKER_EXIT: 250,
+  TOOLBAR_ENTRANCE: 750,
+  PENDING_EXIT: 150,
+  DESIGN_CLEAR: 200,
+  REARRANGE_TRANSITION: 450,
+  CLEARED_FEEDBACK: 1500,
+  RECENTLY_ADDED: 300,
+  EDIT_EXIT: 150,
+  DESIGN_OVERLAY_EXIT: 300,
+} as const;
+
+// Drag thresholds
+const DRAG = {
+  MULTI_SELECT_THRESHOLD: 8,
+  TOOLBAR_THRESHOLD: 10,
+  ELEMENT_UPDATE_THROTTLE: 50,
+} as const;
+
+// Tooltip layout
+const TOOLTIP = {
+  MAX_WIDTH: 200,
+  ESTIMATED_HEIGHT: 80,
+  MARKER_SIZE: 22,
+  GAP: 10,
+  EDGE_PADDING: 10,
+} as const;
+
 const injectAgentationColorTokens = () => {
   if (typeof document === 'undefined') return;
   if (document.getElementById('agentation-color-tokens')) return;
@@ -616,8 +646,6 @@ export function PageFeedbackToolbarCSS({
   const lastElementUpdateRef = useRef(0);
   const recentlyAddedIdRef = useRef<string | null>(null);
   const prevConnectionStatusRef = useRef<typeof connectionStatus | null>(null);
-  const DRAG_THRESHOLD = 8;
-  const ELEMENT_UPDATE_THROTTLE = 50; // Faster updates since no React re-renders
 
   const popupRef = useRef<AnnotationPopupCSSHandle>(null);
   const editPopupRef = useRef<AnnotationPopupCSSHandle>(null);
@@ -654,7 +682,7 @@ export function PageFeedbackToolbarCSS({
           annotations.forEach((a) => newSet.add(a.id));
           return newSet;
         });
-      }, 350);
+      }, ANIMATION.MARKER_ENTER);
       return () => clearTimeout(timer);
     } else if (markersVisible) {
       // Hide markers - start exit animation, then unmount
@@ -662,7 +690,7 @@ export function PageFeedbackToolbarCSS({
       const timer = originalSetTimeout(() => {
         setMarkersVisible(false);
         setMarkersExiting(false);
-      }, 250);
+      }, ANIMATION.MARKER_EXIT);
       return () => clearTimeout(timer);
     }
   }, [shouldShowMarkers]);
@@ -679,7 +707,7 @@ export function PageFeedbackToolbarCSS({
       setShowEntranceAnimation(true);
       hasPlayedEntranceAnimation = true;
       // Remove animation class after it completes (toolbar: 500ms, badge: 400ms delay + 300ms)
-      originalSetTimeout(() => setShowEntranceAnimation(false), 750);
+      originalSetTimeout(() => setShowEntranceAnimation(false), ANIMATION.TOOLBAR_ENTRANCE);
     }
 
     // Load saved theme preference, default to dark mode
@@ -1532,7 +1560,7 @@ export function PageFeedbackToolbarCSS({
           for (const a of ancestors) {
             a.el.style.overflow = a.overflow;
           }
-        }, 450);
+        }, ANIMATION.REARRANGE_TRANSITION);
       }
     }
   }, [rearrangeState, isDesignMode, designOverlayExiting, isActive]);
@@ -1556,7 +1584,7 @@ export function PageFeedbackToolbarCSS({
           for (const a of ancestors) {
             a.el.style.overflow = a.overflow;
           }
-        }, 450);
+        }, ANIMATION.REARRANGE_TRANSITION);
       }
       rearrangeMovedEls.current.clear();
     };
@@ -1572,7 +1600,7 @@ export function PageFeedbackToolbarCSS({
     clearTimeout(designExitTimer.current);
     designExitTimer.current = originalSetTimeout(() => {
       setDesignOverlayExiting(false);
-    }, 300);
+    }, ANIMATION.DESIGN_OVERLAY_EXIT);
   }, []);
 
   // Deactivate toolbar — if in layout mode, animate out overlays independently
@@ -1584,7 +1612,7 @@ export function PageFeedbackToolbarCSS({
       clearTimeout(designExitTimer.current);
       designExitTimer.current = originalSetTimeout(() => {
         setDesignOverlayExiting(false);
-      }, 300);
+      }, ANIMATION.DESIGN_OVERLAY_EXIT);
     }
     // Close style editor mode if active
     if (toolbarMode === 'style') {
@@ -2173,7 +2201,7 @@ export function PageFeedbackToolbarCSS({
       const dx = e.clientX - mouseDownPosRef.current.x;
       const dy = e.clientY - mouseDownPosRef.current.y;
       const distance = dx * dx + dy * dy;
-      const thresholdSq = DRAG_THRESHOLD * DRAG_THRESHOLD;
+      const thresholdSq = DRAG.MULTI_SELECT_THRESHOLD * DRAG.MULTI_SELECT_THRESHOLD;
 
       if (!isDragging && distance >= thresholdSq) {
         dragStartRef.current = mouseDownPosRef.current;
@@ -2195,7 +2223,7 @@ export function PageFeedbackToolbarCSS({
 
         // Throttle element detection (still no React re-renders)
         const now = Date.now();
-        if (now - lastElementUpdateRef.current < ELEMENT_UPDATE_THROTTLE) {
+        if (now - lastElementUpdateRef.current < DRAG.ELEMENT_UPDATE_THROTTLE) {
           return;
         }
         lastElementUpdateRef.current = now;
@@ -2351,7 +2379,7 @@ export function PageFeedbackToolbarCSS({
 
     document.addEventListener('mousemove', handleMouseMove, { passive: true });
     return () => document.removeEventListener('mousemove', handleMouseMove);
-  }, [isActive, pendingAnnotation, isDragging, DRAG_THRESHOLD]);
+  }, [isActive, pendingAnnotation, isDragging, DRAG.MULTI_SELECT_THRESHOLD]);
 
   // Multi-select drag - mouseup
   useEffect(() => {
@@ -2560,11 +2588,11 @@ export function PageFeedbackToolbarCSS({
       recentlyAddedIdRef.current = newAnnotation.id;
       originalSetTimeout(() => {
         recentlyAddedIdRef.current = null;
-      }, 300);
+      }, ANIMATION.RECENTLY_ADDED);
       // Mark as needing animation (will be set to animated after animation completes)
       originalSetTimeout(() => {
         setAnimatedMarkers((prev) => new Set(prev).add(newAnnotation.id));
-      }, 250);
+      }, ANIMATION.MARKER_ENTER);
 
       // Fire callback
       onAnnotationAdd?.(newAnnotation);
@@ -2575,7 +2603,7 @@ export function PageFeedbackToolbarCSS({
       originalSetTimeout(() => {
         setPendingAnnotation(null);
         setPendingExiting(false);
-      }, 150);
+      }, ANIMATION.PENDING_EXIT);
 
       window.getSelection()?.removeAllRanges();
 
@@ -2611,7 +2639,7 @@ export function PageFeedbackToolbarCSS({
     originalSetTimeout(() => {
       setPendingAnnotation(null);
       setPendingExiting(false);
-    }, 150); // Match exit animation duration
+    }, ANIMATION.PENDING_EXIT);
   }, []);
 
   // Delete annotation with exit animation
@@ -2628,7 +2656,7 @@ export function PageFeedbackToolbarCSS({
           setEditingTargetElement(null);
           setEditingTargetElements([]);
           setEditExiting(false);
-        }, 150);
+        }, ANIMATION.EDIT_EXIT);
       }
 
       setDeletingMarkerId(id);
@@ -2660,9 +2688,9 @@ export function PageFeedbackToolbarCSS({
         // Trigger renumber animation for markers after deleted one
         if (deletedIndex < annotations.length - 1) {
           setRenumberFrom(deletedIndex);
-          originalSetTimeout(() => setRenumberFrom(null), 200);
+          originalSetTimeout(() => setRenumberFrom(null), ANIMATION.MARKER_EXIT);
         }
-      }, 150);
+      }, ANIMATION.PENDING_EXIT);
     },
     [annotations, editingAnnotation, onAnnotationDelete, fireWebhook, endpoint]
   );
@@ -2752,7 +2780,7 @@ export function PageFeedbackToolbarCSS({
         setEditingTargetElement(null);
         setEditingTargetElements([]);
         setEditExiting(false);
-      }, 150);
+      }, ANIMATION.EDIT_EXIT);
     },
     [editingAnnotation, onAnnotationUpdate, fireWebhook, endpoint]
   );
@@ -2765,7 +2793,7 @@ export function PageFeedbackToolbarCSS({
       setEditingTargetElement(null);
       setEditingTargetElements([]);
       setEditExiting(false);
-    }, 150);
+    }, ANIMATION.EDIT_EXIT);
   }, []);
 
   // Clear all with staggered animation
@@ -2823,14 +2851,14 @@ export function PageFeedbackToolbarCSS({
       originalSetTimeout(() => {
         setDesignPlacements([]);
         setRearrangeState(null);
-      }, 200);
+      }, ANIMATION.DESIGN_CLEAR);
     }
     if (blankCanvas) setBlankCanvas(false);
     if (wireframePurpose) setWireframePurpose('');
     wireframeStashRef.current = { rearrange: null, placements: [] };
     clearWireframeState(pathname);
 
-    const totalAnimationTime = count * 30 + 200;
+    const totalAnimationTime = count * 30 + ANIMATION.CLEARED_FEEDBACK;
     originalSetTimeout(() => {
       setAnnotations([]);
       setAnimatedMarkers(new Set()); // Reset animated markers
@@ -2838,7 +2866,7 @@ export function PageFeedbackToolbarCSS({
       setIsClearing(false);
     }, totalAnimationTime);
 
-    originalSetTimeout(() => setCleared(false), 1500);
+    originalSetTimeout(() => setCleared(false), ANIMATION.CLEARED_FEEDBACK);
   }, [
     pathname,
     annotations,
@@ -3132,19 +3160,17 @@ export function PageFeedbackToolbarCSS({
   useEffect(() => {
     if (!dragStartPos) return;
 
-    const DRAG_THRESHOLD = 10; // pixels
-
     const handleMouseMove = (e: MouseEvent) => {
       const deltaX = e.clientX - dragStartPos.x;
       const deltaY = e.clientY - dragStartPos.y;
       const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
       // Start dragging once threshold is exceeded
-      if (!isDraggingToolbar && distance > DRAG_THRESHOLD) {
+      if (!isDraggingToolbar && distance > DRAG.TOOLBAR_THRESHOLD) {
         setIsDraggingToolbar(true);
       }
 
-      if (isDraggingToolbar || distance > DRAG_THRESHOLD) {
+      if (isDraggingToolbar || distance > DRAG.TOOLBAR_THRESHOLD) {
         // Calculate new position
         let newX = dragStartPos.toolbarX + deltaX;
         let newY = dragStartPos.toolbarY + deltaY;
@@ -3452,10 +3478,7 @@ export function PageFeedbackToolbarCSS({
   // Helper function to calculate viewport-aware tooltip positioning
   const getTooltipPosition = (annotation: Annotation): React.CSSProperties => {
     // Tooltip dimensions (from CSS)
-    const tooltipMaxWidth = 200;
-    const tooltipEstimatedHeight = 80; // Estimated max height
-    const markerSize = 22;
-    const gap = 10;
+    const { MAX_WIDTH, ESTIMATED_HEIGHT, MARKER_SIZE, GAP, EDGE_PADDING } = TOOLTIP;
 
     // Convert percentage-based x to pixels
     const markerX = (annotation.x / 100) * window.innerWidth;
@@ -3464,25 +3487,25 @@ export function PageFeedbackToolbarCSS({
     const styles: React.CSSProperties = {};
 
     // Vertical positioning: flip if near bottom
-    const spaceBelow = window.innerHeight - markerY - markerSize - gap;
-    if (spaceBelow < tooltipEstimatedHeight) {
+    const spaceBelow = window.innerHeight - markerY - MARKER_SIZE - GAP;
+    if (spaceBelow < ESTIMATED_HEIGHT) {
       // Show above marker
       styles.top = 'auto';
-      styles.bottom = `calc(100% + ${gap}px)`;
+      styles.bottom = `calc(100% + ${GAP}px)`;
     }
     // If enough space below, use default CSS (top: calc(100% + 10px))
 
     // Horizontal positioning: adjust if near edges
-    const centerX = markerX - tooltipMaxWidth / 2;
-    const edgePadding = 10;
+    const centerX = markerX - MAX_WIDTH / 2;
+    const edgePadding = EDGE_PADDING;
 
     if (centerX < edgePadding) {
       // Too close to left edge
       const offset = edgePadding - centerX;
       styles.left = `calc(50% + ${offset}px)`;
-    } else if (centerX + tooltipMaxWidth > window.innerWidth - edgePadding) {
+    } else if (centerX + MAX_WIDTH > window.innerWidth - edgePadding) {
       // Too close to right edge
-      const overflow = centerX + tooltipMaxWidth - (window.innerWidth - edgePadding);
+      const overflow = centerX + MAX_WIDTH - (window.innerWidth - edgePadding);
       styles.left = `calc(50% - ${overflow}px)`;
     }
     // If centered position is fine, use default CSS (left: 50%)
