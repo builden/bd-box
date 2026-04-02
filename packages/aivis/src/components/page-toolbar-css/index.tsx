@@ -86,6 +86,7 @@ import {
   isRenderableAnnotation,
   detectSourceFile,
 } from '../../utils/toolbar-helpers';
+import { fireWebhook as fireWebhookUtil } from '../../utils/webhook';
 
 import type { Annotation } from '../../types';
 import styles from './styles.module.scss';
@@ -2299,27 +2300,11 @@ export function PageFeedbackToolbarCSS({
   // Fire webhook for annotation events - returns true on success, false on failure
   const fireWebhook = useCallback(
     async (event: string, payload: Record<string, unknown>, force?: boolean): Promise<boolean> => {
-      // Settings webhookUrl overrides prop
-      const targetUrl = settings.webhookUrl || webhookUrl;
-      // Skip if no URL, or if webhooks disabled (unless force is true for manual sends)
-      if (!targetUrl || (!settings.webhooksEnabled && !force)) return false;
-
-      try {
-        const response = await fetch(targetUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            event,
-            timestamp: Date.now(),
-            url: typeof window !== 'undefined' ? window.location.href : undefined,
-            ...payload,
-          }),
-        });
-        return response.ok;
-      } catch (error) {
-        console.warn('[Agentation] Webhook failed:', error);
-        return false;
-      }
+      return fireWebhookUtil(event, payload, {
+        webhookUrl: settings.webhookUrl || webhookUrl,
+        webhooksEnabled: settings.webhooksEnabled,
+        force,
+      });
     },
     [webhookUrl, settings.webhookUrl, settings.webhooksEnabled]
   );
