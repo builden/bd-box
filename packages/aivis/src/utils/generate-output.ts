@@ -12,10 +12,10 @@ export const OUTPUT_DETAIL_OPTIONS: {
   value: OutputDetailLevel;
   label: string;
 }[] = [
-  { value: 'compact', label: 'Compact' },
-  { value: 'standard', label: 'Standard' },
-  { value: 'detailed', label: 'Detailed' },
-  { value: 'forensic', label: 'Forensic' },
+  { value: 'compact', label: '简洁' },
+  { value: 'standard', label: '标准' },
+  { value: 'detailed', label: '详细' },
+  { value: 'forensic', label: '取证' },
 ];
 
 export function generateOutput(
@@ -27,20 +27,20 @@ export function generateOutput(
 
   const viewport = typeof window !== 'undefined' ? `${window.innerWidth}×${window.innerHeight}` : 'unknown';
 
-  let output = `## Page Feedback: ${pathname}\n`;
+  let output = `## 页面反馈: ${pathname}\n`;
 
   if (detailLevel === 'forensic') {
-    output += `\n**Environment:**\n`;
-    output += `- Viewport: ${viewport}\n`;
+    output += `\n**环境:**\n`;
+    output += `- 视口: ${viewport}\n`;
     if (typeof window !== 'undefined') {
       output += `- URL: ${window.location.href}\n`;
       output += `- User Agent: ${navigator.userAgent}\n`;
-      output += `- Timestamp: ${new Date().toISOString()}\n`;
-      output += `- Device Pixel Ratio: ${window.devicePixelRatio}\n`;
+      output += `- 时间戳: ${new Date().toISOString()}\n`;
+      output += `- 设备像素比: ${window.devicePixelRatio}\n`;
     }
     output += `\n---\n`;
   } else if (detailLevel !== 'compact') {
-    output += `**Viewport:** ${viewport}\n`;
+    output += `**视口:** ${viewport}\n`;
   }
   output += '\n';
 
@@ -54,65 +54,65 @@ export function generateOutput(
     } else if (detailLevel === 'forensic') {
       output += `### ${i + 1}. ${a.element}\n`;
       if (a.isMultiSelect && a.fullPath) {
-        output += `*Forensic data shown for first element of selection*\n`;
+        output += `*显示选择中第一个元素的取证数据*\n`;
       }
       if (a.fullPath) {
-        output += `**Full DOM Path:** ${a.fullPath}\n`;
+        output += `**完整 DOM 路径:** ${a.fullPath}\n`;
       }
       if (a.cssClasses) {
-        output += `**CSS Classes:** ${a.cssClasses}\n`;
+        output += `**CSS 类:** ${a.cssClasses}\n`;
       }
       if (a.boundingBox) {
-        output += `**Position:** x:${Math.round(a.boundingBox.x)}, y:${Math.round(a.boundingBox.y)} (${Math.round(a.boundingBox.width)}×${Math.round(a.boundingBox.height)}px)\n`;
+        output += `**位置:** x:${Math.round(a.boundingBox.x)}, y:${Math.round(a.boundingBox.y)} (${Math.round(a.boundingBox.width)}×${Math.round(a.boundingBox.height)}px)\n`;
       }
-      output += `**Annotation at:** ${a.x.toFixed(1)}% from left, ${Math.round(a.y)}px from top\n`;
+      output += `**标注位置:** 左侧 ${a.x.toFixed(1)}%, 顶部 ${Math.round(a.y)}px\n`;
       if (a.selectedText) {
-        output += `**Selected text:** "${a.selectedText}"\n`;
+        output += `**选中文本:** "${a.selectedText}"\n`;
       }
       if (a.nearbyText && !a.selectedText) {
-        output += `**Context:** ${a.nearbyText.slice(0, 100)}\n`;
+        output += `**上下文:** ${a.nearbyText.slice(0, 100)}\n`;
       }
       if (a.computedStyles) {
-        output += `**Computed Styles:** ${a.computedStyles}\n`;
+        output += `**计算样式:** ${a.computedStyles}\n`;
       }
       if (a.accessibility) {
-        output += `**Accessibility:** ${a.accessibility}\n`;
+        output += `**无障碍:** ${a.accessibility}\n`;
       }
       if (a.nearbyElements) {
-        output += `**Nearby Elements:** ${a.nearbyElements}\n`;
+        output += `**附近元素:** ${a.nearbyElements}\n`;
       }
       if (a.sourceFile) {
-        output += `**Source:** ${a.sourceFile}\n`;
+        output += `**源码:** ${a.sourceFile}\n`;
       }
       if (a.reactComponents) {
         output += `**React:** ${a.reactComponents}\n`;
       }
-      output += `**Feedback:** ${a.comment}\n\n`;
+      output += `**反馈:** ${a.comment}\n\n`;
     } else {
       // standard and detailed
       output += `### ${i + 1}. ${a.element}\n`;
-      output += `**Location:** ${a.elementPath}\n`;
+      output += `**位置:** ${a.elementPath}\n`;
       if (a.sourceFile) {
-        output += `**Source:** ${a.sourceFile}\n`;
+        output += `**源码:** ${a.sourceFile}\n`;
       }
       if (a.reactComponents) {
         output += `**React:** ${a.reactComponents}\n`;
       }
       if (detailLevel === 'detailed') {
         if (a.cssClasses) {
-          output += `**Classes:** ${a.cssClasses}\n`;
+          output += `**类:** ${a.cssClasses}\n`;
         }
         if (a.boundingBox) {
-          output += `**Position:** ${Math.round(a.boundingBox.x)}px, ${Math.round(a.boundingBox.y)}px (${Math.round(a.boundingBox.width)}×${Math.round(a.boundingBox.height)}px)\n`;
+          output += `**位置:** ${Math.round(a.boundingBox.x)}px, ${Math.round(a.boundingBox.y)}px (${Math.round(a.boundingBox.width)}×${Math.round(a.boundingBox.height)}px)\n`;
         }
       }
       if (a.selectedText) {
-        output += `**Selected text:** "${a.selectedText}"\n`;
+        output += `**选中文本:** "${a.selectedText}"\n`;
       }
       if (detailLevel === 'detailed' && a.nearbyText && !a.selectedText) {
-        output += `**Context:** ${a.nearbyText.slice(0, 100)}\n`;
+        output += `**上下文:** ${a.nearbyText.slice(0, 100)}\n`;
       }
-      output += `**Feedback:** ${a.comment}\n\n`;
+      output += `**反馈:** ${a.comment}\n\n`;
     }
   });
 

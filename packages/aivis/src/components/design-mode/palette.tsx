@@ -951,9 +951,9 @@ export function DesignPalette({
     >
       {/* Panel header — fixed title with description */}
       <div className={styles.paletteHeader}>
-        <div className={styles.paletteHeaderTitle}>Layout Mode</div>
+        <div className={styles.paletteHeaderTitle}>布局模式</div>
         <div className={styles.paletteHeaderDesc}>
-          Rearrange and resize existing elements, add new components, and explore layout ideas. Agent results may vary.
+          重新排列和调整现有元素、添加新组件、探索布局想法。AI 处理结果可能有所不同。
         </div>
       </div>
 
@@ -976,14 +976,14 @@ export function DesignPalette({
             <circle cx="9.5" cy="9.5" r="0.8" fill="currentColor" opacity=".6" />
           </svg>
         </span>
-        <span className={styles.canvasToggleLabel}>Wireframe New Page</span>
+        <span className={styles.canvasToggleLabel}>线框图新页面</span>
       </div>
       {/* Wireframe purpose textarea — only when wireframe active */}
       <div className={`${styles.wireframePurposeWrap} ${!blankCanvas ? styles.collapsed : ''}`}>
         <div className={styles.wireframePurposeInner}>
           <textarea
             className={styles.wireframePurposeInput}
-            placeholder="Describe this page to provide additional context for your agent."
+            placeholder="描述此页面以为 AI 代理提供额外上下文。"
             value={wireframePurpose}
             onChange={(e) => onWireframePurposeChange(e.target.value)}
             rows={2}
@@ -1011,7 +1011,7 @@ export function DesignPalette({
                   <RollingCount value={lastFooterCount.current} suffix={lastFooterSuffix.current} />
                 </span>
                 <button className={styles.paletteFooterClear} onClick={onClearPlacements}>
-                  Clear
+                  清除
                 </button>
               </div>
             </div>

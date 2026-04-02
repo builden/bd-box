@@ -3510,7 +3510,7 @@ export function PageFeedbackToolbarCSS({
           onMouseDown={handleToolbarMouseDown}
           role={!isActive ? 'button' : undefined}
           tabIndex={!isActive ? 0 : -1}
-          title={!isActive ? 'Start feedback mode' : undefined}
+          title={!isActive ? '开始反馈模式' : undefined}
         >
           {/* Toggle content - visible when collapsed */}
           <div className={`${styles.toggleContent} ${!isActive ? styles.visible : styles.hidden}`}>
@@ -3549,7 +3549,7 @@ export function PageFeedbackToolbarCSS({
                 <IconPausePlayAnimated size={24} isPaused={isFrozen} />
               </button>
               <span className={styles.buttonTooltip}>
-                {isFrozen ? 'Resume animations' : 'Pause animations'}
+                {isFrozen ? '恢复动画' : '暂停动画'}
                 <span className={styles.shortcut}>P</span>
               </span>
             </div>
@@ -3598,7 +3598,7 @@ export function PageFeedbackToolbarCSS({
                 <IconLayout size={21} />
               </button>
               <span className={styles.buttonTooltip}>
-                {isDesignMode ? 'Exit layout mode' : 'Layout mode'}
+                {isDesignMode ? '退出布局模式' : '布局模式'}
                 <span className={styles.shortcut}>L</span>
               </span>
             </div>
@@ -3621,7 +3621,7 @@ export function PageFeedbackToolbarCSS({
                 <IconEdit size={21} />
               </button>
               <span className={styles.buttonTooltip}>
-                {isStyleEditorMode ? 'Exit style mode' : 'Edit styles'}
+                {isStyleEditorMode ? '退出样式编辑' : '编辑样式'}
                 <span className={styles.shortcut}>S</span>
               </span>
             </div>
@@ -3639,7 +3639,7 @@ export function PageFeedbackToolbarCSS({
                 <IconEyeAnimated size={24} isOpen={showMarkers} />
               </button>
               <span className={styles.buttonTooltip}>
-                {showMarkers ? 'Hide markers' : 'Show markers'}
+                {showMarkers ? '隐藏标记' : '显示标记'}
                 <span className={styles.shortcut}>H</span>
               </span>
             </div>
@@ -3673,7 +3673,7 @@ export function PageFeedbackToolbarCSS({
                 />
               </button>
               <span className={styles.buttonTooltip}>
-                {isDesignMode && blankCanvas ? 'Copy layout' : 'Copy feedback'}
+                {isDesignMode && blankCanvas ? '复制布局' : '复制反馈'}
                 <span className={styles.shortcut}>C</span>
               </span>
             </div>
@@ -3703,7 +3703,7 @@ export function PageFeedbackToolbarCSS({
                 )}
               </button>
               <span className={styles.buttonTooltip}>
-                Send Annotations
+                发送标注
                 <span className={styles.shortcut}>S</span>
               </span>
             </div>
@@ -3727,7 +3727,7 @@ export function PageFeedbackToolbarCSS({
                 <IconTrashAlt size={24} />
               </button>
               <span className={styles.buttonTooltip}>
-                Clear all
+                清除全部
                 <span className={styles.shortcut}>X</span>
               </span>
             </div>
@@ -3747,10 +3747,10 @@ export function PageFeedbackToolbarCSS({
               {endpoint && connectionStatus !== 'disconnected' && (
                 <span
                   className={`${styles.mcpIndicator} ${styles[connectionStatus]} ${showSettings ? styles.hidden : ''}`}
-                  title={connectionStatus === 'connected' ? 'MCP Connected' : 'MCP Connecting...'}
+                  title={connectionStatus === 'connected' ? 'MCP 已连接' : 'MCP 连接中...'}
                 />
               )}
-              <span className={styles.buttonTooltip}>Settings</span>
+              <span className={styles.buttonTooltip}>设置</span>
             </div>
 
             <div className={styles.divider} />
@@ -3773,7 +3773,7 @@ export function PageFeedbackToolbarCSS({
                 <IconXmarkLarge size={24} />
               </button>
               <span className={styles.buttonTooltip}>
-                Exit
+                退出
                 <span className={styles.shortcut}>Esc</span>
               </span>
             </div>
@@ -4432,10 +4432,10 @@ export function PageFeedbackToolbarCSS({
                       computedStyles={pendingAnnotation.computedStylesObj}
                       placeholder={
                         pendingAnnotation.element === 'Area selection'
-                          ? 'What should change in this area?'
+                          ? '这个区域应该怎么改？'
                           : pendingAnnotation.isMultiSelect
-                            ? 'Feedback for this group of elements...'
-                            : 'What should change?'
+                            ? '这组元素的反馈...'
+                            : '应该怎么改？'
                       }
                       onSubmit={addAnnotation}
                       onCancel={cancelAnnotation}
@@ -4550,9 +4550,9 @@ export function PageFeedbackToolbarCSS({
                 element={editingAnnotation.element}
                 selectedText={editingAnnotation.selectedText}
                 computedStyles={parseComputedStylesString(editingAnnotation.computedStyles)}
-                placeholder="Edit your feedback..."
+                placeholder="编辑你的反馈..."
                 initialValue={editingAnnotation.comment}
-                submitLabel="Save"
+                submitLabel="保存"
                 onSubmit={updateAnnotation}
                 onCancel={cancelEditAnnotation}
                 onDelete={() => deleteAnnotation(editingAnnotation.id)}

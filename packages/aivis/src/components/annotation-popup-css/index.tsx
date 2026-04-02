@@ -74,9 +74,9 @@ export const AnnotationPopupCSS = forwardRef<AnnotationPopupCSSHandle, Annotatio
       element,
       timestamp,
       selectedText,
-      placeholder = 'What should change?',
+      placeholder = '应该怎么改？',
       initialValue = '',
-      submitLabel = 'Add',
+      submitLabel = '添加',
       onSubmit,
       onCancel,
       onDelete,
@@ -282,7 +282,7 @@ export const AnnotationPopupCSS = forwardRef<AnnotationPopupCSSHandle, Annotatio
             </div>
           )}
           <button className={styles.cancel} onClick={handleCancel}>
-            Cancel
+            取消
           </button>
           <button
             className={styles.submit}

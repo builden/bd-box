@@ -81,8 +81,8 @@ export function SettingsPanel({
           <div className={styles.settingsSection}>
             <div className={styles.settingsRow}>
               <div className={styles.settingsLabel}>
-                Output Detail
-                <HelpTooltip content="Controls how much detail is included in the copied output" />
+                输出详情
+                <HelpTooltip content="控制复制输出中包含的详细信息量" />
               </div>
               <button
                 className={styles.cycleButton}
@@ -112,12 +112,12 @@ export function SettingsPanel({
               className={`${styles.settingsRow} ${styles.settingsRowMarginTop} ${!isDevMode ? styles.settingsRowDisabled : ''}`}
             >
               <div className={styles.settingsLabel}>
-                React Components
+                React 组件
                 <HelpTooltip
                   content={
                     !isDevMode
-                      ? 'Disabled — production builds minify component names, making detection unreliable. Use in development mode.'
-                      : 'Include React component names in annotations'
+                      ? '已禁用 — 生产构建会压缩组件名称，导致检测不可靠。请在开发模式下使用。'
+                      : '在标注中包含 React 组件名称'
                   }
                 />
               </div>
@@ -130,8 +130,8 @@ export function SettingsPanel({
 
             <div className={`${styles.settingsRow} ${styles.settingsRowMarginTop}`}>
               <div className={styles.settingsLabel}>
-                Hide Until Restart
-                <HelpTooltip content="Hides the toolbar until you open a new tab" />
+                隐藏直到重启
+                <HelpTooltip content="隐藏工具栏直到你打开新标签页" />
               </div>
               <Switch
                 checked={false}
@@ -146,7 +146,7 @@ export function SettingsPanel({
 
           {/* Color picker */}
           <div className={styles.settingsSection}>
-            <div className={`${styles.settingsLabel} ${styles.settingsLabelMarker}`}>Marker Color</div>
+            <div className={`${styles.settingsLabel} ${styles.settingsLabelMarker}`}>标记颜色</div>
             <div className={styles.colorOptions}>
               {COLOR_OPTIONS.map((color) => (
                 <button
@@ -179,7 +179,7 @@ export function SettingsPanel({
             />
             <CheckboxField
               className={styles.checkboxField}
-              label="Block page interactions"
+              label="阻止页面交互"
               checked={settings.blockInteractions}
               onChange={(e) => onSettingsChange({ blockInteractions: e.target.checked })}
             />
@@ -189,7 +189,7 @@ export function SettingsPanel({
 
           {/* Nav to automations */}
           <button className={styles.settingsNavLink} onClick={() => onSettingsPageChange('automations')}>
-            <span>Manage MCP & Webhooks</span>
+            <span>管理 MCP 和 Webhooks</span>
             <span className={styles.settingsNavLinkRight}>
               {endpoint && connectionStatus !== 'disconnected' && (
                 <span className={`${styles.mcpNavIndicator} ${styles[connectionStatus]}`} />
@@ -213,7 +213,7 @@ export function SettingsPanel({
         >
           <button className={styles.settingsBackButton} onClick={() => onSettingsPageChange('main')}>
             <IconChevronLeft size={16} />
-            <span>Manage MCP & Webhooks</span>
+            <span>管理 MCP 和 Webhooks</span>
           </button>
 
           <div className={styles.divider}></div>
@@ -222,24 +222,24 @@ export function SettingsPanel({
           <div className={styles.settingsSection}>
             <div className={styles.settingsRow}>
               <span className={styles.automationHeader}>
-                MCP Connection
-                <HelpTooltip content="Connect via Model Context Protocol to let AI agents like Claude Code receive annotations in real-time." />
+                MCP 连接
+                <HelpTooltip content="通过 Model Context Protocol 连接，让 AI 代理（如 Claude Code）实时接收标注。" />
               </span>
               {endpoint && (
                 <div
                   className={`${styles.mcpStatusDot} ${styles[connectionStatus]}`}
                   title={
                     connectionStatus === 'connected'
-                      ? 'Connected'
+                      ? '已连接'
                       : connectionStatus === 'connecting'
-                        ? 'Connecting...'
-                        : 'Disconnected'
+                        ? '连接中...'
+                        : '已断开'
                   }
                 />
               )}
             </div>
             <p className={styles.automationDescription} style={{ paddingBottom: 6 }}>
-              MCP connection allows agents to receive and act on annotations.
+              MCP 连接允许代理接收并操作标注。
             </p>
           </div>
 
@@ -250,14 +250,14 @@ export function SettingsPanel({
             <div className={styles.settingsRow}>
               <span className={styles.automationHeader}>
                 Webhooks
-                <HelpTooltip content="Send annotation data to any URL endpoint when annotations change. Useful for custom integrations." />
+                <HelpTooltip content="当标注变更时将标注数据发送到任何 URL 端点。适用于自定义集成。" />
               </span>
               <div className={styles.autoSendContainer}>
                 <label
                   htmlFor="agentation-auto-send"
                   className={`${styles.autoSendLabel} ${settings.webhooksEnabled ? styles.active : ''} ${!settings.webhookUrl ? styles.disabled : ''}`}
                 >
-                  Auto-Send
+                  自动发送
                 </label>
                 <Switch
                   id="agentation-auto-send"
@@ -271,9 +271,7 @@ export function SettingsPanel({
                 />
               </div>
             </div>
-            <p className={styles.automationDescription}>
-              The webhook URL will receive live annotation changes and annotation data.
-            </p>
+            <p className={styles.automationDescription}>Webhook URL 将接收实时标注变更和标注数据。</p>
             <textarea
               className={styles.webhookUrlInput}
               placeholder="Webhook URL"

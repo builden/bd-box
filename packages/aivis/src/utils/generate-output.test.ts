@@ -46,7 +46,7 @@ describe('generateOutput', () => {
     ];
 
     const result = generateOutput(annotations, '/test-page', 'standard');
-    expect(result).toContain('## Page Feedback: /test-page');
+    expect(result).toContain('## 页面反馈: /test-page');
   });
 
   it('should include viewport in non-compact modes', () => {
@@ -63,7 +63,7 @@ describe('generateOutput', () => {
     ];
 
     const result = generateOutput(annotations, '/test', 'standard');
-    expect(result).toContain('**Viewport:** 1920×1080');
+    expect(result).toContain('**视口:** 1920×1080');
   });
 
   describe('compact detail level', () => {
@@ -82,7 +82,7 @@ describe('generateOutput', () => {
 
       const result = generateOutput(annotations, '/test', 'compact');
       expect(result).toContain('1. **button**: Fix this button');
-      expect(result).not.toContain('**Viewport:**');
+      expect(result).not.toContain('**视口:**');
     });
 
     it('should include selected text in compact mode', () => {
@@ -139,7 +139,7 @@ describe('generateOutput', () => {
       ];
 
       const result = generateOutput(annotations, '/test', 'standard');
-      expect(result).toContain('**Location:** div > form > button.submit-btn');
+      expect(result).toContain('**位置:** div > form > button.submit-btn');
       expect(result).toContain('### 1. button');
     });
 
@@ -158,7 +158,7 @@ describe('generateOutput', () => {
       ];
 
       const result = generateOutput(annotations, '/test', 'standard');
-      expect(result).toContain('**Source:** src/components/Button.tsx:42');
+      expect(result).toContain('**源码:** src/components/Button.tsx:42');
     });
 
     it('should include react components when available', () => {
@@ -194,7 +194,7 @@ describe('generateOutput', () => {
       ];
 
       const result = generateOutput(annotations, '/test', 'standard');
-      expect(result).toContain('**Selected text:** "Important text"');
+      expect(result).toContain('**选中文本:** "Important text"');
     });
   });
 
@@ -214,7 +214,7 @@ describe('generateOutput', () => {
       ];
 
       const result = generateOutput(annotations, '/test', 'detailed');
-      expect(result).toContain('**Classes:** btn primary large');
+      expect(result).toContain('**类:** btn primary large');
     });
 
     it('should include bounding box', () => {
@@ -232,7 +232,7 @@ describe('generateOutput', () => {
       ];
 
       const result = generateOutput(annotations, '/test', 'detailed');
-      expect(result).toContain('**Position:** 100px, 200px (150×50px)');
+      expect(result).toContain('**位置:** 100px, 200px (150×50px)');
     });
 
     it('should include nearby text context', () => {
@@ -250,7 +250,7 @@ describe('generateOutput', () => {
       ];
 
       const result = generateOutput(annotations, '/test', 'detailed');
-      expect(result).toContain('**Context:** Some context text');
+      expect(result).toContain('**上下文:** Some context text');
     });
 
     it('should not include nearby text when selected text exists', () => {
@@ -288,10 +288,10 @@ describe('generateOutput', () => {
       ];
 
       const result = generateOutput(annotations, '/test', 'forensic');
-      expect(result).toContain('**Environment:**');
-      expect(result).toContain('Viewport: 1920×1080');
+      expect(result).toContain('**环境:**');
+      expect(result).toContain('视口: 1920×1080');
       expect(result).toContain('URL: https://example.com/test');
-      expect(result).toContain('Device Pixel Ratio: 2');
+      expect(result).toContain('设备像素比: 2');
     });
 
     it('should include full DOM path', () => {
@@ -309,7 +309,7 @@ describe('generateOutput', () => {
       ];
 
       const result = generateOutput(annotations, '/test', 'forensic');
-      expect(result).toContain('**Full DOM Path:**');
+      expect(result).toContain('**完整 DOM 路径:**');
     });
 
     it('should include CSS classes in forensic mode', () => {
@@ -327,7 +327,7 @@ describe('generateOutput', () => {
       ];
 
       const result = generateOutput(annotations, '/test', 'forensic');
-      expect(result).toContain('**CSS Classes:** btn primary');
+      expect(result).toContain('**CSS 类:** btn primary');
     });
 
     it('should include accessibility info when available', () => {
@@ -345,7 +345,7 @@ describe('generateOutput', () => {
       ];
 
       const result = generateOutput(annotations, '/test', 'forensic');
-      expect(result).toContain('**Accessibility:**');
+      expect(result).toContain('**无障碍:**');
     });
 
     it('should include nearby elements when available', () => {
@@ -363,7 +363,7 @@ describe('generateOutput', () => {
       ];
 
       const result = generateOutput(annotations, '/test', 'forensic');
-      expect(result).toContain('**Nearby Elements:**');
+      expect(result).toContain('**附近元素:**');
     });
 
     it('should include computed styles when available', () => {
@@ -381,7 +381,7 @@ describe('generateOutput', () => {
       ];
 
       const result = generateOutput(annotations, '/test', 'forensic');
-      expect(result).toContain('**Computed Styles:**');
+      expect(result).toContain('**计算样式:**');
     });
 
     it('should include annotation position as percentage', () => {
@@ -398,8 +398,8 @@ describe('generateOutput', () => {
       ];
 
       const result = generateOutput(annotations, '/test', 'forensic');
-      expect(result).toContain('25.5% from left');
-      expect(result).toContain('100px from top');
+      expect(result).toContain('左侧 25.5%');
+      expect(result).toContain('顶部 100px');
     });
   });
 
@@ -452,7 +452,7 @@ describe('generateOutput', () => {
       ];
 
       const result = generateOutput(annotations, '/test', 'forensic');
-      expect(result).toContain('*Forensic data shown for first element of selection*');
+      expect(result).toContain('*显示选择中第一个元素的取证数据*');
     });
   });
 
