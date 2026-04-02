@@ -28,8 +28,7 @@
     "build:injection": "bun build-injection.ts",
     "watch": "tsup --watch",
     "dev": "bun build && bun watch",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "bun test",
     "prepublishOnly": "bun build"
   },
   "peerDependencies": {
@@ -45,6 +44,7 @@
     }
   },
   "devDependencies": {
+    "@happy-dom/global-registrator": "^20.8.9",
     "@testing-library/react": "^16.0.0",
     "@types/bun": "^1.0.0",
     "@types/node": "^20.0.0",
@@ -56,7 +56,6 @@
     "jsdom": "^25.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "typescript": "^5.0.0",
-    "vitest": "^2.0.0"
+    "typescript": "^5.0.0"
   }
 }
