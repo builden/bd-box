@@ -501,12 +501,6 @@ export function PageFeedbackToolbarCSS({
   drawStrokesRef.current = drawStrokes;
   const [hoveredDrawingIdx, _setHoveredDrawingIdx] = useState<number | null>(null);
   const drawCanvasRef = useRef<HTMLCanvasElement>(null);
-  const _isDrawingRef = useRef(false);
-  const _currentStrokeRef = useRef<Array<{ x: number; y: number }>>([]);
-  const _dimAmountRef = useRef(0);
-  const _visualHighlightRef = useRef<number | null>(null);
-  const _exitingStrokeIdRef = useRef<string | null>(null);
-  const _exitingAlphaRef = useRef(1);
 
   const [tooltipSessionActive, setTooltipSessionActive] = useState(false);
   const tooltipSessionTimerRef = useRef<ReturnType<typeof originalSetTimeout> | null>(null);
@@ -1023,7 +1017,7 @@ export function PageFeedbackToolbarCSS({
             const newSession = await createSession(endpoint, pageUrl);
             sessionId = newSession.id;
             setCurrentSessionId(sessionId);
-            saveSessionId(pathname ?? '/', sessionId);
+            saveSessionId(pathname ?? '/', sessionId!);
           }
 
           // Find annotations that need syncing
@@ -3455,7 +3449,6 @@ export function PageFeedbackToolbarCSS({
   const hasVisibleAnnotations = visibleAnnotations.length > 0;
   const exitingAnnotationsList = annotations.filter((a) => exitingMarkers.has(a.id));
 
-  // Helper function to calculate viewport-aware tooltip positioning
   // Helper function to calculate viewport-aware tooltip positioning
   const getTooltipPosition = (annotation: Annotation): React.CSSProperties => {
     // Tooltip dimensions (from CSS)
