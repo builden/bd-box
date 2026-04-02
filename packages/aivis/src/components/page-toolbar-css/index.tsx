@@ -94,6 +94,7 @@ import { generateOutput } from '../../utils/generate-output';
 import { AnnotationMarker, ExitingMarker, PendingMarker } from '../annotation-marker';
 import { SettingsPanel } from '../settings-panel';
 import { getTooltipPosition } from './tooltip-position';
+import { useThemePersistence, loadInitialTheme } from './useTheme';
 import {
   COLOR_OPTIONS,
   ANIMATION,
@@ -369,7 +370,7 @@ export function PageFeedbackToolbarCSS({
       return DEFAULT_SETTINGS;
     }
   });
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(loadInitialTheme);
   const [showEntranceAnimation, setShowEntranceAnimation] = useState(false);
 
   const toggleTheme = () => {
@@ -379,6 +380,9 @@ export function PageFeedbackToolbarCSS({
       portalWrapperRef.current?.classList.remove(styles.disableTransitions);
     });
   };
+
+  // Theme persistence
+  useThemePersistence({ isDarkMode });
 
   // Check if running in development mode - React detection only works in development mode
   const isDevMode = process.env.NODE_ENV === 'development';
@@ -488,17 +492,6 @@ export function PageFeedbackToolbarCSS({
       originalSetTimeout(() => setShowEntranceAnimation(false), ANIMATION.TOOLBAR_ENTRANCE);
     }
 
-    // Load saved theme preference, default to dark mode
-    try {
-      const savedTheme = localStorage.getItem('aivis-toolbar-theme');
-      if (savedTheme !== null) {
-        setIsDarkMode(savedTheme === 'dark');
-      }
-      // If no saved preference, keep default (dark mode)
-    } catch {
-      // Ignore localStorage errors
-    }
-
     // Load saved toolbar position
     try {
       const savedPosition = localStorage.getItem('aivis-toolbar-position');
@@ -519,13 +512,6 @@ export function PageFeedbackToolbarCSS({
       localStorage.setItem('aivis-toolbar-settings', JSON.stringify(settings));
     }
   }, [settings, mounted]);
-
-  // Save theme preference
-  useEffect(() => {
-    if (mounted) {
-      localStorage.setItem('aivis-toolbar-theme', isDarkMode ? 'dark' : 'light');
-    }
-  }, [isDarkMode, mounted]);
 
   // Save toolbar position when drag ends
   const prevDraggingRef = useRef(false);
