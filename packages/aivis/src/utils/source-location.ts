@@ -117,7 +117,6 @@ interface ReactDOMElement extends HTMLElement {
   _reactRootContainer?: unknown;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type _UnusedReactDOMElement = ReactDOMElement;
 
 // React fiber tag constants (for reference)
@@ -181,7 +180,9 @@ export function detectReactApp(): {
 
   // Fallback: Check for React root markers on DOM
   const hasReactRoot = document.querySelector('[data-reactroot]') !== null;
-  const hasReactContainer = document.getElementById('root')?._reactRootContainer !== undefined;
+  const hasReactContainer =
+    (document.getElementById('root') as HTMLElement & { _reactRootContainer?: unknown })?._reactRootContainer !==
+    undefined;
 
   // Check for fiber keys on body's children
   const bodyChildren = document.body.children;

@@ -121,7 +121,6 @@ export function getUnsyncedAnnotations(pathname: string, sessionId?: string): An
 export function clearSyncMarkers(pathname: string): void {
   const annotations = loadAnnotations<AnnotationWithSyncMarker>(pathname);
   const cleaned = annotations.map((annotation) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { _syncedTo, ...rest } = annotation;
     return rest as Annotation;
   });

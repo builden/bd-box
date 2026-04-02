@@ -1,8 +1,8 @@
-import { COLOR_OPTIONS, ToolbarSettings } from '..';
-import { OUTPUT_DETAIL_OPTIONS } from '../../../utils/generate-output';
-import { HelpTooltip } from '../../help-tooltip';
-import { IconChevronLeft, IconMoon, IconSun } from '../../icons';
-import { Switch } from '../../switch';
+import { COLOR_OPTIONS, ToolbarSettings } from '../page-toolbar-css';
+import { OUTPUT_DETAIL_OPTIONS } from '../../utils/generate-output';
+import { HelpTooltip } from '../help-tooltip';
+import { IconChevronLeft, IconMoon, IconSun } from '../icons';
+import { Switch } from '../switch';
 import { CheckboxField } from './checkbox-field';
 import styles from './styles.module.scss';
 

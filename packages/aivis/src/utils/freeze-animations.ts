@@ -24,9 +24,9 @@ const STATE_KEY = '__agentation_freeze';
 interface FreezeState {
   frozen: boolean;
   installed: boolean;
-  origSetTimeout: typeof setTimeout;
-  origSetInterval: typeof setInterval;
-  origRAF: typeof requestAnimationFrame;
+  origSetTimeout: typeof setTimeout | null;
+  origSetInterval: typeof setInterval | null;
+  origRAF: typeof requestAnimationFrame | null;
   // Queues live on window so they survive HMR module re-execution
   pausedAnimations: Animation[];
   frozenTimeoutQueue: Array<() => void>;
@@ -47,7 +47,7 @@ function getState(): FreezeState {
       frozenRAFQueue: [],
     };
   }
-  const w = window as Window & typeof globalThis;
+  const w = window as unknown as Record<string, FreezeState>;
   if (!w[STATE_KEY]) {
     w[STATE_KEY] = {
       frozen: false,
@@ -75,15 +75,16 @@ if (typeof window !== 'undefined' && !_s.installed) {
   _s.origRAF = window.requestAnimationFrame.bind(window);
 
   // Patch setTimeout — queue callback when frozen (replayed on unfreeze)
-  (window as Window & typeof globalThis).setTimeout = (
+
+  (window.setTimeout as unknown as (...args: unknown[]) => number) = ((
     handler: TimerHandler,
     timeout?: number,
     ...args: unknown[]
-  ): ReturnType<typeof setTimeout> => {
+  ): number => {
     if (typeof handler === 'string') {
-      return _s.origSetTimeout(handler, timeout);
+      return _s.origSetTimeout!(handler, timeout) as unknown as number;
     }
-    return _s.origSetTimeout(
+    return _s.origSetTimeout!(
       (...a: unknown[]) => {
         if (_s.frozen) {
           _s.frozenTimeoutQueue.push(() => (handler as (...args: unknown[]) => void)(...a));
@@ -93,32 +94,33 @@ if (typeof window !== 'undefined' && !_s.installed) {
       },
       timeout,
       ...args
-    );
-  };
+    ) as unknown as number;
+  }) as unknown as (...args: unknown[]) => number;
 
   // Patch setInterval — skip callback when frozen
-  (window as Window & typeof globalThis).setInterval = (
+
+  (window.setInterval as unknown as (...args: unknown[]) => number) = ((
     handler: TimerHandler,
     timeout?: number,
     ...args: unknown[]
-  ): ReturnType<typeof setInterval> => {
+  ): number => {
     if (typeof handler === 'string') {
-      return _s.origSetInterval(handler, timeout);
+      return _s.origSetInterval!(handler, timeout) as unknown as number;
     }
-    return _s.origSetInterval(
+    return _s.origSetInterval!(
       (...a: unknown[]) => {
         if (!_s.frozen) (handler as (...args: unknown[]) => void)(...a);
       },
       timeout,
       ...args
-    );
-  };
+    ) as unknown as number;
+  }) as unknown as (...args: unknown[]) => number;
 
   // Patch requestAnimationFrame — queue callback when frozen (no CPU spin)
   // The wrapper fires once on the next frame; if still frozen the callback
   // is stored in _s.frozenRAFQueue and replayed on unfreeze.
   (window as Window & typeof globalThis).requestAnimationFrame = (callback: FrameRequestCallback): number => {
-    return _s.origRAF((timestamp: number) => {
+    return _s.origRAF!((timestamp: number) => {
       if (_s.frozen) {
         _s.frozenRAFQueue.push(callback);
       } else {
@@ -133,9 +135,9 @@ if (typeof window !== 'undefined' && !_s.installed) {
 // ---------------------------------------------------------------------------
 // Exports — original (unpatched) timing functions for toolbar/popup use
 // ---------------------------------------------------------------------------
-export const originalSetTimeout = _s.origSetTimeout;
-export const originalSetInterval = _s.origSetInterval;
-export const originalRequestAnimationFrame = _s.origRAF;
+export const originalSetTimeout: typeof setTimeout = _s.origSetTimeout!;
+export const originalSetInterval: typeof setInterval = _s.origSetInterval!;
+export const originalRequestAnimationFrame: typeof requestAnimationFrame = _s.origRAF!;
 
 // ---------------------------------------------------------------------------
 // Freeze / Unfreeze
@@ -207,7 +209,7 @@ export function unfreeze(): void {
   const timeoutQueue = _s.frozenTimeoutQueue;
   _s.frozenTimeoutQueue = [];
   for (const cb of timeoutQueue) {
-    _s.origSetTimeout(() => {
+    _s.origSetTimeout!(() => {
       if (_s.frozen) {
         _s.frozenTimeoutQueue.push(cb);
         return;
@@ -225,7 +227,7 @@ export function unfreeze(): void {
   const rafQueue = _s.frozenRAFQueue;
   _s.frozenRAFQueue = [];
   for (const cb of rafQueue) {
-    _s.origRAF((ts: number) => {
+    _s.origRAF!((ts: number) => {
       if (_s.frozen) {
         _s.frozenRAFQueue.push(cb);
         return;

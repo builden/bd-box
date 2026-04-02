@@ -1,5 +1,5 @@
-import { Annotation } from '../../../types';
-import { IconEdit, IconPlus, IconXmark } from '../../icons';
+import { Annotation } from '../../types';
+import { IconEdit, IconPlus, IconXmark } from '../icons';
 import styles from './styles.module.scss';
 
 type MarkerClickBehavior = 'edit' | 'delete';
