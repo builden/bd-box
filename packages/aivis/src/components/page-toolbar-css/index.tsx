@@ -134,12 +134,14 @@ import {
 import type { Annotation } from '../../types';
 import styles from './styles.module.scss';
 import { generateOutput } from '../../utils/generate-output';
-import { PendingMarker } from '../annotation-marker';
 import { SettingsPanel } from '../settings-panel';
 import { AnnotationMarkerList } from './AnnotationMarkerList';
 import { EditAnnotationOutline } from './EditAnnotationOutline';
+import { HoverTooltip } from './HoverTooltip';
+import { PendingAnnotationPopup } from './PendingAnnotationPopup';
 import { getTooltipPosition } from './tooltip-position';
 import { useThemePersistence } from './useTheme';
+import { useEditPopupPosition } from './useEditPopupPosition';
 import {
   COLOR_OPTIONS,
   ANIMATION,
@@ -430,6 +432,9 @@ export function PageFeedbackToolbarCSS({
 
   // Theme persistence
   useThemePersistence({ isDarkMode });
+
+  // Edit popup position
+  const editPopupStyle = useEditPopupPosition({ editingAnnotation, scrollY });
 
   // Check if running in development mode - React detection only works in development mode
   const isDevMode = process.env.NODE_ENV === 'development';
@@ -4100,129 +4105,19 @@ export function PageFeedbackToolbarCSS({
 
           {/* Hover tooltip */}
           {hoverInfo && !pendingAnnotation && !isScrolling && !isDragging && (
-            <div
-              className={`${styles.hoverTooltip} ${styles.enter}`}
-              style={{
-                left: Math.max(8, Math.min(hoverPosition.x, window.innerWidth - 100)),
-                top: Math.max(hoverPosition.y - (hoverInfo.reactComponents ? 48 : 32), 8),
-              }}
-            >
-              {hoverInfo.reactComponents && <div className={styles.hoverReactPath}>{hoverInfo.reactComponents}</div>}
-              <div className={styles.hoverElementName}>{hoverInfo.elementName}</div>
-            </div>
+            <HoverTooltip hoverInfo={hoverInfo} hoverPosition={hoverPosition} />
           )}
 
           {/* Pending annotation marker + popup */}
-          {pendingAnnotation && (
-            <>
-              {/* Show element/area outline while adding annotation */}
-              {pendingAnnotation.multiSelectElements?.length
-                ? // Cmd+shift+click multi-select: show individual boxes with live positions
-                  pendingAnnotation.multiSelectElements
-                    .filter((el) => document.contains(el))
-                    .map((el, index) => {
-                      const rect = el.getBoundingClientRect();
-                      return (
-                        <div
-                          key={`pending-multi-${index}`}
-                          className={`${styles.multiSelectOutline} ${pendingExiting ? styles.exit : styles.enter}`}
-                          style={{
-                            left: rect.left,
-                            top: rect.top,
-                            width: rect.width,
-                            height: rect.height,
-                          }}
-                        />
-                      );
-                    })
-                : // Single element or drag multi-select: show single box
-                  pendingAnnotation.targetElement && document.contains(pendingAnnotation.targetElement)
-                  ? // Single-click: use live getBoundingClientRect for consistent positioning
-                    (() => {
-                      const rect = pendingAnnotation.targetElement!.getBoundingClientRect();
-                      return (
-                        <div
-                          className={`${styles.singleSelectOutline} ${pendingExiting ? styles.exit : styles.enter}`}
-                          style={{
-                            left: rect.left,
-                            top: rect.top,
-                            width: rect.width,
-                            height: rect.height,
-                            borderColor: 'color-mix(in srgb, var(--agentation-color-accent) 60%, transparent)',
-                            backgroundColor: 'color-mix(in srgb, var(--agentation-color-accent) 5%, transparent)',
-                          }}
-                        />
-                      );
-                    })()
-                  : // Drag selection or fallback: use stored boundingBox
-                    pendingAnnotation.boundingBox && (
-                      <div
-                        className={`${pendingAnnotation.isMultiSelect ? styles.multiSelectOutline : styles.singleSelectOutline} ${pendingExiting ? styles.exit : styles.enter}`}
-                        style={{
-                          left: pendingAnnotation.boundingBox.x,
-                          top: pendingAnnotation.boundingBox.y - scrollY,
-                          width: pendingAnnotation.boundingBox.width,
-                          height: pendingAnnotation.boundingBox.height,
-                          ...(pendingAnnotation.isMultiSelect
-                            ? {}
-                            : {
-                                borderColor: 'color-mix(in srgb, var(--agentation-color-accent) 60%, transparent)',
-                                backgroundColor: 'color-mix(in srgb, var(--agentation-color-accent) 5%, transparent)',
-                              }),
-                        }}
-                      />
-                    )}
-
-              {(() => {
-                // Use stored coordinates - they match what will be saved
-                const markerX = pendingAnnotation.x;
-                const markerY = pendingAnnotation.isFixed ? pendingAnnotation.y : pendingAnnotation.y - scrollY;
-
-                return (
-                  <>
-                    <PendingMarker
-                      x={markerX}
-                      y={markerY}
-                      isMultiSelect={pendingAnnotation.isMultiSelect}
-                      isExiting={pendingExiting}
-                    />
-
-                    <AnnotationPopupCSS
-                      ref={popupRef}
-                      element={pendingAnnotation.element}
-                      selectedText={pendingAnnotation.selectedText}
-                      computedStyles={pendingAnnotation.computedStylesObj}
-                      placeholder={
-                        pendingAnnotation.element === 'Area selection'
-                          ? '这个区域应该怎么改？'
-                          : pendingAnnotation.isMultiSelect
-                            ? '这组元素的反馈...'
-                            : '应该怎么改？'
-                      }
-                      onSubmit={addAnnotation}
-                      onCancel={cancelAnnotation}
-                      isExiting={pendingExiting}
-                      lightMode={!isDarkMode}
-                      accentColor={
-                        pendingAnnotation.isMultiSelect
-                          ? 'var(--agentation-color-green)'
-                          : 'var(--agentation-color-accent)'
-                      }
-                      style={{
-                        // Popup is 280px wide, centered with translateX(-50%), so 140px each side
-                        // Clamp so popup stays 20px from viewport edges
-                        left: Math.max(160, Math.min(window.innerWidth - 160, (markerX / 100) * window.innerWidth)),
-                        // Position popup above or below marker to keep marker visible
-                        ...(markerY > window.innerHeight - 290
-                          ? { bottom: window.innerHeight - markerY + 20 }
-                          : { top: markerY + 20 }),
-                      }}
-                    />
-                  </>
-                );
-              })()}
-            </>
-          )}
+          <PendingAnnotationPopup
+            pendingAnnotation={pendingAnnotation}
+            pendingExiting={pendingExiting}
+            scrollY={scrollY}
+            isDarkMode={isDarkMode}
+            popupRef={popupRef}
+            onSubmit={addAnnotation}
+            onCancel={cancelAnnotation}
+          />
 
           {/* Edit annotation popup */}
           {editingAnnotation && (
@@ -4251,21 +4146,7 @@ export function PageFeedbackToolbarCSS({
                 accentColor={
                   editingAnnotation.isMultiSelect ? 'var(--agentation-color-green)' : 'var(--agentation-color-accent)'
                 }
-                style={(() => {
-                  const markerY = editingAnnotation.isFixed ? editingAnnotation.y : editingAnnotation.y - scrollY;
-                  return {
-                    // Popup is 280px wide, centered with translateX(-50%), so 140px each side
-                    // Clamp so popup stays 20px from viewport edges
-                    left: Math.max(
-                      160,
-                      Math.min(window.innerWidth - 160, (editingAnnotation.x / 100) * window.innerWidth)
-                    ),
-                    // Position popup above or below marker to keep marker visible
-                    ...(markerY > window.innerHeight - 290
-                      ? { bottom: window.innerHeight - markerY + 20 }
-                      : { top: markerY + 20 }),
-                  };
-                })()}
+                style={editPopupStyle}
               />
             </>
           )}
