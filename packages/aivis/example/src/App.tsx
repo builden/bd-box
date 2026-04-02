@@ -1,4 +1,4 @@
-import { Agentation } from 'agentation';
+// import { Agentation } from 'agentation';
 import { Agentation as Aivis } from '@/index';
 
 export function App() {
@@ -6,7 +6,7 @@ export function App() {
     <>
       <Aivis initialPosition={{ bottom: '40px' }} />
 
-      <Agentation />
+      {/* <Agentation /> */}
 
       <div className="page">
         <header className="header">

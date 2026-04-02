@@ -128,6 +128,7 @@ import {
   deletingMarkerIdAtom,
   renumberFromAtom,
   hoverInfoAtom,
+  pendingAnnotationAtom,
 } from '../../atoms/toolbarAtoms';
 
 import type { Annotation } from '../../types';
@@ -240,36 +241,7 @@ export function PageFeedbackToolbarCSS({
   const [markersExiting, setMarkersExiting] = useAtom(markersExitingAtom);
   const [hoverInfo, setHoverInfo] = useAtom(hoverInfoAtom);
   const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
-  const [pendingAnnotation, setPendingAnnotation] = useState<{
-    x: number;
-    y: number;
-    clientY: number;
-    element: string;
-    elementPath: string;
-    selectedText?: string;
-    boundingBox?: { x: number; y: number; width: number; height: number };
-    nearbyText?: string;
-    cssClasses?: string;
-    isMultiSelect?: boolean;
-    isFixed?: boolean;
-    fullPath?: string;
-    accessibility?: string;
-    computedStyles?: string;
-    computedStylesObj?: Record<string, string>;
-    nearbyElements?: string;
-    reactComponents?: string;
-    sourceFile?: string;
-    elementBoundingBoxes?: Array<{
-      x: number;
-      y: number;
-      width: number;
-      height: number;
-    }>;
-    // Element references for cmd+shift+click multi-select (for live position queries)
-    multiSelectElements?: HTMLElement[];
-    // Element reference for single-select (for live position queries)
-    targetElement?: HTMLElement;
-  } | null>(null);
+  const [pendingAnnotation, setPendingAnnotation] = useAtom(pendingAnnotationAtom);
   const [copied, setCopied] = useAtom(copiedAtom);
   const [sendState, setSendState] = useAtom(sendStateAtom);
   const [, setCleared] = useState(false);
