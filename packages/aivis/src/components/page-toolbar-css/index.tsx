@@ -164,6 +164,7 @@ import { getTooltipPosition } from './tooltip-position';
 import { useThemePersistence } from './useTheme';
 import { useEditPopupPosition } from './useEditPopupPosition';
 import { useHealthCheck } from './useHealthCheck';
+import { useToolbarConstrain } from './useToolbarConstrain';
 import {
   COLOR_OPTIONS,
   ANIMATION,
@@ -2964,44 +2965,12 @@ export function PageFeedbackToolbarCSS({
   );
 
   // Keep toolbar in view on window resize and when toolbar expands/collapses
-  useEffect(() => {
-    if (!toolbarPosition) return;
-
-    const constrainPosition = () => {
-      const padding = 20;
-      const wrapperWidth = 377; // .toolbar wrapper width
-      const toolbarHeight = 44;
-
-      let newX = toolbarPosition.x;
-      let newY = toolbarPosition.y;
-
-      // Content is right-aligned within wrapper via margin-left: auto
-      // Calculate content width based on state
-      const contentWidth = isActive ? (connectionStatus === 'connected' ? 297 : 257) : 44; // collapsed circle
-
-      // Content offset from wrapper left edge
-      const contentOffset = wrapperWidth - contentWidth;
-
-      // Min X: content left edge >= padding
-      const minX = padding - contentOffset;
-      // Max X: wrapper right edge <= viewport - padding
-      const maxX = window.innerWidth - padding - wrapperWidth;
-
-      newX = Math.max(minX, Math.min(maxX, newX));
-      newY = Math.max(padding, Math.min(window.innerHeight - toolbarHeight - padding, newY));
-
-      // Only update if position changed
-      if (newX !== toolbarPosition.x || newY !== toolbarPosition.y) {
-        setToolbarPosition({ x: newX, y: newY });
-      }
-    };
-
-    // Constrain immediately when isActive changes or on mount
-    constrainPosition();
-
-    window.addEventListener('resize', constrainPosition);
-    return () => window.removeEventListener('resize', constrainPosition);
-  }, [toolbarPosition, isActive, connectionStatus]);
+  useToolbarConstrain({
+    toolbarPosition,
+    isActive,
+    connectionStatus,
+    onPositionChange: setToolbarPosition,
+  });
 
   // Keyboard shortcuts
   useEffect(() => {
