@@ -172,10 +172,10 @@ export function SettingsPanel({
           <div className={styles.settingsSection}>
             <CheckboxField
               className="checkbox-field"
-              label="Clear on copy/send"
+              label="复制/发送后清除"
               checked={settings.autoClearAfterCopy}
               onChange={(e) => onSettingsChange({ autoClearAfterCopy: e.target.checked })}
-              tooltip="Automatically clear annotations after copying"
+              tooltip="复制后自动清除标注"
             />
             <CheckboxField
               className={styles.checkboxField}
