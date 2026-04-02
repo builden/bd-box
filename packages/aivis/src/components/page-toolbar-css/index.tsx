@@ -14,6 +14,7 @@ import {
   IconPausePlayAnimated,
   IconXmarkLarge,
   IconLayout,
+  IconEdit,
 } from '../icons';
 import { HelpTooltip } from '../help-tooltip';
 import { DesignMode } from '../design-mode';
@@ -28,6 +29,7 @@ import {
   type ComponentType as DesignComponentType,
   type RearrangeState,
 } from '../design-mode/types';
+import { StyleEditor, type StyleChange } from '../style-editor';
 import {
   identifyElement,
   getNearbyText,
@@ -81,8 +83,8 @@ import {
 import type { Annotation } from '../../types';
 import styles from './styles.module.scss';
 import { generateOutput } from '../../utils/generate-output';
-import { AnnotationMarker, ExitingMarker, PendingMarker } from './annotation-marker';
-import { SettingsPanel } from './settings-panel';
+import { AnnotationMarker, ExitingMarker, PendingMarker } from '../annotation-marker';
+import { SettingsPanel } from '../settings-panel';
 
 /**
  * Composes element identification with React component detection.
@@ -443,6 +445,11 @@ export function PageFeedbackToolbarCSS({
     rearrange: null,
     placements: [],
   });
+
+  // Style editor state
+  const [isStyleEditorMode, setIsStyleEditorMode] = useState(false);
+  const [styleEditorElement, setStyleEditorElement] = useState<HTMLElement | null>(null);
+
   // Cross-overlay deselect signals — bump one to deselect the other
   const [designDeselectSignal, setDesignDeselectSignal] = useState(0);
   const [rearrangeDeselectSignal, setRearrangeDeselectSignal] = useState(0);
@@ -1575,8 +1582,13 @@ export function PageFeedbackToolbarCSS({
         setDesignOverlayExiting(false);
       }, 300);
     }
+    // Close style editor mode if active
+    if (isStyleEditorMode) {
+      setIsStyleEditorMode(false);
+      setStyleEditorElement(null);
+    }
     setIsActive(false);
-  }, [isDesignMode]);
+  }, [isDesignMode, isStyleEditorMode]);
 
   // Freeze animations (delegates to freeze-animations utility)
   const freezeAnimations = useCallback(() => {
@@ -1898,6 +1910,18 @@ export function PageFeedbackToolbarCSS({
       if (closestCrossingShadow(target, '[data-feedback-toolbar]')) return;
       if (closestCrossingShadow(target, '[data-annotation-popup]')) return;
       if (closestCrossingShadow(target, '[data-annotation-marker]')) return;
+
+      // Handle style editor mode - click selects element for styling
+      if (isStyleEditorMode) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const elementUnder = deepElementFromPoint(e.clientX, e.clientY);
+        if (!elementUnder) return;
+
+        setStyleEditorElement(elementUnder);
+        return;
+      }
 
       // Handle cmd+shift+click for multi-element selection
       if (e.metaKey && e.shiftKey && !pendingAnnotation && !editingAnnotation) {
@@ -3238,6 +3262,12 @@ export function PageFeedbackToolbarCSS({
       const isTyping = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
 
       if (e.key === 'Escape') {
+        // Exit style editor mode first if active
+        if (isStyleEditorMode) {
+          setIsStyleEditorMode(false);
+          setStyleEditorElement(null);
+          return;
+        }
         // Exit layout mode first if active
         if (isDesignMode) {
           if (activeDesignComponent) {
@@ -3294,10 +3324,28 @@ export function PageFeedbackToolbarCSS({
         if (isDrawMode) setIsDrawMode(false);
         if (showSettings) setShowSettings(false);
         if (pendingAnnotation) cancelAnnotation();
+        if (isStyleEditorMode) {
+          setIsStyleEditorMode(false);
+          setStyleEditorElement(null);
+        }
         if (isDesignMode) {
           closeDesignMode();
         } else {
           setIsDesignMode(true);
+        }
+      }
+
+      // "S" to toggle style editor mode
+      if (e.key === 's' || e.key === 'S') {
+        e.preventDefault();
+        hideTooltipsUntilMouseLeave();
+        if (isDrawMode) setIsDrawMode(false);
+        if (showSettings) setShowSettings(false);
+        if (pendingAnnotation) cancelAnnotation();
+        if (isDesignMode) closeDesignMode();
+        setIsStyleEditorMode(!isStyleEditorMode);
+        if (isStyleEditorMode) {
+          setStyleEditorElement(null);
         }
       }
 
@@ -3549,6 +3597,29 @@ export function PageFeedbackToolbarCSS({
               <span className={styles.buttonTooltip}>
                 {isDesignMode ? 'Exit layout mode' : 'Layout mode'}
                 <span className={styles.shortcut}>L</span>
+              </span>
+            </div>
+
+            <div className={styles.buttonWrapper}>
+              <button
+                className={`${styles.controlButton} ${!isDarkMode ? styles.light : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  hideTooltipsUntilMouseLeave();
+                  if (isDrawMode) setIsDrawMode(false);
+                  if (showSettings) setShowSettings(false);
+                  if (pendingAnnotation) cancelAnnotation();
+                  if (isDesignMode) closeDesignMode();
+                  setIsStyleEditorMode(!isStyleEditorMode);
+                }}
+                data-active={isStyleEditorMode}
+                style={isStyleEditorMode ? { color: '#0088FF', background: 'rgba(0, 136, 255, 0.25)' } : undefined}
+              >
+                <IconEdit size={21} />
+              </button>
+              <span className={styles.buttonTooltip}>
+                {isStyleEditorMode ? 'Exit style mode' : 'Edit styles'}
+                <span className={styles.shortcut}>S</span>
               </span>
             </div>
 
@@ -3853,6 +3924,22 @@ export function PageFeedbackToolbarCSS({
             onSettingsPageChange={setSettingsPage}
             onHideToolbar={hideToolbarTemporarily}
           />
+
+          {/* Style Editor Panel */}
+          {isStyleEditorMode && (
+            <StyleEditor
+              element={styleEditorElement}
+              onClose={() => {
+                setIsStyleEditorMode(false);
+                setStyleEditorElement(null);
+              }}
+              onCopyDiff={(diff: StyleChange) => {
+                // Handle the copied diff - could trigger a callback or webhook
+                console.log('Style changes:', diff);
+              }}
+              isDarkMode={isDarkMode}
+            />
+          )}
         </div>
       </div>
 
