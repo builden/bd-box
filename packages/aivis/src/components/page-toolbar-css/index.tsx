@@ -645,9 +645,8 @@ export function PageFeedbackToolbarCSS({
     }
   }, [showSettings]);
 
-  // Unified marker visibility - depends on toolbar active, showMarkers toggle, and not blank canvas
-  // This single effect handles all marker show/hide animations
-  const shouldShowMarkers = isActive && showMarkers && !isDesignMode && !isStyleEditorMode && isAnnotationMode;
+  // Marker visibility - only in annotation mode with markers enabled
+  const shouldShowMarkers = isActive && showMarkers && isAnnotationMode;
   useEffect(() => {
     if (shouldShowMarkers) {
       // Show markers - reset animations and make visible
