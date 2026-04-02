@@ -68,7 +68,6 @@ import {
   freeze as freezeAll,
   unfreeze as unfreezeAll,
   originalSetTimeout,
-  originalSetInterval,
   originalRequestAnimationFrame,
 } from '../../utils/freeze-animations';
 import {
@@ -164,6 +163,7 @@ import { PendingAnnotationPopup } from './PendingAnnotationPopup';
 import { getTooltipPosition } from './tooltip-position';
 import { useThemePersistence } from './useTheme';
 import { useEditPopupPosition } from './useEditPopupPosition';
+import { useHealthCheck } from './useHealthCheck';
 import {
   COLOR_OPTIONS,
   ANIMATION,
@@ -712,27 +712,11 @@ export function PageFeedbackToolbarCSS({
   }, [endpoint, initialSessionId, mounted, onSessionCreated, pathname]);
 
   // Periodic health check for server connection
-  useEffect(() => {
-    if (!endpoint || !mounted) return;
-
-    const checkHealth = async () => {
-      try {
-        const response = await fetch(`${endpoint}/health`);
-        if (response.ok) {
-          setConnectionStatus('connected');
-        } else {
-          setConnectionStatus('disconnected');
-        }
-      } catch {
-        setConnectionStatus('disconnected');
-      }
-    };
-
-    // Check immediately, then every 10 seconds
-    checkHealth();
-    const interval = originalSetInterval(checkHealth, 10000);
-    return () => clearInterval(interval);
-  }, [endpoint, mounted]);
+  useHealthCheck({
+    endpoint,
+    mounted,
+    onConnectionStatusChange: setConnectionStatus,
+  });
 
   // Listen for server-side annotation updates (e.g. resolved by agent)
   useEffect(() => {
