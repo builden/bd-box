@@ -94,6 +94,7 @@ import { generateOutput } from '../../utils/generate-output';
 import { PendingMarker } from '../annotation-marker';
 import { SettingsPanel } from '../settings-panel';
 import { AnnotationMarkerList } from './AnnotationMarkerList';
+import { EditAnnotationOutline } from './EditAnnotationOutline';
 import { getTooltipPosition } from './tooltip-position';
 import { useThemePersistence, loadInitialTheme } from './useTheme';
 import {
@@ -4186,84 +4187,12 @@ export function PageFeedbackToolbarCSS({
           {editingAnnotation && (
             <>
               {/* Show element/area outline while editing */}
-              {editingAnnotation.elementBoundingBoxes?.length
-                ? // Cmd+shift+click: show individual element boxes (use live rects when available)
-                  (() => {
-                    // Use live positions from editingTargetElements when available
-                    if (editingTargetElements.length > 0) {
-                      return editingTargetElements
-                        .filter((el) => document.contains(el))
-                        .map((el, index) => {
-                          const rect = el.getBoundingClientRect();
-                          return (
-                            <div
-                              key={`edit-multi-live-${index}`}
-                              className={`${styles.multiSelectOutline} ${styles.enter}`}
-                              style={{
-                                left: rect.left,
-                                top: rect.top,
-                                width: rect.width,
-                                height: rect.height,
-                              }}
-                            />
-                          );
-                        });
-                    }
-                    // Fallback to stored bounding boxes
-                    return editingAnnotation.elementBoundingBoxes!.map((bb, index) => (
-                      <div
-                        key={`edit-multi-${index}`}
-                        className={`${styles.multiSelectOutline} ${styles.enter}`}
-                        style={{
-                          left: bb.x,
-                          top: bb.y - scrollY,
-                          width: bb.width,
-                          height: bb.height,
-                        }}
-                      />
-                    ));
-                  })()
-                : // Single element or drag multi-select: show single box
-                  (() => {
-                    // Use live position from editingTargetElement when available
-                    const rect =
-                      editingTargetElement && document.contains(editingTargetElement)
-                        ? editingTargetElement.getBoundingClientRect()
-                        : null;
-
-                    const bb = rect
-                      ? { x: rect.left, y: rect.top, width: rect.width, height: rect.height }
-                      : editingAnnotation.boundingBox
-                        ? {
-                            x: editingAnnotation.boundingBox.x,
-                            y: editingAnnotation.isFixed
-                              ? editingAnnotation.boundingBox.y
-                              : editingAnnotation.boundingBox.y - scrollY,
-                            width: editingAnnotation.boundingBox.width,
-                            height: editingAnnotation.boundingBox.height,
-                          }
-                        : null;
-
-                    if (!bb) return null;
-
-                    return (
-                      <div
-                        className={`${editingAnnotation.isMultiSelect ? styles.multiSelectOutline : styles.singleSelectOutline} ${styles.enter}`}
-                        style={{
-                          left: bb.x,
-                          top: bb.y,
-                          width: bb.width,
-                          height: bb.height,
-                          ...(editingAnnotation.isMultiSelect
-                            ? {}
-                            : {
-                                borderColor: 'color-mix(in srgb, var(--agentation-color-accent) 60%, transparent)',
-                                backgroundColor: 'color-mix(in srgb, var(--agentation-color-accent) 5%, transparent)',
-                              }),
-                        }}
-                      />
-                    );
-                  })()}
+              <EditAnnotationOutline
+                editingAnnotation={editingAnnotation}
+                editingTargetElements={editingTargetElements}
+                editingTargetElement={editingTargetElement}
+                scrollY={scrollY}
+              />
 
               <AnnotationPopupCSS
                 ref={editPopupRef}
