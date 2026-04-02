@@ -1,26 +1,20 @@
 /**
  * useRearrangeStorage - Handles rearrange state persistence to localStorage.
+ * Reads/writes directly from atoms - no props needed.
  */
 
 import { useEffect, useRef } from 'react';
+import { useAtom } from 'jotai';
 import type { RearrangeState } from '../design-mode/types';
 import { loadRearrangeState, saveRearrangeState, clearRearrangeState } from '../../utils/storage';
+import { rearrangeStateAtom, blankCanvasAtom, mountedAtom } from '../../atoms/toolbarAtoms';
 
-interface UseRearrangeStorageOptions {
-  rearrangeState: RearrangeState | null;
-  pathname: string;
-  mounted: boolean;
-  blankCanvas: boolean;
-  onLoadState: (state: RearrangeState) => void;
-}
+export function useRearrangeStorage() {
+  const [rearrangeState, setRearrangeState] = useAtom(rearrangeStateAtom);
+  const [blankCanvas] = useAtom(blankCanvasAtom);
+  const [mounted] = useAtom(mountedAtom);
 
-export function useRearrangeStorage({
-  rearrangeState,
-  pathname,
-  mounted,
-  blankCanvas,
-  onLoadState,
-}: UseRearrangeStorageOptions) {
+  const pathname = typeof window !== 'undefined' ? (window.location.pathname ?? '/') : '/';
   const loaded = useRef(false);
 
   // Load rearrange state from localStorage on mount
@@ -37,10 +31,10 @@ export function useRearrangeStorage({
             currentRect: s.currentRect ?? { ...s.originalRect },
           })),
         };
-        onLoadState(migrated);
+        setRearrangeState(migrated);
       }
     }
-  }, [mounted, pathname, onLoadState]);
+  }, [mounted, pathname, setRearrangeState]);
 
   // Save rearrange state to localStorage (only explore-mode data — wireframe has its own key)
   useEffect(() => {

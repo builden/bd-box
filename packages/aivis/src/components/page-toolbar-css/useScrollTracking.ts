@@ -1,29 +1,29 @@
 /**
  * useScrollTracking - Tracks window scroll position and scrolling state.
+ * Reads/writes directly from atoms - no props needed.
  */
 
 import { useEffect, useRef } from 'react';
+import { useSetAtom } from 'jotai';
+import { scrollYAtom, isScrollingAtom } from '../../atoms/toolbarAtoms';
 import { originalSetTimeout } from '../../utils/freeze-animations';
 
-interface UseScrollTrackingOptions {
-  onScrollYChange: (y: number) => void;
-  onIsScrollingChange: (scrolling: boolean) => void;
-}
-
-export function useScrollTracking({ onScrollYChange, onIsScrollingChange }: UseScrollTrackingOptions) {
+export function useScrollTracking() {
+  const setScrollY = useSetAtom(scrollYAtom);
+  const setIsScrolling = useSetAtom(isScrollingAtom);
   const scrollTimeoutRef = useRef<ReturnType<typeof originalSetTimeout> | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
-      onScrollYChange(window.scrollY);
-      onIsScrollingChange(true);
+      setScrollY(window.scrollY);
+      setIsScrolling(true);
 
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
 
       scrollTimeoutRef.current = originalSetTimeout(() => {
-        onIsScrollingChange(false);
+        setIsScrolling(false);
       }, 150);
     };
 
@@ -34,5 +34,5 @@ export function useScrollTracking({ onScrollYChange, onIsScrollingChange }: UseS
         clearTimeout(scrollTimeoutRef.current);
       }
     };
-  }, [onScrollYChange, onIsScrollingChange]);
+  }, [setScrollY, setIsScrolling]);
 }

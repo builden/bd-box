@@ -1,24 +1,20 @@
 /**
  * useAnnotationsStorage - Handles annotation persistence to localStorage.
+ * Reads directly from atoms - no props needed.
  */
 
 import { useEffect } from 'react';
-import type { Annotation } from '../../types';
+import { useAtom } from 'jotai';
 import { saveAnnotations, saveAnnotationsWithSyncMarker, getStorageKey } from '../../utils/storage';
+import { annotationsAtom, mountedAtom, currentSessionIdAtom } from '../../atoms/toolbarAtoms';
 
-interface UseAnnotationsStorageOptions {
-  annotations: Annotation[];
-  pathname: string;
-  mounted: boolean;
-  currentSessionId: string | null;
-}
+export function useAnnotationsStorage() {
+  const [annotations] = useAtom(annotationsAtom);
+  const [mounted] = useAtom(mountedAtom);
+  const [currentSessionId] = useAtom(currentSessionIdAtom);
 
-export function useAnnotationsStorage({
-  annotations,
-  pathname,
-  mounted,
-  currentSessionId,
-}: UseAnnotationsStorageOptions) {
+  const pathname = typeof window !== 'undefined' ? (window.location.pathname ?? '/') : '/';
+
   useEffect(() => {
     if (mounted && annotations.length > 0) {
       if (currentSessionId) {

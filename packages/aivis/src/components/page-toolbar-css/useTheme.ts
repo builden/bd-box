@@ -1,15 +1,16 @@
 /**
  * Theme persistence hook for PageFeedbackToolbarCSS.
  * Handles loading and saving dark/light mode preference.
+ * Reads/writes directly from isDarkModeAtom - no props needed.
  */
 
 import { useEffect } from 'react';
+import { useAtom } from 'jotai';
+import { isDarkModeAtom } from '../../atoms/toolbarAtoms';
 
-interface UseThemePersistenceOptions {
-  isDarkMode: boolean;
-}
+export function useThemePersistence() {
+  const [isDarkMode] = useAtom(isDarkModeAtom);
 
-export function useThemePersistence({ isDarkMode }: UseThemePersistenceOptions): void {
   // Save theme preference when it changes
   useEffect(() => {
     localStorage.setItem('aivis-toolbar-theme', isDarkMode ? 'dark' : 'light');

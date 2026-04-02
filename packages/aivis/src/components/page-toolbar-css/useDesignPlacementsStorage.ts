@@ -1,26 +1,20 @@
 /**
  * useDesignPlacementsStorage - Handles design placements persistence to localStorage.
+ * Reads/writes directly from atoms - no props needed.
  */
 
 import { useEffect, useRef } from 'react';
+import { useAtom } from 'jotai';
 import type { DesignPlacement } from '../design-mode/types';
 import { loadDesignPlacements, saveDesignPlacements, clearDesignPlacements } from '../../utils/storage';
+import { designPlacementsAtom, blankCanvasAtom, mountedAtom } from '../../atoms/toolbarAtoms';
 
-interface UseDesignPlacementsStorageOptions {
-  designPlacements: DesignPlacement[];
-  pathname: string;
-  mounted: boolean;
-  blankCanvas: boolean;
-  onLoadPlacements: (placements: DesignPlacement[]) => void;
-}
+export function useDesignPlacementsStorage() {
+  const [designPlacements, setDesignPlacements] = useAtom(designPlacementsAtom);
+  const [blankCanvas] = useAtom(blankCanvasAtom);
+  const [mounted] = useAtom(mountedAtom);
 
-export function useDesignPlacementsStorage({
-  designPlacements,
-  pathname,
-  mounted,
-  blankCanvas,
-  onLoadPlacements,
-}: UseDesignPlacementsStorageOptions) {
+  const pathname = typeof window !== 'undefined' ? (window.location.pathname ?? '/') : '/';
   const loaded = useRef(false);
 
   // Load design placements from localStorage on mount
@@ -28,9 +22,11 @@ export function useDesignPlacementsStorage({
     if (mounted && !loaded.current) {
       loaded.current = true;
       const stored = loadDesignPlacements<DesignPlacement>(pathname);
-      if (stored.length > 0) onLoadPlacements(stored);
+      if (stored.length > 0) {
+        setDesignPlacements(stored);
+      }
     }
-  }, [mounted, pathname, onLoadPlacements]);
+  }, [mounted, pathname, setDesignPlacements]);
 
   // Save design placements to localStorage (only explore-mode data — wireframe has its own key)
   useEffect(() => {

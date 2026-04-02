@@ -1,30 +1,33 @@
 /**
  * useHealthCheck - Periodic health check for server connection.
+ * Reads/writes directly from atoms - no props needed.
  */
 
 import { useEffect } from 'react';
+import { useSetAtom } from 'jotai';
+import { connectionStatusAtom } from '../../atoms/toolbarAtoms';
 import { originalSetInterval } from '../../utils/freeze-animations';
 
 interface UseHealthCheckOptions {
-  endpoint: string | null;
-  mounted: boolean;
-  onConnectionStatusChange: (status: 'connected' | 'disconnected') => void;
+  endpoint: string | undefined;
 }
 
-export function useHealthCheck({ endpoint, mounted, onConnectionStatusChange }: UseHealthCheckOptions) {
+export function useHealthCheck({ endpoint }: UseHealthCheckOptions) {
+  const setConnectionStatus = useSetAtom(connectionStatusAtom);
+
   useEffect(() => {
-    if (!endpoint || !mounted) return;
+    if (!endpoint) return;
 
     const checkHealth = async () => {
       try {
         const response = await fetch(`${endpoint}/health`);
         if (response.ok) {
-          onConnectionStatusChange('connected');
+          setConnectionStatus('connected');
         } else {
-          onConnectionStatusChange('disconnected');
+          setConnectionStatus('disconnected');
         }
       } catch {
-        onConnectionStatusChange('disconnected');
+        setConnectionStatus('disconnected');
       }
     };
 
@@ -32,5 +35,5 @@ export function useHealthCheck({ endpoint, mounted, onConnectionStatusChange }: 
     checkHealth();
     const interval = originalSetInterval(checkHealth, 10000);
     return () => clearInterval(interval);
-  }, [endpoint, mounted, onConnectionStatusChange]);
+  }, [endpoint, setConnectionStatus]);
 }

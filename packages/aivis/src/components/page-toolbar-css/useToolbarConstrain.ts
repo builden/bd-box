@@ -1,22 +1,18 @@
 /**
  * useToolbarConstrain - Keeps toolbar within viewport bounds.
+ * Reads/writes directly from atoms - no props needed.
  */
 
 import { useEffect } from 'react';
+import { useAtom, useSetAtom } from 'jotai';
+import { toolbarPositionAtom, isActiveAtom, connectionStatusAtom } from '../../atoms/toolbarAtoms';
 
-interface UseToolbarConstrainOptions {
-  toolbarPosition: { x: number; y: number } | null;
-  isActive: boolean;
-  connectionStatus: string;
-  onPositionChange: (pos: { x: number; y: number }) => void;
-}
+export function useToolbarConstrain() {
+  const [toolbarPosition] = useAtom(toolbarPositionAtom);
+  const [isActive] = useAtom(isActiveAtom);
+  const [connectionStatus] = useAtom(connectionStatusAtom);
+  const setToolbarPosition = useSetAtom(toolbarPositionAtom);
 
-export function useToolbarConstrain({
-  toolbarPosition,
-  isActive,
-  connectionStatus,
-  onPositionChange,
-}: UseToolbarConstrainOptions) {
   useEffect(() => {
     if (!toolbarPosition) return;
 
@@ -43,7 +39,7 @@ export function useToolbarConstrain({
 
       // Only update if position changed
       if (newX !== toolbarPosition.x || newY !== toolbarPosition.y) {
-        onPositionChange({ x: newX, y: newY });
+        setToolbarPosition({ x: newX, y: newY });
       }
     };
 
@@ -52,5 +48,5 @@ export function useToolbarConstrain({
 
     window.addEventListener('resize', constrainPosition);
     return () => window.removeEventListener('resize', constrainPosition);
-  }, [toolbarPosition, isActive, connectionStatus, onPositionChange]);
+  }, [toolbarPosition, isActive, connectionStatus, setToolbarPosition]);
 }

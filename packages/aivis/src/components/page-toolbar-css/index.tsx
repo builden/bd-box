@@ -255,7 +255,7 @@ export function PageFeedbackToolbarCSS({
   const [editingTargetElement, setEditingTargetElement] = useAtom(editingTargetElementAtom);
   const [editingTargetElements, setEditingTargetElements] = useAtom(editingTargetElementsAtom);
   const [scrollY, setScrollY] = useAtom(scrollYAtom);
-  const [isScrolling, setIsScrolling] = useAtom(isScrollingAtom);
+  const [isScrolling] = useAtom(isScrollingAtom);
   const [mounted, setMounted] = useAtom(mountedAtom);
   const [isFrozen, setIsFrozen] = useAtom(isFrozenAtom);
   const [showSettings, setShowSettings] = useAtom(showSettingsAtom);
@@ -396,10 +396,10 @@ export function PageFeedbackToolbarCSS({
   };
 
   // Theme persistence
-  useThemePersistence({ isDarkMode });
+  useThemePersistence();
 
   // Edit popup position
-  const editPopupStyle = useEditPopupPosition({ editingAnnotation, scrollY });
+  const editPopupStyle = useEditPopupPosition();
 
   // Check if running in development mode - React detection only works in development mode
   const isDevMode = process.env.NODE_ENV === 'development';
@@ -695,11 +695,7 @@ export function PageFeedbackToolbarCSS({
   }, [endpoint, initialSessionId, mounted, onSessionCreated, pathname]);
 
   // Periodic health check for server connection
-  useHealthCheck({
-    endpoint,
-    mounted,
-    onConnectionStatusChange: setConnectionStatus,
-  });
+  useHealthCheck({ endpoint });
 
   // Listen for server-side annotation updates (e.g. resolved by agent)
   useEffect(() => {
@@ -912,36 +908,16 @@ export function PageFeedbackToolbarCSS({
   }, [enableDemoMode, mounted, demoAnnotations, demoDelay]);
 
   // Track scroll
-  useScrollTracking({
-    onScrollYChange: setScrollY,
-    onIsScrollingChange: setIsScrolling,
-  });
+  useScrollTracking();
 
   // Save annotations (preserving sync markers if connected to a session)
-  useAnnotationsStorage({
-    annotations,
-    pathname,
-    mounted,
-    currentSessionId,
-  });
+  useAnnotationsStorage();
 
   // Load design placements from localStorage on mount
-  useDesignPlacementsStorage({
-    designPlacements,
-    pathname,
-    mounted,
-    blankCanvas,
-    onLoadPlacements: setDesignPlacements,
-  });
+  useDesignPlacementsStorage();
 
   // Load rearrange state from localStorage on mount
-  useRearrangeStorage({
-    rearrangeState,
-    pathname,
-    mounted,
-    blankCanvas,
-    onLoadState: setRearrangeState,
-  });
+  useRearrangeStorage();
 
   // Load wireframe stash from localStorage on mount
   const wireframeLoaded = useRef(false);
@@ -2890,12 +2866,7 @@ export function PageFeedbackToolbarCSS({
   );
 
   // Keep toolbar in view on window resize and when toolbar expands/collapses
-  useToolbarConstrain({
-    toolbarPosition,
-    isActive,
-    connectionStatus,
-    onPositionChange: setToolbarPosition,
-  });
+  useToolbarConstrain();
 
   // Keyboard shortcuts
   useEffect(() => {
