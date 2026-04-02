@@ -138,6 +138,8 @@ import { SettingsPanel } from '../settings-panel';
 import { AnnotationMarkerList } from './AnnotationMarkerList';
 import { EditAnnotationOutline } from './EditAnnotationOutline';
 import { HoverTooltip } from './HoverTooltip';
+import { HoverHighlight } from './HoverHighlight';
+import { MarkerHoverOutline } from './MarkerHoverOutline';
 import { PendingAnnotationPopup } from './PendingAnnotationPopup';
 import { getTooltipPosition } from './tooltip-position';
 import { useThemePersistence } from './useTheme';
@@ -3980,19 +3982,12 @@ export function PageFeedbackToolbarCSS({
           style={pendingAnnotation || editingAnnotation ? { zIndex: 99999 } : undefined}
         >
           {/* Hover highlight */}
-          {hoverInfo?.rect && !pendingAnnotation && !isScrolling && !isDragging && (
-            <div
-              className={`${styles.hoverHighlight} ${styles.enter}`}
-              style={{
-                left: hoverInfo.rect.left,
-                top: hoverInfo.rect.top,
-                width: hoverInfo.rect.width,
-                height: hoverInfo.rect.height,
-                borderColor: 'color-mix(in srgb, var(--agentation-color-accent) 50%, transparent)',
-                backgroundColor: 'color-mix(in srgb, var(--agentation-color-accent) 4%, transparent)',
-              }}
-            />
-          )}
+          <HoverHighlight
+            rect={hoverInfo?.rect}
+            isPending={!!pendingAnnotation}
+            isScrolling={isScrolling}
+            isDragging={isDragging}
+          />
 
           {/* Cmd+shift+click multi-select highlights (during selection, before releasing modifiers) */}
           {pendingMultiSelectElements
@@ -4023,85 +4018,14 @@ export function PageFeedbackToolbarCSS({
             })}
 
           {/* Marker hover outline (shows bounding box of hovered annotation) */}
-          {hoveredMarkerId &&
-            !pendingAnnotation &&
-            (() => {
-              const hoveredAnnotation = annotations.find((a) => a.id === hoveredMarkerId);
-              if (!hoveredAnnotation?.boundingBox) return null;
-
-              // Render individual element boxes if available (cmd+shift+click multi-select)
-              if (hoveredAnnotation.elementBoundingBoxes?.length) {
-                // Use live positions from hoveredTargetElements when available
-                if (hoveredTargetElements.length > 0) {
-                  return hoveredTargetElements
-                    .filter((el) => document.contains(el))
-                    .map((el, index) => {
-                      const rect = el.getBoundingClientRect();
-                      return (
-                        <div
-                          key={`hover-outline-live-${index}`}
-                          className={`${styles.multiSelectOutline} ${styles.enter}`}
-                          style={{
-                            left: rect.left,
-                            top: rect.top,
-                            width: rect.width,
-                            height: rect.height,
-                          }}
-                        />
-                      );
-                    });
-                }
-                // Fallback to stored bounding boxes
-                return hoveredAnnotation.elementBoundingBoxes.map((bb, index) => (
-                  <div
-                    key={`hover-outline-${index}`}
-                    className={`${styles.multiSelectOutline} ${styles.enter}`}
-                    style={{
-                      left: bb.x,
-                      top: bb.y - scrollY,
-                      width: bb.width,
-                      height: bb.height,
-                    }}
-                  />
-                ));
-              }
-
-              // Single element: use live position from hoveredTargetElement when available
-              const rect =
-                hoveredTargetElement && document.contains(hoveredTargetElement)
-                  ? hoveredTargetElement.getBoundingClientRect()
-                  : null;
-
-              const bb = rect
-                ? { x: rect.left, y: rect.top, width: rect.width, height: rect.height }
-                : {
-                    x: hoveredAnnotation.boundingBox.x,
-                    y: hoveredAnnotation.isFixed
-                      ? hoveredAnnotation.boundingBox.y
-                      : hoveredAnnotation.boundingBox.y - scrollY,
-                    width: hoveredAnnotation.boundingBox.width,
-                    height: hoveredAnnotation.boundingBox.height,
-                  };
-
-              const isMulti = hoveredAnnotation.isMultiSelect;
-              return (
-                <div
-                  className={`${isMulti ? styles.multiSelectOutline : styles.singleSelectOutline} ${styles.enter}`}
-                  style={{
-                    left: bb.x,
-                    top: bb.y,
-                    width: bb.width,
-                    height: bb.height,
-                    ...(isMulti
-                      ? {}
-                      : {
-                          borderColor: 'color-mix(in srgb, var(--agentation-color-accent) 60%, transparent)',
-                          backgroundColor: 'color-mix(in srgb, var(--agentation-color-accent) 5%, transparent)',
-                        }),
-                  }}
-                />
-              );
-            })()}
+          {hoveredMarkerId && !pendingAnnotation && (
+            <MarkerHoverOutline
+              hoveredAnnotation={annotations.find((a) => a.id === hoveredMarkerId) ?? null}
+              hoveredTargetElement={hoveredTargetElement}
+              hoveredTargetElements={hoveredTargetElements}
+              scrollY={scrollY}
+            />
+          )}
 
           {/* Hover tooltip */}
           {hoverInfo && !pendingAnnotation && !isScrolling && !isDragging && (
