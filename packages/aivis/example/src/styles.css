@@ -99,3 +99,12 @@ body {
 .sidebar li:hover {
   color: #0088ff;
 }
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

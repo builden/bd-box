@@ -39,6 +39,24 @@ export function App() {
               <span style={{ width: 24, height: 24, background: '#FF383C', borderRadius: 4 }} />
             </div>
           </div>
+
+          <div className="card">
+            <h3>旋转动画</h3>
+            <p>测试动画暂停功能</p>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 16 }}>
+              <div
+                className="spinner"
+                style={{
+                  width: 48,
+                  height: 48,
+                  border: '4px solid #e0e0e0',
+                  borderTopColor: '#0088FF',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite',
+                }}
+              />
+            </div>
+          </div>
         </div>
 
         <div style={{ display: 'flex', gap: 20, marginTop: 40 }}>
