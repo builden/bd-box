@@ -25,6 +25,7 @@
   ],
   "scripts": {
     "build": "tsup",
+    "build:injection": "bun build-injection.ts",
     "watch": "tsup --watch",
     "dev": "bun build && bun watch",
     "test": "vitest run",
