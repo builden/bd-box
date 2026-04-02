@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npx portless aivis bun --bun vite",
-    "start": "npx portless run bun --bun vite"
+    "dev": "npx portless run vite",
+    "start": "vite --port 5175"
   },
   "devDependencies": {
     "vite": "^6.0.0",
