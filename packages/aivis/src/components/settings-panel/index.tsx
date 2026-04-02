@@ -6,6 +6,10 @@ import { Switch } from '../switch';
 import { CheckboxField } from './checkbox-field';
 import styles from './styles.module.scss';
 
+// Build-time version replacement
+declare const __VERSION__: string;
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : '1.0.0';
+
 type ConnectionStatus = 'disconnected' | 'connecting' | 'connected';
 
 export type SettingsPanelProps = {
@@ -64,7 +68,7 @@ export function SettingsPanel({
                 />
               </svg>
             </a>
-            <p className={styles.settingsVersion}>v{__VERSION__}</p>
+            <p className={styles.settingsVersion}>v{VERSION}</p>
             <button
               className={styles.themeToggle}
               onClick={onToggleTheme}
