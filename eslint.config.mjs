@@ -58,7 +58,7 @@ export default defineConfig([
     rules: {
       // Custom overrides
       '@typescript-eslint/no-explicit-any': ['error', { ignoreRestArgs: true }],
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-dynamic-delete': 'off',

@@ -1,0 +1,13 @@
+{
+  "name": "@builden/aivis-example",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "npx portless aivis bun --bun vite",
+    "start": "npx portless run bun --bun vite"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0",
+    "@vitejs/plugin-react": "^4.3.0"
+  }
+}
