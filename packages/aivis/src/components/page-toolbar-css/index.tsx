@@ -259,7 +259,6 @@ export function PageFeedbackToolbarCSS({
   const [pendingAnnotation, setPendingAnnotation] = useAtom(pendingAnnotationAtom);
   const [copied, setCopied] = useAtom(copiedAtom);
   const [sendState, setSendState] = useAtom(sendStateAtom);
-  const [, setCleared] = useState(false);
   const [isClearing, setIsClearing] = useAtom(isClearingAtom);
   const [hoveredMarkerId, setHoveredMarkerId] = useAtom(hoveredMarkerIdAtom);
   const [hoveredTargetElement, setHoveredTargetElement] = useAtom(hoveredTargetElementAtom);
@@ -2568,7 +2567,6 @@ export function PageFeedbackToolbarCSS({
     }
 
     setIsClearing(true);
-    setCleared(true);
 
     // Clear draw strokes
     setDrawStrokes([]);
@@ -2599,8 +2597,6 @@ export function PageFeedbackToolbarCSS({
       localStorage.removeItem(getStorageKey(pathname));
       setIsClearing(false);
     }, totalAnimationTime);
-
-    originalSetTimeout(() => setCleared(false), ANIMATION.CLEARED_FEEDBACK);
   }, [
     pathname,
     annotations,
