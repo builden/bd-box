@@ -102,6 +102,8 @@ import {
   DEFAULT_SETTINGS,
   OUTPUT_TO_REACT_MODE,
   injectAgentationColorTokens,
+  TEXT_ELEMENTS_SELECTOR,
+  NOT_AGENTATION_SELECTOR,
 } from './constants';
 import type {
   OutputDetailLevel,
@@ -1536,59 +1538,16 @@ export function PageFeedbackToolbarCSS({
   useEffect(() => {
     if (!isActive || (toolbarMode !== 'annotation' && toolbarMode !== 'style')) return;
 
-    const textElementsSelector = [
-      'p',
-      'span',
-      'h1',
-      'h2',
-      'h3',
-      'h4',
-      'h5',
-      'h6',
-      'li',
-      'td',
-      'th',
-      'label',
-      'blockquote',
-      'figcaption',
-      'caption',
-      'legend',
-      'dt',
-      'dd',
-      'pre',
-      'code',
-      'em',
-      'strong',
-      'b',
-      'i',
-      'u',
-      's',
-      'a',
-      'time',
-      'address',
-      'cite',
-      'q',
-      'abbr',
-      'dfn',
-      'mark',
-      'small',
-      'sub',
-      'sup',
-      '[contenteditable]',
-    ].join(', ');
-
-    const notAgentationSelector = `:not([data-agentation-root]):not([data-agentation-root] *)`;
-
     const style = document.createElement('style');
     style.id = 'feedback-cursor-styles';
     // Text elements get text cursor (higher specificity with body prefix)
     // Everything else gets crosshair
     style.textContent = `
-      body ${notAgentationSelector} {
+      body ${NOT_AGENTATION_SELECTOR} {
         cursor: crosshair !important;
       }
 
-      body :is(${textElementsSelector})${notAgentationSelector} {
+      body :is(${TEXT_ELEMENTS_SELECTOR})${NOT_AGENTATION_SELECTOR} {
         cursor: text !important;
       }
     `;

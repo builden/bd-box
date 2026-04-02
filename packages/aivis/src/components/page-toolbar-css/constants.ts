@@ -55,6 +55,51 @@ export const OUTPUT_TO_REACT_MODE: Record<OutputDetailLevel, ReactComponentMode>
   forensic: 'all',
 };
 
+// Text element selector for cursor styling
+export const TEXT_ELEMENTS_SELECTOR = [
+  'p',
+  'span',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'li',
+  'td',
+  'th',
+  'label',
+  'blockquote',
+  'figcaption',
+  'caption',
+  'legend',
+  'dt',
+  'dd',
+  'pre',
+  'code',
+  'em',
+  'strong',
+  'b',
+  'i',
+  'u',
+  's',
+  'a',
+  'time',
+  'address',
+  'cite',
+  'q',
+  'abbr',
+  'dfn',
+  'mark',
+  'small',
+  'sub',
+  'sup',
+  '[contenteditable]',
+].join(', ');
+
+// Selector to exclude agentation elements
+export const NOT_AGENTATION_SELECTOR = ':not([data-agentation-root]):not([data-agentation-root] *)';
+
 // Inject CSS color tokens for annotation accents
 export function injectAgentationColorTokens(): void {
   if (typeof document === 'undefined') return;
