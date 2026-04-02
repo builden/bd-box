@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react
 import { useAtom } from 'jotai';
 import { createPortal } from 'react-dom';
 
-import { AnnotationPopupCSS, AnnotationPopupCSSHandle } from '../annotation-popup-css';
+import { AnnotationPopupCSSHandle } from '../annotation-popup-css';
 import {
   IconGear,
   IconCopyAnimated,
@@ -37,7 +37,6 @@ import {
   getElementClasses,
   getDetailedComputedStyles,
   getForensicComputedStyles,
-  parseComputedStylesString,
   getFullElementPath,
   getAccessibilityInfo,
   getNearbyElements,
@@ -135,7 +134,6 @@ import styles from './styles.module.scss';
 import { generateOutput } from '../../utils/generate-output';
 import { SettingsPanel } from '../settings-panel';
 import { AnnotationMarkerList } from './AnnotationMarkerList';
-import { EditAnnotationOutline } from './EditAnnotationOutline';
 import { HoverTooltip } from './HoverTooltip';
 import { HoverHighlight } from './HoverHighlight';
 import { MarkerHoverOutline } from './MarkerHoverOutline';
@@ -144,6 +142,7 @@ import { WireframeHint } from './WireframeHint';
 import { MultiSelectHighlights } from './MultiSelectHighlights';
 import { DrawCanvas } from './DrawCanvas';
 import { ToggleContent } from './ToggleContent';
+import { EditAnnotationPopup } from './EditAnnotationPopup';
 import { PendingAnnotationPopup } from './PendingAnnotationPopup';
 import { getTooltipPosition } from './tooltip-position';
 import { useThemePersistence } from './useTheme';
@@ -3993,34 +3992,19 @@ export function PageFeedbackToolbarCSS({
 
           {/* Edit annotation popup */}
           {editingAnnotation && (
-            <>
-              {/* Show element/area outline while editing */}
-              <EditAnnotationOutline
-                editingAnnotation={editingAnnotation}
-                editingTargetElements={editingTargetElements}
-                editingTargetElement={editingTargetElement}
-                scrollY={scrollY}
-              />
-
-              <AnnotationPopupCSS
-                ref={editPopupRef}
-                element={editingAnnotation.element}
-                selectedText={editingAnnotation.selectedText}
-                computedStyles={parseComputedStylesString(editingAnnotation.computedStyles)}
-                placeholder="编辑你的反馈..."
-                initialValue={editingAnnotation.comment}
-                submitLabel="保存"
-                onSubmit={updateAnnotation}
-                onCancel={cancelEditAnnotation}
-                onDelete={() => deleteAnnotation(editingAnnotation.id)}
-                isExiting={editExiting}
-                lightMode={!isDarkMode}
-                accentColor={
-                  editingAnnotation.isMultiSelect ? 'var(--agentation-color-green)' : 'var(--agentation-color-accent)'
-                }
-                style={editPopupStyle}
-              />
-            </>
+            <EditAnnotationPopup
+              editingAnnotation={editingAnnotation}
+              editingTargetElements={editingTargetElements}
+              editingTargetElement={editingTargetElement}
+              scrollY={scrollY}
+              isDarkMode={isDarkMode}
+              editExiting={editExiting}
+              editPopupRef={editPopupRef}
+              editPopupStyle={editPopupStyle}
+              onSubmit={updateAnnotation}
+              onCancel={cancelEditAnnotation}
+              onDelete={() => deleteAnnotation(editingAnnotation.id)}
+            />
           )}
 
           {/* Drag selection - all visuals use refs for smooth 60fps */}
