@@ -127,6 +127,7 @@ import {
   hoveredMarkerIdAtom,
   deletingMarkerIdAtom,
   renumberFromAtom,
+  hoverInfoAtom,
 } from '../../atoms/toolbarAtoms';
 
 import type { Annotation } from '../../types';
@@ -162,7 +163,6 @@ import type {
   ReactComponentMode,
   ToolbarMode,
   ToolbarSettings,
-  HoverInfo,
   DemoAnnotation,
   PageFeedbackToolbarCSSProps,
   AgentationProps,
@@ -238,7 +238,7 @@ export function PageFeedbackToolbarCSS({
   // Unified marker visibility state - controls both toolbar and eye toggle
   const [markersVisible, setMarkersVisible] = useAtom(markersVisibleAtom);
   const [markersExiting, setMarkersExiting] = useAtom(markersExitingAtom);
-  const [hoverInfo, setHoverInfo] = useState<HoverInfo | null>(null);
+  const [hoverInfo, setHoverInfo] = useAtom(hoverInfoAtom);
   const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
   const [pendingAnnotation, setPendingAnnotation] = useState<{
     x: number;
