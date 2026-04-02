@@ -91,8 +91,9 @@ import { fireWebhook as fireWebhookUtil } from '../../utils/webhook';
 import type { Annotation } from '../../types';
 import styles from './styles.module.scss';
 import { generateOutput } from '../../utils/generate-output';
-import { AnnotationMarker, ExitingMarker, PendingMarker } from '../annotation-marker';
+import { PendingMarker } from '../annotation-marker';
 import { SettingsPanel } from '../settings-panel';
+import { AnnotationMarkerList } from './AnnotationMarkerList';
 import { getTooltipPosition } from './tooltip-position';
 import { useThemePersistence, loadInitialTheme } from './useTheme';
 import {
@@ -3881,76 +3882,48 @@ export function PageFeedbackToolbarCSS({
       />
 
       {/* Markers layer - normal scrolling markers */}
-      <div className={styles.markersLayer} data-feedback-toolbar>
-        {markersVisible &&
-          visibleAnnotations
-            .filter((a) => !a.isFixed)
-            .map((annotation, layerIndex, arr) => (
-              <AnnotationMarker
-                key={annotation.id}
-                annotation={annotation}
-                globalIndex={visibleAnnotations.findIndex((a) => a.id === annotation.id)}
-                layerIndex={layerIndex}
-                layerSize={arr.length}
-                isExiting={markersExiting}
-                isClearing={isClearing}
-                isAnimated={animatedMarkers.has(annotation.id)}
-                isHovered={!markersExiting && hoveredMarkerId === annotation.id}
-                isDeleting={deletingMarkerId === annotation.id}
-                isEditingAny={!!editingAnnotation}
-                renumberFrom={renumberFrom}
-                markerClickBehavior={settings.markerClickBehavior}
-                tooltipStyle={getTooltipPosition(annotation)}
-                onHoverEnter={(a: Annotation) =>
-                  !markersExiting && a.id !== recentlyAddedIdRef.current && handleMarkerHover(a)
-                }
-                onHoverLeave={() => handleMarkerHover(null)}
-                onClick={(a: Annotation) =>
-                  settings.markerClickBehavior === 'delete' ? deleteAnnotation(a.id) : startEditAnnotation(a)
-                }
-                onContextMenu={startEditAnnotation}
-              />
-            ))}
-        {markersVisible &&
-          !markersExiting &&
-          exitingAnnotationsList.filter((a) => !a.isFixed).map((a) => <ExitingMarker key={a.id} annotation={a} />)}
-      </div>
+      <AnnotationMarkerList
+        annotations={visibleAnnotations}
+        exitingAnnotations={exitingAnnotationsList}
+        animatedMarkers={animatedMarkers}
+        markersVisible={markersVisible}
+        markersExiting={markersExiting}
+        isClearing={isClearing}
+        hoveredMarkerId={hoveredMarkerId}
+        deletingMarkerId={deletingMarkerId}
+        editingAnnotation={editingAnnotation}
+        renumberFrom={renumberFrom}
+        markerClickBehavior={settings.markerClickBehavior}
+        recentlyAddedId={recentlyAddedIdRef.current}
+        getTooltipPosition={getTooltipPosition}
+        onMarkerHover={handleMarkerHover}
+        onMarkerClick={(a) =>
+          settings.markerClickBehavior === 'delete' ? deleteAnnotation(a.id) : startEditAnnotation(a)
+        }
+        onMarkerContextMenu={startEditAnnotation}
+      />
 
-      {/* Fixed markers layer */}
-      <div className={styles.fixedMarkersLayer} data-feedback-toolbar>
-        {markersVisible &&
-          visibleAnnotations
-            .filter((a) => a.isFixed)
-            .map((annotation, layerIndex, arr) => (
-              <AnnotationMarker
-                key={annotation.id}
-                annotation={annotation}
-                globalIndex={visibleAnnotations.findIndex((a) => a.id === annotation.id)}
-                layerIndex={layerIndex}
-                layerSize={arr.length}
-                isExiting={markersExiting}
-                isClearing={isClearing}
-                isAnimated={animatedMarkers.has(annotation.id)}
-                isHovered={!markersExiting && hoveredMarkerId === annotation.id}
-                isDeleting={deletingMarkerId === annotation.id}
-                isEditingAny={!!editingAnnotation}
-                renumberFrom={renumberFrom}
-                markerClickBehavior={settings.markerClickBehavior}
-                tooltipStyle={getTooltipPosition(annotation)}
-                onHoverEnter={(a: Annotation) =>
-                  !markersExiting && a.id !== recentlyAddedIdRef.current && handleMarkerHover(a)
-                }
-                onHoverLeave={() => handleMarkerHover(null)}
-                onClick={(a: Annotation) =>
-                  settings.markerClickBehavior === 'delete' ? deleteAnnotation(a.id) : startEditAnnotation(a)
-                }
-                onContextMenu={startEditAnnotation}
-              />
-            ))}
-        {markersVisible &&
-          !markersExiting &&
-          exitingAnnotationsList.filter((a) => a.isFixed).map((a) => <ExitingMarker key={a.id} annotation={a} fixed />)}
-      </div>
+      <AnnotationMarkerList
+        annotations={visibleAnnotations}
+        exitingAnnotations={exitingAnnotationsList}
+        animatedMarkers={animatedMarkers}
+        markersVisible={markersVisible}
+        markersExiting={markersExiting}
+        isClearing={isClearing}
+        hoveredMarkerId={hoveredMarkerId}
+        deletingMarkerId={deletingMarkerId}
+        editingAnnotation={editingAnnotation}
+        renumberFrom={renumberFrom}
+        markerClickBehavior={settings.markerClickBehavior}
+        recentlyAddedId={recentlyAddedIdRef.current}
+        getTooltipPosition={getTooltipPosition}
+        onMarkerHover={handleMarkerHover}
+        onMarkerClick={(a) =>
+          settings.markerClickBehavior === 'delete' ? deleteAnnotation(a.id) : startEditAnnotation(a)
+        }
+        onMarkerContextMenu={startEditAnnotation}
+        fixed
+      />
 
       {/* Interactive overlay */}
       {isActive && (
