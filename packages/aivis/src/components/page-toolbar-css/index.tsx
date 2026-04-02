@@ -6,7 +6,6 @@ import { createPortal } from 'react-dom';
 
 import { AnnotationPopupCSS, AnnotationPopupCSSHandle } from '../annotation-popup-css';
 import {
-  IconListSparkle,
   IconGear,
   IconCopyAnimated,
   IconSendArrow,
@@ -140,6 +139,11 @@ import { EditAnnotationOutline } from './EditAnnotationOutline';
 import { HoverTooltip } from './HoverTooltip';
 import { HoverHighlight } from './HoverHighlight';
 import { MarkerHoverOutline } from './MarkerHoverOutline';
+import { BlankCanvasBackdrop } from './BlankCanvasBackdrop';
+import { WireframeHint } from './WireframeHint';
+import { MultiSelectHighlights } from './MultiSelectHighlights';
+import { DrawCanvas } from './DrawCanvas';
+import { ToggleContent } from './ToggleContent';
 import { PendingAnnotationPopup } from './PendingAnnotationPopup';
 import { getTooltipPosition } from './tooltip-position';
 import { useThemePersistence } from './useTheme';
@@ -3278,16 +3282,12 @@ export function PageFeedbackToolbarCSS({
           title={!isActive ? '开始反馈模式' : undefined}
         >
           {/* Toggle content - visible when collapsed */}
-          <div className={`${styles.toggleContent} ${!isActive ? styles.visible : styles.hidden}`}>
-            <IconListSparkle size={24} />
-            {hasVisibleAnnotations && (
-              <span
-                className={`${styles.badge} ${isActive ? styles.fadeOut : ''} ${showEntranceAnimation ? styles.entrance : ''}`}
-              >
-                {visibleAnnotations.length}
-              </span>
-            )}
-          </div>
+          <ToggleContent
+            isActive={isActive}
+            hasVisibleAnnotations={hasVisibleAnnotations}
+            visibleAnnotationsCount={visibleAnnotations.length}
+            showEntranceAnimation={showEntranceAnimation}
+          />
 
           {/* Controls content - visible when expanded */}
           <div
@@ -3745,48 +3745,26 @@ export function PageFeedbackToolbarCSS({
 
       {/* Blank canvas backdrop — stays mounted so opacity transition works on open/close */}
       {(toolbarMode === 'layout' || designOverlayExiting) && (
-        <div
-          className={`${designStyles.blankCanvas} ${canvasReady ? designStyles.visible : ''} ${designInteracting ? designStyles.gridActive : ''}`}
-          style={{ '--canvas-opacity': canvasOpacity } as React.CSSProperties}
-          data-feedback-toolbar
+        <BlankCanvasBackdrop
+          visible={canvasReady}
+          designInteracting={designInteracting}
+          canvasOpacity={canvasOpacity}
         />
       )}
 
       {/* Wireframe hint — bottom-left notice */}
       {isDesignMode && blankCanvas && canvasReady && (
-        <div className={designStyles.wireframeNotice} data-feedback-toolbar>
-          <div className={designStyles.wireframeOpacityRow}>
-            <span className={designStyles.wireframeOpacityLabel}>Toggle Opacity</span>
-            <input
-              type="range"
-              className={designStyles.wireframeOpacitySlider}
-              min={0}
-              max={1}
-              step={0.01}
-              value={canvasOpacity}
-              onChange={(e) => setCanvasOpacity(Number(e.target.value))}
-            />
-          </div>
-          <div className={designStyles.wireframeNoticeTitleRow}>
-            <span className={designStyles.wireframeNoticeTitle}>Wireframe Mode</span>
-            <span className={designStyles.wireframeNoticeDivider} />
-            <button
-              className={designStyles.wireframeStartOver}
-              onClick={() => {
-                setDesignClearSignal((n) => n + 1);
-                setRearrangeState({ sections: [], originalOrder: [], detectedAt: Date.now() });
-                wireframeStashRef.current = { rearrange: null, placements: [] };
-                setWireframePurpose('');
-                clearWireframeState(pathname);
-              }}
-            >
-              Start Over
-            </button>
-          </div>
-          Drag components onto the canvas.
-          <br />
-          Copied output will only include the wireframed layout.
-        </div>
+        <WireframeHint
+          canvasOpacity={canvasOpacity}
+          onOpacityChange={setCanvasOpacity}
+          onStartOver={() => {
+            setDesignClearSignal((n) => n + 1);
+            setRearrangeState({ sections: [], originalOrder: [], detectedAt: Date.now() });
+            wireframeStashRef.current = { rearrange: null, placements: [] };
+            setWireframePurpose('');
+            clearWireframeState(pathname);
+          }}
+        />
       )}
 
       {/* Layout mode overlay — passthrough when no component selected */}
@@ -3923,12 +3901,7 @@ export function PageFeedbackToolbarCSS({
       )}
 
       {/* Draw canvas — outside overlay so it can fade on toolbar close */}
-      <canvas
-        ref={drawCanvasRef}
-        className={`${styles.drawCanvas} ${isDrawMode ? styles.active : ''}`}
-        style={{ opacity: shouldShowMarkers ? 1 : 0, transition: 'opacity 0.15s ease' }}
-        data-feedback-toolbar
-      />
+      <DrawCanvas isDrawMode={isDrawMode} shouldShowMarkers={shouldShowMarkers} canvasRef={drawCanvasRef} />
 
       {/* Markers layer - normal scrolling markers */}
       <AnnotationMarkerList
@@ -3990,32 +3963,7 @@ export function PageFeedbackToolbarCSS({
           />
 
           {/* Cmd+shift+click multi-select highlights (during selection, before releasing modifiers) */}
-          {pendingMultiSelectElements
-            .filter((item) => document.contains(item.element))
-            .map((item, index) => {
-              const rect = item.element.getBoundingClientRect();
-              // Only show green if 2+ elements selected, otherwise use default blue
-              const isMulti = pendingMultiSelectElements.length > 1;
-              return (
-                <div
-                  key={index}
-                  className={isMulti ? styles.multiSelectOutline : styles.singleSelectOutline}
-                  style={{
-                    position: 'fixed',
-                    left: rect.left,
-                    top: rect.top,
-                    width: rect.width,
-                    height: rect.height,
-                    ...(isMulti
-                      ? {}
-                      : {
-                          borderColor: 'color-mix(in srgb, var(--agentation-color-accent) 60%, transparent)',
-                          backgroundColor: 'color-mix(in srgb, var(--agentation-color-accent) 5%, transparent)',
-                        }),
-                  }}
-                />
-              );
-            })}
+          <MultiSelectHighlights elements={pendingMultiSelectElements} />
 
           {/* Marker hover outline (shows bounding box of hovered annotation) */}
           {hoveredMarkerId && !pendingAnnotation && (
