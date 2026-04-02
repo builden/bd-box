@@ -15,6 +15,7 @@ import {
   IconXmarkLarge,
   IconLayout,
   IconEdit,
+  IconChatEllipsis,
 } from '../icons';
 import { HelpTooltip } from '../help-tooltip';
 import { DesignMode } from '../design-mode';
@@ -140,6 +141,9 @@ export type OutputDetailLevel = 'compact' | 'standard' | 'detailed' | 'forensic'
 // ReactComponentMode is now derived from outputDetail when reactEnabled is true
 export type ReactComponentMode = 'smart' | 'filtered' | 'all' | 'off';
 type MarkerClickBehavior = 'edit' | 'delete';
+
+// Toolbar mode - mutually exclusive
+export type ToolbarMode = 'annotation' | 'style' | 'layout' | null;
 
 export type ToolbarSettings = {
   outputDetail: OutputDetailLevel;
@@ -425,7 +429,7 @@ export function PageFeedbackToolbarCSS({
   const [tooltipsHidden, setTooltipsHidden] = useState(false);
 
   // Layout mode state
-  const [isDesignMode, setIsDesignMode] = useState(false);
+  const [toolbarMode, setToolbarMode] = useState<ToolbarMode>(null);
   const [designOverlayExiting, setDesignOverlayExiting] = useState(false);
   const [designPlacements, setDesignPlacements] = useState<DesignPlacement[]>([]);
   const [activeDesignComponent, setActiveDesignComponent] = useState<DesignComponentType | null>(null);
@@ -450,8 +454,12 @@ export function PageFeedbackToolbarCSS({
   });
 
   // Style editor state
-  const [isStyleEditorMode, setIsStyleEditorMode] = useState(false);
   const [styleEditorElement, setStyleEditorElement] = useState<HTMLElement | null>(null);
+
+  // Derived mode booleans
+  const isDesignMode = toolbarMode === 'layout';
+  const isStyleEditorMode = toolbarMode === 'style';
+  const isAnnotationMode = toolbarMode === 'annotation';
 
   // Cross-overlay deselect signals — bump one to deselect the other
   const [designDeselectSignal, setDesignDeselectSignal] = useState(0);
@@ -639,7 +647,7 @@ export function PageFeedbackToolbarCSS({
 
   // Unified marker visibility - depends on toolbar active, showMarkers toggle, and not blank canvas
   // This single effect handles all marker show/hide animations
-  const shouldShowMarkers = isActive && showMarkers && !isDesignMode;
+  const shouldShowMarkers = isActive && showMarkers && !isDesignMode && !isStyleEditorMode && isAnnotationMode;
   useEffect(() => {
     if (shouldShowMarkers) {
       // Show markers - reset animations and make visible
@@ -1564,7 +1572,7 @@ export function PageFeedbackToolbarCSS({
   // Close layout mode — palette + overlays exit concurrently
   const closeDesignMode = useCallback(() => {
     setDesignOverlayExiting(true);
-    setIsDesignMode(false);
+    setToolbarMode(null);
     setActiveDesignComponent(null);
     // Don't reset subMode here — it causes a crossfade during exit animation.
     // It stays on the last-used tab for next time.
@@ -1576,9 +1584,9 @@ export function PageFeedbackToolbarCSS({
 
   // Deactivate toolbar — if in layout mode, animate out overlays independently
   const deactivate = useCallback(() => {
-    if (isDesignMode) {
+    if (toolbarMode === 'layout') {
       setDesignOverlayExiting(true);
-      setIsDesignMode(false);
+      setToolbarMode(null);
       setActiveDesignComponent(null);
       clearTimeout(designExitTimer.current);
       designExitTimer.current = originalSetTimeout(() => {
@@ -1586,12 +1594,12 @@ export function PageFeedbackToolbarCSS({
       }, 300);
     }
     // Close style editor mode if active
-    if (isStyleEditorMode) {
-      setIsStyleEditorMode(false);
+    if (toolbarMode === 'style') {
       setStyleEditorElement(null);
     }
+    setToolbarMode(null);
     setIsActive(false);
-  }, [isDesignMode, isStyleEditorMode]);
+  }, [toolbarMode]);
 
   // Freeze animations (delegates to freeze-animations utility)
   const freezeAnimations = useCallback(() => {
@@ -1739,9 +1747,9 @@ export function PageFeedbackToolbarCSS({
     };
   }, []);
 
-  // Custom cursor
+  // Custom cursor - only in annotation and style editor modes
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive || (toolbarMode !== 'annotation' && toolbarMode !== 'style')) return;
 
     const textElementsSelector = [
       'p',
@@ -1805,7 +1813,7 @@ export function PageFeedbackToolbarCSS({
       const existingStyle = document.getElementById('feedback-cursor-styles');
       if (existingStyle) existingStyle.remove();
     };
-  }, [isActive]);
+  }, [isActive, toolbarMode]);
 
   // Cursor change when hovering a drawing stroke (both draw mode and normal mode)
   useEffect(() => {
@@ -1815,9 +1823,12 @@ export function PageFeedbackToolbarCSS({
     }
   }, [hoveredDrawingIdx, isActive]);
 
-  // Handle mouse move
+  // Handle mouse move - active in annotation mode and style editor mode
   useEffect(() => {
-    if (!isActive || pendingAnnotation || isDrawMode || isDesignMode) return;
+    // Don't run if not active, or in modes that don't need hover info
+    if (!isActive || isDrawMode || isDesignMode || pendingAnnotation) return;
+    // Only show hover info in annotation or style mode
+    if (toolbarMode !== 'annotation' && toolbarMode !== 'style') return;
 
     const handleMouseMove = (e: MouseEvent) => {
       // Use composedPath to get actual target inside shadow DOM
@@ -1848,7 +1859,7 @@ export function PageFeedbackToolbarCSS({
 
     document.addEventListener('mousemove', handleMouseMove);
     return () => document.removeEventListener('mousemove', handleMouseMove);
-  }, [isActive, pendingAnnotation, isDrawMode, isDesignMode, effectiveReactMode, drawStrokes]);
+  }, [isActive, pendingAnnotation, isDrawMode, isDesignMode, toolbarMode, effectiveReactMode, drawStrokes]);
 
   // Start editing an annotation (right-click or click on drawing stroke)
   const startEditAnnotation = useCallback((annotation: Annotation) => {
@@ -2046,6 +2057,8 @@ export function PageFeedbackToolbarCSS({
     isActive,
     isDrawMode,
     isDesignMode,
+    isStyleEditorMode,
+    isAnnotationMode,
     pendingAnnotation,
     editingAnnotation,
     settings.blockInteractions,
@@ -3223,7 +3236,7 @@ export function PageFeedbackToolbarCSS({
 
     const constrainPosition = () => {
       const padding = 20;
-      const wrapperWidth = 337; // .toolbar wrapper width
+      const wrapperWidth = 377; // .toolbar wrapper width
       const toolbarHeight = 44;
 
       let newX = toolbarPosition.x;
@@ -3266,13 +3279,13 @@ export function PageFeedbackToolbarCSS({
 
       if (e.key === 'Escape') {
         // Exit style editor mode first if active
-        if (isStyleEditorMode) {
-          setIsStyleEditorMode(false);
+        if (toolbarMode === 'style') {
+          setToolbarMode(null);
           setStyleEditorElement(null);
           return;
         }
         // Exit layout mode first if active
-        if (isDesignMode) {
+        if (toolbarMode === 'layout') {
           if (activeDesignComponent) {
             setActiveDesignComponent(null);
           } else {
@@ -3283,6 +3296,11 @@ export function PageFeedbackToolbarCSS({
         // Exit draw mode first if active
         if (isDrawMode) {
           setIsDrawMode(false);
+          return;
+        }
+        // Exit annotation mode if active
+        if (toolbarMode === 'annotation') {
+          setToolbarMode(null);
           return;
         }
         // Clear multi-select if active
@@ -3327,14 +3345,14 @@ export function PageFeedbackToolbarCSS({
         if (isDrawMode) setIsDrawMode(false);
         if (showSettings) setShowSettings(false);
         if (pendingAnnotation) cancelAnnotation();
-        if (isStyleEditorMode) {
-          setIsStyleEditorMode(false);
+        if (toolbarMode === 'style') {
+          setToolbarMode(null);
           setStyleEditorElement(null);
         }
-        if (isDesignMode) {
+        if (toolbarMode === 'layout') {
           closeDesignMode();
         } else {
-          setIsDesignMode(true);
+          setToolbarMode('layout');
         }
       }
 
@@ -3345,11 +3363,24 @@ export function PageFeedbackToolbarCSS({
         if (isDrawMode) setIsDrawMode(false);
         if (showSettings) setShowSettings(false);
         if (pendingAnnotation) cancelAnnotation();
-        if (isDesignMode) closeDesignMode();
-        setIsStyleEditorMode(!isStyleEditorMode);
-        if (isStyleEditorMode) {
+        if (toolbarMode === 'layout') closeDesignMode();
+        // Toggle style mode
+        setToolbarMode(toolbarMode === 'style' ? null : 'style');
+        if (toolbarMode === 'style') {
           setStyleEditorElement(null);
         }
+      }
+
+      // "A" to toggle annotation mode
+      if (e.key === 'a' || e.key === 'A') {
+        e.preventDefault();
+        hideTooltipsUntilMouseLeave();
+        if (isDrawMode) setIsDrawMode(false);
+        if (showSettings) setShowSettings(false);
+        if (pendingAnnotation) cancelAnnotation();
+        if (toolbarMode === 'layout') closeDesignMode();
+        // Toggle annotation mode
+        setToolbarMode(toolbarMode === 'annotation' ? null : 'annotation');
       }
 
       // "H" to toggle marker visibility
@@ -3584,21 +3615,24 @@ export function PageFeedbackToolbarCSS({
                   if (isDrawMode) setIsDrawMode(false);
                   if (showSettings) setShowSettings(false);
                   if (pendingAnnotation) cancelAnnotation();
-                  if (isDesignMode) {
+                  if (toolbarMode === 'layout') {
                     closeDesignMode();
                   } else {
-                    setIsDesignMode(true);
+                    // Exit other modes when entering layout mode
+                    setToolbarMode('layout');
                   }
                 }}
-                data-active={isDesignMode}
+                data-active={toolbarMode === 'layout'}
                 style={
-                  isDesignMode && blankCanvas ? { color: '#f97316', background: 'rgba(249, 115, 22, 0.25)' } : undefined
+                  toolbarMode === 'layout' && blankCanvas
+                    ? { color: '#f97316', background: 'rgba(249, 115, 22, 0.25)' }
+                    : undefined
                 }
               >
                 <IconLayout size={21} />
               </button>
               <span className={styles.buttonTooltip}>
-                {isDesignMode ? '退出布局模式' : '布局模式'}
+                {toolbarMode === 'layout' ? '退出布局模式' : '布局模式'}
                 <span className={styles.shortcut}>L</span>
               </span>
             </div>
@@ -3612,17 +3646,46 @@ export function PageFeedbackToolbarCSS({
                   if (isDrawMode) setIsDrawMode(false);
                   if (showSettings) setShowSettings(false);
                   if (pendingAnnotation) cancelAnnotation();
-                  if (isDesignMode) closeDesignMode();
-                  setIsStyleEditorMode(!isStyleEditorMode);
+                  if (toolbarMode === 'layout') closeDesignMode();
+                  // Toggle style mode
+                  setToolbarMode(toolbarMode === 'style' ? null : 'style');
                 }}
-                data-active={isStyleEditorMode}
-                style={isStyleEditorMode ? { color: '#0088FF', background: 'rgba(0, 136, 255, 0.25)' } : undefined}
+                data-active={toolbarMode === 'style'}
+                style={
+                  toolbarMode === 'style' ? { color: '#0088FF', background: 'rgba(0, 136, 255, 0.25)' } : undefined
+                }
               >
                 <IconEdit size={21} />
               </button>
               <span className={styles.buttonTooltip}>
-                {isStyleEditorMode ? '退出样式编辑' : '编辑样式'}
+                {toolbarMode === 'style' ? '退出样式编辑' : '编辑样式'}
                 <span className={styles.shortcut}>S</span>
+              </span>
+            </div>
+
+            <div className={styles.buttonWrapper}>
+              <button
+                className={`${styles.controlButton} ${!isDarkMode ? styles.light : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  hideTooltipsUntilMouseLeave();
+                  if (isDrawMode) setIsDrawMode(false);
+                  if (showSettings) setShowSettings(false);
+                  if (pendingAnnotation) cancelAnnotation();
+                  if (toolbarMode === 'layout') closeDesignMode();
+                  // Toggle annotation mode
+                  setToolbarMode(toolbarMode === 'annotation' ? null : 'annotation');
+                }}
+                data-active={toolbarMode === 'annotation'}
+                style={
+                  toolbarMode === 'annotation' ? { color: '#34c759', background: 'rgba(52, 199, 89, 0.25)' } : undefined
+                }
+              >
+                <IconChatEllipsis size={21} />
+              </button>
+              <span className={styles.buttonTooltip}>
+                {toolbarMode === 'annotation' ? '退出标注模式' : '标注模式'}
+                <span className={styles.shortcut}>A</span>
               </span>
             </div>
 
@@ -3634,7 +3697,7 @@ export function PageFeedbackToolbarCSS({
                   hideTooltipsUntilMouseLeave();
                   setShowMarkers(!showMarkers);
                 }}
-                disabled={!hasAnnotations || isDesignMode}
+                disabled={!hasAnnotations || toolbarMode !== 'annotation'}
               >
                 <IconEyeAnimated size={24} isOpen={showMarkers} />
               </button>
@@ -3929,11 +3992,11 @@ export function PageFeedbackToolbarCSS({
           />
 
           {/* Style Editor Panel */}
-          {isStyleEditorMode && (
+          {toolbarMode === 'style' && (
             <StyleEditor
               element={styleEditorElement}
               onClose={() => {
-                setIsStyleEditorMode(false);
+                setToolbarMode(null);
                 setStyleEditorElement(null);
               }}
               onCopyDiff={(diff: StyleChange) => {
@@ -3947,7 +4010,7 @@ export function PageFeedbackToolbarCSS({
       </div>
 
       {/* Blank canvas backdrop — stays mounted so opacity transition works on open/close */}
-      {(isDesignMode || designOverlayExiting) && (
+      {(toolbarMode === 'layout' || designOverlayExiting) && (
         <div
           className={`${designStyles.blankCanvas} ${canvasReady ? designStyles.visible : ''} ${designInteracting ? designStyles.gridActive : ''}`}
           style={{ '--canvas-opacity': canvasOpacity } as React.CSSProperties}

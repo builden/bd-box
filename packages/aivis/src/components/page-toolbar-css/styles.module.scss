@@ -175,8 +175,9 @@
   position: fixed;
   bottom: 1.25rem;
   right: 1.25rem;
-  width: 337px;
+  width: 377px;
   z-index: 100000;
+  outline: none;
   font-family:
     system-ui,
     -apple-system,
@@ -209,6 +210,7 @@
   background: #1a1a1a;
   color: #fff;
   border: none;
+  outline: none;
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.2),
     0 4px 16px rgba(0, 0, 0, 0.1);
@@ -252,10 +254,10 @@
     height: 44px;
     border-radius: 1.5rem;
     padding: 0.375rem;
-    width: 337px;
+    width: 377px;
 
     &.serverConnected {
-      width: 377px;
+      width: 417px;
     }
   }
 }
@@ -352,6 +354,7 @@
   border: none;
   background: transparent;
   color: rgba(255, 255, 255, 0.85);
+  outline: none;
   transition:
     background-color 0.15s ease,
     color 0.15s ease,

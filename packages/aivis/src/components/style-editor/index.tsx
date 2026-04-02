@@ -36,7 +36,10 @@ const EDITABLE_PROPERTIES = [
   'backgroundColor',
   'fontSize',
   'fontWeight',
+  'fontFamily',
   'lineHeight',
+  'letterSpacing',
+  'textDecoration',
   'textAlign',
   'borderRadius',
   'borderWidth',
@@ -77,7 +80,10 @@ const PROPERTY_CONFIG: Record<string, { label: string; unit?: string; colorInput
   backgroundColor: { label: 'Background', colorInput: true },
   fontSize: { label: 'Font Size', unit: 'px' },
   fontWeight: { label: 'Font Weight' },
+  fontFamily: { label: 'Font Family' },
   lineHeight: { label: 'Line Height' },
+  letterSpacing: { label: 'Letter Spacing', unit: 'px' },
+  textDecoration: { label: 'Text Decoration' },
   textAlign: { label: 'Text Align' },
   borderRadius: { label: 'Border Radius', unit: 'px' },
   borderWidth: { label: 'Border Width', unit: 'px' },
@@ -376,6 +382,111 @@ function BoxModelEditor({ computedStyles, modifiedValues, onValueChange, isDarkM
 }
 
 // =============================================================================
+// Typography Editor Component (Figma Style)
+// =============================================================================
+
+type TypographyEditorProps = {
+  computedStyles: Record<string, string>;
+  modifiedValues: Record<string, string>;
+  onValueChange: (property: string, value: string) => void;
+  isDarkMode?: boolean;
+};
+
+function TypographyEditor({ computedStyles, modifiedValues, onValueChange, isDarkMode = true }: TypographyEditorProps) {
+  const getValue = (prop: string) => modifiedValues[prop] ?? computedStyles[prop] ?? '';
+
+  const fontFamily = getValue('fontFamily');
+  const fontSize = getValue('fontSize');
+  const fontWeight = getValue('fontWeight');
+  const lineHeight = getValue('lineHeight');
+  const letterSpacing = getValue('letterSpacing');
+
+  // Check if any typography values exist
+  const hasTypography = fontFamily || fontSize || fontWeight || lineHeight || letterSpacing;
+
+  if (!hasTypography) return null;
+
+  return (
+    <div className={`${styles.typographyEditor} ${!isDarkMode ? styles.light : ''}`}>
+      <div className={styles.typographyTitle}>Typography</div>
+
+      <div className={styles.typographyRow}>
+        {/* Font Family */}
+        <div className={styles.typographyField}>
+          <label className={styles.typographyLabel}>Font</label>
+          <input
+            type="text"
+            className={styles.typographyInput}
+            value={fontFamily}
+            onChange={(e) => onValueChange('fontFamily', e.target.value)}
+            placeholder="System"
+          />
+        </div>
+
+        {/* Font Size */}
+        <div className={styles.typographyField}>
+          <label className={styles.typographyLabel}>Size</label>
+          <input
+            type="text"
+            className={styles.typographyInput}
+            value={fontSize}
+            onChange={(e) => onValueChange('fontSize', e.target.value)}
+            placeholder="14"
+          />
+        </div>
+
+        {/* Font Weight */}
+        <div className={styles.typographyField}>
+          <label className={styles.typographyLabel}>Weight</label>
+          <select
+            className={styles.typographySelect}
+            value={fontWeight}
+            onChange={(e) => onValueChange('fontWeight', e.target.value)}
+          >
+            <option value="">-</option>
+            <option value="100">100 Thin</option>
+            <option value="200">200 Extra Light</option>
+            <option value="300">300 Light</option>
+            <option value="400">400 Regular</option>
+            <option value="500">500 Medium</option>
+            <option value="600">600 Semi Bold</option>
+            <option value="700">700 Bold</option>
+            <option value="800">800 Extra Bold</option>
+            <option value="900">900 Black</option>
+          </select>
+        </div>
+      </div>
+
+      <div className={styles.typographyRow}>
+        {/* Line Height */}
+        <div className={styles.typographyField}>
+          <label className={styles.typographyLabel}>Line</label>
+          <input
+            type="text"
+            className={styles.typographyInput}
+            value={lineHeight}
+            onChange={(e) => onValueChange('lineHeight', e.target.value)}
+            placeholder="1.5"
+          />
+        </div>
+
+        {/* Letter Spacing */}
+        <div className={styles.typographyField}>
+          <label className={styles.typographyLabel}>Spacing</label>
+          <input
+            type="text"
+            className={styles.typographyInput}
+            value={letterSpacing}
+            onChange={(e) => onValueChange('letterSpacing', e.target.value)}
+            placeholder="0"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
 // Component
 // =============================================================================
 
@@ -521,10 +632,22 @@ export function StyleEditor({ element, onClose, onCopyDiff, isDarkMode = true }:
     'paddingLeft',
   ]);
 
+  // Typography properties are handled by TypographyEditor
+  const typographyProperties = new Set([
+    'fontFamily',
+    'fontSize',
+    'fontWeight',
+    'lineHeight',
+    'letterSpacing',
+    'textDecoration',
+    'textAlign',
+  ]);
+
   const filteredProperties = EDITABLE_PROPERTIES.filter((prop) => {
     if (boxModelProperties.has(prop)) return false;
+    if (typographyProperties.has(prop)) return false;
     const hasValue = computedStyles[prop] && computedStyles[prop] !== '';
-    const isCommon = ['color', 'backgroundColor', 'fontSize', 'borderRadius'].includes(prop);
+    const isCommon = ['color', 'backgroundColor', 'borderRadius'].includes(prop);
     return hasValue || isCommon;
   });
 
@@ -560,6 +683,14 @@ export function StyleEditor({ element, onClose, onCopyDiff, isDarkMode = true }:
 
           {/* Box Model Visual Editor */}
           <BoxModelEditor
+            computedStyles={computedStyles}
+            modifiedValues={modifiedValues}
+            onValueChange={handleValueChange}
+            isDarkMode={isDarkMode}
+          />
+
+          {/* Typography Editor */}
+          <TypographyEditor
             computedStyles={computedStyles}
             modifiedValues={modifiedValues}
             onValueChange={handleValueChange}

@@ -501,7 +501,16 @@ export function getDetailedComputedStyles(target: HTMLElement): Record<string, s
 
   if (TEXT_ELEMENTS.has(tag)) {
     // Typography-focused for text elements
-    properties = ['color', 'fontSize', 'fontWeight', 'fontFamily', 'lineHeight'];
+    properties = [
+      'color',
+      'fontSize',
+      'fontWeight',
+      'fontFamily',
+      'lineHeight',
+      'letterSpacing',
+      'textDecoration',
+      'textAlign',
+    ];
   } else if (tag === 'button' || (tag === 'a' && target.getAttribute('role') === 'button')) {
     // Appearance and spacing for interactive elements
     properties = [
