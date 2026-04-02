@@ -40,18 +40,11 @@ import {
 import {
   loadAnnotations,
   loadAllAnnotations,
-  saveAnnotations,
   getStorageKey,
   loadSessionId,
   saveSessionId,
   clearSessionId,
   saveAnnotationsWithSyncMarker,
-  loadDesignPlacements,
-  saveDesignPlacements,
-  clearDesignPlacements,
-  loadRearrangeState,
-  saveRearrangeState,
-  clearRearrangeState,
   loadWireframeState,
   saveWireframeState,
   clearWireframeState,
@@ -167,6 +160,9 @@ import { useHealthCheck } from './useHealthCheck';
 import { useToolbarConstrain } from './useToolbarConstrain';
 import { useScrollTracking } from './useScrollTracking';
 import { useStopEventPropagation } from './useStopEventPropagation';
+import { useAnnotationsStorage } from './useAnnotationsStorage';
+import { useDesignPlacementsStorage } from './useDesignPlacementsStorage';
+import { useRearrangeStorage } from './useRearrangeStorage';
 import {
   COLOR_OPTIONS,
   ANIMATION,
@@ -272,7 +268,6 @@ export function PageFeedbackToolbarCSS({
   const [designOverlayExiting, setDesignOverlayExiting] = useAtom(designOverlayExitingAtom);
   const [designPlacements, setDesignPlacements] = useAtom(designPlacementsAtom);
   const [activeDesignComponent, setActiveDesignComponent] = useAtom(activeDesignComponentAtom);
-  const designPlacementsLoaded = useRef(false);
   // Sub-mode state removed — unified mode renders both overlays simultaneously
   const [blankCanvas, setBlankCanvas] = useAtom(blankCanvasAtom);
   const [canvasReady, setCanvasReady] = useAtom(canvasReadyAtom); // delays .visible by one frame on mount
@@ -281,7 +276,6 @@ export function PageFeedbackToolbarCSS({
   const [wireframePurpose, setWireframePurpose] = useAtom(wireframePurposeAtom);
   const [designInteracting, setDesignInteracting] = useAtom(designInteractingAtom);
   const [rearrangeState, setRearrangeState] = useAtom(rearrangeStateAtom);
-  const rearrangeLoaded = useRef(false);
   // Stash explore/wireframe state for full isolation between modes
   const exploreStashRef = useRef<{ rearrange: RearrangeState | null; placements: DesignPlacement[] }>({
     rearrange: null,
@@ -924,69 +918,30 @@ export function PageFeedbackToolbarCSS({
   });
 
   // Save annotations (preserving sync markers if connected to a session)
-  useEffect(() => {
-    if (mounted && annotations.length > 0) {
-      if (currentSessionId) {
-        // Connected to session - save with sync marker to prevent re-upload on refresh
-        saveAnnotationsWithSyncMarker(pathname, annotations, currentSessionId);
-      } else {
-        // Not connected - save without markers (will sync when connected)
-        saveAnnotations(pathname, annotations);
-      }
-    } else if (mounted && annotations.length === 0) {
-      localStorage.removeItem(getStorageKey(pathname));
-    }
-  }, [annotations, pathname, mounted, currentSessionId]);
+  useAnnotationsStorage({
+    annotations,
+    pathname,
+    mounted,
+    currentSessionId,
+  });
 
   // Load design placements from localStorage on mount
-  useEffect(() => {
-    if (mounted && !designPlacementsLoaded.current) {
-      designPlacementsLoaded.current = true;
-      const stored = loadDesignPlacements<DesignPlacement>(pathname);
-      if (stored.length > 0) setDesignPlacements(stored);
-    }
-  }, [mounted, pathname]);
-
-  // Save design placements to localStorage (only explore-mode data — wireframe has its own key)
-  useEffect(() => {
-    if (mounted && designPlacementsLoaded.current && !blankCanvas) {
-      if (designPlacements.length > 0) {
-        saveDesignPlacements(pathname, designPlacements);
-      } else {
-        clearDesignPlacements(pathname);
-      }
-    }
-  }, [designPlacements, pathname, mounted, blankCanvas]);
+  useDesignPlacementsStorage({
+    designPlacements,
+    pathname,
+    mounted,
+    blankCanvas,
+    onLoadPlacements: setDesignPlacements,
+  });
 
   // Load rearrange state from localStorage on mount
-  useEffect(() => {
-    if (mounted && !rearrangeLoaded.current) {
-      rearrangeLoaded.current = true;
-      const stored = loadRearrangeState<RearrangeState>(pathname);
-      if (stored) {
-        // Migrate old state that lacks currentRect
-        const migrated = {
-          ...stored,
-          sections: stored.sections.map((s) => ({
-            ...s,
-            currentRect: s.currentRect ?? { ...s.originalRect },
-          })),
-        };
-        setRearrangeState(migrated);
-      }
-    }
-  }, [mounted, pathname]);
-
-  // Save rearrange state to localStorage (only explore-mode data — wireframe has its own key)
-  useEffect(() => {
-    if (mounted && rearrangeLoaded.current && !blankCanvas) {
-      if (rearrangeState) {
-        saveRearrangeState(pathname, rearrangeState);
-      } else {
-        clearRearrangeState(pathname);
-      }
-    }
-  }, [rearrangeState, pathname, mounted, blankCanvas]);
+  useRearrangeStorage({
+    rearrangeState,
+    pathname,
+    mounted,
+    blankCanvas,
+    onLoadState: setRearrangeState,
+  });
 
   // Load wireframe stash from localStorage on mount
   const wireframeLoaded = useRef(false);
