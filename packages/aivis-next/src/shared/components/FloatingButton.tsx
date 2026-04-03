@@ -45,11 +45,11 @@ export function FloatingButton({ onClick, className = '' }: FloatingButtonProps)
         'bg-neutral-900 text-white/85',
         'flex items-center justify-center',
         'cursor-grab select-none',
-        'shadow-[0_2px_8px_rgba(0,0,0,0.2),0_4px_16px_rgba(0,0,0,0.1)]',
-        'hover:bg-neutral-800',
-        'active:scale-95 active:cursor-grabbing',
+        'shadow-[0_4px_12px_rgba(0,0,0,0.25),0_8px_24px_rgba(0,0,0,0.15)]',
+        'hover:bg-neutral-800 hover:shadow-[0_6px_16px_rgba(0,0,0,0.3),0_12px_32px_rgba(0,0,0,0.2)]',
+        'active:scale-90 active:cursor-grabbing',
+        'transition-all duration-150 ease-out',
         isDragging && 'cursor-grabbing',
-        'animate-toolbar-enter',
         'z-[100000]',
         className
       )}
