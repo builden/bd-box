@@ -154,15 +154,15 @@ import { ToggleContent } from './components/ToggleContent';
 import { EditAnnotationPopup } from './components/EditAnnotationPopup';
 import { PendingAnnotationPopup } from './components/PendingAnnotationPopup';
 import { getTooltipPosition } from './utils/tooltip-position';
-import { useThemePersistence } from './useTheme';
-import { useEditPopupPosition } from './useEditPopupPosition';
-import { useHealthCheck } from './useHealthCheck';
-import { useToolbarConstrain } from './useToolbarConstrain';
-import { useScrollTracking } from './useScrollTracking';
-import { useStopEventPropagation } from './useStopEventPropagation';
-import { useAnnotationsStorage } from './useAnnotationsStorage';
-import { useDesignPlacementsStorage } from './useDesignPlacementsStorage';
-import { useRearrangeStorage } from './useRearrangeStorage';
+import { useThemePersistence } from './hooks/useTheme';
+import { useEditPopupPosition } from './hooks/useEditPopupPosition';
+import { useHealthCheck } from './hooks/useHealthCheck';
+import { useToolbarConstrain } from './hooks/useToolbarConstrain';
+import { useScrollTracking } from './hooks/useScrollTracking';
+import { useStopEventPropagation } from './hooks/useStopEventPropagation';
+import { useAnnotationsStorage } from './hooks/useAnnotationsStorage';
+import { useDesignPlacementsStorage } from './hooks/useDesignPlacementsStorage';
+import { useRearrangeStorage } from './hooks/useRearrangeStorage';
 import {
   COLOR_OPTIONS,
   ANIMATION,

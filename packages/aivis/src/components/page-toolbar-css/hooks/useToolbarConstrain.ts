@@ -5,7 +5,7 @@
 
 import { useEffect } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
-import { toolbarPositionAtom, isActiveAtom, connectionStatusAtom } from '../../atoms/toolbarAtoms';
+import { toolbarPositionAtom, isActiveAtom, connectionStatusAtom } from '../../../atoms/toolbarAtoms';
 
 export function useToolbarConstrain() {
   const [toolbarPosition] = useAtom(toolbarPositionAtom);

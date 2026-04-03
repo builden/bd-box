@@ -6,7 +6,7 @@
 
 import { useEffect } from 'react';
 import { useAtom } from 'jotai';
-import { isDarkModeAtom } from '../../atoms/toolbarAtoms';
+import { isDarkModeAtom } from '../../../atoms/toolbarAtoms';
 
 export function useThemePersistence() {
   const [isDarkMode] = useAtom(isDarkModeAtom);

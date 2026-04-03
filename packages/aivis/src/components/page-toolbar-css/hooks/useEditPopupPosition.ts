@@ -5,7 +5,7 @@
 
 import { useMemo } from 'react';
 import { useAtomValue } from 'jotai';
-import { editingAnnotationAtom, scrollYAtom } from '../../atoms/toolbarAtoms';
+import { editingAnnotationAtom, scrollYAtom } from '../../../atoms/toolbarAtoms';
 
 const POPUP_HORIZONTAL_MARGIN = 160; // 140px center offset + 20px edge buffer
 const POPUP_VERTICAL_BUFFER = 20;

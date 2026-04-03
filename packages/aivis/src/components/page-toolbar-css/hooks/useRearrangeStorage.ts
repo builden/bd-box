@@ -5,9 +5,9 @@
 
 import { useEffect, useRef } from 'react';
 import { useAtom } from 'jotai';
-import type { RearrangeState } from '../design-mode/types';
-import { loadRearrangeState, saveRearrangeState, clearRearrangeState } from '../../utils/storage';
-import { rearrangeStateAtom, blankCanvasAtom, mountedAtom } from '../../atoms/toolbarAtoms';
+import type { RearrangeState } from '../../design-mode/types';
+import { loadRearrangeState, saveRearrangeState, clearRearrangeState } from '../../../utils/storage';
+import { rearrangeStateAtom, blankCanvasAtom, mountedAtom } from '../../../atoms/toolbarAtoms';
 
 export function useRearrangeStorage() {
   const [rearrangeState, setRearrangeState] = useAtom(rearrangeStateAtom);

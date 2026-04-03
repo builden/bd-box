@@ -5,9 +5,9 @@
 
 import { useEffect, useRef } from 'react';
 import { useAtom } from 'jotai';
-import type { DesignPlacement } from '../design-mode/types';
-import { loadDesignPlacements, saveDesignPlacements, clearDesignPlacements } from '../../utils/storage';
-import { designPlacementsAtom, blankCanvasAtom, mountedAtom } from '../../atoms/toolbarAtoms';
+import type { DesignPlacement } from '../../design-mode/types';
+import { loadDesignPlacements, saveDesignPlacements, clearDesignPlacements } from '../../../utils/storage';
+import { designPlacementsAtom, blankCanvasAtom, mountedAtom } from '../../../atoms/toolbarAtoms';
 
 export function useDesignPlacementsStorage() {
   const [designPlacements, setDesignPlacements] = useAtom(designPlacementsAtom);

@@ -5,8 +5,8 @@
 
 import { useEffect, useRef } from 'react';
 import { useSetAtom } from 'jotai';
-import { scrollYAtom, isScrollingAtom } from '../../atoms/toolbarAtoms';
-import { originalSetTimeout } from '../../utils/freeze-animations';
+import { scrollYAtom, isScrollingAtom } from '../../../atoms/toolbarAtoms';
+import { originalSetTimeout } from '../../../utils/freeze-animations';
 
 export function useScrollTracking() {
   const setScrollY = useSetAtom(scrollYAtom);

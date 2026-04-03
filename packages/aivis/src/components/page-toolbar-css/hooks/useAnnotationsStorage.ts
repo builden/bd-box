@@ -5,8 +5,8 @@
 
 import { useEffect } from 'react';
 import { useAtom } from 'jotai';
-import { saveAnnotations, saveAnnotationsWithSyncMarker, getStorageKey } from '../../utils/storage';
-import { annotationsAtom, mountedAtom, currentSessionIdAtom } from '../../atoms/toolbarAtoms';
+import { saveAnnotations, saveAnnotationsWithSyncMarker, getStorageKey } from '../../../utils/storage';
+import { annotationsAtom, mountedAtom, currentSessionIdAtom } from '../../../atoms/toolbarAtoms';
 
 export function useAnnotationsStorage() {
   const [annotations] = useAtom(annotationsAtom);

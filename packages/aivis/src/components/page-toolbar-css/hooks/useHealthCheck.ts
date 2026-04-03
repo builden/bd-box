@@ -5,8 +5,8 @@
 
 import { useEffect } from 'react';
 import { useSetAtom } from 'jotai';
-import { connectionStatusAtom } from '../../atoms/toolbarAtoms';
-import { originalSetInterval } from '../../utils/freeze-animations';
+import { connectionStatusAtom } from '../../../atoms/toolbarAtoms';
+import { originalSetInterval } from '../../../utils/freeze-animations';
 
 interface UseHealthCheckOptions {
   endpoint: string | undefined;
