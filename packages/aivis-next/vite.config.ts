@@ -8,6 +8,9 @@ export default defineConfig(({ command }) => {
     return {
       plugins: [tailwindcss()],
       root: './example',
+      server: {
+        port: 3002,
+      },
       resolve: {
         alias: {
           '@': resolve(__dirname, './src'),
