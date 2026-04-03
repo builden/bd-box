@@ -1,4 +1,5 @@
 import { FloatingButton } from '../src/shared/components';
+import { Button } from '../src/shared/components';
 
 export function App() {
   return (
@@ -16,47 +17,37 @@ export function App() {
             <h3>按钮卡片</h3>
             <p>这是一个普通的卡片组件</p>
             <div className="nav">
-              <button>主要按钮</button>
-              <button>次要按钮</button>
+              <Button>主要按钮</Button>
+              <Button variant="secondary">次要按钮</Button>
             </div>
           </div>
 
           <div className="card">
             <h3>输入框</h3>
             <p>这是一个输入框组件</p>
-            <input type="text" placeholder="请输入..." style={{ width: '100%', padding: '8px', marginTop: '8px' }} />
+            <input type="text" placeholder="请输入..." className="w-full p-2 mt-2 border border-gray-300 rounded" />
           </div>
 
           <div className="card">
             <h3>颜色选择</h3>
             <p>选择你喜欢的颜色</p>
-            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-              <span style={{ width: 24, height: 24, background: '#0088FF', borderRadius: 4 }} />
-              <span style={{ width: 24, height: 24, background: '#34C759', borderRadius: 4 }} />
-              <span style={{ width: 24, height: 24, background: '#FF383C', borderRadius: 4 }} />
+            <div className="flex gap-2 mt-3">
+              <span className="w-6 h-6 rounded" style={{ backgroundColor: '#0088FF' }} />
+              <span className="w-6 h-6 rounded" style={{ backgroundColor: '#34C759' }} />
+              <span className="w-6 h-6 rounded" style={{ backgroundColor: '#FF383C' }} />
             </div>
           </div>
 
           <div className="card">
             <h3>旋转动画</h3>
             <p>测试动画暂停功能</p>
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 16 }}>
-              <div
-                className="spinner"
-                style={{
-                  width: 48,
-                  height: 48,
-                  border: '4px solid #e0e0e0',
-                  borderTopColor: '#0088FF',
-                  borderRadius: '50%',
-                  animation: 'spin 1s linear infinite',
-                }}
-              />
+            <div className="flex justify-center items-center mt-4">
+              <div className="spinner w-12 h-12 border-4 border-gray-200 border-t-blue-500 rounded-full" />
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 20, marginTop: 40 }}>
+        <div className="flex gap-5 mt-10">
           <div className="sidebar">
             <h4>侧边栏</h4>
             <ul>
@@ -68,15 +59,15 @@ export function App() {
             </ul>
           </div>
 
-          <div style={{ flex: 1 }}>
+          <div className="flex-1">
             <div className="card">
               <h3>主内容区</h3>
               <p>这里是主要内容区域，可以滚动查看更多内容。</p>
-              <div style={{ height: 300, background: '#f0f0f0', marginTop: 16, borderRadius: 8 }}>
+              <div className="h-[300px] bg-gray-200 mt-4 rounded-lg overflow-hidden">
                 <img
                   src="https://picsum.photos/800/300"
                   alt="placeholder"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }}
+                  className="w-full h-full object-cover rounded-lg"
                 />
               </div>
             </div>

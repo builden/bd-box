@@ -49,6 +49,7 @@ export function FloatingButton({ onClick, className = '' }: FloatingButtonProps)
         'hover:bg-neutral-800 hover:shadow-[0_6px_16px_rgba(0,0,0,0.3),0_12px_32px_rgba(0,0,0,0.2)]',
         'active:scale-90 active:cursor-grabbing',
         'transition-all duration-150 ease-out',
+        'animate-toolbar-enter',
         isDragging && 'cursor-grabbing',
         'z-[100000]',
         className
