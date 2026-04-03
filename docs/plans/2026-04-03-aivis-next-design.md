@@ -102,16 +102,33 @@ packages/aivis-next/
 
 ### 阶段 0：空壳（验证构建）
 
-**目标**：建立项目骨架 + 可运行的 Demo
+**目标**：建立项目骨架 + 可运行的 Demo，悬浮按钮外观与原 aivis 一致
 
 **交付物**：
 
 - `packages/aivis-next/` 目录结构
 - Vite + React 19 构建配置
-- `example/App.tsx` 可运行示例
+- `example/App.tsx` 可运行示例（参考原 aivis example）
 - 悬浮按钮渲染
 
-**验证**：`bun run dev` 启动，页面显示按钮
+**验收标准（阶段 0-1）**：
+
+| 检查项         | 规格                                             | 验证方法      |
+| -------------- | ------------------------------------------------ | ------------- |
+| 按钮尺寸       | 44px × 44px                                      | DevTools 测量 |
+| 按钮形状       | 圆形（border-radius: 22px）                      | DevTools 检查 |
+| 按钮背景       | #1a1a1a                                          | DevTools 检查 |
+| 按钮图标       | IconListSparkle（列表+闪光，24px）               | 视觉对比      |
+| 图标颜色       | rgba(255, 255, 255, 0.85)                        | DevTools 检查 |
+| 按钮位置       | 右下角 fixed，bottom: 1.25rem, right: 1.25rem    | DevTools 检查 |
+| Hover 效果     | 背景变 #2a2a2a                                   | 鼠标悬停测试  |
+| 点击效果       | scale(0.95)                                      | 鼠标点击测试  |
+| 进入动画       | scale(0.5) rotate(90deg) → scale(1) rotate(0deg) | 页面刷新观察  |
+| **拖动功能**   | 按钮可拖动到任意位置                             | 拖动测试      |
+| **位置持久化** | 拖动后刷新页面，位置保持                         | 刷新测试      |
+| Example 页面   | 包含 header、grid、card、sidebar、spinner        | 视觉对比原版  |
+
+**验证**：`bun run dev` 启动，对照验收标准逐项检查
 
 ---
 

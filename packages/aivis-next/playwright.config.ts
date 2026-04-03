@@ -6,6 +6,13 @@ export default defineConfig({
   reporter: [['html', { outputFolder: 'tests/test-results/playwright-report' }]],
   use: {
     trace: 'on-first-retry',
+    baseURL: 'http://localhost:3003',
+  },
+  webServer: {
+    command: 'bun run dev',
+    url: 'http://localhost:3003',
+    reuseExistingServer: true,
+    timeout: 120000,
   },
   projects: [
     {
