@@ -430,6 +430,11 @@ export function PageFeedbackToolbarCSS({
   const [pendingExiting, setPendingExiting] = useAtom(pendingExitingAtom);
   const [editExiting, setEditExiting] = useAtom(editExitingAtom);
 
+  // Derived atoms for visible annotations - must be before conditional returns
+  const visibleAnnotations = useAtomValue(visibleAnnotationsAtom);
+  const hasVisibleAnnotations = useAtomValue(hasVisibleAnnotationsAtom);
+  const hasAnnotations = useAtomValue(hasAnnotationsAtom);
+
   // Multi-select drag state - use refs for all drag visuals to avoid re-renders
   const [isDragging, setIsDragging] = useAtom(isDraggingAtom);
   const mouseDownPosRef = useRef<{ x: number; y: number } | null>(null);
@@ -3045,9 +3050,6 @@ export function PageFeedbackToolbarCSS({
   if (!mounted) return null;
   if (isToolbarHidden) return null;
 
-  const visibleAnnotations = useAtomValue(visibleAnnotationsAtom);
-  const hasVisibleAnnotations = useAtomValue(hasVisibleAnnotationsAtom);
-  const hasAnnotations = useAtomValue(hasAnnotationsAtom);
   const exitingAnnotationsList = annotations.filter((a) => exitingMarkers.has(a.id));
 
   return createPortal(
