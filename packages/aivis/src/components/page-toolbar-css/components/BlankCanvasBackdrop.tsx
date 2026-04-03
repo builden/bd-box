@@ -3,7 +3,7 @@
  * Extracted from page-toolbar-css/index.tsx.
  */
 
-import designStyles from '../design-mode/styles.module.scss';
+import designStyles from '../../design-mode/styles.module.scss';
 
 interface BlankCanvasBackdropProps {
   visible: boolean;

@@ -3,8 +3,8 @@
  * Extracted from page-toolbar-css/index.tsx to reduce JSX repetition.
  */
 
-import type { Annotation } from '../../types';
-import styles from './styles.module.scss';
+import type { Annotation } from '../../../types';
+import styles from '../styles.module.scss';
 
 interface EditAnnotationOutlineProps {
   editingAnnotation: Annotation;

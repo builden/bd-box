@@ -3,10 +3,10 @@
  * Extracted from page-toolbar-css/index.tsx.
  */
 
-import type { AnnotationPopupCSSHandle } from '../annotation-popup-css';
-import type { Annotation } from '../../types';
-import { parseComputedStylesString } from '../../utils/element-identification';
-import { AnnotationPopupCSS } from '../annotation-popup-css';
+import type { AnnotationPopupCSSHandle } from '../../annotation-popup-css';
+import type { Annotation } from '../../../types';
+import { parseComputedStylesString } from '../../../utils/element-identification';
+import { AnnotationPopupCSS } from '../../annotation-popup-css';
 import { EditAnnotationOutline } from './EditAnnotationOutline';
 
 interface EditAnnotationPopupProps {

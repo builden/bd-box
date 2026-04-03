@@ -3,7 +3,7 @@
  * Extracted from page-toolbar-css/index.tsx.
  */
 
-import styles from './styles.module.scss';
+import styles from '../styles.module.scss';
 
 interface DrawCanvasProps {
   isDrawMode: boolean;

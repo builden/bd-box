@@ -3,9 +3,9 @@
  * Extracted from page-toolbar-css/index.tsx to reduce JSX repetition.
  */
 
-import type { Annotation } from '../../types';
-import { AnnotationMarker, ExitingMarker } from '../annotation-marker';
-import styles from './styles.module.scss';
+import type { Annotation } from '../../../types';
+import { AnnotationMarker, ExitingMarker } from '../../annotation-marker';
+import styles from '../styles.module.scss';
 
 type MarkerClickBehavior = 'edit' | 'delete';
 

@@ -3,7 +3,7 @@
  * Extracted from page-toolbar-css/index.tsx for better code organization.
  */
 
-import type { Annotation } from '../../types';
+import type { Annotation } from '../../../types';
 
 // Tooltip layout constants (must match CSS)
 const TOOLTIP = {

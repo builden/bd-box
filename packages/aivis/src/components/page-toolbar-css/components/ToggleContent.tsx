@@ -3,8 +3,8 @@
  * Extracted from page-toolbar-css/index.tsx.
  */
 
-import { IconListSparkle } from '../icons';
-import styles from './styles.module.scss';
+import { IconListSparkle } from '../../icons';
+import styles from '../styles.module.scss';
 
 interface ToggleContentProps {
   isActive: boolean;

@@ -3,10 +3,10 @@
  * Extracted from page-toolbar-css/index.tsx.
  */
 
-import { AnnotationPopupCSS, type AnnotationPopupCSSHandle } from '../annotation-popup-css';
-import { PendingMarker } from '../annotation-marker';
-import type { PendingAnnotationData } from '../../atoms/toolbarAtoms';
-import styles from './styles.module.scss';
+import { AnnotationPopupCSS, type AnnotationPopupCSSHandle } from '../../annotation-popup-css';
+import { PendingMarker } from '../../annotation-marker';
+import type { PendingAnnotationData } from '../../../atoms/toolbarAtoms';
+import styles from '../styles.module.scss';
 
 const POPUP_HORIZONTAL_MARGIN = 160;
 const POPUP_VERTICAL_BUFFER = 20;
