@@ -1,11 +1,6 @@
 import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
-
-// Toolbar position type
-export type ToolbarPosition = {
-  x: number;
-  y: number;
-} | null;
+import type { ToolbarPosition } from './types';
 
 // Persistent position atom - saved to localStorage
 export const toolbarPositionAtom = atomWithStorage<ToolbarPosition>(

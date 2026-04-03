@@ -1,11 +1,11 @@
-import { useRef } from 'react';
+import { useRef, useMemo, useCallback } from 'react';
 import { useAtom } from 'jotai';
 import clsx from 'clsx';
 import { IconListSparkle } from './Icons';
-import { isActiveAtom } from '../store/toolbarAtoms';
-import { useFloatingDrag } from '../hooks/useFloatingDrag';
+import { isActiveAtom, isDraggingToolbarAtom } from '../store/toolbarAtoms';
+import { useDragPosition, useDragEvents } from '../hooks';
 
-interface FloatingButtonProps {
+export interface FloatingButtonProps {
   onClick?: () => void;
   className?: string;
 }
@@ -13,16 +13,18 @@ interface FloatingButtonProps {
 export function FloatingButton({ onClick, className = '' }: FloatingButtonProps) {
   const buttonRef = useRef<HTMLDivElement>(null);
   const [, setIsActive] = useAtom(isActiveAtom);
+  const [isDragging] = useAtom(isDraggingToolbarAtom);
 
-  const { toolbarPosition, isDragging, handleMouseDown, handleClick } = useFloatingDrag(buttonRef);
+  const { toolbarPosition, setToolbarPosition } = useDragPosition();
+  const { handleMouseDown, handleClick } = useDragEvents(buttonRef, setToolbarPosition);
 
-  const onClickHandler = () => {
+  const onClickHandler = useCallback(() => {
     if (!handleClick()) return;
     setIsActive(true);
     onClick?.();
-  };
+  }, [handleClick, setIsActive, onClick]);
 
-  const getPositionStyle = () => {
+  const positionStyle = useMemo(() => {
     if (toolbarPosition) {
       return {
         left: toolbarPosition.x,
@@ -33,7 +35,7 @@ export function FloatingButton({ onClick, className = '' }: FloatingButtonProps)
       left: -9999,
       top: -9999,
     };
-  };
+  }, [toolbarPosition]);
 
   return (
     <div
@@ -51,7 +53,7 @@ export function FloatingButton({ onClick, className = '' }: FloatingButtonProps)
         'z-[100000]',
         className
       )}
-      style={getPositionStyle()}
+      style={positionStyle}
       onClick={onClickHandler}
       onMouseDown={handleMouseDown}
       role="button"

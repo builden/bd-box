@@ -1,9 +1,7 @@
-import type { CSSProperties } from 'react';
-
 // List with sparkle icon - the collapsed toolbar toggle icon
-export function IconListSparkle({ size = 24, style = {} }: { size?: number; style?: CSSProperties }) {
+export function IconListSparkle({ size = 24 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={style}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <g clipPath="url(#clip0_list_sparkle)">
         <path
           d="M11.5 12L5.5 12"
