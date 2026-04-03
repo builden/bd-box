@@ -15,9 +15,12 @@
     "dist"
   ],
   "scripts": {
-    "typecheck": "tsc --noEmit",
+    "dev": "vite dev",
     "build": "vite build",
-    "test": "bun test"
+    "preview": "vite preview",
+    "test": "bun test",
+    "test:coverage": "bun test --coverage",
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "react": ">=19.0.0"
