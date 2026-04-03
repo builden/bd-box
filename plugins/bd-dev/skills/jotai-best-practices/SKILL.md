@@ -85,6 +85,16 @@ description: Use when writing, reviewing, or debugging Jotai atoms, including at
 | 状态变化时触发回调 | `atomWithCallback` | jotai-advanced.md |
 | 表单提交/事件处理  | `atomWithCallback` | jotai-advanced.md |
 
+### Q10: 你需要测试 atoms 或组件吗？
+
+| 场景                      | 选择               | 章节             |
+| ------------------------- | ------------------ | ---------------- |
+| React 组件行为测试        | TestProvider + RTL | jotai-testing.md |
+| Node 环境纯 atom 单元测试 | `createStore`      | jotai-testing.md |
+| 注入初始值测试边界情况    | `useHydrateAtoms`  | jotai-testing.md |
+| 派生 atom 依赖追踪验证    | `createStore`      | jotai-testing.md |
+| atomFamily 隔离测试       | `createStore`      | jotai-testing.md |
+
 ---
 
 ## 文档结构
@@ -110,7 +120,6 @@ description: Use when writing, reviewing, or debugging Jotai atoms, including at
 - 工厂模式
 - Utility Atoms（atomWithToggle、atomWithToggleAndStorage）
 - `@builden/bd-utils` 自定义扩展（atomWithDebounce）
-  j'o
 
 ### 优先级 2.5：Immer 不可变更新
 
@@ -143,6 +152,14 @@ description: Use when writing, reviewing, or debugging Jotai atoms, including at
 - jotai-effect（副作用处理）
 - jotai-optics（透镜操作）
 - @builden/bd-utils 自定义扩展（atomWithDebounce）
+
+### 优先级 5：测试专题
+
+[jotai-testing.md](jotai-testing.md) - React 组件测试、Node 环境 atom 测试
+
+- L1: React 组件行为测试（React Testing Library + TestProvider + useHydrateAtoms）
+- L2: Pure atom 单元测试（createStore API）
+- 常见问题（atomFamily、派生依赖、atomWithStorage）
 
 ## 快速参考
 
@@ -222,6 +239,12 @@ const loadableAtom = loadable(asyncAtom);
 ```
 
 ## 测试
+
+[jotai-testing.md](jotai-testing.md) - 系统性测试指南
+
+- L1: React 组件测试（React Testing Library）
+- L2: Node 环境 atom 测试（createStore）
+- 常见问题与解答
 
 [pressure-scenarios.ts](pressure-scenarios.ts) - 23 个压力场景测试
 
