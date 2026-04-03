@@ -1,3 +1,7 @@
+/* Aivis Next 组件样式 - 开发演示用 */
+@import '../src/styles.css';
+
+/* 示例页面样式 */
 * {
   box-sizing: border-box;
 }

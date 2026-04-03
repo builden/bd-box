@@ -70,6 +70,7 @@
         "@testing-library/react": "^16.3.2",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
+        "clsx": "^2.1.1",
         "happy-dom": "^20.8.9",
         "jotai": "^2.19.0",
         "react": "^19.2.4",
