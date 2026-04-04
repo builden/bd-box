@@ -13,13 +13,12 @@ export interface FloatingButtonProps {
 }
 
 export function FloatingButton({ onClick, className = '' }: FloatingButtonProps) {
-  const outerRef = useRef<HTMLDivElement>(null);
-  const innerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLDivElement>(null);
   const [, setIsActive] = useAtom(isActiveAtom);
   const [isDragging] = useAtom(isDraggingToolbarAtom);
 
   const { toolbarPosition, setToolbarPosition } = useDragPosition();
-  const { handleMouseDown, handleClick } = useDragEvents(outerRef, setToolbarPosition, {
+  const { handleMouseDown, handleClick } = useDragEvents(buttonRef, setToolbarPosition, {
     width: DRAG_CONFIG.SIZE,
     height: DRAG_CONFIG.SIZE,
   });
@@ -30,7 +29,7 @@ export function FloatingButton({ onClick, className = '' }: FloatingButtonProps)
     onClick?.();
   }, [handleClick, setIsActive, onClick]);
 
-  const outerStyle = useMemo(() => {
+  const buttonStyle = useMemo(() => {
     if (toolbarPosition) {
       return toTopLeft(toolbarPosition, DRAG_CONFIG.SIZE, DRAG_CONFIG.SIZE);
     }
@@ -42,39 +41,32 @@ export function FloatingButton({ onClick, className = '' }: FloatingButtonProps)
 
   return (
     <div
-      ref={outerRef}
+      ref={buttonRef}
       className={clsx(
-        'fixed w-11 h-11',
+        'fixed w-11 h-11 rounded-full',
+        'bg-neutral-900',
+        'hover:bg-neutral-800',
+        'shadow-[0_4px_12px_rgba(0,0,0,0.25),0_8px_24px_rgba(0,0,0,0.15)]',
+        'hover:shadow-[0_6px_16px_rgba(0,0,0,0.3),0_12px_32px_rgba(0,0,0,0.2)]',
+        'flex items-center justify-center',
+        'text-white/85',
+        'active:scale-95',
+        'transition-all duration-150 ease-out',
+        'animate-toolbar-enter',
         'cursor-grab select-none',
         'focus:outline-none',
         isDragging && 'cursor-grabbing',
         'z-[100000]',
         className
       )}
-      style={outerStyle}
+      style={buttonStyle}
       onClick={onClickHandler}
       onMouseDown={handleMouseDown}
       role="button"
       tabIndex={0}
       aria-label="Toggle toolbar"
     >
-      <div
-        ref={innerRef}
-        className={clsx(
-          'w-full h-full rounded-full',
-          'bg-neutral-900',
-          'hover:bg-neutral-800',
-          'shadow-[0_4px_12px_rgba(0,0,0,0.25),0_8px_24px_rgba(0,0,0,0.15)]',
-          'hover:shadow-[0_6px_16px_rgba(0,0,0,0.3),0_12px_32px_rgba(0,0,0,0.2)]',
-          'flex items-center justify-center',
-          'text-white/85',
-          'active:scale-95',
-          'transition-all duration-150 ease-out',
-          'animate-toolbar-enter'
-        )}
-      >
-        <IconListSparkle size={24} />
-      </div>
+      <IconListSparkle size={24} />
     </div>
   );
 }

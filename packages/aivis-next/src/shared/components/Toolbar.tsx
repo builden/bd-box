@@ -22,13 +22,13 @@ import { toTopLeft } from '../hooks/dragUtils';
 const BUTTON_GAP = 'gap-1.5'; // 6px = 0.375rem
 
 export function Toolbar() {
-  const outerRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
   const [, setIsActive] = useAtom(isActiveAtom);
   const [isDragging] = useAtom(isDraggingToolbarAtom);
   const [isCollapsing, setIsCollapsing] = useAtom(isCollapsingAtom);
 
   const { toolbarPosition, setToolbarPosition } = useDragPosition();
-  const { handleMouseDown } = useDragEvents(outerRef, setToolbarPosition, {
+  const { handleMouseDown } = useDragEvents(toolbarRef, setToolbarPosition, {
     width: TOOLBAR_WIDTH,
     height: DRAG_CONFIG.SIZE,
   });
@@ -44,7 +44,7 @@ export function Toolbar() {
     }
   }, [isCollapsing, setIsCollapsing, setIsActive]);
 
-  const outerStyle = useMemo(() => {
+  const toolbarStyle = useMemo(() => {
     if (toolbarPosition) {
       return toTopLeft(toolbarPosition, TOOLBAR_WIDTH, DRAG_CONFIG.SIZE);
     }
@@ -56,7 +56,7 @@ export function Toolbar() {
 
   return (
     <div
-      ref={outerRef}
+      ref={toolbarRef}
       className={clsx(
         'fixed h-[44px]',
         'cursor-grab select-none',
@@ -64,7 +64,7 @@ export function Toolbar() {
         isDragging && 'cursor-grabbing',
         'z-[100000]'
       )}
-      style={{ ...outerStyle, width: TOOLBAR_WIDTH }}
+      style={{ ...toolbarStyle, width: TOOLBAR_WIDTH }}
       onMouseDown={handleMouseDown}
     >
       {/* Toolbar 容器 - 从右向左展开/收缩 */}
