@@ -16,9 +16,9 @@ import {
 import { isActiveAtom, isDraggingToolbarAtom, isCollapsingAtom } from '../store/toolbarAtoms';
 import { useDragPosition, useDragEvents } from '../hooks';
 import { ToolbarButton } from './ToolbarButton';
+import { TOOLBAR_WIDTH, DRAG_CONFIG } from '../hooks/types';
 
 const BUTTON_GAP = 'gap-1.5'; // 6px = 0.375rem
-const TOOLBAR_WIDTH = 432; // 预计算的 Toolbar 宽度
 
 export function Toolbar() {
   const outerRef = useRef<HTMLDivElement>(null);
@@ -27,7 +27,10 @@ export function Toolbar() {
   const [isCollapsing, setIsCollapsing] = useAtom(isCollapsingAtom);
 
   const { toolbarPosition, setToolbarPosition } = useDragPosition();
-  const { handleMouseDown } = useDragEvents(outerRef, setToolbarPosition);
+  const { handleMouseDown } = useDragEvents(outerRef, setToolbarPosition, {
+    width: TOOLBAR_WIDTH,
+    height: DRAG_CONFIG.SIZE,
+  });
 
   const handleClose = useCallback(() => {
     setIsCollapsing(true);
@@ -42,13 +45,11 @@ export function Toolbar() {
 
   const outerStyle = useMemo(() => {
     if (toolbarPosition) {
-      // toolbarPosition 是 FloatingButton 的中心点
-      // FloatingButton 右边界 = toolbarPosition.x + 22
-      // Toolbar 右边界要对齐 FloatingButton 右边界
-      // 所以 Toolbar left = (toolbarPosition.x + 22) - TOOLBAR_WIDTH
+      // toolbarPosition 是 bottom-right
+      // Toolbar 右边界对齐 bottom-right，left = x - width
       return {
-        left: toolbarPosition.x + 22 - TOOLBAR_WIDTH,
-        top: toolbarPosition.y - 22, // 高度44，中心偏移22
+        left: toolbarPosition.x - TOOLBAR_WIDTH,
+        top: toolbarPosition.y - DRAG_CONFIG.SIZE,
       };
     }
     return {

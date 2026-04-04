@@ -2,21 +2,33 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useAtom } from 'jotai';
 import { isDraggingToolbarAtom } from '../store/toolbarAtoms';
 import { DRAG_CONFIG } from './types';
-import { clampPosition } from './dragUtils';
+import { getMinPosition, getMaxPosition } from './dragUtils';
+
+/**
+ * Options for useDragEvents
+ */
+export interface UseDragEventsOptions {
+  width: number;
+  height: number;
+}
 
 /**
  * useDragEvents - Handles drag mouse events
- * Outer div is positioned at center point, so mouse position = button center
+ * 拖拽逻辑：记录初始鼠标位置和元素位置，拖动时计算偏移量应用新位置
+ * 位置使用 bottom-right 作为共用参考点
  */
 export function useDragEvents(
   buttonRef: React.RefObject<HTMLDivElement | null>,
-  onDragEnd: (position: { x: number; y: number }) => void
+  onDragEnd: (position: { x: number; y: number }) => void,
+  options: UseDragEventsOptions
 ) {
   const [, setIsDragging] = useAtom(isDraggingToolbarAtom);
 
   const dragStartRef = useRef<{
-    x: number;
-    y: number;
+    mouseX: number;
+    mouseY: number;
+    elemX: number;
+    elemY: number;
   } | null>(null);
   const justFinishedDragRef = useRef(false);
   const hasMovedRef = useRef(false);
@@ -26,15 +38,20 @@ export function useDragEvents(
   const onDragEndRef = useRef(onDragEnd);
   onDragEndRef.current = onDragEnd;
 
-  // Handle mouse down - record initial mouse position
+  // Handle mouse down - record initial mouse position and element position
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
       if (!buttonRef.current) return;
 
+      const elemX = parseInt(buttonRef.current.style.left, 10);
+      const elemY = parseInt(buttonRef.current.style.top, 10);
+
       dragStartRef.current = {
-        x: e.clientX,
-        y: e.clientY,
+        mouseX: e.clientX,
+        mouseY: e.clientY,
+        elemX: isNaN(elemX) ? 0 : elemX,
+        elemY: isNaN(elemY) ? 0 : elemY,
       };
       hasMovedRef.current = false;
       isDraggingRef.current = false;
@@ -47,8 +64,8 @@ export function useDragEvents(
     const handleMouseMove = (e: MouseEvent) => {
       if (!dragStartRef.current || !buttonRef.current) return;
 
-      const deltaX = e.clientX - dragStartRef.current.x;
-      const deltaY = e.clientY - dragStartRef.current.y;
+      const deltaX = e.clientX - dragStartRef.current.mouseX;
+      const deltaY = e.clientY - dragStartRef.current.mouseY;
 
       // Check if we've moved beyond threshold
       if (
@@ -61,8 +78,15 @@ export function useDragEvents(
       }
 
       if (isDraggingRef.current) {
-        // Direct DOM manipulation - mouse position = button center
-        const { x: newX, y: newY } = clampPosition(e.clientX, e.clientY);
+        // 新位置 = 初始元素位置 + 鼠标偏移量
+        let newX = dragStartRef.current.elemX + deltaX;
+        let newY = dragStartRef.current.elemY + deltaY;
+
+        // 限制在视口边界内（基于组件尺寸）
+        const minPos = getMinPosition(options.width);
+        const maxPos = getMaxPosition(options.width);
+        newX = Math.max(minPos.x, Math.min(maxPos.x, newX));
+        newY = Math.max(minPos.y, Math.min(maxPos.y, newY));
 
         buttonRef.current.style.left = `${newX}px`;
         buttonRef.current.style.top = `${newY}px`;
@@ -73,11 +97,11 @@ export function useDragEvents(
       if (isDraggingRef.current) {
         justFinishedDragRef.current = true;
 
-        // Get final position
+        // Get final position (top-left) and convert to bottom-right (共用参考点)
         if (buttonRef.current) {
           const finalX = parseInt(buttonRef.current.style.left, 10);
           const finalY = parseInt(buttonRef.current.style.top, 10);
-          onDragEndRef.current({ x: finalX, y: finalY });
+          onDragEndRef.current({ x: finalX + options.width, y: finalY + options.height });
         }
       }
 
@@ -102,12 +126,16 @@ export function useDragEvents(
 
       if (isNaN(currentLeft) || isNaN(currentTop)) return;
 
-      const { x: newX, y: newY } = clampPosition(currentLeft, currentTop);
+      const minPos = getMinPosition(options.width);
+      const maxPos = getMaxPosition(options.width);
+      const newX = Math.max(minPos.x, Math.min(maxPos.x, currentLeft));
+      const newY = Math.max(minPos.y, Math.min(maxPos.y, currentTop));
 
       if (newX !== currentLeft || newY !== currentTop) {
         buttonRef.current.style.left = `${newX}px`;
         buttonRef.current.style.top = `${newY}px`;
-        onDragEndRef.current({ x: newX, y: newY });
+        // Convert top-left to bottom-right (共用参考点)
+        onDragEndRef.current({ x: newX + options.width, y: newY + options.height });
       }
     };
 

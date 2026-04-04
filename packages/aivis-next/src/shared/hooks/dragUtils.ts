@@ -1,4 +1,6 @@
-import { DRAG_CONFIG } from './types';
+import { DRAG_CONFIG, TOOLBAR_WIDTH } from './types';
+
+export { TOOLBAR_WIDTH } from './types';
 
 /**
  * Clamp a value between min and max bounds
@@ -6,33 +8,43 @@ import { DRAG_CONFIG } from './types';
 export const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
 /**
- * Get minimum position boundaries (top-left safe zone)
+ * Get min/max top position (FB 和 TB 共用)
+ * [PADDING, viewport - PADDING - TB_HEIGHT]
  */
-export const getMinPosition = () => ({
-  x: DRAG_CONFIG.PADDING + DRAG_CONFIG.SIZE / 2,
-  y: DRAG_CONFIG.PADDING + DRAG_CONFIG.SIZE / 2,
-});
+export const getTopMinPosition = () => DRAG_CONFIG.PADDING;
+export const getTopMaxPosition = () => window.innerHeight - DRAG_CONFIG.PADDING - DRAG_CONFIG.SIZE;
 
 /**
- * Get maximum position boundaries (bottom-right safe zone)
+ * Get min/max left position for FloatingButton (44x44)
+ * [PADDING + TB_WIDTH - FB_WIDTH, viewport - PADDING - FB_WIDTH]
  */
-export const getMaxPosition = () => ({
-  x: window.innerWidth - DRAG_CONFIG.PADDING - DRAG_CONFIG.SIZE / 2,
-  y: window.innerHeight - DRAG_CONFIG.PADDING - DRAG_CONFIG.SIZE / 2,
-});
+export const getFloatingButtonMinLeft = () => DRAG_CONFIG.PADDING + TOOLBAR_WIDTH - DRAG_CONFIG.SIZE;
+export const getFloatingButtonMaxLeft = () => window.innerWidth - DRAG_CONFIG.PADDING - DRAG_CONFIG.SIZE;
 
 /**
- * Clamp position to viewport boundaries
+ * Get min/max left position for Toolbar (432x44)
+ * [PADDING, viewport - PADDING - TB_WIDTH]
  */
-export const clampPosition = (x: number, y: number) => ({
-  x: clamp(x, getMinPosition().x, getMaxPosition().x),
-  y: clamp(y, getMinPosition().y, getMaxPosition().y),
-});
+export const getToolbarMinLeft = () => DRAG_CONFIG.PADDING;
+export const getToolbarMaxLeft = () => window.innerWidth - DRAG_CONFIG.PADDING - TOOLBAR_WIDTH;
 
 /**
- * Get default center position (bottom-right corner)
+ * Get min/max position based on element width
+ */
+export const getMinPosition = (width: number) =>
+  width === TOOLBAR_WIDTH
+    ? { x: getToolbarMinLeft(), y: getTopMinPosition() }
+    : { x: getFloatingButtonMinLeft(), y: getTopMinPosition() };
+
+export const getMaxPosition = (width: number) =>
+  width === TOOLBAR_WIDTH
+    ? { x: getToolbarMaxLeft(), y: getTopMaxPosition() }
+    : { x: getFloatingButtonMaxLeft(), y: getTopMaxPosition() };
+
+/**
+ * Get default position (bottom-right corner)
  */
 export const getDefaultPosition = () => ({
-  x: getMaxPosition().x,
-  y: getMaxPosition().y,
+  x: window.innerWidth - DRAG_CONFIG.PADDING,
+  y: window.innerHeight - DRAG_CONFIG.PADDING,
 });

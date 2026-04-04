@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { IconListSparkle } from './Icons';
 import { isActiveAtom, isDraggingToolbarAtom } from '../store/toolbarAtoms';
 import { useDragPosition, useDragEvents } from '../hooks';
+import { DRAG_CONFIG } from '../hooks/types';
 
 export interface FloatingButtonProps {
   onClick?: () => void;
@@ -17,7 +18,10 @@ export function FloatingButton({ onClick, className = '' }: FloatingButtonProps)
   const [isDragging] = useAtom(isDraggingToolbarAtom);
 
   const { toolbarPosition, setToolbarPosition } = useDragPosition();
-  const { handleMouseDown, handleClick } = useDragEvents(outerRef, setToolbarPosition);
+  const { handleMouseDown, handleClick } = useDragEvents(outerRef, setToolbarPosition, {
+    width: DRAG_CONFIG.SIZE,
+    height: DRAG_CONFIG.SIZE,
+  });
 
   const onClickHandler = useCallback(() => {
     if (!handleClick()) return;
@@ -27,10 +31,10 @@ export function FloatingButton({ onClick, className = '' }: FloatingButtonProps)
 
   const outerStyle = useMemo(() => {
     if (toolbarPosition) {
-      // toolbarPosition 是中心点，需要转换为左上角
+      // toolbarPosition 是 bottom-right，转换为 top-left
       return {
-        left: toolbarPosition.x - 22, // 44/2 = 22
-        top: toolbarPosition.y - 22,
+        left: toolbarPosition.x - DRAG_CONFIG.SIZE,
+        top: toolbarPosition.y - DRAG_CONFIG.SIZE,
       };
     }
     return {
