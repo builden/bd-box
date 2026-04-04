@@ -17,9 +17,62 @@
   }
 }
 
+/* Floating button shrink animation */
+@keyframes toolbar-shrink {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+  }
+}
+
+/* Toolbar expand animation - from right to left, right edge fixed */
+@keyframes toolbar-expand {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+/* Toolbar collapse animation - from left to right */
+@keyframes toolbar-collapse {
+  from {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  to {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+}
+
 /* Entry animation for floating button */
 .animate-toolbar-enter {
   animation: toolbar-enter 0.5s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+}
+
+/* Floating button shrink animation */
+.animate-toolbar-shrink {
+  animation: toolbar-shrink 0.25s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+/* Toolbar expand animation */
+.animate-toolbar-expand {
+  animation: toolbar-expand 0.25s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+  transform-origin: right center;
+}
+
+/* Toolbar collapse animation */
+.animate-toolbar-collapse {
+  animation: toolbar-collapse 0.25s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+  transform-origin: right center;
 }
 
 /* Remove button outline on focus */

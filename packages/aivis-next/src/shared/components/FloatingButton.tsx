@@ -27,9 +27,10 @@ export function FloatingButton({ onClick, className = '' }: FloatingButtonProps)
 
   const outerStyle = useMemo(() => {
     if (toolbarPosition) {
+      // toolbarPosition 是中心点，需要转换为左上角
       return {
-        left: toolbarPosition.x,
-        top: toolbarPosition.y,
+        left: toolbarPosition.x - 22, // 44/2 = 22
+        top: toolbarPosition.y - 22,
       };
     }
     return {
@@ -49,7 +50,7 @@ export function FloatingButton({ onClick, className = '' }: FloatingButtonProps)
         'z-[100000]',
         className
       )}
-      style={{ ...outerStyle, transform: 'translate(-50%, -50%)' }}
+      style={outerStyle}
       onClick={onClickHandler}
       onMouseDown={handleMouseDown}
       role="button"
