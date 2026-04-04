@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { useAtom } from 'jotai';
 import clsx from 'clsx';
 import {
@@ -27,6 +27,13 @@ export function Toolbar() {
   const { isDragging, toolbarPosition, handleMouseDown, handleClick } = useToolbarState(containerRef);
   const { isActive } = useToggleButton(handleClick);
   const [showSettings, setShowSettings] = useAtom(showSettingsAtom);
+
+  // 关闭 toolbar 时也关闭设置面板
+  useEffect(() => {
+    if (!isActive) {
+      setShowSettings(false);
+    }
+  }, [isActive, setShowSettings]);
 
   // 定位：right 固定
   const style: React.CSSProperties = {
@@ -76,8 +83,16 @@ export function Toolbar() {
             <ToolbarButton icon={<IconCopyAnimated size={24} />} disabled title="复制反馈 (C)" />
             <ToolbarButton icon={<IconSendArrow size={24} />} disabled title="发送标注 (S)" />
             <ToolbarButton icon={<IconTrashAlt size={24} />} disabled title="清除全部 (X)" />
-            <ToolbarButton icon={<IconGear size={24} />} title="设置" onClick={() => setShowSettings(!showSettings)} />
+            <ToolbarButton
+              icon={<IconGear size={24} />}
+              title="设置"
+              onClick={() => setShowSettings(!showSettings)}
+              isActive={showSettings}
+              activeColor="#fff"
+            />
           </div>
+
+          <div className="w-px h-6 bg-white/20 mx-1" />
         </>
       )}
 

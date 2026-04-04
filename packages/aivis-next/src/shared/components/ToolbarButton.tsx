@@ -33,7 +33,6 @@ export const ToolbarButton = memo(function ToolbarButton({
     ? {
         color: activeColor,
         backgroundColor: `color-mix(in srgb, ${activeColor} ${activeBgOpacity}%, transparent)`,
-        boxShadow: `0 0 0 1px ${activeColor}`,
       }
     : {};
 
