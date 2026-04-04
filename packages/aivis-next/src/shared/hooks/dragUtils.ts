@@ -48,11 +48,3 @@ export const getDefaultPosition = () => ({
   x: window.innerWidth - DRAG_CONFIG.PADDING,
   y: window.innerHeight - DRAG_CONFIG.PADDING,
 });
-
-/**
- * Convert bottom-right reference point to top-left for CSS positioning
- */
-export const toTopLeft = (pos: { x: number; y: number }, width: number, height: number) => ({
-  left: pos.x - width,
-  top: pos.y - height,
-});

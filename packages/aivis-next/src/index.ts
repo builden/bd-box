@@ -1,8 +1,4 @@
 // Components
-export { FloatingButton } from './shared/components/FloatingButton';
-export type { FloatingButtonProps } from './shared/components/FloatingButton';
-export { Button } from './shared/components/Button';
-export type { ButtonProps } from './shared/components/Button';
 export { IconListSparkle } from './shared/components/Icons';
 
 // Hooks

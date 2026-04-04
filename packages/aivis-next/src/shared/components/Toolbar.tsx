@@ -1,4 +1,4 @@
-import { useRef, useMemo, useCallback } from 'react';
+import { useRef, useCallback } from 'react';
 import { useAtom } from 'jotai';
 import clsx from 'clsx';
 import {
@@ -12,101 +12,89 @@ import {
   IconTrashAlt,
   IconGear,
   IconXmarkLarge,
+  IconListSparkle,
 } from './Icons';
-import { isActiveAtom, isDraggingToolbarAtom, isCollapsingAtom } from '../store/toolbarAtoms';
+import { isActiveAtom, isDraggingToolbarAtom } from '../store/toolbarAtoms';
 import { useDragPosition, useDragEvents } from '../hooks';
 import { ToolbarButton } from './ToolbarButton';
 import { TOOLBAR_WIDTH, DRAG_CONFIG } from '../hooks/types';
-import { toTopLeft } from '../hooks/dragUtils';
 
-const BUTTON_GAP = 'gap-1.5'; // 6px = 0.375rem
+const TOOLBAR_EXPANDED_WIDTH = TOOLBAR_WIDTH; // 432
 
 export function Toolbar() {
-  const toolbarRef = useRef<HTMLDivElement>(null);
-  const [, setIsActive] = useAtom(isActiveAtom);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isActive, setIsActive] = useAtom(isActiveAtom);
   const [isDragging] = useAtom(isDraggingToolbarAtom);
-  const [isCollapsing, setIsCollapsing] = useAtom(isCollapsingAtom);
 
   const { toolbarPosition, setToolbarPosition } = useDragPosition();
-  const { handleMouseDown } = useDragEvents(toolbarRef, setToolbarPosition, {
-    width: TOOLBAR_WIDTH,
+  const { handleMouseDown, handleClick } = useDragEvents(containerRef, setToolbarPosition, {
+    width: isActive ? TOOLBAR_EXPANDED_WIDTH : DRAG_CONFIG.SIZE,
     height: DRAG_CONFIG.SIZE,
   });
 
-  const handleClose = useCallback(() => {
-    setIsCollapsing(true);
-  }, [setIsCollapsing]);
+  const handleToggle = useCallback(() => {
+    if (!handleClick()) return;
+    setIsActive(!isActive);
+  }, [handleClick, isActive, setIsActive]);
 
-  const handleAnimationEnd = useCallback(() => {
-    if (isCollapsing) {
-      setIsCollapsing(false);
-      setIsActive(false);
-    }
-  }, [isCollapsing, setIsCollapsing, setIsActive]);
-
-  const toolbarStyle = useMemo(() => {
-    if (toolbarPosition) {
-      return toTopLeft(toolbarPosition, TOOLBAR_WIDTH, DRAG_CONFIG.SIZE);
-    }
-    return {
-      left: -9999,
-      top: -9999,
-    };
-  }, [toolbarPosition]);
+  // 定位：right 固定
+  const style: React.CSSProperties = {
+    position: 'fixed',
+    right: toolbarPosition ? window.innerWidth - toolbarPosition.x : -9999,
+    top: toolbarPosition ? toolbarPosition.y - DRAG_CONFIG.SIZE : -9999,
+    width: isActive ? TOOLBAR_EXPANDED_WIDTH : DRAG_CONFIG.SIZE,
+    height: DRAG_CONFIG.SIZE,
+    transition: 'width 0.4s cubic-bezier(0.19, 1, 0.22, 1)',
+    overflow: 'hidden',
+    borderRadius: 22,
+    backgroundColor: '#171717',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.25), 0 8px 24px rgba(0,0,0,0.15)',
+  };
 
   return (
     <div
-      ref={toolbarRef}
+      ref={containerRef}
       className={clsx(
-        'fixed h-[44px]',
+        'flex items-center',
+        isActive ? 'justify-between' : 'justify-center',
         'cursor-grab select-none',
         'focus:outline-none',
         isDragging && 'cursor-grabbing',
-        'z-[100000]'
+        'z-[100000]',
+        'px-2'
       )}
-      style={{ ...toolbarStyle, width: TOOLBAR_WIDTH }}
+      style={style}
       onMouseDown={handleMouseDown}
     >
-      {/* Toolbar 容器 - 从右向左展开/收缩 */}
-      <div
-        className={clsx(
-          'w-full h-full',
-          'flex items-center',
-          'rounded-full',
-          'bg-neutral-900',
-          'shadow-[0_4px_12px_rgba(0,0,0,0.25),0_8px_24px_rgba(0,0,0,0.15)]',
-          isCollapsing ? 'animate-toolbar-collapse' : 'animate-toolbar-expand'
-        )}
-        onAnimationEnd={handleAnimationEnd}
-      >
-        {/* 组1: 主要功能按钮 */}
-        <div className={clsx('flex items-center', BUTTON_GAP, 'px-2')}>
-          <ToolbarButton icon={<IconPausePlayAnimated size={24} />} title="暂停/播放 (P)" />
-          <ToolbarButton icon={<IconLayout size={21} />} title="布局模式 (L)" />
-          <ToolbarButton icon={<IconEdit size={21} />} title="样式编辑 (S)" />
-          <ToolbarButton icon={<IconChatEllipsis size={21} />} title="标注模式 (A)" />
-        </div>
+      {/* 左侧工具栏按钮 - 仅 expanded */}
+      {isActive && (
+        <>
+          <div className="flex items-center gap-1.5">
+            <ToolbarButton icon={<IconPausePlayAnimated size={24} />} title="暂停/播放 (P)" />
+            <ToolbarButton icon={<IconLayout size={21} />} title="布局模式 (L)" />
+            <ToolbarButton icon={<IconEdit size={21} />} title="样式编辑 (S)" />
+            <ToolbarButton icon={<IconChatEllipsis size={21} />} title="标注模式 (A)" />
+          </div>
 
-        {/* 分隔符1 */}
-        <div className="w-px h-6 bg-white/20 mx-1" />
+          <div className="w-px h-6 bg-white/20 mx-1" />
 
-        {/* 组2: 次要功能按钮 */}
-        <div className={clsx('flex items-center', BUTTON_GAP, 'px-1')}>
-          <ToolbarButton icon={<IconEyeAnimated size={24} />} disabled title="显示/隐藏标记 (H)" />
-          <ToolbarButton icon={<IconCopyAnimated size={24} />} disabled title="复制反馈 (C)" />
-          <ToolbarButton icon={<IconSendArrow size={24} />} disabled title="发送标注 (S)" />
-          <ToolbarButton icon={<IconTrashAlt size={24} />} disabled title="清除全部 (X)" />
-          <ToolbarButton icon={<IconGear size={24} />} title="设置" />
-        </div>
+          <div className="flex items-center gap-1.5">
+            <ToolbarButton icon={<IconEyeAnimated size={24} />} disabled title="显示/隐藏标记 (H)" />
+            <ToolbarButton icon={<IconCopyAnimated size={24} />} disabled title="复制反馈 (C)" />
+            <ToolbarButton icon={<IconSendArrow size={24} />} disabled title="发送标注 (S)" />
+            <ToolbarButton icon={<IconTrashAlt size={24} />} disabled title="清除全部 (X)" />
+            <ToolbarButton icon={<IconGear size={24} />} title="设置" />
+          </div>
+        </>
+      )}
 
-        {/* 分隔符2 */}
-        <div className="w-px h-6 bg-white/20 mx-1" />
-
-        {/* 组3: 关闭按钮 */}
-        <div className={clsx('flex items-center', BUTTON_GAP, 'pr-2')}>
-          <ToolbarButton icon={<IconXmarkLarge size={24} />} onClick={handleClose} title="关闭 (Esc)" />
-        </div>
-      </div>
+      {/* 右侧展开/关闭按钮 */}
+      <ToolbarButton
+        icon={isActive ? <IconXmarkLarge size={24} /> : <IconListSparkle size={24} />}
+        onClick={handleToggle}
+        title={isActive ? '关闭' : '展开'}
+        className={clsx(!isActive && 'mx-auto')}
+      />
     </div>
   );
 }

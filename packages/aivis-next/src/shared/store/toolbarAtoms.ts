@@ -15,6 +15,3 @@ export const isDraggingToolbarAtom = atom(false);
 
 // Active state (expanded/collapsed)
 export const isActiveAtom = atom(false);
-
-// Toolbar collapsing animation state
-export const isCollapsingAtom = atom(false);

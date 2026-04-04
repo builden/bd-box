@@ -1,14 +1,10 @@
-import { useAtomValue } from 'jotai';
-import { FloatingButton, Toolbar } from '../src/shared/components';
-import { Button } from '../src/shared/components';
-import { isActiveAtom } from '../src/shared/store/toolbarAtoms';
+import { Toolbar } from '../src/shared/components';
+import { Button } from './Button';
 
 export function App() {
-  const isActive = useAtomValue(isActiveAtom);
-
   return (
     <>
-      {isActive ? <Toolbar /> : <FloatingButton />}
+      <Toolbar />
 
       <div className="page">
         <header className="header">
