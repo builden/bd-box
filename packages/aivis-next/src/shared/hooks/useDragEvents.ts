@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useAtom } from 'jotai';
 import { isDraggingToolbarAtom } from '../store/toolbarAtoms';
 import { DRAG_CONFIG } from './types';
-import { getMinPosition, getMaxPosition } from './dragUtils';
+import { clamp, getMinPosition, getMaxPosition } from './dragUtils';
 
 /**
  * Options for useDragEvents
@@ -85,8 +85,8 @@ export function useDragEvents(
         // 限制在视口边界内（基于组件尺寸）
         const minPos = getMinPosition(options.width);
         const maxPos = getMaxPosition(options.width);
-        newX = Math.max(minPos.x, Math.min(maxPos.x, newX));
-        newY = Math.max(minPos.y, Math.min(maxPos.y, newY));
+        newX = clamp(newX, minPos.x, maxPos.x);
+        newY = clamp(newY, minPos.y, maxPos.y);
 
         buttonRef.current.style.left = `${newX}px`;
         buttonRef.current.style.top = `${newY}px`;
@@ -128,8 +128,8 @@ export function useDragEvents(
 
       const minPos = getMinPosition(options.width);
       const maxPos = getMaxPosition(options.width);
-      const newX = Math.max(minPos.x, Math.min(maxPos.x, currentLeft));
-      const newY = Math.max(minPos.y, Math.min(maxPos.y, currentTop));
+      const newX = clamp(currentLeft, minPos.x, maxPos.x);
+      const newY = clamp(currentTop, minPos.y, maxPos.y);
 
       if (newX !== currentLeft || newY !== currentTop) {
         buttonRef.current.style.left = `${newX}px`;
@@ -150,7 +150,7 @@ export function useDragEvents(
       document.removeEventListener('selectstart', handleSelectStart);
       window.removeEventListener('resize', handleResize);
     };
-  }, [buttonRef, setIsDragging]);
+  }, [buttonRef, setIsDragging, options]);
 
   // Handle click - only triggers if not a drag
   const handleClick = useCallback(() => {

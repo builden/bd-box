@@ -17,6 +17,7 @@ import { isActiveAtom, isDraggingToolbarAtom, isCollapsingAtom } from '../store/
 import { useDragPosition, useDragEvents } from '../hooks';
 import { ToolbarButton } from './ToolbarButton';
 import { TOOLBAR_WIDTH, DRAG_CONFIG } from '../hooks/types';
+import { toTopLeft } from '../hooks/dragUtils';
 
 const BUTTON_GAP = 'gap-1.5'; // 6px = 0.375rem
 
@@ -45,12 +46,7 @@ export function Toolbar() {
 
   const outerStyle = useMemo(() => {
     if (toolbarPosition) {
-      // toolbarPosition 是 bottom-right
-      // Toolbar 右边界对齐 bottom-right，left = x - width
-      return {
-        left: toolbarPosition.x - TOOLBAR_WIDTH,
-        top: toolbarPosition.y - DRAG_CONFIG.SIZE,
-      };
+      return toTopLeft(toolbarPosition, TOOLBAR_WIDTH, DRAG_CONFIG.SIZE);
     }
     return {
       left: -9999,

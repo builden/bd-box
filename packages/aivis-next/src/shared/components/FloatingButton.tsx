@@ -5,6 +5,7 @@ import { IconListSparkle } from './Icons';
 import { isActiveAtom, isDraggingToolbarAtom } from '../store/toolbarAtoms';
 import { useDragPosition, useDragEvents } from '../hooks';
 import { DRAG_CONFIG } from '../hooks/types';
+import { toTopLeft } from '../hooks/dragUtils';
 
 export interface FloatingButtonProps {
   onClick?: () => void;
@@ -31,11 +32,7 @@ export function FloatingButton({ onClick, className = '' }: FloatingButtonProps)
 
   const outerStyle = useMemo(() => {
     if (toolbarPosition) {
-      // toolbarPosition 是 bottom-right，转换为 top-left
-      return {
-        left: toolbarPosition.x - DRAG_CONFIG.SIZE,
-        top: toolbarPosition.y - DRAG_CONFIG.SIZE,
-      };
+      return toTopLeft(toolbarPosition, DRAG_CONFIG.SIZE, DRAG_CONFIG.SIZE);
     }
     return {
       left: -9999,
