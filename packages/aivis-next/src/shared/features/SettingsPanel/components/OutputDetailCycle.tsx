@@ -21,11 +21,7 @@ export const OutputDetailCycle = memo(function OutputDetailCycle({ value, onChan
   return (
     <button
       onClick={handleClick}
-      className={clsx(
-        'flex items-center gap-2',
-        'text-white text-[13px] font-medium tracking-tight',
-        'cursor-pointer bg-transparent border-none p-0'
-      )}
+      className="flex items-center gap-2 text-[13px] font-medium tracking-tight cursor-pointer bg-transparent border-none p-0 text-text-primary"
     >
       <span key={value} className="animate-cycle-text-in">
         {OUTPUT_DETAIL_OPTIONS.find((opt) => opt.value === value)?.label}
@@ -36,7 +32,7 @@ export const OutputDetailCycle = memo(function OutputDetailCycle({ value, onChan
             key={option.value}
             className={clsx(
               'w-[3px] h-[3px] rounded-full transition-all duration-150',
-              value === option.value ? 'bg-white scale-100' : 'bg-white/30 scale-[0.667]'
+              value === option.value ? 'bg-text-primary scale-100' : 'bg-text-primary/30 scale-[0.667]'
             )}
           />
         ))}

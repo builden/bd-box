@@ -15,7 +15,7 @@ export const ColorPicker = memo(function ColorPicker({ value, onChange }: ColorP
           key={color.id}
           onClick={() => onChange(color.id)}
           className="relative w-5 h-5 rounded-full cursor-pointer"
-          style={{ backgroundColor: '#1a1a1a' }}
+          style={{ backgroundColor: 'var(--panel-bg)' }}
           title={color.label}
         >
           {/* Inner circle */}

@@ -1,6 +1,8 @@
 import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 
+// Theme atom - default to dark mode
+
 // Types
 export type OutputDetailLevel = 'compact' | 'standard' | 'detailed' | 'forensic';
 export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected';
@@ -59,3 +61,6 @@ export const connectionStatusAtom = atom<ConnectionStatus>('disconnected');
 
 // Endpoint (would be set by MCP provider)
 export const endpointAtom = atom<string | undefined>(undefined);
+
+// Theme: true = dark, false = light
+export const isDarkModeAtom = atomWithStorage<boolean>('aivis-next-theme', false);

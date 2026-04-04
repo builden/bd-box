@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import clsx from 'clsx';
-import { IconMoon, IconChevronRight } from '@/shared/components/Icons';
+import { IconMoon, IconSun, IconChevronRight } from '@/shared/components/Icons';
 import { HelpTooltip } from '@/shared/components/HelpTooltip';
 import { OutputDetailCycle } from './OutputDetailCycle';
 import { ColorPicker } from './ColorPicker';
@@ -15,6 +15,8 @@ interface MainSettingsProps {
   onHideToolbar: () => void;
   connectionStatus: 'disconnected' | 'connecting' | 'connected';
   endpoint?: string | undefined;
+  isDarkMode: boolean;
+  onToggleTheme: () => void;
 }
 
 export const MainSettings = memo(function MainSettings({
@@ -24,33 +26,40 @@ export const MainSettings = memo(function MainSettings({
   onHideToolbar,
   connectionStatus,
   endpoint,
+  isDarkMode,
+  onToggleTheme,
 }: MainSettingsProps) {
+  const themeToggleClass = isDarkMode
+    ? 'text-white/40 hover:text-white/80 hover:bg-white/10'
+    : 'text-black/40 hover:text-black/80 hover:bg-black/10';
+
   return (
     <>
       {/* Header */}
       <div className="flex items-center justify-between h-6">
-        <span className="text-white text-[13px] font-semibold tracking-tight">Aivis</span>
-        <span className="text-white/40 text-[11px] ml-auto">v1.0.0</span>
+        <span className="text-[13px] font-semibold tracking-tight text-brand">Aivis</span>
+        <span className="text-[11px] ml-auto text-text-muted">v1.0.0</span>
         <button
+          onClick={onToggleTheme}
           className={clsx(
             'w-[22px] h-[22px] rounded-md flex items-center justify-center',
-            'text-white/40 hover:text-white/80 hover:bg-white/10',
+            themeToggleClass,
             'transition-colors duration-150'
           )}
           title="Toggle theme"
         >
-          <IconMoon size={16} />
+          {isDarkMode ? <IconSun size={16} /> : <IconMoon size={16} />}
         </button>
       </div>
 
-      <div className="h-px bg-white/8 my-2" />
+      <div className="h-px my-2 bg-divider" />
 
       {/* Output detail + React + Hide until restart */}
       <div>
         {/* Output detail row */}
         <div className="flex items-center justify-between h-6">
           <div className="flex items-center gap-0.5">
-            <span className="text-white/50 text-[13px] tracking-tight">输出详情</span>
+            <span className="text-[13px] tracking-tight text-text-secondary">输出详情</span>
             <HelpTooltip content="控制复制输出中包含的详细信息量" />
           </div>
           <OutputDetailCycle
@@ -62,7 +71,7 @@ export const MainSettings = memo(function MainSettings({
         {/* React component row */}
         <div className="flex items-center justify-between h-6 mt-2">
           <div className="flex items-center gap-0.5">
-            <span className="text-white/50 text-[13px] tracking-tight">React 组件</span>
+            <span className="text-[13px] tracking-tight text-text-secondary">React 组件</span>
             <HelpTooltip content="在标注中包含 React 组件名称" />
           </div>
           <Switch
@@ -74,7 +83,7 @@ export const MainSettings = memo(function MainSettings({
         {/* Hide until restart row */}
         <div className="flex items-center justify-between h-6 mt-2">
           <div className="flex items-center gap-0.5">
-            <span className="text-white/50 text-[13px] tracking-tight">隐藏直到重启</span>
+            <span className="text-[13px] tracking-tight text-text-secondary">隐藏直到重启</span>
             <HelpTooltip content="隐藏工具栏直到你打开新标签页" />
           </div>
           <Switch
@@ -86,12 +95,12 @@ export const MainSettings = memo(function MainSettings({
         </div>
       </div>
 
-      <div className="h-px bg-white/8 my-2" />
+      <div className="h-px my-2 bg-divider" />
 
       {/* Color picker */}
       <div>
         <div className="flex items-center gap-0.5 mb-2">
-          <span className="text-white/50 text-[13px] tracking-tight">标记颜色</span>
+          <span className="text-[13px] tracking-tight text-text-secondary">标记颜色</span>
           <HelpTooltip content="选择标注的颜色" />
         </div>
         <ColorPicker
@@ -100,7 +109,7 @@ export const MainSettings = memo(function MainSettings({
         />
       </div>
 
-      <div className="h-px bg-white/8 my-2" />
+      <div className="h-px my-2 bg-divider" />
 
       {/* Checkboxes */}
       <div className="space-y-2">
@@ -116,14 +125,14 @@ export const MainSettings = memo(function MainSettings({
         />
       </div>
 
-      <div className="h-px bg-white/8 my-2" />
+      <div className="h-px my-2 bg-divider" />
 
       {/* Nav to automations */}
       <button
         onClick={onNavigateToAutomations}
-        className="group w-full flex items-center justify-between transition-colors duration-150"
+        className="group w-full flex items-center justify-between transition-colors duration-150 hover:bg-hover"
       >
-        <span className="text-white/50 group-hover:text-white text-[13px] tracking-tight transition-colors duration-150">
+        <span className="text-[13px] tracking-tight text-text-secondary group-hover:text-text-primary transition-colors duration-150">
           管理 MCP 和 Webhooks
         </span>
         <div className="flex items-center gap-2">
@@ -136,7 +145,7 @@ export const MainSettings = memo(function MainSettings({
               )}
             />
           )}
-          <span className="text-white/50 group-hover:text-white transition-colors duration-150">
+          <span className="text-text-secondary transition-colors duration-150">
             <IconChevronRight size={14} />
           </span>
         </div>
