@@ -2,9 +2,11 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useAtom } from 'jotai';
 import { isDraggingToolbarAtom } from '../store/toolbarAtoms';
 import { DRAG_CONFIG } from './types';
+import { clampPosition } from './dragUtils';
 
 /**
  * useDragEvents - Handles drag mouse events
+ * Outer div is positioned at center point, so mouse position = button center
  */
 export function useDragEvents(
   buttonRef: React.RefObject<HTMLDivElement | null>,
@@ -15,8 +17,6 @@ export function useDragEvents(
   const dragStartRef = useRef<{
     x: number;
     y: number;
-    buttonX: number;
-    buttonY: number;
   } | null>(null);
   const justFinishedDragRef = useRef(false);
   const hasMovedRef = useRef(false);
@@ -26,18 +26,15 @@ export function useDragEvents(
   const onDragEndRef = useRef(onDragEnd);
   onDragEndRef.current = onDragEnd;
 
-  // Handle mouse down
+  // Handle mouse down - record initial mouse position
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
       if (!buttonRef.current) return;
 
-      const rect = buttonRef.current.getBoundingClientRect();
       dragStartRef.current = {
         x: e.clientX,
         y: e.clientY,
-        buttonX: rect.left,
-        buttonY: rect.top,
       };
       hasMovedRef.current = false;
       isDraggingRef.current = false;
@@ -47,10 +44,8 @@ export function useDragEvents(
 
   // Handle drag events
   useEffect(() => {
-    const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
-
     const handleMouseMove = (e: MouseEvent) => {
-      if (!dragStartRef.current) return;
+      if (!dragStartRef.current || !buttonRef.current) return;
 
       const deltaX = e.clientX - dragStartRef.current.x;
       const deltaY = e.clientY - dragStartRef.current.y;
@@ -65,15 +60,10 @@ export function useDragEvents(
         setIsDragging(true);
       }
 
-      if (isDraggingRef.current && buttonRef.current) {
-        let newX = dragStartRef.current.buttonX + deltaX;
-        let newY = dragStartRef.current.buttonY + deltaY;
+      if (isDraggingRef.current) {
+        // Direct DOM manipulation - mouse position = button center
+        const { x: newX, y: newY } = clampPosition(e.clientX, e.clientY);
 
-        // Constrain to viewport
-        newX = clamp(newX, DRAG_CONFIG.PADDING, window.innerWidth - DRAG_CONFIG.SIZE - DRAG_CONFIG.PADDING);
-        newY = clamp(newY, DRAG_CONFIG.PADDING, window.innerHeight - DRAG_CONFIG.SIZE - DRAG_CONFIG.PADDING);
-
-        // Direct DOM manipulation for smooth movement
         buttonRef.current.style.left = `${newX}px`;
         buttonRef.current.style.top = `${newY}px`;
       }
@@ -83,7 +73,7 @@ export function useDragEvents(
       if (isDraggingRef.current) {
         justFinishedDragRef.current = true;
 
-        // Get final position and notify
+        // Get final position
         if (buttonRef.current) {
           const finalX = parseInt(buttonRef.current.style.left, 10);
           const finalY = parseInt(buttonRef.current.style.top, 10);
@@ -110,8 +100,9 @@ export function useDragEvents(
       const currentLeft = parseInt(buttonRef.current.style.left, 10);
       const currentTop = parseInt(buttonRef.current.style.top, 10);
 
-      const newX = clamp(currentLeft, DRAG_CONFIG.PADDING, window.innerWidth - DRAG_CONFIG.SIZE - DRAG_CONFIG.PADDING);
-      const newY = clamp(currentTop, DRAG_CONFIG.PADDING, window.innerHeight - DRAG_CONFIG.SIZE - DRAG_CONFIG.PADDING);
+      if (isNaN(currentLeft) || isNaN(currentTop)) return;
+
+      const { x: newX, y: newY } = clampPosition(currentLeft, currentTop);
 
       if (newX !== currentLeft || newY !== currentTop) {
         buttonRef.current.style.left = `${newX}px`;

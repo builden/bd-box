@@ -9,6 +9,11 @@ export const DRAG_CONFIG = {
 export type { ToolbarPosition } from '../store/types';
 import type { ToolbarPosition } from '../store/types';
 
-// Check if position is invalid (null, negative, or outside viewport)
+// Check if position is invalid (null, or center point outside viewport)
+// Position is the center of the button
 export const isInvalidPosition = (pos: ToolbarPosition): boolean =>
-  pos === null || pos.x < 0 || pos.y < 0 || pos.x > window.innerWidth || pos.y > window.innerHeight;
+  pos === null ||
+  pos.x < DRAG_CONFIG.SIZE / 2 + DRAG_CONFIG.PADDING ||
+  pos.y < DRAG_CONFIG.SIZE / 2 + DRAG_CONFIG.PADDING ||
+  pos.x > window.innerWidth - DRAG_CONFIG.SIZE / 2 - DRAG_CONFIG.PADDING ||
+  pos.y > window.innerHeight - DRAG_CONFIG.SIZE / 2 - DRAG_CONFIG.PADDING;

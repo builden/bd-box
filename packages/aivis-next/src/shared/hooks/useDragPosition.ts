@@ -1,7 +1,8 @@
 import { useAtom } from 'jotai';
 import { useEffect } from 'react';
 import { toolbarPositionAtom } from '../store/toolbarAtoms';
-import { DRAG_CONFIG, isInvalidPosition } from './types';
+import { isInvalidPosition } from './types';
+import { getDefaultPosition } from './dragUtils';
 
 /**
  * useDragPosition - Manages position state with persistence
@@ -9,12 +10,10 @@ import { DRAG_CONFIG, isInvalidPosition } from './types';
 export function useDragPosition() {
   const [toolbarPosition, setToolbarPosition] = useAtom(toolbarPositionAtom);
 
-  // Calculate default position on mount
+  // Calculate default position on mount (center-based)
   useEffect(() => {
     if (isInvalidPosition(toolbarPosition)) {
-      const defaultX = window.innerWidth - DRAG_CONFIG.SIZE - DRAG_CONFIG.PADDING;
-      const defaultY = window.innerHeight - DRAG_CONFIG.SIZE - DRAG_CONFIG.PADDING;
-      setToolbarPosition({ x: defaultX, y: defaultY });
+      setToolbarPosition(getDefaultPosition());
     }
   }, [toolbarPosition, setToolbarPosition]);
 
