@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { useAtom } from 'jotai';
 import clsx from 'clsx';
 import {
   IconLayout,
@@ -16,6 +17,8 @@ import { PauseButton } from '@/shared/features/PauseButton';
 import { ToggleButton } from '@/shared/features/ToggleButton';
 import { ToolbarButton } from '@/shared/components/ToolbarButton';
 import { TOOLBAR_WIDTH, DRAG_CONFIG } from '@/shared/hooks/types';
+import { SettingsPanel } from '@/shared/features/SettingsPanel';
+import { showSettingsAtom } from '@/shared/features/SettingsPanel/store';
 
 const TOOLBAR_EXPANDED_WIDTH = TOOLBAR_WIDTH;
 
@@ -23,6 +26,7 @@ export function Toolbar() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { isDragging, toolbarPosition, handleMouseDown, handleClick } = useToolbarState(containerRef);
   const { isActive } = useToggleButton(handleClick);
+  const [showSettings, setShowSettings] = useAtom(showSettingsAtom);
 
   // 定位：right 固定
   const style: React.CSSProperties = {
@@ -32,7 +36,6 @@ export function Toolbar() {
     width: isActive ? TOOLBAR_EXPANDED_WIDTH : DRAG_CONFIG.SIZE,
     height: DRAG_CONFIG.SIZE,
     transition: 'width 0.4s cubic-bezier(0.19, 1, 0.22, 1)',
-    overflow: 'hidden',
     borderRadius: 22,
     backgroundColor: '#171717',
     boxShadow: '0 4px 12px rgba(0,0,0,0.25), 0 8px 24px rgba(0,0,0,0.15)',
@@ -54,6 +57,8 @@ export function Toolbar() {
       style={style}
       onMouseDown={handleMouseDown}
     >
+      {/* SettingsPanel inside toolbar - uses absolute positioning */}
+      <SettingsPanel />
       {/* 左侧工具栏按钮 - 仅 expanded */}
       {isActive && (
         <>
@@ -71,7 +76,7 @@ export function Toolbar() {
             <ToolbarButton icon={<IconCopyAnimated size={24} />} disabled title="复制反馈 (C)" />
             <ToolbarButton icon={<IconSendArrow size={24} />} disabled title="发送标注 (S)" />
             <ToolbarButton icon={<IconTrashAlt size={24} />} disabled title="清除全部 (X)" />
-            <ToolbarButton icon={<IconGear size={24} />} title="设置" />
+            <ToolbarButton icon={<IconGear size={24} />} title="设置" onClick={() => setShowSettings(!showSettings)} />
           </div>
         </>
       )}
