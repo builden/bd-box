@@ -22,18 +22,21 @@ export const OutputDetailCycle = memo(function OutputDetailCycle({ value, onChan
     <button
       onClick={handleClick}
       className={clsx(
-        'flex items-center gap-1.5 px-2 py-1 rounded-lg',
-        'bg-white/5 hover:bg-white/10 transition-colors duration-150'
+        'flex items-center gap-2',
+        'text-white text-[13px] font-medium tracking-tight',
+        'cursor-pointer bg-transparent border-none p-0'
       )}
     >
-      <span className="text-white text-xs">{OUTPUT_DETAIL_OPTIONS.find((opt) => opt.value === value)?.label}</span>
-      <div className="flex gap-0.5">
+      <span key={value} className="animate-cycle-text-in">
+        {OUTPUT_DETAIL_OPTIONS.find((opt) => opt.value === value)?.label}
+      </span>
+      <div className="flex flex-col gap-0.5">
         {OUTPUT_DETAIL_OPTIONS.map((option) => (
           <span
             key={option.value}
             className={clsx(
-              'w-1 h-1 rounded-full transition-colors duration-150',
-              value === option.value ? 'bg-blue-500' : 'bg-white/30'
+              'w-[3px] h-[3px] rounded-full transition-all duration-150',
+              value === option.value ? 'bg-white scale-100' : 'bg-white/30 scale-[0.667]'
             )}
           />
         ))}

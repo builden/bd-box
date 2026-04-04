@@ -9,22 +9,32 @@ interface ColorPickerProps {
 
 export const ColorPicker = memo(function ColorPicker({ value, onChange }: ColorPickerProps) {
   return (
-    <div className="flex gap-2">
+    <div className="flex justify-between items-center mt-1.5 h-[26px]">
       {COLOR_OPTIONS.map((color) => (
         <button
           key={color.id}
           onClick={() => onChange(color.id)}
-          className={clsx(
-            'w-6 h-6 rounded-full transition-all duration-150',
-            'hover:scale-110',
-            value === color.id ? 'ring-2 ring-offset-2 ring-offset-[#1a1a1a]' : ''
-          )}
-          style={{
-            backgroundColor: color.srgb,
-            ...(value === color.id && ({ '--tw-ring-color': color.srgb } as React.CSSProperties)),
-          }}
+          className="relative w-5 h-5 rounded-full cursor-pointer"
+          style={{ backgroundColor: '#1a1a1a' }}
           title={color.label}
-        />
+        >
+          {/* Inner circle */}
+          <span
+            className={clsx(
+              'absolute inset-0 rounded-full transition-transform duration-200',
+              value === color.id ? 'scale-[0.8]' : 'scale-100'
+            )}
+            style={{ backgroundColor: color.srgb }}
+          />
+          {/* Outer ring - visible when selected */}
+          <span
+            className={clsx(
+              'absolute inset-0 rounded-full -z-10 transition-opacity duration-200',
+              value === color.id ? 'opacity-100' : 'opacity-0'
+            )}
+            style={{ backgroundColor: color.srgb, transform: 'scale(1.2)' }}
+          />
+        </button>
       ))}
     </div>
   );
