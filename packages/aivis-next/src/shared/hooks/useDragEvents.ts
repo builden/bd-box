@@ -5,29 +5,20 @@ import { DRAG_CONFIG } from './types';
 import { clamp, getMinPosition, getMaxPosition } from './dragUtils';
 
 /**
- * Options for useDragEvents
- */
-export interface UseDragEventsOptions {
-  width: number;
-  height: number;
-}
-
-/**
  * useDragEvents - Handles drag mouse events
  * 拖拽逻辑：记录初始鼠标位置和元素位置，拖动时计算偏移量应用新位置
- * 位置使用 bottom-right 作为共用参考点
+ * 位置使用 right/top 坐标存储
  */
 export function useDragEvents(
   buttonRef: React.RefObject<HTMLDivElement | null>,
-  onDragEnd: (position: { x: number; y: number }) => void,
-  options: UseDragEventsOptions
+  onDragEnd: (position: { x: number; y: number }) => void
 ) {
   const [, setIsDragging] = useAtom(isDraggingToolbarAtom);
 
   const dragStartRef = useRef<{
     mouseX: number;
     mouseY: number;
-    elemX: number;
+    elemRight: number;
     elemY: number;
   } | null>(null);
   const justFinishedDragRef = useRef(false);
@@ -44,13 +35,13 @@ export function useDragEvents(
       e.stopPropagation();
       if (!buttonRef.current) return;
 
-      const elemX = parseInt(buttonRef.current.style.left, 10);
+      const elemRight = parseInt(buttonRef.current.style.right, 10);
       const elemY = parseInt(buttonRef.current.style.top, 10);
 
       dragStartRef.current = {
         mouseX: e.clientX,
         mouseY: e.clientY,
-        elemX: isNaN(elemX) ? 0 : elemX,
+        elemRight: isNaN(elemRight) ? 0 : elemRight,
         elemY: isNaN(elemY) ? 0 : elemY,
       };
       hasMovedRef.current = false;
@@ -78,17 +69,17 @@ export function useDragEvents(
       }
 
       if (isDraggingRef.current) {
-        // 新位置 = 初始元素位置 + 鼠标偏移量
-        let newX = dragStartRef.current.elemX + deltaX;
+        // 新位置 = 初始元素位置 + 鼠标偏移量（right 坐标：鼠标右移则 right 减小，元素右移）
+        let newRight = dragStartRef.current.elemRight - deltaX;
         let newY = dragStartRef.current.elemY + deltaY;
 
-        // 限制在视口边界内（基于组件尺寸）
-        const minPos = getMinPosition(options.width);
-        const maxPos = getMaxPosition(options.width);
-        newX = clamp(newX, minPos.x, maxPos.x);
+        // 限制在视口边界内
+        const minPos = getMinPosition();
+        const maxPos = getMaxPosition();
+        newRight = clamp(newRight, minPos.x, maxPos.x);
         newY = clamp(newY, minPos.y, maxPos.y);
 
-        buttonRef.current.style.left = `${newX}px`;
+        buttonRef.current.style.right = `${newRight}px`;
         buttonRef.current.style.top = `${newY}px`;
       }
     };
@@ -97,11 +88,11 @@ export function useDragEvents(
       if (isDraggingRef.current) {
         justFinishedDragRef.current = true;
 
-        // Get final position (top-left) and convert to bottom-right (共用参考点)
+        // Get final position (right, top) - right is directly usable as bottom-right x
         if (buttonRef.current) {
-          const finalX = parseInt(buttonRef.current.style.left, 10);
+          const finalRight = parseInt(buttonRef.current.style.right, 10);
           const finalY = parseInt(buttonRef.current.style.top, 10);
-          onDragEndRef.current({ x: finalX + options.width, y: finalY + options.height });
+          onDragEndRef.current({ x: finalRight, y: finalY });
         }
       }
 
@@ -121,21 +112,21 @@ export function useDragEvents(
     const handleResize = () => {
       if (!buttonRef.current || isDraggingRef.current) return;
 
-      const currentLeft = parseInt(buttonRef.current.style.left, 10);
+      const currentRight = parseInt(buttonRef.current.style.right, 10);
       const currentTop = parseInt(buttonRef.current.style.top, 10);
 
-      if (isNaN(currentLeft) || isNaN(currentTop)) return;
+      if (isNaN(currentRight) || isNaN(currentTop)) return;
 
-      const minPos = getMinPosition(options.width);
-      const maxPos = getMaxPosition(options.width);
-      const newX = clamp(currentLeft, minPos.x, maxPos.x);
+      const minPos = getMinPosition();
+      const maxPos = getMaxPosition();
+      const newRight = clamp(currentRight, minPos.x, maxPos.x);
       const newY = clamp(currentTop, minPos.y, maxPos.y);
 
-      if (newX !== currentLeft || newY !== currentTop) {
-        buttonRef.current.style.left = `${newX}px`;
+      if (newRight !== currentRight || newY !== currentTop) {
+        buttonRef.current.style.right = `${newRight}px`;
         buttonRef.current.style.top = `${newY}px`;
-        // Convert top-left to bottom-right (共用参考点)
-        onDragEndRef.current({ x: newX + options.width, y: newY + options.height });
+        // right is directly usable as bottom-right x
+        onDragEndRef.current({ x: newRight, y: newY });
       }
     };
 
@@ -150,7 +141,7 @@ export function useDragEvents(
       document.removeEventListener('selectstart', handleSelectStart);
       window.removeEventListener('resize', handleResize);
     };
-  }, [buttonRef, setIsDragging, options]);
+  }, [buttonRef, setIsDragging]);
 
   // Handle click - only triggers if not a drag
   const handleClick = useCallback(() => {

@@ -27,10 +27,7 @@ export function Toolbar() {
   const [isDragging] = useAtom(isDraggingToolbarAtom);
 
   const { toolbarPosition, setToolbarPosition } = useDragPosition();
-  const { handleMouseDown, handleClick } = useDragEvents(containerRef, setToolbarPosition, {
-    width: isActive ? TOOLBAR_EXPANDED_WIDTH : DRAG_CONFIG.SIZE,
-    height: DRAG_CONFIG.SIZE,
-  });
+  const { handleMouseDown, handleClick } = useDragEvents(containerRef, setToolbarPosition);
 
   const handleToggle = useCallback(() => {
     if (!handleClick()) return;
@@ -40,8 +37,8 @@ export function Toolbar() {
   // 定位：right 固定
   const style: React.CSSProperties = {
     position: 'fixed',
-    right: toolbarPosition ? window.innerWidth - toolbarPosition.x : -9999,
-    top: toolbarPosition ? toolbarPosition.y - DRAG_CONFIG.SIZE : -9999,
+    right: toolbarPosition ? toolbarPosition.x : -9999,
+    top: toolbarPosition ? toolbarPosition.y : -9999,
     width: isActive ? TOOLBAR_EXPANDED_WIDTH : DRAG_CONFIG.SIZE,
     height: DRAG_CONFIG.SIZE,
     transition: 'width 0.4s cubic-bezier(0.19, 1, 0.22, 1)',
