@@ -1,13 +1,9 @@
-import { memo } from 'react';
-import clsx from 'clsx';
-import type { ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
+import { BaseToolbarButton, type BaseToolbarButtonProps } from './BaseToolbarButton';
 
-export interface ToolbarButtonProps {
+export interface ToolbarButtonProps extends Omit<BaseToolbarButtonProps, 'icon'> {
   icon: ReactNode;
-  onClick?: () => void;
-  disabled?: boolean;
-  title?: string;
-  className?: string;
+  /** 激活状态 */
   isActive?: boolean;
   /** 激活状态的高亮颜色，默认 #f59e0b (amber-500) */
   activeColor?: string;
@@ -16,7 +12,7 @@ export interface ToolbarButtonProps {
 }
 
 /**
- * ToolbarButton - 单个工具栏按钮
+ * ToolbarButton - 带激活状态的工具栏按钮
  * 尺寸: 34x34px, 圆形
  */
 export const ToolbarButton = memo(function ToolbarButton({
@@ -29,37 +25,22 @@ export const ToolbarButton = memo(function ToolbarButton({
   activeColor = '#f59e0b',
   activeBgOpacity = 25,
 }: ToolbarButtonProps) {
-  const activeStyle: React.CSSProperties = isActive
+  const activeStyle = isActive
     ? {
         color: activeColor,
         backgroundColor: `color-mix(in srgb, ${activeColor} ${activeBgOpacity}%, transparent)`,
       }
-    : {};
+    : undefined;
 
   return (
-    <button
-      type="button"
+    <BaseToolbarButton
+      icon={icon}
       onClick={onClick}
       disabled={disabled}
       title={title}
       data-no-drag={isActive ? undefined : true}
-      style={{
-        ...activeStyle,
-        color: 'var(--toolbar-icon)',
-      }}
-      className={clsx(
-        'w-[34px] h-[34px]',
-        'rounded-full',
-        'flex items-center justify-center',
-        'transition-all duration-150 ease-out',
-        'hover:bg-[var(--toolbar-hover-bg)]',
-        'active:scale-95',
-        'disabled:opacity-50 disabled:cursor-not-allowed',
-        'cursor-pointer',
-        className
-      )}
-    >
-      {icon}
-    </button>
+      style={activeStyle}
+      className={className}
+    />
   );
 });
