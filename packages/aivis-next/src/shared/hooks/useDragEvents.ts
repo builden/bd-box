@@ -11,7 +11,7 @@ import { clamp, getMinPosition, getMaxPosition } from './dragUtils';
  */
 export function useDragEvents(
   buttonRef: React.RefObject<HTMLDivElement | null>,
-  onDragEnd: (position: { x: number; y: number }) => void
+  onDragEnd: (position: { right: number; top: number }) => void
 ) {
   const [, setIsDragging] = useAtom(isDraggingToolbarAtom);
 
@@ -76,8 +76,8 @@ export function useDragEvents(
         // 限制在视口边界内
         const minPos = getMinPosition();
         const maxPos = getMaxPosition();
-        newRight = clamp(newRight, minPos.x, maxPos.x);
-        newY = clamp(newY, minPos.y, maxPos.y);
+        newRight = clamp(newRight, minPos.right, maxPos.right);
+        newY = clamp(newY, minPos.top, maxPos.top);
 
         buttonRef.current.style.right = `${newRight}px`;
         buttonRef.current.style.top = `${newY}px`;
@@ -88,11 +88,11 @@ export function useDragEvents(
       if (isDraggingRef.current) {
         justFinishedDragRef.current = true;
 
-        // Get final position (right, top) - right is directly usable as bottom-right x
+        // Get final position (right, top) - stored directly in Position type
         if (buttonRef.current) {
           const finalRight = parseInt(buttonRef.current.style.right, 10);
           const finalY = parseInt(buttonRef.current.style.top, 10);
-          onDragEndRef.current({ x: finalRight, y: finalY });
+          onDragEndRef.current({ right: finalRight, top: finalY });
         }
       }
 
@@ -119,14 +119,13 @@ export function useDragEvents(
 
       const minPos = getMinPosition();
       const maxPos = getMaxPosition();
-      const newRight = clamp(currentRight, minPos.x, maxPos.x);
-      const newY = clamp(currentTop, minPos.y, maxPos.y);
+      const newRight = clamp(currentRight, minPos.right, maxPos.right);
+      const newY = clamp(currentTop, minPos.top, maxPos.top);
 
       if (newRight !== currentRight || newY !== currentTop) {
         buttonRef.current.style.right = `${newRight}px`;
         buttonRef.current.style.top = `${newY}px`;
-        // right is directly usable as bottom-right x
-        onDragEndRef.current({ x: newRight, y: newY });
+        onDragEndRef.current({ right: newRight, top: newY });
       }
     };
 

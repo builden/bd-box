@@ -37,8 +37,8 @@ export function Toolbar() {
   // 定位：right 固定
   const style: React.CSSProperties = {
     position: 'fixed',
-    right: toolbarPosition ? toolbarPosition.x : -9999,
-    top: toolbarPosition ? toolbarPosition.y : -9999,
+    right: toolbarPosition ? toolbarPosition.right : -9999,
+    top: toolbarPosition ? toolbarPosition.top : -9999,
     width: isActive ? TOOLBAR_EXPANDED_WIDTH : DRAG_CONFIG.SIZE,
     height: DRAG_CONFIG.SIZE,
     transition: 'width 0.4s cubic-bezier(0.19, 1, 0.22, 1)',

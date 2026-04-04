@@ -8,8 +8,8 @@ export { TOOLBAR_WIDTH } from './types';
 export const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
 /**
- * Get min/max TOP position for toolbar (top edge of viewport)
- * y = PADDING (topmost) to y = viewportHeight - PADDING - TOOLBAR_HEIGHT (bottommost)
+ * Get min/max top position for toolbar (top edge of viewport)
+ * top = PADDING (topmost) to top = viewportHeight - PADDING - TOOLBAR_HEIGHT (bottommost)
  */
 export const getTopMinPosition = () => DRAG_CONFIG.PADDING;
 export const getTopMaxPosition = () => window.innerHeight - DRAG_CONFIG.PADDING - DRAG_CONFIG.SIZE;
@@ -27,13 +27,13 @@ export const getToolbarMaxRight = () => window.innerWidth - DRAG_CONFIG.PADDING 
  * is what we store and constrain, regardless of expanded/collapsed state
  */
 export const getMinPosition = () => ({
-  x: getToolbarMinRight(),
-  y: getTopMinPosition(),
+  right: getToolbarMinRight(),
+  top: getTopMinPosition(),
 });
 
 export const getMaxPosition = () => ({
-  x: getToolbarMaxRight(),
-  y: getTopMaxPosition(),
+  right: getToolbarMaxRight(),
+  top: getTopMaxPosition(),
 });
 
 /**
@@ -41,6 +41,6 @@ export const getMaxPosition = () => ({
  * This places the toolbar at the bottom-right corner of the viewport
  */
 export const getDefaultPosition = () => ({
-  x: window.innerWidth - DRAG_CONFIG.PADDING - TOOLBAR_WIDTH,
-  y: getTopMaxPosition(),
+  right: window.innerWidth - DRAG_CONFIG.PADDING - TOOLBAR_WIDTH,
+  top: getTopMaxPosition(),
 });
