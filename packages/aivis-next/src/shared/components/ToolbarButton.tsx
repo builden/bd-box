@@ -43,14 +43,16 @@ export const ToolbarButton = memo(function ToolbarButton({
       disabled={disabled}
       title={title}
       data-no-drag={isActive ? undefined : true}
-      style={activeStyle}
+      style={{
+        ...activeStyle,
+        color: 'var(--toolbar-icon)',
+      }}
       className={clsx(
         'w-[34px] h-[34px]',
         'rounded-full',
         'flex items-center justify-center',
-        'text-white/85',
         'transition-all duration-150 ease-out',
-        'hover:bg-white/12',
+        'hover:bg-[var(--toolbar-hover-bg)]',
         'active:scale-95',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         'cursor-pointer',

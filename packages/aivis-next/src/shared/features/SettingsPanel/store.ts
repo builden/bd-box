@@ -63,4 +63,4 @@ export const connectionStatusAtom = atom<ConnectionStatus>('disconnected');
 export const endpointAtom = atom<string | undefined>(undefined);
 
 // Theme: true = dark, false = light
-export const isDarkModeAtom = atomWithStorage<boolean>('aivis-next-theme', false);
+export const isDarkModeAtom = atomWithStorage<boolean>('aivis-next-theme', true);

@@ -52,7 +52,7 @@ export const MainSettings = memo(function MainSettings({
         </button>
       </div>
 
-      <div className="h-px my-2 bg-divider" />
+      <div className="h-px my-2 bg-[var(--divider)]" />
 
       {/* Output detail + React + Hide until restart */}
       <div>
@@ -95,7 +95,7 @@ export const MainSettings = memo(function MainSettings({
         </div>
       </div>
 
-      <div className="h-px my-2 bg-divider" />
+      <div className="h-px my-2 bg-[var(--divider)]" />
 
       {/* Color picker */}
       <div>
@@ -109,7 +109,7 @@ export const MainSettings = memo(function MainSettings({
         />
       </div>
 
-      <div className="h-px my-2 bg-divider" />
+      <div className="h-px my-2 bg-[var(--divider)]" />
 
       {/* Checkboxes */}
       <div className="space-y-2">
@@ -125,7 +125,7 @@ export const MainSettings = memo(function MainSettings({
         />
       </div>
 
-      <div className="h-px my-2 bg-divider" />
+      <div className="h-px my-2 bg-[var(--divider)]" />
 
       {/* Nav to automations */}
       <button

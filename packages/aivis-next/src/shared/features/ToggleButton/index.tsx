@@ -15,13 +15,13 @@ export function ToggleButton({ handleClick }: ToggleButtonProps) {
       onClick={handleToggle}
       title={isActive ? '关闭' : '展开'}
       data-no-drag={isActive ? true : undefined}
+      style={{ color: 'var(--toolbar-icon)' }}
       className={clsx(
         'w-[34px] h-[34px]',
         'rounded-full',
         'flex items-center justify-center',
-        'text-white/85',
         'transition-all duration-150 ease-out',
-        'hover:bg-white/12',
+        'hover:bg-[var(--toolbar-hover-bg)]',
         'active:scale-95',
         'cursor-pointer',
         !isActive && 'mx-auto'

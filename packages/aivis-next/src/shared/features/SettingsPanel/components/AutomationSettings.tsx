@@ -29,7 +29,7 @@ export const AutomationSettings = memo(function AutomationSettings({
         <span className="text-text-primary text-[13px] tracking-tight">管理 MCP 和 Webhooks</span>
       </button>
 
-      <div className="h-px bg-divider my-2" />
+      <div className="h-px bg-[var(--divider)] my-2" />
 
       {/* MCP section */}
       <div>
@@ -52,7 +52,7 @@ export const AutomationSettings = memo(function AutomationSettings({
         <p className="text-text-muted text-xs pt-1.5 pb-2">MCP 连接允许代理接收并操作标注</p>
       </div>
 
-      <div className="h-px bg-divider my-2" />
+      <div className="h-px bg-[var(--divider)] my-2" />
 
       {/* Webhooks section */}
       <div className="flex flex-col flex-1">

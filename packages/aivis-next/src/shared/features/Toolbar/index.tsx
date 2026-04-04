@@ -18,7 +18,7 @@ import { ToggleButton } from '@/shared/features/ToggleButton';
 import { ToolbarButton } from '@/shared/components/ToolbarButton';
 import { TOOLBAR_WIDTH, DRAG_CONFIG } from '@/shared/hooks/types';
 import { SettingsPanel } from '@/shared/features/SettingsPanel';
-import { showSettingsAtom } from '@/shared/features/SettingsPanel/store';
+import { showSettingsAtom, isDarkModeAtom } from '@/shared/features/SettingsPanel/store';
 
 const TOOLBAR_EXPANDED_WIDTH = TOOLBAR_WIDTH;
 
@@ -27,6 +27,7 @@ export function Toolbar() {
   const { isDragging, toolbarPosition, handleMouseDown, handleClick } = useToolbarState(containerRef);
   const { isActive } = useToggleButton(handleClick);
   const [showSettings, setShowSettings] = useAtom(showSettingsAtom);
+  const [isDarkMode] = useAtom(isDarkModeAtom);
 
   // 关闭 toolbar 时也关闭设置面板
   useEffect(() => {
@@ -44,13 +45,14 @@ export function Toolbar() {
     height: DRAG_CONFIG.SIZE,
     transition: 'width 0.4s cubic-bezier(0.19, 1, 0.22, 1)',
     borderRadius: 22,
-    backgroundColor: '#171717',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.25), 0 8px 24px rgba(0,0,0,0.15)',
+    backgroundColor: 'var(--toolbar-bg)',
+    boxShadow: 'var(--toolbar-shadow)',
   };
 
   return (
     <div
       ref={containerRef}
+      data-theme={isDarkMode ? 'dark' : 'light'}
       className={clsx(
         'flex items-center',
         isActive ? 'justify-between px-2' : 'justify-center',
@@ -76,7 +78,7 @@ export function Toolbar() {
             <ToolbarButton icon={<IconChatEllipsis size={21} />} title="标注模式 (A)" />
           </div>
 
-          <div className="w-px h-6 bg-white/20 mx-1" />
+          <div className="w-px h-6 bg-[var(--toolbar-divider)] mx-1" />
 
           <div className="flex items-center gap-1.5">
             <ToolbarButton icon={<IconEyeAnimated size={24} />} disabled title="显示/隐藏标记 (H)" />
@@ -88,11 +90,11 @@ export function Toolbar() {
               title="设置"
               onClick={() => setShowSettings(!showSettings)}
               isActive={showSettings}
-              activeColor="#fff"
+              activeColor="var(--toolbar-icon-active)"
             />
           </div>
 
-          <div className="w-px h-6 bg-white/20 mx-1" />
+          <div className="w-px h-6 bg-[var(--toolbar-divider)] mx-1" />
         </>
       )}
 
