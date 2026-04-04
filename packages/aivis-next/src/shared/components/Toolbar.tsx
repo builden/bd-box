@@ -53,12 +53,13 @@ export function Toolbar() {
       ref={containerRef}
       className={clsx(
         'flex items-center',
-        isActive ? 'justify-between' : 'justify-center',
+        isActive ? 'justify-between px-2' : 'justify-center',
         'cursor-grab select-none',
         'focus:outline-none',
         isDragging && 'cursor-grabbing',
-        'z-[100000]',
-        'px-2'
+        isDragging && 'scale-95',
+        'animate-toolbar-enter',
+        'z-[100000]'
       )}
       style={style}
       onMouseDown={handleMouseDown}
@@ -67,20 +68,20 @@ export function Toolbar() {
       {isActive && (
         <>
           <div className="flex items-center gap-1.5">
-            <ToolbarButton icon={<IconPausePlayAnimated size={24} />} title="暂停/播放 (P)" />
-            <ToolbarButton icon={<IconLayout size={21} />} title="布局模式 (L)" />
-            <ToolbarButton icon={<IconEdit size={21} />} title="样式编辑 (S)" />
-            <ToolbarButton icon={<IconChatEllipsis size={21} />} title="标注模式 (A)" />
+            <ToolbarButton icon={<IconPausePlayAnimated size={24} />} title="暂停/播放 (P)" stopPropagation />
+            <ToolbarButton icon={<IconLayout size={21} />} title="布局模式 (L)" stopPropagation />
+            <ToolbarButton icon={<IconEdit size={21} />} title="样式编辑 (S)" stopPropagation />
+            <ToolbarButton icon={<IconChatEllipsis size={21} />} title="标注模式 (A)" stopPropagation />
           </div>
 
           <div className="w-px h-6 bg-white/20 mx-1" />
 
           <div className="flex items-center gap-1.5">
-            <ToolbarButton icon={<IconEyeAnimated size={24} />} disabled title="显示/隐藏标记 (H)" />
-            <ToolbarButton icon={<IconCopyAnimated size={24} />} disabled title="复制反馈 (C)" />
-            <ToolbarButton icon={<IconSendArrow size={24} />} disabled title="发送标注 (S)" />
-            <ToolbarButton icon={<IconTrashAlt size={24} />} disabled title="清除全部 (X)" />
-            <ToolbarButton icon={<IconGear size={24} />} title="设置" />
+            <ToolbarButton icon={<IconEyeAnimated size={24} />} disabled title="显示/隐藏标记 (H)" stopPropagation />
+            <ToolbarButton icon={<IconCopyAnimated size={24} />} disabled title="复制反馈 (C)" stopPropagation />
+            <ToolbarButton icon={<IconSendArrow size={24} />} disabled title="发送标注 (S)" stopPropagation />
+            <ToolbarButton icon={<IconTrashAlt size={24} />} disabled title="清除全部 (X)" stopPropagation />
+            <ToolbarButton icon={<IconGear size={24} />} title="设置" stopPropagation />
           </div>
         </>
       )}

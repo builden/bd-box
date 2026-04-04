@@ -8,6 +8,7 @@ export interface ToolbarButtonProps {
   disabled?: boolean;
   title?: string;
   className?: string;
+  stopPropagation?: boolean;
 }
 
 /**
@@ -20,6 +21,7 @@ export const ToolbarButton = memo(function ToolbarButton({
   disabled = false,
   title,
   className = '',
+  stopPropagation = false,
 }: ToolbarButtonProps) {
   return (
     <button
@@ -27,6 +29,7 @@ export const ToolbarButton = memo(function ToolbarButton({
       onClick={onClick}
       disabled={disabled}
       title={title}
+      onMouseDown={(e) => stopPropagation && e.stopPropagation()}
       className={clsx(
         'w-[34px] h-[34px]',
         'rounded-full',
@@ -36,6 +39,7 @@ export const ToolbarButton = memo(function ToolbarButton({
         'hover:bg-white/12',
         'active:scale-95',
         'disabled:opacity-50 disabled:cursor-not-allowed',
+        'cursor-pointer',
         className
       )}
     >
