@@ -1,4 +1,4 @@
-import { Toolbar } from '../src/shared/components';
+import { Toolbar } from '../src/shared/features/Toolbar';
 import { Button } from './Button';
 
 export function App() {

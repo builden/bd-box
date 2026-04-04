@@ -12,6 +12,3 @@ export const toolbarPositionAtom = atomWithStorage<ToolbarPosition>(
 
 // Dragging state atom
 export const isDraggingToolbarAtom = atom(false);
-
-// Active state (expanded/collapsed)
-export const isActiveAtom = atom(false);

@@ -37,10 +37,11 @@ export const getMaxPosition = () => ({
 });
 
 /**
- * Get default position (top-right corner in right/top coordinate system)
- * This places the toolbar at the bottom-right corner of the viewport
+ * Get default position (bottom-right corner in right/top coordinate system)
+ * right = PADDING (minimum, near right edge)
+ * top = maximum (near bottom)
  */
 export const getDefaultPosition = () => ({
-  right: window.innerWidth - DRAG_CONFIG.PADDING - TOOLBAR_WIDTH,
+  right: DRAG_CONFIG.PADDING,
   top: getTopMaxPosition(),
 });

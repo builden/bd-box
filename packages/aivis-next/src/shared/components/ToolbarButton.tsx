@@ -8,7 +8,11 @@ export interface ToolbarButtonProps {
   disabled?: boolean;
   title?: string;
   className?: string;
-  stopPropagation?: boolean;
+  isActive?: boolean;
+  /** 激活状态的高亮颜色，默认 #f59e0b (amber-500) */
+  activeColor?: string;
+  /** 激活状态的高亮背景色透明度，默认 25% */
+  activeBgOpacity?: number;
 }
 
 /**
@@ -21,15 +25,26 @@ export const ToolbarButton = memo(function ToolbarButton({
   disabled = false,
   title,
   className = '',
-  stopPropagation = false,
+  isActive = false,
+  activeColor = '#f59e0b',
+  activeBgOpacity = 25,
 }: ToolbarButtonProps) {
+  const activeStyle: React.CSSProperties = isActive
+    ? {
+        color: activeColor,
+        backgroundColor: `color-mix(in srgb, ${activeColor} ${activeBgOpacity}%, transparent)`,
+        boxShadow: `0 0 0 1px ${activeColor}`,
+      }
+    : {};
+
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
       title={title}
-      onMouseDown={(e) => stopPropagation && e.stopPropagation()}
+      data-no-drag={isActive ? undefined : true}
+      style={activeStyle}
       className={clsx(
         'w-[34px] h-[34px]',
         'rounded-full',

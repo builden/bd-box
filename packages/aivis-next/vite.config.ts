@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
-import { resolve } from 'path';
 
 export default defineConfig(({ command }) => {
   // In dev mode (serve), use the example page
@@ -12,9 +11,7 @@ export default defineConfig(({ command }) => {
         port: 3002,
       },
       resolve: {
-        alias: {
-          '@': resolve(__dirname, '../src'),
-        },
+        tsconfigPaths: true,
       },
     };
   }
@@ -23,13 +20,11 @@ export default defineConfig(({ command }) => {
   return {
     plugins: [tailwindcss()],
     resolve: {
-      alias: {
-        '@': resolve(__dirname, './src'),
-      },
+      tsconfigPaths: true,
     },
     build: {
       lib: {
-        entry: resolve(__dirname, 'src/index.ts'),
+        entry: 'src/index.ts',
         name: 'AivisNext',
         formats: ['es'],
         fileName: 'index',

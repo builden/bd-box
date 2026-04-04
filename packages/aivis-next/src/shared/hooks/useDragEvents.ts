@@ -32,7 +32,10 @@ export function useDragEvents(
   // Handle mouse down - record initial mouse position and element position
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
-      e.stopPropagation();
+      const target = e.target as HTMLElement;
+      // 有 data-no-drag 标记的元素不触发拖拽
+      if (target.closest('[data-no-drag]')) return;
+
       if (!buttonRef.current) return;
 
       const elemRight = parseInt(buttonRef.current.style.right, 10);
