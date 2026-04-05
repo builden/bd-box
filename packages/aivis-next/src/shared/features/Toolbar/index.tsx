@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
 import clsx from 'clsx';
 import {
@@ -15,10 +15,15 @@ import { useToggleButton } from '@/shared/features/ToggleButton/useToggleButton'
 import { PauseButton } from '@/shared/features/PauseButton';
 import { ToggleButton } from '@/shared/features/ToggleButton';
 import { ToolbarButton } from '@/shared/components/ToolbarButton';
-import { AnnotationButton, useAnnotations } from '@/shared/features/Annotation';
+import {
+  AnnotationButton,
+  useAnnotations,
+  generateAnnotationOutput,
+  copyToClipboard,
+} from '@/shared/features/Annotation';
 import { TOOLBAR_WIDTH, DRAG_CONFIG } from '@/shared/hooks/types';
 import { SettingsPanel } from '@/shared/features/SettingsPanel';
-import { showSettingsAtom, isDarkModeAtom } from '@/shared/features/SettingsPanel/store';
+import { showSettingsAtom, isDarkModeAtom, settingsAtom } from '@/shared/features/SettingsPanel/store';
 import { isAnnotationModeAtom } from '@/shared/features/Annotation';
 
 const TOOLBAR_EXPANDED_WIDTH = TOOLBAR_WIDTH;
@@ -29,8 +34,10 @@ export function Toolbar() {
   const { isActive } = useToggleButton(handleClick);
   const [showSettings, setShowSettings] = useAtom(showSettingsAtom);
   const [isDarkMode] = useAtom(isDarkModeAtom);
+  const [settings] = useAtom(settingsAtom);
   const setIsAnnotationMode = useSetAtom(isAnnotationModeAtom);
   const { clearAllAnnotations, annotations, showMarkers, toggleShowMarkers } = useAnnotations();
+  const [copied, setCopied] = useState(false);
 
   // 关闭 toolbar 时也关闭设置面板和标注模式
   useEffect(() => {
@@ -39,6 +46,17 @@ export function Toolbar() {
       setIsAnnotationMode(false);
     }
   }, [isActive, setShowSettings, setIsAnnotationMode]);
+
+  // 复制反馈
+  const handleCopyFeedback = async () => {
+    if (annotations.length === 0) return;
+    const output = generateAnnotationOutput(annotations, settings.outputDetail);
+    const success = await copyToClipboard(output);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   // 定位：right 固定
   const style: React.CSSProperties = {
@@ -94,7 +112,12 @@ export function Toolbar() {
               title="显示/隐藏标记 (H)"
               {...(!showMarkers && annotations.length > 0 && { badge: annotations.length })}
             />
-            <ToolbarButton icon={<IconCopyAnimated size={24} />} disabled title="复制反馈 (C)" />
+            <ToolbarButton
+              icon={<IconCopyAnimated size={24} copied={copied} />}
+              onClick={handleCopyFeedback}
+              disabled={annotations.length === 0}
+              title="复制反馈 (C)"
+            />
             <ToolbarButton icon={<IconSendArrow size={24} />} disabled title="发送标注 (S)" />
             <ToolbarButton
               icon={<IconTrashAlt size={24} />}

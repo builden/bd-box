@@ -1,4 +1,5 @@
 import { atom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
 
 // =============================================================================
 // Types
@@ -26,11 +27,15 @@ export type Annotation = {
 // Annotation mode toggle
 export const isAnnotationModeAtom = atom(false);
 
-// Annotations list
-export const annotationsAtom = atom<Annotation[]>([]);
+// Annotations list - 使用 atomWithStorage 持久化
+export const annotationsAtom = atomWithStorage<Annotation[]>('aivis-annotations', [], undefined, {
+  getOnInit: true,
+});
 
-// Show/hide markers
-export const showMarkersAtom = atom(true);
+// Show/hide markers - 使用 atomWithStorage 持久化
+export const showMarkersAtom = atomWithStorage<boolean>('aivis-show-markers', true, undefined, {
+  getOnInit: true,
+});
 
 // =============================================================================
 // UI State Atoms

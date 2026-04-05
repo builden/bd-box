@@ -9,3 +9,4 @@ export { PendingMarker } from './PendingMarker';
 export { useAnnotationClickHandler } from './useAnnotationClickHandler';
 export { useAnnotationHover } from './useAnnotationHover';
 export { useAnnotations } from './useAnnotations';
+export { generateAnnotationOutput, copyToClipboard } from './generate-output';
