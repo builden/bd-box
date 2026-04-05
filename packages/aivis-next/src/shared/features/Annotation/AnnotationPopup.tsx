@@ -76,12 +76,22 @@ export const AnnotationPopup = memo(function AnnotationPopup() {
         x: pendingAnnotation!.x,
         y: pendingAnnotation!.y,
         element: pendingAnnotation!.element,
+        elementPath: pendingAnnotation!.elementPath,
         comment: comment.trim(),
         timestamp: Date.now(),
         ...(pendingAnnotation!.colorId && { colorId: pendingAnnotation!.colorId }),
         ...(pendingAnnotation!.popupX !== undefined && { popupX: pendingAnnotation!.popupX }),
         ...(pendingAnnotation!.popupY !== undefined && { popupY: pendingAnnotation!.popupY }),
         ...(pendingAnnotation!.selectedText ? { selectedText: pendingAnnotation!.selectedText } : {}),
+        ...(pendingAnnotation!.fullPath && { fullPath: pendingAnnotation!.fullPath }),
+        ...(pendingAnnotation!.cssClasses && { cssClasses: pendingAnnotation!.cssClasses }),
+        ...(pendingAnnotation!.boundingBox && { boundingBox: pendingAnnotation!.boundingBox }),
+        ...(pendingAnnotation!.nearbyText && { nearbyText: pendingAnnotation!.nearbyText }),
+        ...(pendingAnnotation!.computedStyles && { computedStyles: pendingAnnotation!.computedStyles }),
+        ...(pendingAnnotation!.accessibility && { accessibility: pendingAnnotation!.accessibility }),
+        ...(pendingAnnotation!.nearbyElements && { nearbyElements: pendingAnnotation!.nearbyElements }),
+        ...(pendingAnnotation!.sourceFile && { sourceFile: pendingAnnotation!.sourceFile }),
+        ...(pendingAnnotation!.reactComponents && { reactComponents: pendingAnnotation!.reactComponents }),
       };
       setAnnotations((prev: Annotation[]) => [...prev, newAnnotation]);
       setPendingAnnotation(null);

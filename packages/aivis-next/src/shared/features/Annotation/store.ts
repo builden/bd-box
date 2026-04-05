@@ -10,6 +10,7 @@ export type Annotation = {
   x: number; // x position (px)
   y: number; // y position (px)
   element: string; // element description
+  elementPath?: string; // DOM path (standard/detailed)
   selectedText?: string;
   comment?: string;
   isMultiSelect?: boolean;
@@ -18,6 +19,16 @@ export type Annotation = {
   colorId?: string;
   popupX?: number;
   popupY?: number;
+  // Forensic/detailed fields
+  fullPath?: string; // 完整 DOM 路径
+  cssClasses?: string; // CSS 类
+  boundingBox?: { x: number; y: number; width: number; height: number }; // 元素边界框
+  nearbyText?: string; // 附近文本
+  computedStyles?: string; // 计算样式
+  accessibility?: string; // 无障碍信息
+  nearbyElements?: string; // 附近元素
+  sourceFile?: string; // 源码文件
+  reactComponents?: string; // React 组件层级
 };
 
 // =============================================================================
@@ -53,6 +64,16 @@ export type HoverData = {
   elementPath: string;
   selectedText?: string;
   rect?: DOMRect;
+  // Forensic fields
+  fullPath?: string;
+  cssClasses?: string;
+  boundingBox?: { x: number; y: number; width: number; height: number };
+  nearbyText?: string;
+  computedStyles?: string;
+  accessibility?: string;
+  nearbyElements?: string;
+  sourceFile?: string;
+  reactComponents?: string;
 };
 
 export const hoverAtom = atom<HoverData | null>(null);
@@ -69,6 +90,16 @@ export type PendingAnnotationData = {
   popupX?: number;
   popupY?: number;
   colorId?: string;
+  // Forensic fields
+  fullPath?: string;
+  cssClasses?: string;
+  boundingBox?: { x: number; y: number; width: number; height: number };
+  nearbyText?: string;
+  computedStyles?: string;
+  accessibility?: string;
+  nearbyElements?: string;
+  sourceFile?: string;
+  reactComponents?: string;
 };
 
 export const pendingAnnotationAtom = atom<PendingAnnotationData | null>(null);

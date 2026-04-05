@@ -40,12 +40,13 @@ export const COLOR_OPTIONS = [
 ] as const;
 
 // Output detail options
-export const OUTPUT_DETAIL_OPTIONS: { value: OutputDetailLevel; label: string }[] = [
-  { value: 'compact', label: '简洁' },
-  { value: 'standard', label: '标准' },
-  { value: 'detailed', label: '详细' },
-  { value: 'forensic', label: '取证' },
-];
+export const OUTPUT_DETAIL_OPTIONS: { value: OutputDetailLevel; label: string; description: string; color: string }[] =
+  [
+    { value: 'compact', label: '简洁', description: '快速指出问题，元素+路径+评论', color: '#94a3b8' },
+    { value: 'standard', label: '标准', description: '一般反馈，含视口和元素位置', color: '#22c55e' },
+    { value: 'detailed', label: '详细', description: '布局/样式问题，含CSS和像素位置', color: '#f59e0b' },
+    { value: 'forensic', label: '取证', description: '复杂问题，含完整环境和计算样式', color: '#ef4444' },
+  ];
 
 // Settings atom with persistence
 export const settingsAtom = atomWithStorage<Settings>('aivis-next-settings', DEFAULT_SETTINGS);

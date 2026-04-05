@@ -1,5 +1,7 @@
 import { memo } from 'react';
 import clsx from 'clsx';
+import { isDarkModeAtom } from '@/shared/features/SettingsPanel/store';
+import { useAtom } from 'jotai';
 import { OUTPUT_DETAIL_OPTIONS } from '../store';
 import type { OutputDetailLevel } from '../store';
 
@@ -9,6 +11,8 @@ interface OutputDetailCycleProps {
 }
 
 export const OutputDetailCycle = memo(function OutputDetailCycle({ value, onChange }: OutputDetailCycleProps) {
+  const [isDarkMode] = useAtom(isDarkModeAtom);
+
   const handleClick = () => {
     const currentIndex = OUTPUT_DETAIL_OPTIONS.findIndex((opt) => opt.value === value);
     const nextIndex = (currentIndex + 1) % OUTPUT_DETAIL_OPTIONS.length;
@@ -32,7 +36,13 @@ export const OutputDetailCycle = memo(function OutputDetailCycle({ value, onChan
             key={option.value}
             className={clsx(
               'w-[3px] h-[3px] rounded-full transition-all duration-150',
-              value === option.value ? 'bg-text-primary scale-100' : 'bg-text-primary/30 scale-[0.667]'
+              value === option.value
+                ? isDarkMode
+                  ? 'bg-white scale-100'
+                  : 'bg-black/70 scale-100'
+                : isDarkMode
+                  ? 'bg-white/30 scale-[0.667]'
+                  : 'bg-black/20 scale-[0.667]'
             )}
           />
         ))}

@@ -52,7 +52,16 @@ export function useAnnotationClickHandler() {
 
       // Get element info
       const elementLabel = getElementLabel(target);
+      const elementPath = getElementPath(target);
+      const fullPath = getFullPath(target);
       const selectedText = window.getSelection()?.toString();
+      const rect = target.getBoundingClientRect();
+
+      // Get nearby text (text content around the element)
+      const nearbyText = getNearbyText(target);
+
+      // Get key computed styles
+      const computedStyles = getKeyComputedStyles(target);
 
       // Create pending annotation for popup
       const pending: PendingAnnotationData = {
@@ -60,12 +69,26 @@ export function useAnnotationClickHandler() {
         y,
         clientY: e.clientY,
         element: elementLabel,
-        elementPath: getElementPath(target),
-        rect: target.getBoundingClientRect(),
+        elementPath,
+        fullPath,
+        rect,
         popupX: e.clientX,
         popupY: e.clientY,
         colorId: settings.annotationColorId,
         ...(selectedText ? { selectedText } : {}),
+        ...(target.className ? { cssClasses: target.className } : {}),
+        ...(rect
+          ? {
+              boundingBox: {
+                x: rect.left,
+                y: rect.top + window.scrollY, // 使用文档绝对位置
+                width: rect.width,
+                height: rect.height,
+              },
+            }
+          : {}),
+        ...(nearbyText ? { nearbyText } : {}),
+        ...(computedStyles ? { computedStyles } : {}),
       };
 
       setPendingAnnotation(pending);
@@ -114,18 +137,104 @@ function getElementPath(target: HTMLElement): string {
   return path.join(' > ') || target.tagName.toLowerCase();
 }
 
+// 获取完整的 DOM 路径
+function getFullPath(target: HTMLElement): string {
+  const path: string[] = [];
+  let current: Element | null = target;
+
+  while (current && current !== document.body) {
+    const tag = current.tagName.toLowerCase();
+    const el = current as HTMLElement;
+    let selector = tag;
+
+    if (el.id) {
+      selector = `${tag}#${el.id}`;
+      path.unshift(selector);
+      break;
+    }
+
+    const className = typeof el.className === 'string' ? el.className : '';
+    if (className) {
+      const classes = className.split(' ').filter(Boolean);
+      if (classes.length > 0) {
+        selector += '.' + classes.slice(0, 3).join('.');
+      }
+    }
+
+    path.unshift(selector);
+    current = current.parentElement;
+  }
+
+  return path.join(' > ');
+}
+
+// 获取元素附近的文本（用于上下文）
+function getNearbyText(target: HTMLElement): string {
+  // 获取元素的直接文本内容
+  const directText = target.textContent?.trim() || '';
+
+  // 如果直接文本太长，获取父元素的文本作为上下文
+  if (directText.length > 100) {
+    const parent = target.parentElement;
+    if (parent) {
+      return parent.textContent?.trim().slice(0, 150) || '';
+    }
+  }
+
+  return directText.slice(0, 100);
+}
+
+// 获取关键计算样式（用于调试布局问题）
+function getKeyComputedStyles(target: HTMLElement): string {
+  const el = target as HTMLElement;
+  const styles = window.getComputedStyle(el);
+
+  const keyProperties = [
+    'display',
+    'flex-direction',
+    'justify-content',
+    'align-items',
+    'gap',
+    'position',
+    'top',
+    'left',
+    'width',
+    'height',
+    'margin',
+    'padding',
+    'border',
+    'grid-template-columns',
+    'grid-template-rows',
+    'font-size',
+    'color',
+    'background-color',
+  ];
+
+  const result: string[] = [];
+
+  for (const prop of keyProperties) {
+    const value = styles.getPropertyValue(prop);
+    if (value && value !== 'none' && value !== 'normal' && value !== 'auto') {
+      result.push(`${prop}: ${value}`);
+    }
+  }
+
+  return result.slice(0, 10).join('; ');
+}
+
 function getElementLabel(target: HTMLElement): string {
+  const tag = target.tagName.toLowerCase();
+
+  // For element label, use aria-label or name if available
   if (target.getAttribute('aria-label')) {
-    return target.getAttribute('aria-label')!;
+    return `<${tag}> [${target.getAttribute('aria-label')}]`;
   }
   const accessibleName = target.getAttribute('name') || target.getAttribute('alt') || target.getAttribute('title');
   if (accessibleName) {
-    return accessibleName;
+    return `<${tag}> "${accessibleName.slice(0, 30)}"`;
   }
-  const text = target.textContent?.trim().slice(0, 50) || '';
-  const tag = target.tagName.toLowerCase();
-  if (text) {
-    return `<${tag}> "${text.slice(0, 30)}${text.length > 30 ? '...' : ''}"`;
-  }
+
+  // Return just the tag name without text content
+  // Text content should be captured separately as selectedText if user selects it
   return `<${tag}>`;
 }

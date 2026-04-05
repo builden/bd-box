@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
 import clsx from 'clsx';
 import {
@@ -15,16 +15,13 @@ import { useToggleButton } from '@/shared/features/ToggleButton/useToggleButton'
 import { PauseButton } from '@/shared/features/PauseButton';
 import { ToggleButton } from '@/shared/features/ToggleButton';
 import { ToolbarButton } from '@/shared/components/ToolbarButton';
-import {
-  AnnotationButton,
-  useAnnotations,
-  generateAnnotationOutput,
-  copyToClipboard,
-} from '@/shared/features/Annotation';
+import { Toast } from '@/shared/components/Toast';
+import { AnnotationButton, useAnnotations } from '@/shared/features/Annotation';
 import { TOOLBAR_WIDTH, DRAG_CONFIG } from '@/shared/hooks/types';
 import { SettingsPanel } from '@/shared/features/SettingsPanel';
-import { showSettingsAtom, isDarkModeAtom, settingsAtom } from '@/shared/features/SettingsPanel/store';
+import { showSettingsAtom, isDarkModeAtom } from '@/shared/features/SettingsPanel/store';
 import { isAnnotationModeAtom } from '@/shared/features/Annotation';
+import { copiedAtom, triggerCopyAtom } from '@/shared/features/ToggleButton/store';
 
 const TOOLBAR_EXPANDED_WIDTH = TOOLBAR_WIDTH;
 
@@ -34,10 +31,10 @@ export function Toolbar() {
   const { isActive } = useToggleButton(handleClick);
   const [showSettings, setShowSettings] = useAtom(showSettingsAtom);
   const [isDarkMode] = useAtom(isDarkModeAtom);
-  const [settings] = useAtom(settingsAtom);
   const setIsAnnotationMode = useSetAtom(isAnnotationModeAtom);
   const { clearAllAnnotations, annotations, showMarkers, toggleShowMarkers } = useAnnotations();
-  const [copied, setCopied] = useState(false);
+  const [copied] = useAtom(copiedAtom);
+  const [, setTriggerCopy] = useAtom(triggerCopyAtom);
 
   // 关闭 toolbar 时也关闭设置面板和标注模式
   useEffect(() => {
@@ -47,15 +44,10 @@ export function Toolbar() {
     }
   }, [isActive, setShowSettings, setIsAnnotationMode]);
 
-  // 复制反馈
-  const handleCopyFeedback = async () => {
+  // 复制反馈 - 触发事件让 useHotkeys 统一处理
+  const handleCopyFeedback = () => {
     if (annotations.length === 0) return;
-    const output = generateAnnotationOutput(annotations, settings.outputDetail);
-    const success = await copyToClipboard(output);
-    if (success) {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+    setTriggerCopy((n) => n + 1);
   };
 
   // 定位：right 固定
@@ -72,74 +64,77 @@ export function Toolbar() {
   };
 
   return (
-    <div
-      ref={containerRef}
-      data-theme={isDarkMode ? 'dark' : 'light'}
-      data-no-hover
-      className={clsx(
-        'flex items-center',
-        isActive ? 'justify-between px-2' : 'justify-center',
-        'cursor-grab select-none',
-        'focus:outline-none',
-        isDragging && 'cursor-grabbing',
-        isDragging && 'scale-95',
-        'animate-toolbar-enter',
-        'z-[100000]'
-      )}
-      style={style}
-      onMouseDown={handleMouseDown}
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* SettingsPanel inside toolbar - uses absolute positioning */}
-      <SettingsPanel />
-      {/* 左侧工具栏按钮 - 仅 expanded */}
-      {isActive && (
-        <>
-          <div className="flex items-center gap-1.5">
-            <PauseButton />
-            <ToolbarButton icon={<IconLayout size={21} />} title="布局模式 (L)" />
-            <ToolbarButton icon={<IconEdit size={21} />} title="样式编辑 (S)" />
-            <AnnotationButton />
-          </div>
+    <>
+      <Toast />
+      <div
+        ref={containerRef}
+        data-theme={isDarkMode ? 'dark' : 'light'}
+        data-no-hover
+        className={clsx(
+          'flex items-center',
+          isActive ? 'justify-between px-2' : 'justify-center',
+          'cursor-grab select-none',
+          'focus:outline-none',
+          isDragging && 'cursor-grabbing',
+          isDragging && 'scale-95',
+          'animate-toolbar-enter',
+          'z-[100000]'
+        )}
+        style={style}
+        onMouseDown={handleMouseDown}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* SettingsPanel inside toolbar - uses absolute positioning */}
+        <SettingsPanel />
+        {/* 左侧工具栏按钮 - 仅 expanded */}
+        {isActive && (
+          <>
+            <div className="flex items-center gap-1.5">
+              <PauseButton />
+              <ToolbarButton icon={<IconLayout size={21} />} title="布局模式 (L)" />
+              <ToolbarButton icon={<IconEdit size={21} />} title="样式编辑 (S)" />
+              <AnnotationButton />
+            </div>
 
-          <div className="w-px h-6 bg-[var(--toolbar-divider)] mx-1" />
+            <div className="w-px h-6 bg-[var(--toolbar-divider)] mx-1" />
 
-          <div className="flex items-center gap-1.5">
-            <ToolbarButton
-              icon={<IconEyeAnimated size={24} isOpen={showMarkers} />}
-              onClick={toggleShowMarkers}
-              disabled={annotations.length === 0}
-              title="显示/隐藏标记 (H)"
-              {...(!showMarkers && annotations.length > 0 && { badge: annotations.length })}
-            />
-            <ToolbarButton
-              icon={<IconCopyAnimated size={24} copied={copied} />}
-              onClick={handleCopyFeedback}
-              disabled={annotations.length === 0}
-              title="复制反馈 (C)"
-            />
-            <ToolbarButton icon={<IconSendArrow size={24} />} disabled title="发送标注 (S)" />
-            <ToolbarButton
-              icon={<IconTrashAlt size={24} />}
-              onClick={clearAllAnnotations}
-              disabled={annotations.length === 0}
-              title="清除全部 (X)"
-            />
-            <ToolbarButton
-              icon={<IconGear size={24} />}
-              title="设置"
-              onClick={() => setShowSettings(!showSettings)}
-              isActive={showSettings}
-              activeColor="var(--toolbar-icon-active)"
-            />
-          </div>
+            <div className="flex items-center gap-1.5">
+              <ToolbarButton
+                icon={<IconEyeAnimated size={24} isOpen={showMarkers} />}
+                onClick={toggleShowMarkers}
+                disabled={annotations.length === 0}
+                title="显示/隐藏标记 (H)"
+                {...(!showMarkers && annotations.length > 0 && { badge: annotations.length })}
+              />
+              <ToolbarButton
+                icon={<IconCopyAnimated size={24} copied={copied} />}
+                onClick={handleCopyFeedback}
+                disabled={annotations.length === 0}
+                title="复制反馈 (C)"
+              />
+              <ToolbarButton icon={<IconSendArrow size={24} />} disabled title="发送标注 (S)" />
+              <ToolbarButton
+                icon={<IconTrashAlt size={24} />}
+                onClick={clearAllAnnotations}
+                disabled={annotations.length === 0}
+                title="清除全部 (X)"
+              />
+              <ToolbarButton
+                icon={<IconGear size={24} />}
+                title="设置"
+                onClick={() => setShowSettings(!showSettings)}
+                isActive={showSettings}
+                activeColor="var(--toolbar-icon-active)"
+              />
+            </div>
 
-          <div className="w-px h-6 bg-[var(--toolbar-divider)] mx-1" />
-        </>
-      )}
+            <div className="w-px h-6 bg-[var(--toolbar-divider)] mx-1" />
+          </>
+        )}
 
-      {/* 右侧展开/关闭按钮 */}
-      <ToggleButton handleClick={handleClick} />
-    </div>
+        {/* 右侧展开/关闭按钮 */}
+        <ToggleButton handleClick={handleClick} />
+      </div>
+    </>
   );
 }

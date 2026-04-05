@@ -99,6 +99,22 @@
   animation: shake 0.25s ease-out;
 }
 
+/* Output detail cycle text animation */
+@keyframes cycleTextIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-cycle-text-in {
+  animation: cycleTextIn 0.2s ease-out forwards;
+}
+
 /* Remove button outline on focus */
 button:focus {
   outline: none;

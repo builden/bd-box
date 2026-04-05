@@ -60,7 +60,14 @@ export const MainSettings = memo(function MainSettings({
         <div className="flex items-center justify-between h-6">
           <div className="flex items-center gap-0.5">
             <span className="text-[13px] tracking-tight text-text-secondary">输出详情</span>
-            <HelpTooltip content="控制复制输出中包含的详细信息量" />
+            <HelpTooltip
+              content={`控制复制输出中包含的详细信息量：
+
+• 简洁：快速指出问题，元素+路径+评论
+• 标准：一般反馈，含视口和元素位置
+• 详细：布局/样式问题，含CSS和像素位置
+• 取证：复杂问题，含完整环境和计算样式`}
+            />
           </div>
           <OutputDetailCycle
             value={settings.outputDetail}

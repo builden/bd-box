@@ -16,6 +16,7 @@ import { AnnotationPopup } from './AnnotationPopup';
 import { PendingMarker } from './PendingMarker';
 import { useAnnotationClickHandler } from './useAnnotationClickHandler';
 import { useAnnotationHover } from './useAnnotationHover';
+import { useHotkeys } from '@/shared/hooks/useHotkeys';
 
 /**
  * AnnotationOverlay - 渲染页面上所有标注标记的覆盖层
@@ -32,6 +33,7 @@ export function AnnotationOverlay() {
   // Enable handlers when in annotation mode
   useAnnotationClickHandler();
   useAnnotationHover();
+  useHotkeys();
 
   // 退出标注模式时清理状态
   useEffect(() => {
