@@ -43,6 +43,7 @@ export const AnnotationMarker = memo(function AnnotationMarker({
       style={{
         left: annotation.x,
         top: annotation.y,
+        transform: 'translate(-50%, -50%)',
         backgroundColor: markerColor,
       }}
       onMouseEnter={() => setIsHovered(true)}
