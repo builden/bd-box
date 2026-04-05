@@ -93,6 +93,7 @@ export const SettingsPanel = memo(function SettingsPanel() {
   return (
     <div
       data-no-drag
+      data-no-hover
       className={clsx(
         'text-sm cursor-default',
         isDarkMode

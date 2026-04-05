@@ -9,6 +9,8 @@ export interface ToolbarButtonProps extends Omit<BaseToolbarButtonProps, 'icon'>
   activeColor?: string;
   /** 激活状态的高亮背景色透明度，默认 25% */
   activeBgOpacity?: number;
+  /** 右上角徽章数字 */
+  badge?: number;
 }
 
 /**
@@ -24,6 +26,7 @@ export const ToolbarButton = memo(function ToolbarButton({
   isActive = false,
   activeColor = '#f59e0b',
   activeBgOpacity = 25,
+  badge,
 }: ToolbarButtonProps) {
   const activeStyle = isActive
     ? {
@@ -41,6 +44,7 @@ export const ToolbarButton = memo(function ToolbarButton({
       data-no-drag={isActive ? undefined : true}
       style={activeStyle}
       className={className}
+      {...(badge !== undefined && { badge })}
     />
   );
 });

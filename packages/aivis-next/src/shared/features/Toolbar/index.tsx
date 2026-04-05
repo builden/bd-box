@@ -57,6 +57,7 @@ export function Toolbar() {
     <div
       ref={containerRef}
       data-theme={isDarkMode ? 'dark' : 'light'}
+      data-no-hover
       className={clsx(
         'flex items-center',
         isActive ? 'justify-between px-2' : 'justify-center',
@@ -91,6 +92,7 @@ export function Toolbar() {
               onClick={toggleShowMarkers}
               disabled={annotations.length === 0}
               title="显示/隐藏标记 (H)"
+              {...(!showMarkers && annotations.length > 0 && { badge: annotations.length })}
             />
             <ToolbarButton icon={<IconCopyAnimated size={24} />} disabled title="复制反馈 (C)" />
             <ToolbarButton icon={<IconSendArrow size={24} />} disabled title="发送标注 (S)" />
@@ -114,7 +116,7 @@ export function Toolbar() {
       )}
 
       {/* 右侧展开/关闭按钮 */}
-      <ToggleButton handleClick={handleClick} badge={isActive ? 0 : annotations.length} />
+      <ToggleButton handleClick={handleClick} />
     </div>
   );
 }

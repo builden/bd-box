@@ -16,7 +16,7 @@ export function ToggleButton({ handleClick, badge }: ToggleButtonProps) {
       onClick={handleToggle}
       title={isActive ? '关闭' : '展开'}
       className={!isActive ? 'mx-auto' : ''}
-      badge={badge}
+      {...(badge !== undefined && { badge })}
     />
   );
 }
