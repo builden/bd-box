@@ -1,10 +1,12 @@
 import { Toolbar } from '../src/shared/features/Toolbar';
+import { AnnotationOverlay } from '../src/shared/features/Annotation';
 import { Button } from './Button';
 
 export function App() {
   return (
     <>
       <Toolbar />
+      <AnnotationOverlay />
 
       <div className="page">
         <header className="header">
