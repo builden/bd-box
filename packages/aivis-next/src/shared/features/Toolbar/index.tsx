@@ -30,7 +30,7 @@ export function Toolbar() {
   const [showSettings, setShowSettings] = useAtom(showSettingsAtom);
   const [isDarkMode] = useAtom(isDarkModeAtom);
   const setIsAnnotationMode = useSetAtom(isAnnotationModeAtom);
-  const { clearAllAnnotations, annotations } = useAnnotations();
+  const { clearAllAnnotations, annotations, showMarkers, toggleShowMarkers } = useAnnotations();
 
   // 关闭 toolbar 时也关闭设置面板和标注模式
   useEffect(() => {
@@ -86,7 +86,12 @@ export function Toolbar() {
           <div className="w-px h-6 bg-[var(--toolbar-divider)] mx-1" />
 
           <div className="flex items-center gap-1.5">
-            <ToolbarButton icon={<IconEyeAnimated size={24} />} disabled title="显示/隐藏标记 (H)" />
+            <ToolbarButton
+              icon={<IconEyeAnimated size={24} isOpen={showMarkers} />}
+              onClick={toggleShowMarkers}
+              disabled={annotations.length === 0}
+              title="显示/隐藏标记 (H)"
+            />
             <ToolbarButton icon={<IconCopyAnimated size={24} />} disabled title="复制反馈 (C)" />
             <ToolbarButton icon={<IconSendArrow size={24} />} disabled title="发送标注 (S)" />
             <ToolbarButton
@@ -109,7 +114,7 @@ export function Toolbar() {
       )}
 
       {/* 右侧展开/关闭按钮 */}
-      <ToggleButton handleClick={handleClick} />
+      <ToggleButton handleClick={handleClick} badge={isActive ? 0 : annotations.length} />
     </div>
   );
 }

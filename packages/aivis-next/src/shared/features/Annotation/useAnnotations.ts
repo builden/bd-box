@@ -1,11 +1,12 @@
 import { useAtom, useSetAtom } from 'jotai';
-import { annotationsAtom, type Annotation } from './store';
+import { annotationsAtom, showMarkersAtom, type Annotation } from './store';
 
 /**
  * useAnnotations - 操作标注列表的 hook
  */
 export function useAnnotations() {
   const [annotations] = useAtom(annotationsAtom);
+  const [showMarkers, setShowMarkers] = useAtom(showMarkersAtom);
   const setAnnotations = useSetAtom(annotationsAtom);
 
   const addAnnotation = (annotation: Annotation) => {
@@ -28,12 +29,18 @@ export function useAnnotations() {
     setAnnotations((prev) => prev.map((a) => (a.id === id ? { ...a, ...updates } : a)));
   };
 
+  const toggleShowMarkers = () => {
+    setShowMarkers((prev) => !prev);
+  };
+
   return {
     annotations,
+    showMarkers,
     addAnnotation,
     removeAnnotation,
     clearAnnotation,
     clearAllAnnotations,
     updateAnnotation,
+    toggleShowMarkers,
   };
 }

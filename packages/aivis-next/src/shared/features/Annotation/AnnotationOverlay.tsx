@@ -1,5 +1,13 @@
-import { useAtom } from 'jotai';
-import { annotationsAtom, showMarkersAtom, isAnnotationModeAtom } from './store';
+import { useAtom, useSetAtom } from 'jotai';
+import { useEffect } from 'react';
+import {
+  annotationsAtom,
+  showMarkersAtom,
+  isAnnotationModeAtom,
+  hoverAtom,
+  pendingAnnotationAtom,
+  editingAnnotationAtom,
+} from './store';
 import { settingsAtom } from '@/shared/features/SettingsPanel/store';
 import { AnnotationMarker } from './AnnotationMarker';
 import { AnnotationHoverLabel } from './AnnotationHoverLabel';
@@ -17,10 +25,22 @@ export function AnnotationOverlay() {
   const [showMarkers] = useAtom(showMarkersAtom);
   const [settings] = useAtom(settingsAtom);
   const [isAnnotationMode] = useAtom(isAnnotationModeAtom);
+  const setHover = useSetAtom(hoverAtom);
+  const setPendingAnnotation = useSetAtom(pendingAnnotationAtom);
+  const setEditingAnnotation = useSetAtom(editingAnnotationAtom);
 
   // Enable handlers when in annotation mode
   useAnnotationClickHandler();
   useAnnotationHover();
+
+  // 退出标注模式时清理状态
+  useEffect(() => {
+    if (!isAnnotationMode) {
+      setHover(null);
+      setPendingAnnotation(null);
+      setEditingAnnotation(null);
+    }
+  }, [isAnnotationMode, setHover, setPendingAnnotation, setEditingAnnotation]);
 
   // Only render if markers should be shown
   if (!showMarkers) return null;

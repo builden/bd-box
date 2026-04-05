@@ -4,9 +4,10 @@ import { useToggleButton } from './useToggleButton';
 
 interface ToggleButtonProps {
   handleClick: () => boolean;
+  badge?: number;
 }
 
-export function ToggleButton({ handleClick }: ToggleButtonProps) {
+export function ToggleButton({ handleClick, badge }: ToggleButtonProps) {
   const { isActive, handleToggle } = useToggleButton(handleClick);
 
   return (
@@ -15,6 +16,7 @@ export function ToggleButton({ handleClick }: ToggleButtonProps) {
       onClick={handleToggle}
       title={isActive ? '关闭' : '展开'}
       className={!isActive ? 'mx-auto' : ''}
+      badge={badge}
     />
   );
 }
