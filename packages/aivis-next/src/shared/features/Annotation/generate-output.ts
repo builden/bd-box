@@ -35,10 +35,13 @@ export function generateAnnotationOutput(
 
   annotations.forEach((a, i) => {
     if (detailLevel === 'compact') {
-      // Compact: 元素标签 + DOM路径 + 评论
+      // Compact: 元素标签 + DOM路径 + React路径 + 评论
       output += `${i + 1}. **${a.element}**`;
       if (a.elementPath) {
         output += ` (${a.elementPath})`;
+      }
+      if (a.reactComponents) {
+        output += ` [R: ${a.reactComponents}]`;
       }
       output += `: ${a.comment || '(无评论)'}`;
       if (a.selectedText) {

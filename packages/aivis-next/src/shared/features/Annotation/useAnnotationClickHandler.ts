@@ -63,6 +63,9 @@ export function useAnnotationClickHandler() {
       // Get key computed styles
       const computedStyles = getKeyComputedStyles(target);
 
+      // Get React component info if enabled
+      const reactComponents = settings.reactEnabled ? getReactComponentInfo(target) : undefined;
+
       // Create pending annotation for popup
       const pending: PendingAnnotationData = {
         x,
@@ -89,6 +92,7 @@ export function useAnnotationClickHandler() {
           : {}),
         ...(nearbyText ? { nearbyText } : {}),
         ...(computedStyles ? { computedStyles } : {}),
+        ...(reactComponents ? { reactComponents } : {}),
       };
 
       setPendingAnnotation(pending);
@@ -102,6 +106,7 @@ export function useAnnotationClickHandler() {
         elementPath: getElementPath(target),
         rect: target.getBoundingClientRect(),
         ...(selectedText ? { selectedText } : {}),
+        ...(reactComponents ? { reactComponents } : {}),
       });
     };
 
@@ -237,4 +242,69 @@ function getElementLabel(target: HTMLElement): string {
   // Return just the tag name without text content
   // Text content should be captured separately as selectedText if user selects it
   return `<${tag}>`;
+}
+
+/**
+ * 获取 React 组件层级信息
+ * 通过 React Fiber API 获取组件名称
+ */
+function getReactComponentInfo(target: HTMLElement): string | undefined {
+  // 尝试查找 React Fiber 对象
+  // React 将 fiber 存储在 DOM 元素的特殊属性中
+  let fiberKey: string | null = null;
+
+  for (const key in target) {
+    if (key.startsWith('__reactFiber$') || key.startsWith('__reactInternalInstance$')) {
+      fiberKey = key;
+      break;
+    }
+  }
+
+  if (!fiberKey) {
+    // 尝试从父元素查找
+    let parent = target.parentElement;
+    while (parent && !fiberKey) {
+      for (const key in parent) {
+        if (key.startsWith('__reactFiber$') || key.startsWith('__reactInternalInstance$')) {
+          fiberKey = key;
+          break;
+        }
+      }
+      parent = parent.parentElement;
+    }
+  }
+
+  if (!fiberKey) return undefined;
+
+  const fiber = (target as unknown as Record<string, unknown>)[fiberKey];
+  if (!fiber) return undefined;
+
+  // 收集组件名称层级
+  const componentNames: string[] = [];
+  let current: unknown = fiber;
+
+  // 向上遍历 fiber 树，最多 10 层
+  for (let i = 0; i < 10 && current; i++) {
+    const f = current as { type?: unknown; return?: unknown; stateNode?: unknown };
+
+    if (f.type) {
+      // type 可以是字符串（HTML 元素）或函数/类组件
+      if (typeof f.type === 'function') {
+        // 函数组件或类组件 - 使用组件名称
+        const name = f.type.name || 'Anonymous';
+        componentNames.unshift(name);
+      } else if (typeof f.type === 'string') {
+        // HTML 元素 - 使用简短标签名，不显示 constructor.name
+        componentNames.unshift(f.type);
+      }
+    }
+
+    current = f.return;
+  }
+
+  if (componentNames.length === 0) return undefined;
+
+  // 去重并返回
+  const unique = [...new Set(componentNames)];
+  return unique.join(' > ');
 }

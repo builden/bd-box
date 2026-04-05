@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useAtom } from 'jotai';
 import { isAnnotationModeAtom, hoverAtom, pendingAnnotationAtom, editingAnnotationAtom } from './store';
+import { settingsAtom } from '@/shared/features/SettingsPanel/store';
 
 /**
  * useAnnotationHover - 处理标注模式下的鼠标悬浮
@@ -12,6 +13,7 @@ export function useAnnotationHover() {
   const [, setHover] = useAtom(hoverAtom);
   const [pendingAnnotation] = useAtom(pendingAnnotationAtom);
   const [editingAnnotation] = useAtom(editingAnnotationAtom);
+  const [settings] = useAtom(settingsAtom);
 
   useEffect(() => {
     if (!isAnnotationMode) return;
@@ -37,6 +39,7 @@ export function useAnnotationHover() {
       const elementPath = element?.dataset.elementPath || getElementPath(target);
       const elementLabel = getElementLabel(target);
       const selectedText = window.getSelection()?.toString();
+      const reactComponents = settings.reactEnabled ? getReactComponentInfo(target) : undefined;
 
       setHover({
         x: e.clientX,
@@ -46,6 +49,7 @@ export function useAnnotationHover() {
         elementPath,
         rect: target.getBoundingClientRect(),
         ...(selectedText ? { selectedText } : {}),
+        ...(reactComponents ? { reactComponents } : {}),
       });
     };
 
@@ -59,7 +63,7 @@ export function useAnnotationHover() {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, [isAnnotationMode, setHover, pendingAnnotation, editingAnnotation]);
+  }, [isAnnotationMode, setHover, pendingAnnotation, editingAnnotation, settings.reactEnabled]);
 }
 
 /**
@@ -108,4 +112,60 @@ function getElementLabel(target: HTMLElement): string {
   }
 
   return `<${tag}>`;
+}
+
+/**
+ * 获取 React 组件层级信息
+ * 通过 React Fiber API 获取组件名称
+ */
+function getReactComponentInfo(target: HTMLElement): string | undefined {
+  let fiberKey: string | null = null;
+
+  for (const key in target) {
+    if (key.startsWith('__reactFiber$') || key.startsWith('__reactInternalInstance$')) {
+      fiberKey = key;
+      break;
+    }
+  }
+
+  if (!fiberKey) {
+    let parent = target.parentElement;
+    while (parent && !fiberKey) {
+      for (const key in parent) {
+        if (key.startsWith('__reactFiber$') || key.startsWith('__reactInternalInstance$')) {
+          fiberKey = key;
+          break;
+        }
+      }
+      parent = parent.parentElement;
+    }
+  }
+
+  if (!fiberKey) return undefined;
+
+  const fiber = (target as unknown as Record<string, unknown>)[fiberKey];
+  if (!fiber) return undefined;
+
+  const componentNames: string[] = [];
+  let current: unknown = fiber;
+
+  for (let i = 0; i < 10 && current; i++) {
+    const f = current as { type?: unknown; return?: unknown; stateNode?: unknown };
+
+    if (f.type) {
+      if (typeof f.type === 'function') {
+        const name = f.type.name || 'Anonymous';
+        componentNames.unshift(name);
+      } else if (typeof f.type === 'string') {
+        // HTML 元素 - 使用简短标签名
+        componentNames.unshift(f.type);
+      }
+    }
+
+    current = f.return;
+  }
+
+  if (componentNames.length === 0) return undefined;
+
+  return [...new Set(componentNames)].join(' > ');
 }

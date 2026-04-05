@@ -160,7 +160,7 @@ export const AnnotationPopup = memo(function AnnotationPopup() {
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <span className={clsx('text-xs truncate flex-1', isDarkMode ? 'text-white/50' : 'text-black/50')}>
-          {currentAnnotation.element}
+          {currentAnnotation.reactComponents || currentAnnotation.element}
         </span>
       </div>
 

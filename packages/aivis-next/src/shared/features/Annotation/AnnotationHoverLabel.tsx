@@ -54,7 +54,10 @@ export const AnnotationHoverLabel = memo(function AnnotationHoverLabel() {
         color: '#fff',
       }}
     >
-      <div className="font-medium truncate">{hover.element}</div>
+      <div className={clsx('font-medium truncate', hover.reactComponents && 'text-green-400')}>
+        {hover.reactComponents || hover.element}
+      </div>
+      {hover.reactComponents && <div className="mt-0.5 text-[10px] opacity-50 truncate">{hover.element}</div>}
       {hover.selectedText && (
         <div className="mt-1 opacity-70 truncate">
           &quot;{hover.selectedText.slice(0, 50)}
