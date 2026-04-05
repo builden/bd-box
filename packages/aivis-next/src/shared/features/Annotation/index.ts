@@ -3,3 +3,4 @@ export { AnnotationButton } from './AnnotationButton';
 export { AnnotationMarker } from './AnnotationMarker';
 export { AnnotationOverlay } from './AnnotationOverlay';
 export { useAnnotationClickHandler } from './useAnnotationClickHandler';
+export { useAnnotations } from './useAnnotations';

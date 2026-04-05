@@ -15,7 +15,7 @@ import { useToggleButton } from '@/shared/features/ToggleButton/useToggleButton'
 import { PauseButton } from '@/shared/features/PauseButton';
 import { ToggleButton } from '@/shared/features/ToggleButton';
 import { ToolbarButton } from '@/shared/components/ToolbarButton';
-import { AnnotationButton } from '@/shared/features/Annotation';
+import { AnnotationButton, useAnnotations } from '@/shared/features/Annotation';
 import { TOOLBAR_WIDTH, DRAG_CONFIG } from '@/shared/hooks/types';
 import { SettingsPanel } from '@/shared/features/SettingsPanel';
 import { showSettingsAtom, isDarkModeAtom } from '@/shared/features/SettingsPanel/store';
@@ -30,6 +30,7 @@ export function Toolbar() {
   const [showSettings, setShowSettings] = useAtom(showSettingsAtom);
   const [isDarkMode] = useAtom(isDarkModeAtom);
   const setIsAnnotationMode = useSetAtom(isAnnotationModeAtom);
+  const { clearAllAnnotations, annotations } = useAnnotations();
 
   // 关闭 toolbar 时也关闭设置面板和标注模式
   useEffect(() => {
@@ -68,6 +69,7 @@ export function Toolbar() {
       )}
       style={style}
       onMouseDown={handleMouseDown}
+      onClick={(e) => e.stopPropagation()}
     >
       {/* SettingsPanel inside toolbar - uses absolute positioning */}
       <SettingsPanel />
@@ -87,7 +89,12 @@ export function Toolbar() {
             <ToolbarButton icon={<IconEyeAnimated size={24} />} disabled title="显示/隐藏标记 (H)" />
             <ToolbarButton icon={<IconCopyAnimated size={24} />} disabled title="复制反馈 (C)" />
             <ToolbarButton icon={<IconSendArrow size={24} />} disabled title="发送标注 (S)" />
-            <ToolbarButton icon={<IconTrashAlt size={24} />} disabled title="清除全部 (X)" />
+            <ToolbarButton
+              icon={<IconTrashAlt size={24} />}
+              onClick={clearAllAnnotations}
+              disabled={annotations.length === 0}
+              title="清除全部 (X)"
+            />
             <ToolbarButton
               icon={<IconGear size={24} />}
               title="设置"
