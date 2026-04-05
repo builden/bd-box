@@ -1,10 +1,9 @@
 import { useRef, useEffect } from 'react';
-import { useAtom } from 'jotai';
+import { useAtom, useSetAtom } from 'jotai';
 import clsx from 'clsx';
 import {
   IconLayout,
   IconEdit,
-  IconChatEllipsis,
   IconEyeAnimated,
   IconCopyAnimated,
   IconSendArrow,
@@ -16,9 +15,11 @@ import { useToggleButton } from '@/shared/features/ToggleButton/useToggleButton'
 import { PauseButton } from '@/shared/features/PauseButton';
 import { ToggleButton } from '@/shared/features/ToggleButton';
 import { ToolbarButton } from '@/shared/components/ToolbarButton';
+import { AnnotationButton } from '@/shared/features/Annotation';
 import { TOOLBAR_WIDTH, DRAG_CONFIG } from '@/shared/hooks/types';
 import { SettingsPanel } from '@/shared/features/SettingsPanel';
 import { showSettingsAtom, isDarkModeAtom } from '@/shared/features/SettingsPanel/store';
+import { isAnnotationModeAtom } from '@/shared/features/Annotation';
 
 const TOOLBAR_EXPANDED_WIDTH = TOOLBAR_WIDTH;
 
@@ -28,13 +29,15 @@ export function Toolbar() {
   const { isActive } = useToggleButton(handleClick);
   const [showSettings, setShowSettings] = useAtom(showSettingsAtom);
   const [isDarkMode] = useAtom(isDarkModeAtom);
+  const setIsAnnotationMode = useSetAtom(isAnnotationModeAtom);
 
-  // 关闭 toolbar 时也关闭设置面板
+  // 关闭 toolbar 时也关闭设置面板和标注模式
   useEffect(() => {
     if (!isActive) {
       setShowSettings(false);
+      setIsAnnotationMode(false);
     }
-  }, [isActive, setShowSettings]);
+  }, [isActive, setShowSettings, setIsAnnotationMode]);
 
   // 定位：right 固定
   const style: React.CSSProperties = {
@@ -75,7 +78,7 @@ export function Toolbar() {
             <PauseButton />
             <ToolbarButton icon={<IconLayout size={21} />} title="布局模式 (L)" />
             <ToolbarButton icon={<IconEdit size={21} />} title="样式编辑 (S)" />
-            <ToolbarButton icon={<IconChatEllipsis size={21} />} title="标注模式 (A)" />
+            <AnnotationButton />
           </div>
 
           <div className="w-px h-6 bg-[var(--toolbar-divider)] mx-1" />
