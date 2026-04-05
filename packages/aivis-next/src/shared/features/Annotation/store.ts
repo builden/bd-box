@@ -36,8 +36,8 @@ export const showMarkersAtom = atom(true);
 // Current editing annotation (for tooltip display)
 export const editingAnnotationAtom = atom<Annotation | null>(null);
 
-// Pending annotation (before confirmed)
-export const pendingAnnotationAtom = atom<{
+// Hover state (for highlight and label)
+export type HoverData = {
   x: number;
   y: number;
   clientY: number;
@@ -45,7 +45,28 @@ export const pendingAnnotationAtom = atom<{
   elementPath: string;
   selectedText?: string;
   rect?: DOMRect;
-} | null>(null);
+};
+
+export const hoverAtom = atom<HoverData | null>(null);
+
+// Pending annotation (before confirmed - popup shown after click)
+export type PendingAnnotationData = {
+  x: number;
+  y: number;
+  clientY: number;
+  element: string;
+  elementPath: string;
+  selectedText?: string;
+  rect?: DOMRect;
+  popupX?: number;
+  popupY?: number;
+  colorId?: string;
+};
+
+export const pendingAnnotationAtom = atom<PendingAnnotationData | null>(null);
+
+// Shake trigger for popup
+export const popupShakeAtom = atom<number>(0);
 
 // =============================================================================
 // Derived Atoms

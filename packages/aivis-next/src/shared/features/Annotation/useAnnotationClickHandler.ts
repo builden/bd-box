@@ -1,14 +1,25 @@
 import { useEffect } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
-import { isAnnotationModeAtom, annotationsAtom, type Annotation } from './store';
+import {
+  isAnnotationModeAtom,
+  pendingAnnotationAtom,
+  hoverAtom,
+  popupShakeAtom,
+  type PendingAnnotationData,
+} from './store';
+import { settingsAtom } from '@/shared/features/SettingsPanel/store';
 
 /**
  * useAnnotationClickHandler - 处理标注模式下的页面点击
- * 在标注模式下，点击页面会创建一个新的标注
+ * 在标注模式下，点击页面会创建待确认的标注
  */
 export function useAnnotationClickHandler() {
   const [isAnnotationMode] = useAtom(isAnnotationModeAtom);
-  const setAnnotations = useSetAtom(annotationsAtom);
+  const setPendingAnnotation = useSetAtom(pendingAnnotationAtom);
+  const setHover = useSetAtom(hoverAtom);
+  const [pendingAnnotation] = useAtom(pendingAnnotationAtom);
+  const [, setPopupShake] = useAtom(popupShakeAtom);
+  const [settings] = useAtom(settingsAtom);
 
   useEffect(() => {
     if (!isAnnotationMode) return;
@@ -20,24 +31,85 @@ export function useAnnotationClickHandler() {
         return;
       }
 
+      // If pending annotation exists, shake popup and return
+      if (pendingAnnotation) {
+        setPopupShake((prev) => prev + 1);
+        return;
+      }
+
       // Calculate position
       const rect = document.documentElement.getBoundingClientRect();
       const x = (e.clientX / rect.width) * 100; // percentage
       const y = e.clientY; // pixels from top
 
-      // Create new annotation
-      const newAnnotation: Annotation = {
-        id: `annotation-${Date.now()}`,
+      // Get element info
+      const elementLabel = getElementLabel(target);
+      const selectedText = window.getSelection()?.toString();
+
+      // Create pending annotation for popup
+      const pending: PendingAnnotationData = {
         x,
         y,
-        element: `Element at ${Math.round(x)}%, ${Math.round(y)}px`,
-        timestamp: Date.now(),
+        clientY: e.clientY,
+        element: elementLabel,
+        elementPath: getElementPath(target),
+        rect: target.getBoundingClientRect(),
+        popupX: e.clientX,
+        popupY: e.clientY,
+        colorId: settings.annotationColorId,
+        ...(selectedText ? { selectedText } : {}),
       };
 
-      setAnnotations((prev) => [...prev, newAnnotation]);
+      setPendingAnnotation(pending);
+
+      // Keep hover highlight at click position
+      setHover({
+        x: e.clientX,
+        y: e.clientY,
+        clientY: e.clientY,
+        element: elementLabel,
+        elementPath: getElementPath(target),
+        rect: target.getBoundingClientRect(),
+        ...(selectedText ? { selectedText } : {}),
+      });
     };
 
     document.addEventListener('click', handleClick);
     return () => document.removeEventListener('click', handleClick);
-  }, [isAnnotationMode, setAnnotations]);
+  }, [isAnnotationMode, setPendingAnnotation, setHover, setPopupShake, pendingAnnotation, settings.annotationColorId]);
+}
+
+function getElementPath(target: HTMLElement): string {
+  const path: string[] = [];
+  let current: Element | null = target;
+
+  while (current && current !== document.body && path.length < 5) {
+    const tag = current.tagName.toLowerCase();
+    const el = current as HTMLElement;
+    const id = el.id ? `#${el.id}` : '';
+    const className = typeof el.className === 'string' ? el.className : '';
+    const classes = className ? '.' + className.split(' ').filter(Boolean).slice(0, 2).join('.') : '';
+    if (id || classes) {
+      path.push(`${tag}${id}${classes}`);
+    }
+    current = current.parentElement;
+  }
+
+  return path.join(' > ') || target.tagName.toLowerCase();
+}
+
+function getElementLabel(target: HTMLElement): string {
+  if (target.getAttribute('aria-label')) {
+    return target.getAttribute('aria-label')!;
+  }
+  const accessibleName = target.getAttribute('name') || target.getAttribute('alt') || target.getAttribute('title');
+  if (accessibleName) {
+    return accessibleName;
+  }
+  const text = target.textContent?.trim().slice(0, 50) || '';
+  const tag = target.tagName.toLowerCase();
+  if (text) {
+    return `<${tag}> "${text.slice(0, 30)}${text.length > 30 ? '...' : ''}"`;
+  }
+  return `<${tag}>`;
 }
