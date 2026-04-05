@@ -44,6 +44,7 @@ export const pendingAnnotationAtom = atom<{
   element: string;
   elementPath: string;
   selectedText?: string;
+  rect?: DOMRect;
 } | null>(null);
 
 // =============================================================================
