@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useAtom } from 'jotai';
-import { isAnnotationModeAtom, hoverAtom, pendingAnnotationAtom } from './store';
+import { isAnnotationModeAtom, hoverAtom, pendingAnnotationAtom, editingAnnotationAtom } from './store';
 
 /**
  * useAnnotationHover - 处理标注模式下的鼠标悬浮
@@ -11,18 +11,23 @@ export function useAnnotationHover() {
   const [isAnnotationMode] = useAtom(isAnnotationModeAtom);
   const [, setHover] = useAtom(hoverAtom);
   const [pendingAnnotation] = useAtom(pendingAnnotationAtom);
+  const [editingAnnotation] = useAtom(editingAnnotationAtom);
 
   useEffect(() => {
     if (!isAnnotationMode) return;
 
-    // When popup is showing, pause hover logic
-    if (pendingAnnotation) return;
+    // When popup is showing or editing annotation, pause hover logic
+    if (pendingAnnotation || editingAnnotation) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
 
-      // Don't show hover info if clicking on toolbar
-      if (target.closest('[data-no-drag]') || target.closest('[data-feedback-toolbar]')) {
+      // Don't show hover info if clicking on toolbar or annotation markers
+      if (
+        target.closest('[data-no-drag]') ||
+        target.closest('[data-no-hover]') ||
+        target.closest('[data-feedback-toolbar]')
+      ) {
         setHover(null);
         return;
       }
@@ -54,7 +59,7 @@ export function useAnnotationHover() {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, [isAnnotationMode, setHover, pendingAnnotation]);
+  }, [isAnnotationMode, setHover, pendingAnnotation, editingAnnotation]);
 }
 
 /**

@@ -3,6 +3,7 @@ import { useAtom, useSetAtom } from 'jotai';
 import {
   isAnnotationModeAtom,
   pendingAnnotationAtom,
+  editingAnnotationAtom,
   hoverAtom,
   popupShakeAtom,
   type PendingAnnotationData,
@@ -12,12 +13,14 @@ import { settingsAtom } from '@/shared/features/SettingsPanel/store';
 /**
  * useAnnotationClickHandler - 处理标注模式下的页面点击
  * 在标注模式下，点击页面会创建待确认的标注
+ * 编辑模式下点击其他地方会 shake
  */
 export function useAnnotationClickHandler() {
   const [isAnnotationMode] = useAtom(isAnnotationModeAtom);
   const setPendingAnnotation = useSetAtom(pendingAnnotationAtom);
   const setHover = useSetAtom(hoverAtom);
   const [pendingAnnotation] = useAtom(pendingAnnotationAtom);
+  const [editingAnnotation] = useAtom(editingAnnotationAtom);
   const [, setPopupShake] = useAtom(popupShakeAtom);
   const [settings] = useAtom(settingsAtom);
 
@@ -31,15 +34,20 @@ export function useAnnotationClickHandler() {
         return;
       }
 
+      // If editing annotation exists, shake edit popup and return
+      if (editingAnnotation) {
+        setPopupShake((prev) => prev + 1);
+        return;
+      }
+
       // If pending annotation exists, shake popup and return
       if (pendingAnnotation) {
         setPopupShake((prev) => prev + 1);
         return;
       }
 
-      // Calculate position
-      const rect = document.documentElement.getBoundingClientRect();
-      const x = (e.clientX / rect.width) * 100; // percentage
+      // Calculate position - use pixels for both x and y for consistency
+      const x = e.clientX; // pixels from left
       const y = e.clientY; // pixels from top
 
       // Get element info
@@ -76,7 +84,15 @@ export function useAnnotationClickHandler() {
 
     document.addEventListener('click', handleClick);
     return () => document.removeEventListener('click', handleClick);
-  }, [isAnnotationMode, setPendingAnnotation, setHover, setPopupShake, pendingAnnotation, settings.annotationColorId]);
+  }, [
+    isAnnotationMode,
+    setPendingAnnotation,
+    setHover,
+    setPopupShake,
+    pendingAnnotation,
+    editingAnnotation,
+    settings.annotationColorId,
+  ]);
 }
 
 function getElementPath(target: HTMLElement): string {

@@ -6,7 +6,7 @@ import { atom } from 'jotai';
 
 export type Annotation = {
   id: string;
-  x: number; // x position (percentage)
+  x: number; // x position (px)
   y: number; // y position (px)
   element: string; // element description
   selectedText?: string;
@@ -14,6 +14,9 @@ export type Annotation = {
   isMultiSelect?: boolean;
   kind?: 'annotation' | 'placement' | 'rearrange';
   timestamp: number;
+  colorId?: string;
+  popupX?: number;
+  popupY?: number;
 };
 
 // =============================================================================

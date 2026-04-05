@@ -1,13 +1,14 @@
 import { memo, useState } from 'react';
+import { useSetAtom } from 'jotai';
 import clsx from 'clsx';
 import type { Annotation } from './store';
 import { COLOR_OPTIONS } from '@/shared/features/SettingsPanel/store';
+import { editingAnnotationAtom } from './store';
 
 interface AnnotationMarkerProps {
   annotation: Annotation;
   index: number;
   colorId?: string;
-  onClick?: (annotation: Annotation) => void;
 }
 
 /**
@@ -17,16 +18,22 @@ export const AnnotationMarker = memo(function AnnotationMarker({
   annotation,
   index,
   colorId = 'blue',
-  onClick,
 }: AnnotationMarkerProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const setEditingAnnotation = useSetAtom(editingAnnotationAtom);
 
-  // Resolve color from settings
-  const colorOption = COLOR_OPTIONS.find((c) => c.id === colorId);
+  // Resolve color: use annotation's own colorId first, fallback to prop
+  const colorOption = COLOR_OPTIONS.find((c) => c.id === (annotation.colorId || colorId));
   const markerColor = colorOption?.srgb ?? '#0088FF';
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingAnnotation(annotation);
+  };
 
   return (
     <div
+      data-no-hover
       className={clsx(
         'absolute w-5 h-5 rounded-full flex items-center justify-center cursor-pointer',
         'transition-all duration-150',
@@ -34,34 +41,43 @@ export const AnnotationMarker = memo(function AnnotationMarker({
         isHovered && 'scale-110'
       )}
       style={{
-        left: `${annotation.x}%`,
+        left: annotation.x,
         top: annotation.y,
         backgroundColor: markerColor,
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick?.(annotation);
-      }}
+      onClick={handleClick}
     >
-      {index + 1}
+      {/* Hover 时显示编辑图标，否则显示序号 */}
+      {isHovered ? (
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+        </svg>
+      ) : (
+        index + 1
+      )}
 
       {/* Tooltip */}
       {isHovered && (
         <div
           className={clsx(
             'absolute left-1/2 -translate-x-1/2 bottom-full mb-2',
-            'px-2 py-1 rounded-md text-[11px] whitespace-nowrap',
-            'bg-[var(--tooltip-bg,#383838)] border'
+            'px-2 py-1.5 rounded-md text-[11px] whitespace-nowrap',
+            'bg-[#1a1a1a] border border-white/10',
+            'min-w-[120px]'
           )}
-          style={{
-            borderColor: markerColor,
-            color: 'var(--tooltip-text,#fff)',
-          }}
         >
-          <div className="text-[var(--tooltip-text,#fff)]">{annotation.element}</div>
-          {annotation.selectedText && <div className="opacity-70 mt-0.5">"{annotation.selectedText.slice(0, 30)}"</div>}
+          <div className="text-white/50 text-[10px] truncate max-w-[150px]">{annotation.element}</div>
+          {annotation.selectedText && (
+            <div className="text-white/40 text-[10px] mt-0.5 truncate max-w-[150px]">
+              &quot;{annotation.selectedText.slice(0, 30)}&quot;
+            </div>
+          )}
+          {annotation.comment && (
+            <div className="text-white text-[11px] mt-1 truncate max-w-[150px]">{annotation.comment}</div>
+          )}
         </div>
       )}
     </div>

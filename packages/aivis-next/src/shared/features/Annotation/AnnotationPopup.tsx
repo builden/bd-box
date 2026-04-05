@@ -1,23 +1,43 @@
 import { memo, useState, useEffect, useRef } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
 import clsx from 'clsx';
-import { pendingAnnotationAtom, annotationsAtom, popupShakeAtom, type Annotation } from './store';
+import {
+  pendingAnnotationAtom,
+  editingAnnotationAtom,
+  annotationsAtom,
+  popupShakeAtom,
+  hoverAtom,
+  type Annotation,
+} from './store';
 import { isDarkModeAtom } from '@/shared/features/SettingsPanel/store';
 import { COLOR_OPTIONS } from '@/shared/features/SettingsPanel/store';
 
 /**
  * AnnotationPopup - 标注输入弹窗
- * 用户点击页面创建标注时显示的输入面板
+ * 支持新建标注（pendingAnnotation）和编辑标注（editingAnnotation）
  */
 export const AnnotationPopup = memo(function AnnotationPopup() {
   const [pendingAnnotation, setPendingAnnotation] = useAtom(pendingAnnotationAtom);
+  const [editingAnnotation, setEditingAnnotation] = useAtom(editingAnnotationAtom);
   const setAnnotations = useSetAtom(annotationsAtom);
+  const [, setHover] = useAtom(hoverAtom);
   const [isDarkMode] = useAtom(isDarkModeAtom);
   const [comment, setComment] = useState('');
   const [isShaking, setIsShaking] = useState(false);
   const [shakeTrigger] = useAtom(popupShakeAtom);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const prevShakeTrigger = useRef(shakeTrigger);
+
+  // 当前操作的标注数据
+  const currentAnnotation = editingAnnotation || pendingAnnotation;
+  const isEditing = !!editingAnnotation;
+
+  // Sync comment with editing annotation
+  useEffect(() => {
+    if (editingAnnotation) {
+      setComment(editingAnnotation.comment || '');
+    }
+  }, [editingAnnotation]);
 
   // 监听 shake trigger 变化
   useEffect(() => {
@@ -32,40 +52,57 @@ export const AnnotationPopup = memo(function AnnotationPopup() {
     }
   }, [shakeTrigger]);
 
-  // 获取当前颜色
-  const colorOption = pendingAnnotation?.colorId
-    ? COLOR_OPTIONS.find((c) => c.id === pendingAnnotation.colorId)
-    : COLOR_OPTIONS[1]; // default blue
-  const accentColor = colorOption?.srgb ?? '#0088FF';
-
   // 自动聚焦 textarea
   useEffect(() => {
-    if (pendingAnnotation && textareaRef.current) {
+    if (currentAnnotation && textareaRef.current) {
       textareaRef.current.focus();
+      textareaRef.current.selectionStart = textareaRef.current.value.length;
     }
-  }, [pendingAnnotation]);
+  }, [currentAnnotation]);
 
   const handleSubmit = () => {
-    if (!comment.trim() || !pendingAnnotation) return;
+    if (!comment.trim() || !currentAnnotation) return;
 
-    // 创建正式标注
-    const newAnnotation: Annotation = {
-      id: `annotation-${Date.now()}`,
-      x: pendingAnnotation.x,
-      y: pendingAnnotation.y,
-      element: pendingAnnotation.element,
-      comment: comment.trim(),
-      timestamp: Date.now(),
-      ...(pendingAnnotation.selectedText ? { selectedText: pendingAnnotation.selectedText } : {}),
-    };
+    if (isEditing) {
+      // 编辑模式：更新标注
+      setAnnotations((prev: Annotation[]) =>
+        prev.map((a) => (a.id === editingAnnotation.id ? { ...a, comment: comment.trim() } : a))
+      );
+      setEditingAnnotation(null);
+    } else {
+      // 新建模式：创建标注
+      const newAnnotation: Annotation = {
+        id: `annotation-${Date.now()}`,
+        x: pendingAnnotation!.x,
+        y: pendingAnnotation!.y,
+        element: pendingAnnotation!.element,
+        comment: comment.trim(),
+        timestamp: Date.now(),
+        ...(pendingAnnotation!.colorId && { colorId: pendingAnnotation!.colorId }),
+        ...(pendingAnnotation!.popupX !== undefined && { popupX: pendingAnnotation!.popupX }),
+        ...(pendingAnnotation!.popupY !== undefined && { popupY: pendingAnnotation!.popupY }),
+        ...(pendingAnnotation!.selectedText ? { selectedText: pendingAnnotation!.selectedText } : {}),
+      };
+      setAnnotations((prev: Annotation[]) => [...prev, newAnnotation]);
+      setPendingAnnotation(null);
+      setHover(null); // 清除 hover 状态
+    }
+    setComment('');
+  };
 
-    setAnnotations((prev: Annotation[]) => [...prev, newAnnotation]);
-    setPendingAnnotation(null);
+  const handleDelete = () => {
+    if (!editingAnnotation) return;
+    setAnnotations((prev: Annotation[]) => prev.filter((a) => a.id !== editingAnnotation.id));
+    setEditingAnnotation(null);
     setComment('');
   };
 
   const handleCancel = () => {
-    setPendingAnnotation(null);
+    if (isEditing) {
+      setEditingAnnotation(null);
+    } else {
+      setPendingAnnotation(null);
+    }
     setComment('');
   };
 
@@ -79,19 +116,21 @@ export const AnnotationPopup = memo(function AnnotationPopup() {
     }
   };
 
-  if (!pendingAnnotation) return null;
+  if (!currentAnnotation) return null;
 
-  const POPUP_HEIGHT = 200; // approximate
+  // 获取颜色
+  const colorId = currentAnnotation.colorId || pendingAnnotation?.colorId;
+  const colorOption = colorId ? COLOR_OPTIONS.find((c) => c.id === colorId) : COLOR_OPTIONS[1];
+  const accentColor = colorOption?.srgb ?? '#0088FF';
+
+  const POPUP_HEIGHT = 200;
   const POPUP_VERTICAL_BUFFER = 20;
   const POPUP_HORIZONTAL_MARGIN = 160;
 
-  // Calculate position - same logic as aivis
-  // Horizontal: center with translateX(-50%), but clamp to viewport edges
-  const rawLeft = pendingAnnotation.popupX ?? pendingAnnotation.x;
-  const left = Math.max(POPUP_HORIZONTAL_MARGIN, Math.min(window.innerWidth - POPUP_HORIZONTAL_MARGIN, rawLeft));
-
-  // Vertical: if too low, show above; otherwise below
-  const markerY = pendingAnnotation.popupY ?? pendingAnnotation.y;
+  // 计算位置 - x 和 popupX 都是像素
+  const xAsPixel = currentAnnotation.popupX ?? currentAnnotation.x;
+  const left = Math.max(POPUP_HORIZONTAL_MARGIN, Math.min(window.innerWidth - POPUP_HORIZONTAL_MARGIN, xAsPixel));
+  const markerY = currentAnnotation.popupY ?? currentAnnotation.y;
   const showAbove = markerY > window.innerHeight - POPUP_HEIGHT;
   const top = showAbove ? undefined : markerY + POPUP_VERTICAL_BUFFER;
   const bottom = showAbove ? window.innerHeight - markerY + POPUP_VERTICAL_BUFFER : undefined;
@@ -105,23 +144,18 @@ export const AnnotationPopup = memo(function AnnotationPopup() {
         isShaking && 'animate-shake',
         isDarkMode ? 'bg-[#1a1a1a] border border-white/10' : 'bg-white border border-black/5'
       )}
-      style={{
-        left,
-        top,
-        bottom,
-        transform: 'translateX(-50%)',
-      }}
+      style={{ left, top, bottom, transform: 'translateX(-50%)' }}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <span className={clsx('text-xs truncate flex-1', isDarkMode ? 'text-white/50' : 'text-black/50')}>
-          {pendingAnnotation.element}
+          {currentAnnotation.element}
         </span>
       </div>
 
       {/* Selected text quote */}
-      {pendingAnnotation.selectedText && (
+      {currentAnnotation.selectedText && (
         <div
           className={clsx(
             'text-xs italic px-2 py-1.5 rounded mb-2',
@@ -129,8 +163,8 @@ export const AnnotationPopup = memo(function AnnotationPopup() {
             isDarkMode ? 'text-white/60 bg-white/5' : 'text-black/55 bg-black/4'
           )}
         >
-          &ldquo;{pendingAnnotation.selectedText.slice(0, 80)}
-          {pendingAnnotation.selectedText.length > 80 ? '...' : ''}&rdquo;
+          &ldquo;{currentAnnotation.selectedText.slice(0, 80)}
+          {currentAnnotation.selectedText.length > 80 ? '...' : ''}&rdquo;
         </div>
       )}
 
@@ -145,12 +179,8 @@ export const AnnotationPopup = memo(function AnnotationPopup() {
             ? 'bg-white/5 text-white border border-white/15 placeholder:text-white/35 focus:border-[var(--accent)]'
             : 'bg-black/3 text-black border border-black/10 placeholder:text-black/40 focus:border-black/30'
         )}
-        style={
-          isDarkMode
-            ? ({ '--accent': accentColor } as React.CSSProperties)
-            : ({ '--accent': accentColor } as React.CSSProperties)
-        }
-        placeholder="应该怎么改？"
+        style={{ '--accent': accentColor } as React.CSSProperties}
+        placeholder={isEditing ? '编辑你的反馈...' : '应该怎么改？'}
         value={comment}
         onChange={(e) => setComment(e.target.value)}
         onKeyDown={handleKeyDown}
@@ -159,6 +189,18 @@ export const AnnotationPopup = memo(function AnnotationPopup() {
 
       {/* Actions */}
       <div className="flex justify-end gap-2 mt-3">
+        {isEditing && (
+          <button
+            className={clsx(
+              'px-3 py-1.5 text-xs font-medium rounded-full',
+              'transition-colors duration-150',
+              'text-white/50 hover:bg-white/10 hover:text-white/80'
+            )}
+            onClick={handleDelete}
+          >
+            删除
+          </button>
+        )}
         <button
           className={clsx(
             'px-3 py-1.5 text-xs font-medium rounded-full',
@@ -181,7 +223,7 @@ export const AnnotationPopup = memo(function AnnotationPopup() {
           onClick={handleSubmit}
           disabled={!comment.trim()}
         >
-          添加
+          {isEditing ? '保存' : '添加'}
         </button>
       </div>
     </div>
