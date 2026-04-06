@@ -246,15 +246,18 @@ function getElementLabel(target: HTMLElement): string {
 
 /**
  * 获取 React 组件层级信息
- * 通过 React Fiber API 获取组件名称
+ * 支持 React 18/19 的 __reactContainer$ 格式
  */
 function getReactComponentInfo(target: HTMLElement): string | undefined {
   // 尝试查找 React Fiber 对象
-  // React 将 fiber 存储在 DOM 元素的特殊属性中
   let fiberKey: string | null = null;
 
   for (const key in target) {
-    if (key.startsWith('__reactFiber$') || key.startsWith('__reactInternalInstance$')) {
+    if (
+      key.startsWith('__reactFiber$') ||
+      key.startsWith('__reactInternalInstance$') ||
+      key.startsWith('__reactContainer$')
+    ) {
       fiberKey = key;
       break;
     }
@@ -265,7 +268,11 @@ function getReactComponentInfo(target: HTMLElement): string | undefined {
     let parent = target.parentElement;
     while (parent && !fiberKey) {
       for (const key in parent) {
-        if (key.startsWith('__reactFiber$') || key.startsWith('__reactInternalInstance$')) {
+        if (
+          key.startsWith('__reactFiber$') ||
+          key.startsWith('__reactInternalInstance$') ||
+          key.startsWith('__reactContainer$')
+        ) {
           fiberKey = key;
           break;
         }
@@ -288,13 +295,12 @@ function getReactComponentInfo(target: HTMLElement): string | undefined {
     const f = current as { type?: unknown; return?: unknown; stateNode?: unknown };
 
     if (f.type) {
-      // type 可以是字符串（HTML 元素）或函数/类组件
       if (typeof f.type === 'function') {
         // 函数组件或类组件 - 使用组件名称
         const name = f.type.name || 'Anonymous';
         componentNames.unshift(name);
       } else if (typeof f.type === 'string') {
-        // HTML 元素 - 使用简短标签名，不显示 constructor.name
+        // HTML 元素 - 使用简短标签名
         componentNames.unshift(f.type);
       }
     }
@@ -304,7 +310,6 @@ function getReactComponentInfo(target: HTMLElement): string | undefined {
 
   if (componentNames.length === 0) return undefined;
 
-  // 去重并返回
-  const unique = [...new Set(componentNames)];
-  return unique.join(' > ');
+  // 去重并返回（不带括号）
+  return [...new Set(componentNames)].join(' > ');
 }

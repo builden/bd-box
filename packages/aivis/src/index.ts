@@ -17,3 +17,7 @@ export type { AnnotationPopupCSSProps, AnnotationPopupCSSHandle } from './compon
 
 export * from './components/icons';
 export type { Annotation } from './types';
+
+// React detection utilities
+export { getReactComponentName, isReactPage, clearReactDetectionCache } from './utils/react-detection';
+export type { ReactComponentInfo, ReactDetectionConfig, ReactDetectionMode } from './utils/react-detection';

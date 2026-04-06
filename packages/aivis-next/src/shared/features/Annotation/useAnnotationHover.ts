@@ -116,13 +116,17 @@ function getElementLabel(target: HTMLElement): string {
 
 /**
  * 获取 React 组件层级信息
- * 通过 React Fiber API 获取组件名称
+ * 支持 React 18/19 的 __reactContainer$ 格式
  */
 function getReactComponentInfo(target: HTMLElement): string | undefined {
   let fiberKey: string | null = null;
 
   for (const key in target) {
-    if (key.startsWith('__reactFiber$') || key.startsWith('__reactInternalInstance$')) {
+    if (
+      key.startsWith('__reactFiber$') ||
+      key.startsWith('__reactInternalInstance$') ||
+      key.startsWith('__reactContainer$')
+    ) {
       fiberKey = key;
       break;
     }
@@ -132,7 +136,11 @@ function getReactComponentInfo(target: HTMLElement): string | undefined {
     let parent = target.parentElement;
     while (parent && !fiberKey) {
       for (const key in parent) {
-        if (key.startsWith('__reactFiber$') || key.startsWith('__reactInternalInstance$')) {
+        if (
+          key.startsWith('__reactFiber$') ||
+          key.startsWith('__reactInternalInstance$') ||
+          key.startsWith('__reactContainer$')
+        ) {
           fiberKey = key;
           break;
         }
@@ -157,7 +165,6 @@ function getReactComponentInfo(target: HTMLElement): string | undefined {
         const name = f.type.name || 'Anonymous';
         componentNames.unshift(name);
       } else if (typeof f.type === 'string') {
-        // HTML 元素 - 使用简短标签名
         componentNames.unshift(f.type);
       }
     }
