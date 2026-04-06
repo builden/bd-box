@@ -5,6 +5,7 @@ import { showSettingsAtom, settingsAtom, OUTPUT_DETAIL_OPTIONS } from '@/shared/
 import { generateAnnotationOutput, copyToClipboard } from '@/shared/features/Annotation';
 import { isActiveAtom, copiedAtom, triggerCopyAtom } from '@/shared/features/ToggleButton/store';
 import { toastAtom } from '@/shared/components/store';
+import { isLayoutModeAtom, isRearrangeModeAtom } from '@/shared/features/Layout';
 
 /**
  * useHotkeys - 全局快捷键和 Toolbar 按钮事件处理
@@ -19,6 +20,8 @@ export function useHotkeys() {
   const [, setCopied] = useAtom(copiedAtom);
   const [triggerCopy] = useAtom(triggerCopyAtom);
   const [, setToast] = useAtom(toastAtom);
+  const [isLayoutMode, setIsLayoutMode] = useAtom(isLayoutModeAtom);
+  const [, setIsRearrangeMode] = useAtom(isRearrangeModeAtom);
 
   // 复制反馈
   const performCopy = useCallback(async () => {
@@ -65,6 +68,11 @@ export function useHotkeys() {
           if (isAnnotationMode) {
             setIsAnnotationMode(false);
           }
+          // 退出布局模式
+          if (isLayoutMode) {
+            setIsLayoutMode(false);
+            setIsRearrangeMode(false);
+          }
           if (showSettings) {
             setShowSettings(false);
           }
@@ -101,6 +109,18 @@ export function useHotkeys() {
           setIsAnnotationMode((prev) => !prev);
           break;
 
+        case 'l':
+          // 切换布局模式
+          e.preventDefault();
+          if (showSettings) setShowSettings(false);
+          if (isLayoutMode) {
+            setIsLayoutMode(false);
+            setIsRearrangeMode(false);
+          } else {
+            setIsLayoutMode(true);
+          }
+          break;
+
         case 'q':
           // 切换输出格式
           {
@@ -128,6 +148,7 @@ export function useHotkeys() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [
     isAnnotationMode,
+    isLayoutMode,
     showSettings,
     annotations.length,
     setIsAnnotationMode,
@@ -138,5 +159,7 @@ export function useHotkeys() {
     handleClearAll,
     setToast,
     settings.outputDetail,
+    setIsLayoutMode,
+    setIsRearrangeMode,
   ]);
 }

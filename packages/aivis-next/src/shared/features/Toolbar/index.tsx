@@ -2,7 +2,6 @@ import { useRef, useEffect } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
 import clsx from 'clsx';
 import {
-  IconLayout,
   IconEdit,
   IconEyeAnimated,
   IconCopyAnimated,
@@ -17,6 +16,7 @@ import { ToggleButton } from '@/shared/features/ToggleButton';
 import { ToolbarButton } from '@/shared/components/ToolbarButton';
 import { Toast } from '@/shared/components/Toast';
 import { AnnotationButton, useAnnotations } from '@/shared/features/Annotation';
+import { LayoutMode, LayoutButton, isLayoutModeAtom, ComponentPanel } from '@/shared/features/Layout';
 import { TOOLBAR_WIDTH, DRAG_CONFIG } from '@/shared/hooks/types';
 import { SettingsPanel } from '@/shared/features/SettingsPanel';
 import { showSettingsAtom, isDarkModeAtom } from '@/shared/features/SettingsPanel/store';
@@ -32,17 +32,19 @@ export function Toolbar() {
   const [showSettings, setShowSettings] = useAtom(showSettingsAtom);
   const [isDarkMode] = useAtom(isDarkModeAtom);
   const setIsAnnotationMode = useSetAtom(isAnnotationModeAtom);
+  const [_isLayoutMode, setIsLayoutMode] = useAtom(isLayoutModeAtom);
   const { clearAllAnnotations, annotations, showMarkers, toggleShowMarkers } = useAnnotations();
   const [copied] = useAtom(copiedAtom);
   const [, setTriggerCopy] = useAtom(triggerCopyAtom);
 
-  // 关闭 toolbar 时也关闭设置面板和标注模式
+  // 关闭 toolbar 时也关闭设置面板、标注模式和布局模式
   useEffect(() => {
     if (!isActive) {
       setShowSettings(false);
       setIsAnnotationMode(false);
+      setIsLayoutMode(false);
     }
-  }, [isActive, setShowSettings, setIsAnnotationMode]);
+  }, [isActive, setShowSettings, setIsAnnotationMode, setIsLayoutMode]);
 
   // 复制反馈 - 触发事件让 useHotkeys 统一处理
   const handleCopyFeedback = () => {
@@ -66,6 +68,7 @@ export function Toolbar() {
   return (
     <>
       <Toast />
+      <LayoutMode />
       <div
         ref={containerRef}
         data-theme={isDarkMode ? 'dark' : 'light'}
@@ -86,12 +89,14 @@ export function Toolbar() {
       >
         {/* SettingsPanel inside toolbar - uses absolute positioning */}
         <SettingsPanel />
+        {/* ComponentPanel for layout mode - uses absolute positioning above toolbar */}
+        <ComponentPanel />
         {/* 左侧工具栏按钮 - 仅 expanded */}
         {isActive && (
           <>
             <div className="flex items-center gap-1.5">
               <PauseButton />
-              <ToolbarButton icon={<IconLayout size={21} />} title="布局模式 (L)" />
+              <LayoutButton />
               <ToolbarButton icon={<IconEdit size={21} />} title="样式编辑 (S)" />
               <AnnotationButton />
             </div>
