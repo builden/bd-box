@@ -68,7 +68,8 @@ export function useAnnotationClickHandler() {
       const reactComponents = settings.reactEnabled ? getReactComponentInfo(target) : undefined;
 
       // Get source location (file path and line number) if enabled - async to use source map
-      const sourceFile = settings.reactEnabled ? await getSourceFile(target) : undefined;
+      const sourceInfo = settings.reactEnabled ? await getSourceInfo(target) : {};
+      const { sourceFile, vscodeUrl } = sourceInfo;
 
       // Get props propagation chain if React enabled
       const propsChain = settings.reactEnabled ? getPropsChain(target) : undefined;
@@ -101,6 +102,7 @@ export function useAnnotationClickHandler() {
         ...(computedStyles ? { computedStyles } : {}),
         ...(reactComponents ? { reactComponents } : {}),
         ...(sourceFile ? { sourceFile } : {}),
+        ...(vscodeUrl ? { vscodeUrl } : {}),
         ...(propsChain ? { propsChain } : {}),
       };
 
@@ -333,12 +335,15 @@ function getReactComponentInfo(target: HTMLElement): string | undefined {
  * - 仅在开发模式下可用
  * - Vite 开发服务器返回编译后的位置，会通过 source map 映射回原始源文件
  */
-async function getSourceFile(target: HTMLElement): Promise<string | undefined> {
+async function getSourceInfo(target: HTMLElement): Promise<{ sourceFile?: string; vscodeUrl?: string }> {
   const result = await getSourceLocationAsync(target);
   if (result.found && result.source) {
-    return formatSourceLocation(result.source, 'path');
+    return {
+      sourceFile: formatSourceLocation(result.source, 'path'),
+      vscodeUrl: formatSourceLocation(result.source, 'vscode'),
+    };
   }
-  return undefined;
+  return {};
 }
 
 /**

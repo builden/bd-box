@@ -93,6 +93,7 @@ export const AnnotationPopup = memo(function AnnotationPopup() {
         ...(pendingAnnotation!.sourceFile && { sourceFile: pendingAnnotation!.sourceFile }),
         ...(pendingAnnotation!.reactComponents && { reactComponents: pendingAnnotation!.reactComponents }),
         ...(pendingAnnotation!.propsChain && { propsChain: pendingAnnotation!.propsChain }),
+        ...(pendingAnnotation!.vscodeUrl && { vscodeUrl: pendingAnnotation!.vscodeUrl }),
       };
       setAnnotations((prev: Annotation[]) => [...prev, newAnnotation]);
       setPendingAnnotation(null);
@@ -163,6 +164,21 @@ export const AnnotationPopup = memo(function AnnotationPopup() {
         <span className={clsx('text-xs truncate flex-1', isDarkMode ? 'text-white/50' : 'text-black/50')}>
           {currentAnnotation.reactComponents || currentAnnotation.element}
         </span>
+        {currentAnnotation.vscodeUrl && (
+          <button
+            onClick={() => window.open(currentAnnotation.vscodeUrl, '_blank')}
+            className={clsx(
+              'text-xs px-2 py-0.5 rounded',
+              'transition-colors duration-150',
+              isDarkMode
+                ? 'text-white/40 hover:text-white/70 hover:bg-white/10'
+                : 'text-black/40 hover:text-black/70 hover:bg-black/6'
+            )}
+            title="Open in VSCode"
+          >
+            VSCode
+          </button>
+        )}
       </div>
 
       {/* Selected text quote */}
@@ -196,6 +212,10 @@ export const AnnotationPopup = memo(function AnnotationPopup() {
         onChange={(e) => setComment(e.target.value)}
         onKeyDown={handleKeyDown}
         rows={2}
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck={false}
       />
 
       {/* Actions */}

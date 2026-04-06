@@ -35,6 +35,8 @@ export interface SourceLocation {
   componentName?: string;
   /** React version detected */
   reactVersion?: string;
+  /** Full source path for VSCode navigation (optional) */
+  sourcePath?: string;
 }
 
 /**
@@ -961,7 +963,7 @@ export async function getSourceLocationAsync(element: HTMLElement): Promise<Sour
  * ```
  */
 export function formatSourceLocation(source: SourceLocation, format: 'path' | 'vscode' = 'path'): string {
-  const { fileName, lineNumber, columnNumber } = source;
+  const { fileName, lineNumber, columnNumber, sourcePath } = source;
 
   // Build line:column suffix
   let location = `${fileName}:${lineNumber}`;
@@ -971,8 +973,10 @@ export function formatSourceLocation(source: SourceLocation, format: 'path' | 'v
 
   if (format === 'vscode') {
     // VSCode can open files via URL protocol
-    // Assumes fileName is absolute or can be resolved
-    return `vscode://file${fileName.startsWith('/') ? '' : '/'}${location}`;
+    // Prefer sourcePath if available (full path from source map)
+    const vscodePath = sourcePath || fileName;
+    const prefix = vscodePath.startsWith('/') || vscodePath.match(/^[a-zA-Z]:/) ? '' : '/';
+    return `vscode://file${prefix}${vscodePath}:${lineNumber}${columnNumber !== undefined ? `:${columnNumber}` : ''}`;
   }
 
   return location;
@@ -1424,6 +1428,10 @@ function analyzeChainForProblems(chain: PropsChainItem[], problems: ProblemDetec
 const sourceMapCache = new Map<string, Promise<unknown>>();
 const SOURCE_MAP_CACHE_MAX_SIZE = 50;
 
+/** Cache for _jsxFileName (absolute path) by compiled file URL */
+const jsxFileNameCache = new Map<string, string>();
+const JSX_FILENAME_CACHE_MAX_SIZE = 50;
+
 /** Pre-initialized source-map module promise to avoid first-call initialization delay */
 let sourceMapModulePromise: Promise<typeof import('source-map-js')> | null = null;
 
@@ -1510,6 +1518,27 @@ function decodeDataUri(dataUri: string): object | null {
 }
 
 /**
+ * Extract _jsxFileName from compiled content
+ * Vite stores the absolute path in a variable like: var _jsxFileName = "/path/to/file"
+ */
+function extractJsxFileName(content: string): string | null {
+  // Match patterns like: var _jsxFileName = "/path/to/file"
+  const patterns = [
+    /var\s+_jsxFileName\s*=\s*["']([^"']+)["']/,
+    /let\s+_jsxFileName\s*=\s*["']([^"']+)["']/,
+    /const\s+_jsxFileName\s*=\s*["']([^"']+)["']/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = content.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+  return null;
+}
+
+/**
  * Evict oldest entries from cache if it exceeds max size
  */
 function evictCacheIfNeeded(): void {
@@ -1557,6 +1586,17 @@ async function getSourceMapConsumerForFile(compiledUrl: string): Promise<unknown
       }
 
       const content = await response.text();
+
+      // Extract _jsxFileName (absolute path) from the compiled content
+      const jsxFileName = extractJsxFileName(content);
+      if (jsxFileName) {
+        // Evict old entries if cache is full
+        if (jsxFileNameCache.size >= JSX_FILENAME_CACHE_MAX_SIZE) {
+          const firstKey = jsxFileNameCache.keys().next().value;
+          if (firstKey) jsxFileNameCache.delete(firstKey);
+        }
+        jsxFileNameCache.set(compiledUrl, jsxFileName);
+      }
 
       // Extract source map info from content
       const sourceMapInfo = extractSourceMapFromContent(content);
@@ -1642,7 +1682,7 @@ export async function mapCompiledPositionToOriginal(
   compiledUrl: string,
   line: number,
   column: number
-): Promise<{ fileName: string; lineNumber: number; columnNumber?: number } | null> {
+): Promise<{ fileName: string; lineNumber: number; columnNumber?: number; sourcePath?: string } | null> {
   // Check if this looks like a Vite dev server URL
   if (!isViteDevServerUrl(compiledUrl)) {
     return null;
@@ -1658,6 +1698,9 @@ export async function mapCompiledPositionToOriginal(
     return null;
   }
 
+  // Get _jsxFileName (absolute path) from cache
+  const jsxFileName = jsxFileNameCache.get(parsed.fileUrl);
+
   try {
     const consumerTyped = consumer as SourceMapConsumer;
     const original = consumerTyped.originalPositionFor({
@@ -1669,14 +1712,51 @@ export async function mapCompiledPositionToOriginal(
       return null;
     }
 
+    // Get the full source path from the source map
+    const rawSourcePath = original.source as string;
+    // If we have _jsxFileName, use it to construct the full path
+    let cleanSourcePath: string;
+    if (jsxFileName && rawSourcePath) {
+      // Extract the directory from _jsxFileName and combine with the filename from source map
+      const dir = jsxFileName.substring(0, jsxFileName.lastIndexOf('/') + 1);
+      cleanSourcePath = dir + rawSourcePath;
+    } else {
+      cleanSourcePath = rawSourcePath;
+    }
+    // Clean the path - remove common prefixes like webpack://[project]/
+    cleanSourcePath = cleanSourcePathForVsCode(cleanSourcePath);
+
     return {
-      fileName: (original.source as string).split('/').pop() || (original.source as string),
+      fileName: rawSourcePath.split('/').pop() || rawSourcePath,
       lineNumber: original.line ?? parsed.line,
       columnNumber: original.column,
+      sourcePath: cleanSourcePath,
     };
   } finally {
     // Don't close the consumer - we cache it for future use
   }
+}
+
+/**
+ * Clean source path for VSCode file URL
+ * Removes common prefixes like webpack://[project]/
+ */
+function cleanSourcePathForVsCode(rawPath: string): string {
+  let path = rawPath;
+
+  // Remove webpack protocol prefix: webpack://[project]/ or webpack://[project]/
+  path = path.replace(/^webpack:\/\/\[[^\]]+\]\//, '');
+
+  // Remove other common prefixes
+  path = path.replace(/^webpack:\/\//, '');
+  path = path.replace(/^mids:\/\//, '');
+
+  // If it looks like an absolute path already, use as-is
+  if (path.startsWith('/') || path.match(/^[a-zA-Z]:/)) {
+    return path;
+  }
+
+  return path;
 }
 
 /**
@@ -1698,6 +1778,9 @@ export async function mapPositionWithSourceMap(
       };
       if (original.columnNumber !== undefined) {
         result.columnNumber = original.columnNumber;
+      }
+      if (original.sourcePath) {
+        result.sourcePath = original.sourcePath;
       }
       return result;
     }

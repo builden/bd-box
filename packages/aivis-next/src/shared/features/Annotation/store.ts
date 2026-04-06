@@ -30,6 +30,7 @@ export type Annotation = {
   sourceFile?: string; // 源码文件
   reactComponents?: string; // React 组件层级
   propsChain?: string; // Props 传播链路
+  vscodeUrl?: string; // VSCode 打开链接
 };
 
 // =============================================================================
@@ -76,6 +77,7 @@ export type HoverData = {
   sourceFile?: string;
   reactComponents?: string;
   propsChain?: string;
+  vscodeUrl?: string;
 };
 
 export const hoverAtom = atom<HoverData | null>(null);
@@ -103,6 +105,7 @@ export type PendingAnnotationData = {
   sourceFile?: string;
   reactComponents?: string;
   propsChain?: string;
+  vscodeUrl?: string;
 };
 
 export const pendingAnnotationAtom = atom<PendingAnnotationData | null>(null);
