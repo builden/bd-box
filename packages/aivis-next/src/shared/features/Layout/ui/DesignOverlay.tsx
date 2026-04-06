@@ -14,6 +14,7 @@ import { DEFAULT_SIZES } from '../types';
 import type { DesignPlacement, SnapGuide } from '../types';
 
 const SNAP_THRESHOLD = 5;
+const MIN_SIZE = 24;
 
 // Snap 计算函数
 function computeSnap(
@@ -133,18 +134,22 @@ export const DesignOverlay = memo(function DesignOverlay() {
   } | null>(null);
   const [sizeIndicator, setSizeIndicator] = useState<{ x: number; y: number; text: string } | null>(null);
 
-  // 拖动预览状态
+  // 拖动预览状态（从 palette 拖动时的透明预览框）
   const [dragPreview, setDragPreview] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+
+  // Draw Box 状态（拖动绘制自定义尺寸）
+  const [drawBox, setDrawBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
 
   // 使用ref追踪palette拖动（避免闭包问题）
   const paletteDragRef = useRef(draggingFromPalette);
   paletteDragRef.current = draggingFromPalette;
 
-  // 点击页面放置组件
-  const handlePageClick = useCallback(
+  // 点击页面放置组件 - 支持拖动绘制尺寸
+  const handlePageMouseDown = useCallback(
     (e: MouseEvent) => {
       if (!isLayoutMode) return;
       if (!activeComponent) return;
+      if (e.button !== 0) return;
 
       // Don't place if clicking on toolbar or existing placement
       const target = e.target as HTMLElement;
@@ -155,23 +160,74 @@ export const DesignOverlay = memo(function DesignOverlay() {
       // Check if clicking on an existing placement marker
       if (target.closest('[data-placement-marker]')) return;
 
-      const defaultSize = DEFAULT_SIZES[activeComponent];
-      const width = defaultSize?.width ?? 200;
-      const height = defaultSize?.height ?? 100;
+      e.preventDefault();
+      e.stopPropagation();
 
-      const newPlacement: DesignPlacement = {
-        id: `dp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-        type: activeComponent,
-        x: e.clientX - width / 2,
-        y: e.clientY - height / 2,
-        width,
-        height,
-        scrollY: window.scrollY,
-        timestamp: Date.now(),
+      const startX = e.clientX;
+      const startY = e.clientY;
+      let isDrag = false;
+
+      const onMove = (ev: MouseEvent) => {
+        const dx = Math.abs(ev.clientX - startX);
+        const dy = Math.abs(ev.clientY - startY);
+        if (dx > 5 || dy > 5) {
+          isDrag = true;
+          const x = Math.min(startX, ev.clientX);
+          const y = Math.min(startY, ev.clientY);
+          const w = Math.abs(ev.clientX - startX);
+          const h = Math.abs(ev.clientY - startY);
+          setDrawBox({ x, y, w, h });
+          setSizeIndicator({
+            x: ev.clientX + 12,
+            y: ev.clientY + 12,
+            text: `${Math.round(w)} × ${Math.round(h)}`,
+          });
+        }
       };
 
-      setPlacements((prev) => [...prev, newPlacement]);
-      setSelectedId(newPlacement.id);
+      const onUp = (ev: MouseEvent) => {
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+        setDrawBox(null);
+        setSizeIndicator(null);
+
+        const def = DEFAULT_SIZES[activeComponent];
+        let x: number, y: number, w: number, h: number;
+
+        if (isDrag) {
+          // 拖动绘制了尺寸
+          x = Math.min(startX, ev.clientX);
+          y = Math.min(startY, ev.clientY);
+          w = Math.max(MIN_SIZE, Math.abs(ev.clientX - startX));
+          h = Math.max(MIN_SIZE, Math.abs(ev.clientY - startY));
+        } else {
+          // 点击直接放置
+          w = def.width ?? 200;
+          h = def.height ?? 100;
+          x = ev.clientX - w / 2;
+          y = ev.clientY - h / 2;
+        }
+
+        x = Math.max(0, x);
+        y = Math.max(0, y);
+
+        const newPlacement: DesignPlacement = {
+          id: `dp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          type: activeComponent,
+          x,
+          y,
+          width: w,
+          height: h,
+          scrollY: window.scrollY,
+          timestamp: Date.now(),
+        };
+
+        setPlacements((prev) => [...prev, newPlacement]);
+        setSelectedId(newPlacement.id);
+      };
+
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
     },
     [isLayoutMode, activeComponent, setPlacements, setSelectedId]
   );
@@ -349,14 +405,14 @@ export const DesignOverlay = memo(function DesignOverlay() {
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-    document.addEventListener('click', handlePageClick);
+    document.addEventListener('mousedown', handlePageMouseDown);
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('click', handlePageClick);
+      document.removeEventListener('mousedown', handlePageMouseDown);
     };
-  }, [placements, setPlacements, setSnapGuides, handlePageClick]);
+  }, [placements, setPlacements, setSnapGuides, handlePageMouseDown]);
 
   // 键盘快捷键
   useEffect(() => {
@@ -422,6 +478,20 @@ export const DesignOverlay = memo(function DesignOverlay() {
             width: dragPreview.width,
             height: dragPreview.height,
           }}
+        />
+      )}
+
+      {/* Draw Box - 拖动绘制自定义尺寸 */}
+      {drawBox && (
+        <div
+          className="fixed pointer-events-none z-[100010] border-2 border-dashed border-blue-500 rounded-md bg-blue-500/10"
+          style={{
+            left: drawBox.x,
+            top: drawBox.y,
+            width: drawBox.w,
+            height: drawBox.h,
+          }}
+          data-feedback-toolbar
         />
       )}
 
