@@ -215,8 +215,8 @@ function ResizeHandles({ placement, onHandleMouseDown, isSelected, wireframe }: 
   const edgeBars: { dir: HandleDir; cls: string }[] = [
     { dir: 'n', cls: 'top-0 left-3 right-3' },
     { dir: 's', cls: 'bottom-0 left-3 right-3' },
-    { dir: 'e', cls: 'right-0 top-3 bottom-3' },
-    { dir: 'w', cls: 'left-0 top-3 bottom-3' },
+    { dir: 'e', cls: 'top-3 bottom-3 right-0' },
+    { dir: 'w', cls: 'top-3 bottom-3 left-0' },
   ];
 
   return (
