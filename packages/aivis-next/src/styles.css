@@ -120,6 +120,102 @@ button:focus {
   outline: none;
 }
 
+/* Rolling number animations for placement count */
+@keyframes rollExitUp {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-110%);
+    opacity: 0;
+  }
+}
+
+@keyframes rollEnterUp {
+  from {
+    transform: translateY(110%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes rollExitDown {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(110%);
+    opacity: 0;
+  }
+}
+
+@keyframes rollEnterDown {
+  from {
+    transform: translateY(-110%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-roll-exit-up {
+  animation: rollExitUp 0.25s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.animate-roll-enter-up {
+  animation: rollEnterUp 0.25s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.animate-roll-exit-down {
+  animation: rollExitDown 0.25s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.animate-roll-enter-down {
+  animation: rollEnterDown 0.25s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* Palette enter/exit animations */
+@keyframes paletteEnter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0px);
+  }
+}
+
+@keyframes paletteExit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0px);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(6px);
+    filter: blur(5px);
+  }
+}
+
+.animate-palette-enter {
+  animation: paletteEnter 0.2s ease forwards;
+}
+
+.animate-palette-exit {
+  animation: paletteExit 0.2s ease forwards;
+}
+
 /* =============================================================================
    Settings Panel Light Theme
    ============================================================================= */

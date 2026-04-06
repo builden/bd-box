@@ -1,5 +1,5 @@
 import { memo, useState, useEffect, useRef } from 'react';
-import { useAtom, useSetAtom } from 'jotai';
+import { useAtom } from 'jotai';
 import { COMPONENT_REGISTRY, DEFAULT_SIZES, type ComponentType } from '../types';
 import { activeDesignComponentAtom, designPlacementsAtom, isLayoutModeAtom } from '../store';
 import { isDarkModeAtom } from '@/shared/features/SettingsPanel/store';
@@ -9,6 +9,94 @@ const PANEL_WIDTH = 256;
 const PANEL_HEIGHT = 320;
 const EDGE_PADDING = 10;
 const SPACING = '0.5rem';
+
+// =============================================================================
+// Rolling Count Animation (from aivis)
+// =============================================================================
+
+function RollingCount({ value, suffix }: { value: number; suffix?: string }) {
+  const [prev, setPrev] = useState<number | null>(null);
+  const [prevSuffix, setPrevSuffix] = useState(suffix);
+  const [dir, setDir] = useState<'up' | 'down'>('up');
+  const cur = useRef(value);
+  const curSuffix = useRef(suffix);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const suffixChanged = prev !== null && prevSuffix !== suffix;
+
+  useEffect(() => {
+    if (value !== cur.current) {
+      // Skip animation when hitting 0 — footer is about to collapse anyway
+      if (value === 0) {
+        cur.current = value;
+        curSuffix.current = suffix;
+        setPrev(null);
+        return;
+      }
+      setDir(value > cur.current ? 'up' : 'down');
+      setPrev(cur.current);
+      setPrevSuffix(curSuffix.current);
+      cur.current = value;
+      curSuffix.current = suffix;
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => setPrev(null), 250);
+    } else {
+      curSuffix.current = suffix;
+    }
+  }, [value, suffix]);
+
+  if (prev === null) {
+    return (
+      <span>
+        {value}
+        {suffix ? ` ${suffix}` : ''}
+      </span>
+    );
+  }
+
+  if (suffixChanged) {
+    // Suffix changed — roll the whole label
+    return (
+      <span className="relative inline-block overflow-hidden">
+        <span style={{ visibility: 'hidden' }}>
+          {value} {suffix}
+        </span>
+        <span
+          key={`o${prev}-${value}`}
+          className={`absolute left-0 top-0 ${dir === 'up' ? 'animate-roll-exit-up' : 'animate-roll-exit-down'}`}
+        >
+          {prev} {prevSuffix}
+        </span>
+        <span
+          key={`n${value}`}
+          className={`absolute left-0 top-0 ${dir === 'up' ? 'animate-roll-enter-up' : 'animate-roll-enter-down'}`}
+        >
+          {value} {suffix}
+        </span>
+      </span>
+    );
+  }
+
+  // Only number changed — roll just the number
+  return (
+    <span className="relative inline-block overflow-hidden">
+      <span style={{ visibility: 'hidden' }}>{value}</span>
+      <span
+        key={`o${prev}-${value}`}
+        className={`absolute left-0 top-0 ${dir === 'up' ? 'animate-roll-exit-up' : 'animate-roll-exit-down'}`}
+      >
+        {prev}
+      </span>
+      <span
+        key={`n${value}`}
+        className={`absolute left-0 top-0 ${dir === 'up' ? 'animate-roll-enter-up' : 'animate-roll-enter-down'}`}
+      >
+        {value}
+      </span>
+      {suffix ? ` ${suffix}` : ''}
+    </span>
+  );
+}
 
 // =============================================================================
 // SVG Icons (from aivis palette.tsx)
@@ -288,7 +376,7 @@ export const ComponentPanel = memo(function ComponentPanel() {
   const [isDarkMode] = useAtom(isDarkModeAtom);
   const [isActive] = useAtom(isActiveAtom);
   const [isLayoutMode] = useAtom(isLayoutModeAtom);
-  const setPlacements = useSetAtom(designPlacementsAtom);
+  const [placements, setPlacements] = useAtom(designPlacementsAtom);
 
   // Wireframe state
   const [blankCanvas, setBlankCanvas] = useState(false);
@@ -588,7 +676,11 @@ export const ComponentPanel = memo(function ComponentPanel() {
             letterSpacing: '-0.0094em',
           }}
         >
-          {activeComponent || '选择组件'}
+          {placements.length > 0 ? (
+            <RollingCount value={placements.length} suffix={placements.length === 1 ? 'Change' : 'Changes'} />
+          ) : (
+            '选择组件'
+          )}
         </span>
         <button
           onClick={handleClearAll}
