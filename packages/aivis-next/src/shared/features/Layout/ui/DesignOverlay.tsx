@@ -140,6 +140,9 @@ export const DesignOverlay = memo(function DesignOverlay() {
   // Draw Box 状态（拖动绘制自定义尺寸）
   const [drawBox, setDrawBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
 
+  // 正在退出的组件 ID（用于删除动画）
+  const [exitingIds, setExitingIds] = useState<Set<string>>(new Set());
+
   // 使用ref追踪palette拖动（避免闭包问题）
   const paletteDragRef = useRef(draggingFromPalette);
   paletteDragRef.current = draggingFromPalette;
@@ -427,8 +430,17 @@ export const DesignOverlay = memo(function DesignOverlay() {
         const target = e.target as HTMLElement;
         if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
         e.preventDefault();
-        setPlacements((prev) => prev.filter((p) => p.id !== selectedId));
+        // 淡出动画删除
+        setExitingIds((prev) => new Set(prev).add(selectedId));
         setSelectedId(null);
+        setTimeout(() => {
+          setPlacements((prev) => prev.filter((p) => p.id !== selectedId));
+          setExitingIds((prev) => {
+            const next = new Set(prev);
+            next.delete(selectedId);
+            return next;
+          });
+        }, 180);
       }
 
       // Arrow keys for nudging selected placement
@@ -462,9 +474,21 @@ export const DesignOverlay = memo(function DesignOverlay() {
           key={placement.id}
           placement={placement}
           isSelected={selectedId === placement.id}
+          isExiting={exitingIds.has(placement.id)}
           onSelect={handleSelect}
           onStartDrag={handleStartDrag}
           onStartResize={handleStartResize}
+          onDelete={(id) => {
+            setExitingIds((prev) => new Set(prev).add(id));
+            setTimeout(() => {
+              setPlacements((prev) => prev.filter((p) => p.id !== id));
+              setExitingIds((prev) => {
+                const next = new Set(prev);
+                next.delete(id);
+                return next;
+              });
+            }, 180);
+          }}
         />
       ))}
 

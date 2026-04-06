@@ -216,6 +216,23 @@ button:focus {
   animation: paletteExit 0.2s ease forwards;
 }
 
+/* Exit fade animation for placement markers */
+@keyframes exitFade {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+.animate-exit-fade {
+  animation: exitFade 0.18s ease forwards;
+  pointer-events: none;
+}
+
 /* =============================================================================
    Settings Panel Light Theme
    ============================================================================= */

@@ -504,7 +504,7 @@ export const ComponentPanel = memo(function ComponentPanel() {
 
   return (
     <div
-      className="absolute z-[100001] flex flex-col cursor-default"
+      className="absolute z-[100001] flex flex-col cursor-default animate-palette-enter"
       style={{
         right: 5,
         ...(showAbove ? { bottom: `calc(100% + ${SPACING})` } : { top: `calc(100% + ${SPACING})` }),

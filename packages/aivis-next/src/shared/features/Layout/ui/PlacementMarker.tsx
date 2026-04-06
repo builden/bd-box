@@ -10,19 +10,23 @@ type HandleDir = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
 interface PlacementMarkerProps {
   placement: DesignPlacement;
   isSelected: boolean;
+  isExiting?: boolean;
   onSelect: (id: string, shiftKey: boolean) => void;
   onStartDrag: (id: string, e: React.MouseEvent) => void;
   onStartResize?: (id: string, dir: HandleDir, e: React.MouseEvent) => void;
   wireframe?: boolean;
+  onDelete?: (id: string) => void;
 }
 
 export const PlacementMarker = memo(function PlacementMarker({
   placement,
   isSelected,
+  isExiting = false,
   onSelect,
   onStartDrag,
   onStartResize,
   wireframe = false,
+  onDelete,
 }: PlacementMarkerProps) {
   const setPlacements = useSetAtom(designPlacementsAtom);
   const setSelectedId = useSetAtom(selectedPlacementIdAtom);
@@ -31,8 +35,13 @@ export const PlacementMarker = memo(function PlacementMarker({
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setPlacements((prev) => prev.filter((p) => p.id !== placement.id));
-    setSelectedId(null);
+    if (onDelete) {
+      onDelete(placement.id);
+    } else {
+      // 默认行为：直接删除
+      setPlacements((prev) => prev.filter((p) => p.id !== placement.id));
+      setSelectedId(null);
+    }
   };
 
   const handleClick = (e: React.MouseEvent) => {
@@ -72,7 +81,9 @@ export const PlacementMarker = memo(function PlacementMarker({
           'border border-dashed border-orange-400/40 bg-orange-500/5 hover:border-orange-400/50 hover:bg-orange-500/10',
         // Selected state
         isSelected && !wireframe && 'border-2 border-solid border-blue-500 bg-blue-500/10 shadow-blue-500/20',
-        isSelected && wireframe && 'border-2 border-solid border-orange-500 bg-orange-500/10 shadow-orange-500/20'
+        isSelected && wireframe && 'border-2 border-solid border-orange-500 bg-orange-500/10 shadow-orange-500/20',
+        // Exiting animation
+        isExiting && 'animate-exit-fade'
       )}
       style={{
         left: placement.x,
