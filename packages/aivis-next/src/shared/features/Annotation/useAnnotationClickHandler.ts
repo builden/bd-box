@@ -9,6 +9,7 @@ import {
   type PendingAnnotationData,
 } from './store';
 import { settingsAtom } from '@/shared/features/SettingsPanel/store';
+import { formatSourceLocation, getSourceLocationAsync } from '@/shared/utils/source-location';
 
 /**
  * useAnnotationClickHandler - 处理标注模式下的页面点击
@@ -27,7 +28,7 @@ export function useAnnotationClickHandler() {
   useEffect(() => {
     if (!isAnnotationMode) return;
 
-    const handleClick = (e: MouseEvent) => {
+    const handleClick = async (e: MouseEvent) => {
       // Don't create annotation if clicking on toolbar or settings
       const target = e.target as HTMLElement;
       if (target.closest('[data-no-drag]') || target.closest('[data-feedback-toolbar]')) {
@@ -66,6 +67,9 @@ export function useAnnotationClickHandler() {
       // Get React component info if enabled
       const reactComponents = settings.reactEnabled ? getReactComponentInfo(target) : undefined;
 
+      // Get source location (file path and line number) if enabled - async to use source map
+      const sourceFile = settings.reactEnabled ? await getSourceFile(target) : undefined;
+
       // Create pending annotation for popup
       const pending: PendingAnnotationData = {
         x,
@@ -93,6 +97,7 @@ export function useAnnotationClickHandler() {
         ...(nearbyText ? { nearbyText } : {}),
         ...(computedStyles ? { computedStyles } : {}),
         ...(reactComponents ? { reactComponents } : {}),
+        ...(sourceFile ? { sourceFile } : {}),
       };
 
       setPendingAnnotation(pending);
@@ -107,6 +112,7 @@ export function useAnnotationClickHandler() {
         rect: target.getBoundingClientRect(),
         ...(selectedText ? { selectedText } : {}),
         ...(reactComponents ? { reactComponents } : {}),
+        ...(sourceFile ? { sourceFile } : {}),
       });
     };
 
@@ -312,4 +318,22 @@ function getReactComponentInfo(target: HTMLElement): string | undefined {
 
   // 去重并返回（不带括号）
   return [...new Set(componentNames)].join(' > ');
+}
+
+/**
+ * 获取 React 组件的源文件位置信息
+ * 使用 getSourceLocationAsync 从 fiber 节点提取源文件信息，并通过 source map 映射回原始位置
+ *
+ * 注意：此功能依赖 React 的 _debugSource 信息
+ * - 部分 bundler（如 Next.js + SWC）会剥离此信息
+ * - 仅在开发模式下可用
+ * - Vite 开发服务器返回编译后的位置，会通过 source map 映射回原始源文件
+ */
+async function getSourceFile(target: HTMLElement): Promise<string | undefined> {
+  const result = await getSourceLocationAsync(target);
+  console.log('[getSourceFile] result:', result);
+  if (result.found && result.source) {
+    return formatSourceLocation(result.source, 'path');
+  }
+  return undefined;
 }
