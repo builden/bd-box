@@ -63,7 +63,7 @@ export function generateAnnotationOutput(
         output += `**位置:** x:${Math.round(a.boundingBox.x)}, y:${Math.round(a.boundingBox.y)} (${Math.round(a.boundingBox.width)}×${Math.round(a.boundingBox.height)}px)\n`;
       }
       if (a.popupX !== undefined && a.popupY !== undefined) {
-        output += `**标注位置:** 左侧 ${a.x.toFixed(1)}px, 顶部 ${Math.round(a.y)}px\n`;
+        output += `**标注位置:** left ${a.x.toFixed(1)}px, top ${Math.round(a.y)}px\n`;
       }
       if (a.selectedText) {
         output += `**选中文本:** "${a.selectedText}"\n`;
