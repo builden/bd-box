@@ -1,4 +1,5 @@
 import React from 'react';
+import type { RawSourceMap, SourceMapConsumer } from 'source-map-js';
 
 // =============================================================================
 // Source Location Detection Utilities
@@ -1104,8 +1105,9 @@ export function checkSourceLocationSupport(): {
 // The source map is at the end of the file as: //# sourceMappingURL=data:application/json;base64,...
 // =============================================================================
 
-/** Cache for source map consumers by compiled file URL */
+/** Cache for source map consumers by compiled file URL - limited to prevent memory leaks */
 const sourceMapCache = new Map<string, Promise<unknown>>();
+const SOURCE_MAP_CACHE_MAX_SIZE = 50;
 
 /** Pre-initialized source-map module promise to avoid first-call initialization delay */
 let sourceMapModulePromise: Promise<typeof import('source-map-js')> | null = null;
@@ -1193,14 +1195,39 @@ function decodeDataUri(dataUri: string): object | null {
 }
 
 /**
+ * Evict oldest entries from cache if it exceeds max size
+ */
+function evictCacheIfNeeded(): void {
+  if (sourceMapCache.size >= SOURCE_MAP_CACHE_MAX_SIZE) {
+    // Remove oldest 25% of entries
+    const entriesToRemove = Math.floor(SOURCE_MAP_CACHE_MAX_SIZE * 0.25);
+    const keys = sourceMapCache.keys();
+    for (let i = 0; i < entriesToRemove; i++) {
+      const next = keys.next();
+      if (next.done) break;
+      sourceMapCache.delete(next.value);
+    }
+  }
+}
+
+/**
  * Get or create SourceMapConsumer for a compiled file URL
  * This fetches the compiled file, extracts the inline source map, and creates a consumer
  */
 async function getSourceMapConsumerForFile(compiledUrl: string): Promise<unknown | null> {
-  // Return cached promise if exists
-  if (sourceMapCache.has(compiledUrl)) {
-    return sourceMapCache.get(compiledUrl)!;
+  // Return cached promise if exists (only if it resolved, not rejected)
+  const existing = sourceMapCache.get(compiledUrl);
+  if (existing) {
+    // Check if promise resolved or rejected - if rejected, don't reuse
+    const cachedResult = await existing.catch(() => null);
+    if (cachedResult !== null) {
+      return cachedResult;
+    }
+    // If it was null/rejected, remove from cache and retry
+    sourceMapCache.delete(compiledUrl);
   }
+
+  evictCacheIfNeeded();
 
   const promise = (async () => {
     try {
@@ -1211,7 +1238,6 @@ async function getSourceMapConsumerForFile(compiledUrl: string): Promise<unknown
       // Fetch the compiled JS file
       const response = await fetch(compiledUrl);
       if (!response.ok) {
-        console.warn(`[source-location] Failed to fetch compiled file: ${response.status}`);
         return null;
       }
 
@@ -1219,46 +1245,35 @@ async function getSourceMapConsumerForFile(compiledUrl: string): Promise<unknown
 
       // Extract source map info from content
       const sourceMapInfo = extractSourceMapFromContent(content);
-      console.log(
-        '[source-location] extractSourceMapFromContent result:',
-        sourceMapInfo ? (sourceMapInfo.type === 'data_uri' ? 'data_uri found' : 'url: ' + sourceMapInfo.url) : 'null'
-      );
       if (!sourceMapInfo) {
-        console.warn('[source-location] No source map found in compiled file');
         return null;
       }
 
-      let sourceMapJson: object | null = null;
+      let sourceMapJson: RawSourceMap | null = null;
 
       if (sourceMapInfo.type === 'data_uri') {
         const decoded = decodeDataUri(sourceMapInfo.data);
         if (!decoded) {
           return null;
         }
-        sourceMapJson = decoded;
-        console.log(
-          '[source-location] decoded sourceMapJson, sources:',
-          (sourceMapJson as { sources?: string[] }).sources
-        );
+        sourceMapJson = decoded as unknown as RawSourceMap;
       } else {
         // Fetch external .map file
         const mapResponse = await fetch(sourceMapInfo.url);
         if (!mapResponse.ok) {
-          console.warn(`[source-location] Failed to fetch source map: ${mapResponse.status}`);
           return null;
         }
         sourceMapJson = await mapResponse.json();
       }
 
       // Create SourceMapConsumer (module already initialized by getSourceMapModule)
-      if (typeof sourceMapModule.SourceMapConsumer === 'function') {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const consumer = new sourceMapModule.SourceMapConsumer(sourceMapJson as any);
+      // The source map JSON from Vite matches RawSourceMap interface
+      if (typeof sourceMapModule.SourceMapConsumer === 'function' && sourceMapJson) {
+        const consumer = new sourceMapModule.SourceMapConsumer(sourceMapJson);
         return consumer;
       }
       return null;
-    } catch (error) {
-      console.warn('[source-location] Failed to create SourceMapConsumer:', error);
+    } catch {
       return null;
     }
   })();
@@ -1329,9 +1344,8 @@ export async function mapCompiledPositionToOriginal(
   }
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const consumerAny = consumer as any;
-    const original = consumerAny.originalPositionFor({
+    const consumerTyped = consumer as SourceMapConsumer;
+    const original = consumerTyped.originalPositionFor({
       line: parsed.line,
       column: parsed.column,
     });
