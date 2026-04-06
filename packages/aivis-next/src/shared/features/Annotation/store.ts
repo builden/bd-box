@@ -29,6 +29,7 @@ export type Annotation = {
   nearbyElements?: string; // 附近元素
   sourceFile?: string; // 源码文件
   reactComponents?: string; // React 组件层级
+  propsChain?: string; // Props 传播链路
 };
 
 // =============================================================================
@@ -74,6 +75,7 @@ export type HoverData = {
   nearbyElements?: string;
   sourceFile?: string;
   reactComponents?: string;
+  propsChain?: string;
 };
 
 export const hoverAtom = atom<HoverData | null>(null);
@@ -100,6 +102,7 @@ export type PendingAnnotationData = {
   nearbyElements?: string;
   sourceFile?: string;
   reactComponents?: string;
+  propsChain?: string;
 };
 
 export const pendingAnnotationAtom = atom<PendingAnnotationData | null>(null);

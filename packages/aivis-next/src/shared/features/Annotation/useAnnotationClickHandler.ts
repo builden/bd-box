@@ -9,7 +9,7 @@ import {
   type PendingAnnotationData,
 } from './store';
 import { settingsAtom } from '@/shared/features/SettingsPanel/store';
-import { formatSourceLocation, getSourceLocationAsync } from '@/shared/utils/source-location';
+import { formatSourceLocation, getSourceLocationAsync, getPropsPropagationPath } from '@/shared/utils/source-location';
 
 /**
  * useAnnotationClickHandler - 处理标注模式下的页面点击
@@ -70,6 +70,9 @@ export function useAnnotationClickHandler() {
       // Get source location (file path and line number) if enabled - async to use source map
       const sourceFile = settings.reactEnabled ? await getSourceFile(target) : undefined;
 
+      // Get props propagation chain if React enabled
+      const propsChain = settings.reactEnabled ? getPropsChain(target) : undefined;
+
       // Create pending annotation for popup
       const pending: PendingAnnotationData = {
         x,
@@ -98,6 +101,7 @@ export function useAnnotationClickHandler() {
         ...(computedStyles ? { computedStyles } : {}),
         ...(reactComponents ? { reactComponents } : {}),
         ...(sourceFile ? { sourceFile } : {}),
+        ...(propsChain ? { propsChain } : {}),
       };
 
       setPendingAnnotation(pending);
@@ -331,9 +335,28 @@ function getReactComponentInfo(target: HTMLElement): string | undefined {
  */
 async function getSourceFile(target: HTMLElement): Promise<string | undefined> {
   const result = await getSourceLocationAsync(target);
-  console.log('[getSourceFile] result:', result);
   if (result.found && result.source) {
     return formatSourceLocation(result.source, 'path');
   }
   return undefined;
+}
+
+/**
+ * 获取 React 组件的 Props 传播链路
+ * 从目标组件向上遍历 fiber 树，收集 props 传递信息
+ */
+function getPropsChain(target: HTMLElement) {
+  const result = getPropsPropagationPath(target);
+  if (!result || result.chain.length === 0) return undefined;
+
+  // Format as a simple string for storage
+  return result.chain
+    .map((item) => {
+      const props = Object.entries(item.relevantProps)
+        .map(([k, v]) => `${k}=${JSON.stringify(v)}`)
+        .join(', ');
+      const location = item.sourceLocation ? `:${item.sourceLocation.fileName}:${item.sourceLocation.lineNumber}` : '';
+      return `${item.componentName}${location}${props ? ` (${props})` : ''}`;
+    })
+    .join(' > ');
 }

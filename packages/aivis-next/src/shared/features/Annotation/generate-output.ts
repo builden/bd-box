@@ -86,6 +86,9 @@ export function generateAnnotationOutput(
       if (a.reactComponents) {
         output += `**React:** ${a.reactComponents}\n`;
       }
+      if (a.propsChain) {
+        output += `**Props 链路:**\n\`\`\`\n${a.propsChain}\n\`\`\`\n`;
+      }
       output += `**反馈:** ${a.comment || '(无评论)'}\n\n`;
     } else {
       // standard and detailed
@@ -96,6 +99,9 @@ export function generateAnnotationOutput(
       }
       if (a.reactComponents) {
         output += `**React:** ${a.reactComponents}\n`;
+      }
+      if (detailLevel === 'detailed' && a.propsChain) {
+        output += `**Props 链路:** ${a.propsChain}\n`;
       }
       if (detailLevel === 'detailed') {
         if (a.cssClasses) {

@@ -256,6 +256,36 @@ function getComponentName(fiber: ReactFiber): string | null {
 }
 
 /**
+ * Gets a display name for any fiber (including DOM elements)
+ * Used for props chain where we want to show the full hierarchy
+ */
+function getFiberNameForChain(fiber: ReactFiber): string | null {
+  if (!fiber.type) {
+    return null;
+  }
+
+  // DOM element - return tag name with brackets
+  if (typeof fiber.type === 'string') {
+    return `<${fiber.type}>`;
+  }
+
+  // Function/class component
+  if (typeof fiber.type === 'object' || typeof fiber.type === 'function') {
+    const type = fiber.type as { displayName?: string; name?: string };
+    if (type.displayName) {
+      return type.displayName;
+    }
+    if (type.name) {
+      return type.name;
+    }
+    // Anonymous function
+    return 'Anonymous';
+  }
+
+  return null;
+}
+
+/**
  * Walks up the fiber tree to find the nearest component with _debugSource
  *
  * @param fiber - Starting fiber node
@@ -1091,6 +1121,291 @@ export function checkSourceLocationSupport(): {
     reason: `React ${reactInfo.version || 'unknown'} development mode detected`,
     suggestions: [],
   };
+}
+
+// =============================================================================
+// Props Propagation Chain and Context Tracking
+// =============================================================================
+
+/**
+ * Represents a single item in the props propagation chain
+ */
+export interface PropsChainItem {
+  /** Component name */
+  componentName: string;
+  /** Source location of this component */
+  sourceLocation?: SourceLocation | undefined;
+  /** Props that were passed to this component (relevant business props only) */
+  relevantProps: Record<string, unknown>;
+  /** Whether this component is the clicked target */
+  isTarget?: boolean;
+}
+
+/**
+ * Represents a Context usage in a component
+ */
+export interface ContextUsage {
+  /** Context name */
+  contextName: string;
+  /** What values are being used */
+  usedValues: string[];
+}
+
+/**
+ * Represents a detected problem in the component hierarchy
+ */
+export interface ProblemDetection {
+  /** Severity level */
+  severity: 'high' | 'medium' | 'low';
+  /** Problem title */
+  title: string;
+  /** Problem description */
+  description: string;
+  /** Suggested fix (optional) */
+  suggestion?: string;
+}
+
+/**
+ * Result of props propagation path analysis
+ */
+export interface PropsPropagationResult {
+  /** The props chain from root to target */
+  chain: PropsChainItem[];
+  /** Context usages found in the chain */
+  contextUsages: ContextUsage[];
+  /** Detected problems */
+  problems: ProblemDetection[];
+}
+
+/**
+ * Check if a prop name looks like an internal/react prop (should be filtered out)
+ */
+function isInternalProp(propName: string): boolean {
+  const internalProps = [
+    'children',
+    'key',
+    'ref',
+    'style',
+    'className',
+    'id',
+    'testId',
+    'data-testid',
+    'data-test-id',
+    'onClick',
+    'onChange',
+    'onSubmit',
+    'onBlur',
+    'onFocus',
+    'onKeyDown',
+    'onKeyUp',
+    'onMouseEnter',
+    'onMouseLeave',
+    'onMouseOver',
+    'onMouseOut',
+    'type',
+    'disabled',
+  ];
+  return internalProps.includes(propName);
+}
+
+/**
+ * Extract relevant business props from fiber memoizedProps
+ * Filters out React internal props and event handlers
+ */
+function extractRelevantProps(memoizedProps: Record<string, unknown> | null): Record<string, unknown> {
+  if (!memoizedProps) return {};
+
+  const relevant: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(memoizedProps)) {
+    if (isInternalProp(key)) continue;
+    if (key.startsWith('__') || key.startsWith('data-')) continue;
+
+    // Simplify complex values for display
+    if (value === null || value === undefined) {
+      relevant[key] = value;
+    } else if (typeof value === 'function') {
+      relevant[key] = '[function]';
+    } else if (Array.isArray(value)) {
+      relevant[key] = `[Array:${value.length}]`;
+    } else if (typeof value === 'object') {
+      relevant[key] = '[Object]';
+    } else {
+      relevant[key] = value;
+    }
+  }
+  return relevant;
+}
+
+/**
+ * Check if a fiber uses React Context
+ */
+function detectContextUsage(fiber: ReactFiber): ContextUsage[] {
+  const usages: ContextUsage[] = [];
+
+  // Check memoizedProps for context values (typically pattern like { context: value })
+  if (fiber.memoizedProps) {
+    const props = fiber.memoizedProps as Record<string, unknown>;
+    for (const [key, value] of Object.entries(props)) {
+      if (key.toLowerCase().includes('context') && typeof value === 'object' && value !== null) {
+        usages.push({
+          contextName: key,
+          usedValues: Object.keys(value as Record<string, unknown>),
+        });
+      }
+    }
+  }
+
+  // Check fiber.return chain for Provider
+  let current: ReactFiber | null | undefined = fiber;
+  while (current) {
+    if (current.type && typeof current.type === 'object') {
+      const type = current.type as Record<string, unknown>;
+      // Check for Provider pattern (_context property)
+      if (type._context || type.context) {
+        const contextName = (type._context || type.context) as { displayName?: string; _currentValue?: unknown };
+        usages.push({
+          contextName: contextName?.displayName || 'UnnamedContext',
+          usedValues: ['Provider'],
+        });
+      }
+    }
+    current = current.return;
+  }
+
+  return usages;
+}
+
+/**
+ * Get the props propagation path from root to the target element
+ * This walks up the fiber tree collecting component info and props
+ */
+export function getPropsPropagationPath(element: HTMLElement): PropsPropagationResult | null {
+  const fiber = getFiberFromElement(element);
+  if (!fiber) {
+    return null;
+  }
+
+  const chain: PropsChainItem[] = [];
+  const contextUsages: ContextUsage[] = [];
+  const problems: ProblemDetection[] = [];
+
+  let current: ReactFiber | null | undefined = fiber;
+  let depth = 0;
+  const maxDepth = 50;
+
+  // Walk from target up to root
+  while (current && depth < maxDepth) {
+    // Use getFiberNameForChain to include DOM elements in the hierarchy
+    const componentName = getFiberNameForChain(current);
+    if (componentName) {
+      const source = current._debugSource || getSourceFromFiber(current);
+      // Try both memoizedProps and pendingProps - take whichever has more content
+      const memoizedProps = extractRelevantProps(current.memoizedProps ?? null);
+      const pendingPropsData = extractRelevantProps(current.pendingProps ?? null);
+      const relevantProps =
+        Object.keys(memoizedProps).length >= Object.keys(pendingPropsData).length ? memoizedProps : pendingPropsData;
+      const contexts = detectContextUsage(current);
+
+      chain.unshift({
+        componentName,
+        sourceLocation: source
+          ? {
+              fileName: source.fileName,
+              lineNumber: source.lineNumber,
+              ...(source.columnNumber !== undefined ? { columnNumber: source.columnNumber } : {}),
+            }
+          : undefined,
+        relevantProps,
+        isTarget: depth === 0,
+      });
+
+      if (contexts.length > 0) {
+        contextUsages.push(...contexts);
+      }
+    }
+
+    current = current.return;
+    depth++;
+  }
+
+  // Detect problems based on the chain
+  analyzeChainForProblems(chain, problems);
+
+  return { chain, contextUsages, problems };
+}
+
+/**
+ * Try to get source info from various fiber properties
+ */
+function getSourceFromFiber(fiber: ReactFiber): ReactFiber['_debugSource'] | null {
+  // Try pendingProps.__source (highest priority)
+  if (fiber.pendingProps && typeof fiber.pendingProps === 'object') {
+    const pendingProps = fiber.pendingProps as Record<string, unknown>;
+    const source = pendingProps.__source as
+      | { fileName?: string; lineNumber?: number; columnNumber?: number }
+      | undefined;
+    if (source?.fileName && source?.lineNumber) {
+      return source as ReactFiber['_debugSource'];
+    }
+  }
+
+  // Try _debugSource
+  if (fiber._debugSource) {
+    return fiber._debugSource;
+  }
+
+  return null;
+}
+
+/**
+ * Analyze the props chain for potential problems
+ */
+function analyzeChainForProblems(chain: PropsChainItem[], problems: ProblemDetection[]): void {
+  if (chain.length < 2) return;
+
+  // Check for props count mismatch between levels
+  for (let i = 0; i < chain.length - 1; i++) {
+    const current = chain[i]!;
+    const parent = chain[i + 1]!;
+    const currentPropCount = Object.keys(current.relevantProps).length;
+    const parentPropCount = Object.keys(parent.relevantProps).length;
+
+    // If parent passes more props than child uses, some might be unused
+    if (parentPropCount > currentPropCount && parentPropCount > 3) {
+      const unusedCount = parentPropCount - currentPropCount;
+      problems.push({
+        severity: 'low',
+        title: 'Props 数量差异',
+        description: `${parent.componentName} 传递了 ${parentPropCount} 个 props，但 ${current.componentName} 只使用了 ${currentPropCount} 个`,
+        suggestion: `检查是否有 ${unusedCount} 个 props 可以优化或内联`,
+      });
+    }
+  }
+
+  // Check for deep nesting
+  if (chain.length > 4) {
+    problems.push({
+      severity: 'medium',
+      title: '组件层级过深',
+      description: `Props 链路有 ${chain.length} 层嵌套`,
+      suggestion: '考虑合并中间层组件或使用 Context 减少 props drilling',
+    });
+  }
+
+  // Check for arrays that might be over-filtered
+  for (const item of chain) {
+    for (const [key, value] of Object.entries(item.relevantProps)) {
+      if (typeof value === 'string' && (key.includes('filter') || key.includes('search'))) {
+        if (value === '' || value === '[]') {
+          problems.push({
+            severity: 'low',
+            title: '过滤条件可能为空',
+            description: `${item.componentName} 的 ${key} 为空，可能导致数据全部被过滤`,
+          });
+        }
+      }
+    }
+  }
 }
 
 // =============================================================================

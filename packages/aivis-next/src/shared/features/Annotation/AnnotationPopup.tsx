@@ -92,6 +92,7 @@ export const AnnotationPopup = memo(function AnnotationPopup() {
         ...(pendingAnnotation!.nearbyElements && { nearbyElements: pendingAnnotation!.nearbyElements }),
         ...(pendingAnnotation!.sourceFile && { sourceFile: pendingAnnotation!.sourceFile }),
         ...(pendingAnnotation!.reactComponents && { reactComponents: pendingAnnotation!.reactComponents }),
+        ...(pendingAnnotation!.propsChain && { propsChain: pendingAnnotation!.propsChain }),
       };
       setAnnotations((prev: Annotation[]) => [...prev, newAnnotation]);
       setPendingAnnotation(null);
