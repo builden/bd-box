@@ -24,11 +24,20 @@ export const designPlacementsAtom = atomWithStorage<DesignPlacement[]>('aivis-ne
 // 当前选中的组件类型（从 ComponentPanel 选择）
 export const activeDesignComponentAtom = atom<ComponentType | null>(null);
 
-// 当前选中的已放置组件 ID
-export const selectedPlacementIdAtom = atom<string | null>(null);
+// 当前选中的已放置组件 ID（多选）
+export const selectedPlacementIdsAtom = atom<Set<string>>(new Set<string>());
+
+// 当前正在编辑的组件 ID
+export const editingPlacementIdAtom = atom<string | null>(null);
+
+// 编辑弹窗是否正在退出
+export const editExitingAtom = atom<boolean>(false);
 
 // 吸附引导线状态
 export const snapGuidesAtom = atom<SnapGuide[]>([]);
+
+// 框选选择框状态
+export const selectBoxAtom = atom<{ x: number; y: number; w: number; h: number } | null>(null);
 
 // 组件面板是否展开
 export const isComponentPanelOpenAtom = atom(true);
@@ -73,9 +82,16 @@ export const hasSectionsAtom = atom((get) => {
 
 // 当前选中的组件
 export const selectedPlacementAtom = atom((get) => {
-  const id = get(selectedPlacementIdAtom);
-  if (!id) return null;
-  return get(designPlacementsAtom).find((p) => p.id === id) ?? null;
+  const ids = get(selectedPlacementIdsAtom);
+  if (ids.size === 0) return null;
+  const firstId = [...ids][ids.size - 1]; // 最后添加的
+  return get(designPlacementsAtom).find((p) => p.id === firstId) ?? null;
+});
+
+// 选中的组件列表（多选）
+export const selectedPlacementsAtom = atom((get) => {
+  const ids = get(selectedPlacementIdsAtom);
+  return get(designPlacementsAtom).filter((p) => ids.has(p.id));
 });
 
 // 已选中的区域列表

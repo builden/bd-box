@@ -1,9 +1,16 @@
-import { memo, useEffect, useRef, useCallback } from 'react';
+import { memo, useEffect, useRef, useCallback, useState } from 'react';
 import { useAtom } from 'jotai';
 import clsx from 'clsx';
 import { isRearrangeModeAtom, rearrangeStateAtom, selectedSectionIdsAtom, sectionsDetectedAtom } from '../store';
 import { detectPageSections, captureElement } from '../utils/section-detection';
 import type { DetectedSection } from '../types';
+
+// 退出动画的连接线
+interface ExitingConnector {
+  id: string;
+  orig: { x: number; y: number; width: number; height: number };
+  target: { x: number; y: number; width: number; height: number };
+}
 
 /**
  * RearrangeOverlay - Rearrange Mode
@@ -24,6 +31,12 @@ export const RearrangeOverlay = memo(function RearrangeOverlay() {
     origY: number;
   } | null>(null);
   const dragOffsetRef = useRef<{ dx: number; dy: number }>({ dx: 0, dy: 0 });
+
+  // 上一次变化的位置记录（用于检测退出动画）
+  const prevPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
+
+  // 退出动画的连接线
+  const [exitingConnectors, setExitingConnectors] = useState<ExitingConnector[]>([]);
 
   // 检测页面区域
   const detectSections = useCallback(() => {
@@ -126,6 +139,15 @@ export const RearrangeOverlay = memo(function RearrangeOverlay() {
 
       setRearrangeState((prev) => {
         if (!prev) return prev;
+
+        // 记录当前位置用于检测退出动画
+        for (const s of prev.sections) {
+          if (s.id === id) {
+            prevPositionsRef.current.set(id, { x: newX, y: newY });
+            break;
+          }
+        }
+
         return {
           ...prev,
           sections: prev.sections.map((s) =>
@@ -138,6 +160,39 @@ export const RearrangeOverlay = memo(function RearrangeOverlay() {
     const handleMouseUp = () => {
       isDragging.current = false;
       dragRef.current = null;
+
+      // 检测是否有 section 回弹到原位，触发退出动画
+      if (rearrangeState) {
+        const exiting: ExitingConnector[] = [];
+
+        for (const section of rearrangeState.sections) {
+          // 检查是否从移动状态回到原位
+          const prevPos = prevPositionsRef.current.get(section.id);
+          if (prevPos) {
+            const wasMoved =
+              Math.abs(prevPos.x - section.originalRect.x) > 1 || Math.abs(prevPos.y - section.originalRect.y) > 1;
+            const isNowAtOriginal =
+              Math.abs(section.currentRect.x - section.originalRect.x) <= 1 &&
+              Math.abs(section.currentRect.y - section.originalRect.y) <= 1;
+
+            if (wasMoved && isNowAtOriginal) {
+              exiting.push({
+                id: section.id,
+                orig: section.originalRect,
+                target: section.currentRect,
+              });
+            }
+          }
+        }
+
+        if (exiting.length > 0) {
+          setExitingConnectors((prev) => [...prev, ...exiting]);
+          // 250ms 后清除退出动画
+          setTimeout(() => {
+            setExitingConnectors((prev) => prev.filter((c) => !exiting.some((e) => e.id === c.id)));
+          }, 250);
+        }
+      }
     };
 
     document.addEventListener('mousemove', handleMouseMove);
@@ -226,7 +281,7 @@ export const RearrangeOverlay = memo(function RearrangeOverlay() {
       ))}
 
       {/* Connection lines SVG */}
-      {sections && sections.length > 1 && <ConnectionLines sections={sections} />}
+      {sections && sections.length > 1 && <ConnectionLines sections={sections} exitingConnectors={exitingConnectors} />}
 
       {/* Instructions */}
       <div
@@ -311,12 +366,30 @@ function GhostOutline({
   );
 }
 
-function ConnectionLines({ sections }: { sections: DetectedSection[] }) {
-  const hasMovedSections = sections.filter(
+function ConnectionLines({
+  sections,
+  exitingConnectors,
+}: {
+  sections: DetectedSection[];
+  exitingConnectors: ExitingConnector[];
+}) {
+  // 当前正在移动的 section
+  const movedSections = sections.filter(
     (s) => Math.abs(s.originalRect.x - s.currentRect.x) > 1 || Math.abs(s.originalRect.y - s.currentRect.y) > 1
   );
 
-  if (hasMovedSections.length === 0) return null;
+  // 合并当前移动和退出动画的连接线
+  const allConnectors: Array<{
+    id: string;
+    orig: { x: number; y: number; width: number; height: number };
+    target: { x: number; y: number; width: number; height: number };
+    isExiting?: boolean;
+  }> = [
+    ...movedSections.map((s) => ({ id: s.id, orig: s.originalRect, target: s.currentRect })),
+    ...exitingConnectors.map((c) => ({ ...c, isExiting: true })),
+  ];
+
+  if (allConnectors.length === 0) return null;
 
   return (
     <svg
@@ -324,36 +397,62 @@ function ConnectionLines({ sections }: { sections: DetectedSection[] }) {
       height="100vh"
       style={{ position: 'fixed', inset: 0, overflow: 'visible', pointerEvents: 'none' }}
     >
-      {hasMovedSections.map((section) => {
-        const { originalRect, currentRect } = section;
+      {allConnectors.map((connector) => {
+        const { orig, target } = connector;
 
         // Origin center
-        const ox = originalRect.x + originalRect.width / 2;
-        const oy = originalRect.y + originalRect.height / 2;
+        const ox = orig.x + orig.width / 2;
+        const oy = orig.y + orig.height / 2;
 
         // Current center
-        const cx = currentRect.x + currentRect.width / 2;
-        const cy = currentRect.y + currentRect.height / 2;
+        const cx = target.x + target.width / 2;
+        const cy = target.y + target.height / 2;
 
-        // Control points for bezier curve
-        const midX = (ox + cx) / 2;
-        const offset = Math.min(30, Math.hypot(cx - ox, cy - oy) * 0.3);
+        // 计算距离
+        const dist = Math.hypot(cx - ox, cy - oy);
+
+        // 垂直于移动方向的 control point 偏移
+        const ddx = cx - ox;
+        const ddy = cy - oy;
+        const perpOffset = Math.min(dist * 0.3, 60);
+        const nx = dist > 0 ? -ddy / dist : 0;
+        const ny = dist > 0 ? ddx / dist : 0;
+
+        // Control point
+        const cpx = (ox + cx) / 2 + nx * perpOffset;
+        const cpy = (oy + cy) / 2 + ny * perpOffset;
+
+        // 透明度随距离缩放
+        const proximityScale = Math.min(1, dist / 40);
+        const baseOpacity = connector.isExiting ? 0.45 : 0.7;
 
         return (
-          <g key={section.id}>
-            {/* Bezier curve */}
+          <g key={connector.id}>
+            {/* 贝塞尔曲线 */}
             <path
-              d={`M ${ox} ${oy} Q ${midX - offset} ${oy} ${cx} ${cy}`}
+              d={`M ${ox} ${oy} Q ${cpx} ${cpy} ${cx} ${cy}`}
               stroke="var(--snap-guide-color, #7C3AED)"
               strokeWidth={1.5}
-              strokeDasharray="6 4"
+              strokeDasharray={connector.isExiting ? '6 4' : 'none'}
               fill="none"
-              opacity={0.7}
+              opacity={baseOpacity * proximityScale}
             />
-            {/* Origin dot */}
-            <circle cx={ox} cy={oy} r={4} fill="var(--snap-guide-color, #7C3AED)" opacity={0.5} />
-            {/* Current dot */}
-            <circle cx={cx} cy={cy} r={4} fill="var(--snap-guide-color, #7C3AED)" opacity={0.9} />
+            {/* 起点圆点 */}
+            <circle
+              cx={ox}
+              cy={oy}
+              r={4 * proximityScale}
+              fill="var(--snap-guide-color, #7C3AED)"
+              opacity={0.5 * proximityScale}
+            />
+            {/* 终点圆点 */}
+            <circle
+              cx={cx}
+              cy={cy}
+              r={4 * proximityScale}
+              fill="var(--snap-guide-color, #7C3AED)"
+              opacity={0.9 * proximityScale}
+            />
           </g>
         );
       })}

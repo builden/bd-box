@@ -4,7 +4,7 @@ import {
   isLayoutModeAtom,
   activeDesignComponentAtom,
   designPlacementsAtom,
-  selectedPlacementIdAtom,
+  selectedPlacementIdsAtom,
   snapGuidesAtom,
 } from '../store';
 import { DEFAULT_SIZES, type DesignPlacement, type SnapGuide } from '../types';
@@ -110,7 +110,7 @@ export function useLayoutMode() {
   const [isLayoutMode] = useAtom(isLayoutModeAtom);
   const [activeComponent] = useAtom(activeDesignComponentAtom);
   const [placements, setPlacements] = useAtom(designPlacementsAtom);
-  const [selectedId, setSelectedId] = useAtom(selectedPlacementIdAtom);
+  const [selectedIds, setSelectedIds] = useAtom(selectedPlacementIdsAtom);
   const [snapGuides, setSnapGuides] = useAtom(snapGuidesAtom);
 
   const isDragging = useRef(false);
@@ -160,21 +160,31 @@ export function useLayoutMode() {
       };
 
       setPlacements((prev) => [...prev, newPlacement]);
-      setSelectedId(newPlacement.id);
+      setSelectedIds(new Set([newPlacement.id]));
     },
-    [isLayoutMode, activeComponent, setPlacements, setSelectedId]
+    [isLayoutMode, activeComponent, setPlacements, setSelectedIds]
   );
 
   // 选择已有组件
   const handleSelect = useCallback(
     (id: string, shiftKey: boolean) => {
       if (shiftKey) {
-        setSelectedId(id);
+        // Shift 点击：切换选中状态
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          if (next.has(id)) {
+            next.delete(id);
+          } else {
+            next.add(id);
+          }
+          return next;
+        });
       } else {
-        setSelectedId(id);
+        // 普通点击：单选
+        setSelectedIds(new Set([id]));
       }
     },
-    [setSelectedId]
+    [setSelectedIds]
   );
 
   // 开始拖拽
@@ -194,9 +204,9 @@ export function useLayoutMode() {
         origY: placement.y,
       };
 
-      setSelectedId(id);
+      setSelectedIds(new Set([id]));
     },
-    [placements, setSelectedId]
+    [placements, setSelectedIds]
   );
 
   // 开始调整大小
@@ -217,17 +227,17 @@ export function useLayoutMode() {
         origW: placement.width,
         origH: placement.height,
       };
-      setSelectedId(id);
+      setSelectedIds(new Set([id]));
     },
-    [placements, setSelectedId]
+    [placements, setSelectedIds]
   );
 
   // 删除选中组件
   const handleDeleteSelected = useCallback(() => {
-    if (!selectedId) return;
-    setPlacements((prev) => prev.filter((p) => p.id !== selectedId));
-    setSelectedId(null);
-  }, [selectedId, setPlacements, setSelectedId]);
+    if (selectedIds.size === 0) return;
+    setPlacements((prev) => prev.filter((p) => !selectedIds.has(p.id)));
+    setSelectedIds(new Set());
+  }, [selectedIds, setPlacements, setSelectedIds]);
 
   // 键盘快捷键
   useEffect(() => {
@@ -235,11 +245,11 @@ export function useLayoutMode() {
       if (!isLayoutMode) return;
 
       if (e.key === 'Escape') {
-        setSelectedId(null);
+        setSelectedIds(new Set());
         return;
       }
 
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedIds.size > 0) {
         const target = e.target as HTMLElement;
         if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
         e.preventDefault();
@@ -247,19 +257,21 @@ export function useLayoutMode() {
         return;
       }
 
-      // Arrow keys nudge
-      if (selectedId && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      // Arrow keys nudge - multiple selected items
+      if (selectedIds.size > 0 && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
         e.preventDefault();
         const step = e.shiftKey ? 10 : 1;
         const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
         const dy = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
-        setPlacements((prev) => prev.map((p) => (p.id === selectedId ? { ...p, x: p.x + dx, y: p.y + dy } : p)));
+        setPlacements((prev) =>
+          prev.map((p) => (selectedIds.has(p.id) ? { ...p, x: Math.max(0, p.x + dx), y: Math.max(0, p.y + dy) } : p))
+        );
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isLayoutMode, selectedId, setPlacements, setSelectedId, handleDeleteSelected]);
+  }, [isLayoutMode, selectedIds, setPlacements, setSelectedIds, handleDeleteSelected]);
 
   // 鼠标移动/松开事件
   useEffect(() => {
@@ -331,7 +343,7 @@ export function useLayoutMode() {
   return {
     isLayoutMode,
     placements,
-    selectedId,
+    selectedIds,
     snapGuides,
     handleSelect,
     handleStartDrag,

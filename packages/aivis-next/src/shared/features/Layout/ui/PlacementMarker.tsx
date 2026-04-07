@@ -1,9 +1,10 @@
 import { memo } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
 import clsx from 'clsx';
-import { designPlacementsAtom, selectedPlacementIdAtom, activeDesignComponentAtom } from '../store';
+import { designPlacementsAtom, selectedPlacementIdsAtom, activeDesignComponentAtom } from '../store';
 import { isDarkModeAtom } from '@/shared/features/SettingsPanel/store';
 import type { DesignPlacement } from '../types';
+import { Skeleton } from './Skeleton';
 
 type HandleDir = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
 
@@ -16,6 +17,7 @@ interface PlacementMarkerProps {
   onStartResize?: (id: string, dir: HandleDir, e: React.MouseEvent) => void;
   wireframe?: boolean;
   onDelete?: (id: string) => void;
+  onEdit?: (id: string) => void;
 }
 
 export const PlacementMarker = memo(function PlacementMarker({
@@ -27,9 +29,10 @@ export const PlacementMarker = memo(function PlacementMarker({
   onStartResize,
   wireframe = false,
   onDelete,
+  onEdit,
 }: PlacementMarkerProps) {
   const setPlacements = useSetAtom(designPlacementsAtom);
-  const setSelectedId = useSetAtom(selectedPlacementIdAtom);
+  const setSelectedIds = useSetAtom(selectedPlacementIdsAtom);
   const [activeComponent] = useAtom(activeDesignComponentAtom);
   const [isDarkMode] = useAtom(isDarkModeAtom);
 
@@ -40,7 +43,7 @@ export const PlacementMarker = memo(function PlacementMarker({
     } else {
       // 默认行为：直接删除
       setPlacements((prev) => prev.filter((p) => p.id !== placement.id));
-      setSelectedId(null);
+      setSelectedIds(new Set());
     }
   };
 
@@ -51,7 +54,7 @@ export const PlacementMarker = memo(function PlacementMarker({
 
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // TODO: text editing
+    onEdit?.(placement.id);
   };
 
   const handleHandleMouseDown = (dir: HandleDir, e: React.MouseEvent) => {
@@ -65,6 +68,23 @@ export const PlacementMarker = memo(function PlacementMarker({
   const orangeDim = 'rgba(249, 115, 22, 0.15)';
   const activeColor = wireframe ? blue : blue;
   const activeDim = wireframe ? orangeDim : blueDim;
+
+  // CSS custom properties for skeleton - based on wireframe mode
+  const skeletonVars = wireframe
+    ? {
+        '--agd-stroke': 'rgba(249, 115, 22, 0.35)',
+        '--agd-fill': 'rgba(249, 115, 22, 0.06)',
+        '--agd-bar': 'rgba(249, 115, 22, 0.18)',
+        '--agd-bar-strong': 'rgba(249, 115, 22, 0.28)',
+        '--agd-text-3': 'rgba(255, 255, 255, 0.6)',
+      }
+    : {
+        '--agd-stroke': 'rgba(59, 130, 246, 0.35)',
+        '--agd-fill': 'rgba(59, 130, 246, 0.06)',
+        '--agd-bar': 'rgba(59, 130, 246, 0.18)',
+        '--agd-bar-strong': 'rgba(59, 130, 246, 0.28)',
+        '--agd-text-3': 'rgba(255, 255, 255, 0.6)',
+      };
 
   return (
     <div
@@ -94,6 +114,7 @@ export const PlacementMarker = memo(function PlacementMarker({
         boxShadow: isSelected
           ? `0 0 0 2px ${activeDim}, 0 2px 8px ${activeColor === blue ? 'rgba(59,130,246,0.15)' : 'rgba(249,115,22,0.15)'}`
           : '0 1px 4px rgba(0,0,0,0.08)',
+        ...skeletonVars,
       }}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
@@ -139,6 +160,23 @@ export const PlacementMarker = memo(function PlacementMarker({
         </div>
       )}
 
+      {/* Skeleton content */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          overflow: 'hidden',
+          pointerEvents: 'none',
+        }}
+      >
+        <Skeleton
+          type={placement.type}
+          width={placement.width}
+          height={placement.height}
+          {...(placement.text !== undefined ? { text: placement.text } : {})}
+        />
+      </div>
+
       {/* Size indicator - bottom right */}
       <div
         className={clsx('absolute text-[9px] font-medium whitespace-nowrap select-none pointer-events-none')}
@@ -164,7 +202,6 @@ export const PlacementMarker = memo(function PlacementMarker({
           'transition-all duration-150',
           // Hidden by default, shown on hover/selected
           'opacity-0 scale-80',
-          'hover:opacity-100 hover:scale-110',
           'group-hover:opacity-100 group-hover:scale-100',
           isSelected && 'opacity-100 scale-100'
         )}
@@ -173,15 +210,27 @@ export const PlacementMarker = memo(function PlacementMarker({
           right: -8,
           width: 18,
           height: 18,
-          background: isDarkMode ? 'rgba(40,40,40,0.9)' : 'rgba(255,255,255,0.9)',
+          background: isDarkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.9)',
           backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(0,0,0,0.08)',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          color: 'rgba(0,0,0,0.35)',
+          border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid rgba(0, 0, 0, 0.08)',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+          color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
           fontSize: 10,
           zIndex: 15,
+          cursor: 'pointer',
+          transition: 'background 0.12s ease, color 0.12s ease',
         }}
         onMouseDown={(e) => e.stopPropagation()}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = '#ef4444';
+          e.currentTarget.style.color = '#fff';
+          e.currentTarget.style.borderColor = '#ef4444';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = isDarkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.9)';
+          e.currentTarget.style.color = isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)';
+          e.currentTarget.style.borderColor = isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)';
+        }}
       >
         ×
       </button>
