@@ -27,7 +27,23 @@ bun test
 
 - `src/index.ts` - CLI entry point
 - `src/commands/` - Command implementations
-- `src/config.ts` - Configuration management
+- `src/lib/config.ts` - Configuration management
+
+## Commands
+
+| Command            | Description                                 |
+| ------------------ | ------------------------------------------- |
+| `add <repo>`       | Add a repository                            |
+| `ls`               | List all repositories                       |
+| `rm <repo>`        | Remove a repository                         |
+| `query [pattern]`  | Search repositories (aliases: q, search, s) |
+| `open [repo]`      | Open repository in editor                   |
+| `update [repo]`    | Update repositories (git pull)              |
+| `outdated [repo]`  | Check for updates                           |
+| `tag <repo> [tag]` | Manage tags                                 |
+| `upgrade`          | Self-upgrade                                |
+| `link <repo>`      | Create symlink to repository                |
+| `cd [repo]`        | Print path to config dir or repo path       |
 
 ## Dependencies
 

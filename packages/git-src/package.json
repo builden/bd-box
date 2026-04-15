@@ -6,15 +6,15 @@
     "@builden/bd-utils": "^0.0.1",
     "cli-table3": "^0.6.5",
     "commander": "^12.1.0",
-    "execa": "^9.5.2",
+    "execa": "^9.6.1",
     "ora": "^9.3.0",
     "picocolors": "^1.1.1"
   },
   "description": "Git source code manager for AI Agents",
   "devDependencies": {
-    "@types/node": "^22.10.5",
-    "bun-types": "^1.1.37",
-    "esbuild": "^0.27.3"
+    "@types/node": "^22.19.17",
+    "bun-types": "^1.3.12",
+    "esbuild": "^0.27.7"
   },
   "name": "@builden/git-src",
   "scripts": {
@@ -23,5 +23,5 @@
     "test": "bun test"
   },
   "type": "module",
-  "version": "1.1.1"
+  "version": "1.2.0"
 }

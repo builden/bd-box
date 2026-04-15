@@ -73,6 +73,19 @@ git-src open re*
 git-src rm facebook/react
 ```
 
+### 打印路径
+
+```bash
+# 打印 git-src 配置目录
+git-src cd
+
+# 打印仓库路径
+git-src cd react
+
+# 通配符（交互式选择）
+git-src cd re*
+```
+
 ## 检查更新
 
 ```bash
@@ -127,6 +140,7 @@ git-src add <repo>      # 添加新仓库
 git-src add <repo> -l   # 添加并链接到当前目录
 git-src link <repo>     # 链接仓库到当前目录
 git-src rm <repo>       # 删除仓库
+git-src cd [repo]       # 打印配置目录或仓库路径
 ```
 
 ## 存储位置

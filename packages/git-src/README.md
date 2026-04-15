@@ -72,6 +72,10 @@ git-src link react  # Create symlink in current directory
 
 # Upgrade
 git-src upgrade  # Self-upgrade to latest version
+
+# Print path
+git-src cd        # Print config directory (~/.git-src)
+git-src cd react  # Print repo path (supports wildcards: *, ?)
 ```
 
 ## Features

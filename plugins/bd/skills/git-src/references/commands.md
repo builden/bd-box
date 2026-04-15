@@ -126,6 +126,19 @@ git-src tag react important --delete
 git-src upgrade
 ```
 
+### 打印路径
+
+```bash
+# 打印 git-src 配置目录
+git-src cd
+
+# 打印仓库路径
+git-src cd react
+
+# 通配符（交互式选择）
+git-src cd re*
+```
+
 ## 存储位置
 
 - 仓库存储：`~/.git-src/{owner}/{repo}`

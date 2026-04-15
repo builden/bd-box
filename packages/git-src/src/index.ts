@@ -11,6 +11,7 @@ import { updateRepo } from './commands/update';
 import { checkOutdated } from './commands/outdated';
 import { manageTags } from './commands/tag';
 import { upgradeSelf } from './commands/upgrade';
+import { printCd } from './commands/cd';
 import { withErrorHandling, withErrorHandling1, withErrorHandling2, withErrorHandling3 } from './lib/error';
 import { getPackageJsonVersion } from './lib/utils';
 
@@ -121,6 +122,15 @@ program
   .action(
     withErrorHandling1(async (repo: string) => {
       await linkRepo(repo);
+    })
+  );
+
+program
+  .command('cd [repo]')
+  .description('Print path to git-src config dir, or repo path (supports wildcards: *, ?)')
+  .action(
+    withErrorHandling1(async (repo: string | undefined) => {
+      await printCd(repo);
     })
   );
 
