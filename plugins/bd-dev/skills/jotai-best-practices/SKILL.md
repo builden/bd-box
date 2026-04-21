@@ -67,15 +67,19 @@ description: Use when writing, reviewing, or debugging Jotai atoms, including at
 | 动态数量的表单字段           | `atomFamily`               | jotai-core.md     |
 | 列表中每个元素独立更新       | `splitAtom`                | jotai-advanced.md |
 | 多组相同配置（主题、设置等） | 工厂模式 + atomWithStorage | jotai-common.md   |
+| 复杂模块多 atom 统一管理     | **Bunshi molecule**        | jotai-bunshi.md   |
+| 需要依赖注入的 atom 组合     | **Bunshi molecule**        | jotai-bunshi.md   |
 
 ### Q8: 你需要隔离/限制状态的作用域吗？
 
-| 场景                | 选择           | 章节                |
-| ------------------- | -------------- | ------------------- |
-| 多实例组件状态隔离  | `jotai-scope`  | jotai-extensions.md |
-| 模态框/弹窗状态隔离 | `useAtomScope` | jotai-extensions.md |
-| 组件库封装          | `createScope`  | jotai-extensions.md |
-| 测试环境隔离        | 独立 scope     | jotai-extensions.md |
+| 场景                    | 选择           | 章节                |
+| ----------------------- | -------------- | ------------------- |
+| 多实例组件状态隔离      | `jotai-scope`  | jotai-extensions.md |
+| 模态框/弹窗状态隔离     | `useAtomScope` | jotai-extensions.md |
+| 组件库封装              | `createScope`  | jotai-extensions.md |
+| 测试环境隔离            | 独立 scope     | jotai-extensions.md |
+| 复杂模块 + 依赖注入     | **Bunshi**     | jotai-bunshi.md     |
+| 文档/面板等生命周期管理 | **Bunshi**     | jotai-bunshi.md     |
 
 ### Q9: 你需要 Redux 风格或回调模式吗？
 
@@ -142,7 +146,16 @@ description: Use when writing, reviewing, or debugging Jotai atoms, including at
 - atomWithReducer Redux 风格
 - atomWithCallback 回调模式
 
-### 优先级 4：生态库扩展
+### 优先级 4：Bunshi 作用域与 DI
+
+[jotai-bunshi.md](jotai-bunshi.md) - molecule、ComponentScope、依赖注入
+
+- Bunshi 核心概念
+- Molecule 树状拆分
+- 与 Family、jotai-scope 对比
+- 典型场景（文档编辑器等）
+
+### 优先级 5：生态库扩展
 
 [jotai-extensions.md](jotai-extensions.md) - tanstack-query、history、scope、effect、optics、自定义扩展
 
@@ -153,7 +166,7 @@ description: Use when writing, reviewing, or debugging Jotai atoms, including at
 - jotai-optics（透镜操作）
 - @builden/bd-utils 自定义扩展（atomWithDebounce）
 
-### 优先级 5：测试专题
+### 优先级 6：测试专题
 
 [jotai-testing.md](jotai-testing.md) - React 组件测试、Node 环境 atom 测试
 
@@ -163,19 +176,21 @@ description: Use when writing, reviewing, or debugging Jotai atoms, including at
 
 ## 快速参考
 
-| 需求            | 推荐方案                                                    |
-| --------------- | ----------------------------------------------------------- |
-| 基础状态        | `atom(initialValue)`                                        |
-| 主题/偏好持久化 | `atomWithToggleAndStorage(key, default)`                    |
-| 弹窗/临时开关   | `atomWithToggle(initial)`                                   |
-| 搜索防抖        | `atomWithDebounce(initial, delay)` (来自 @builden/bd-utils) |
-| 派生计算        | `atom((get) => ...)`                                        |
-| 异步加载        | `loadable(asyncAtom)`                                       |
-| 复杂嵌套更新    | `focusAtom` + `optic`                                       |
-| 撤销/重做       | `atomWithHistory`                                           |
-| API 缓存        | `atomWithCache` 或 `jotai-tanstack-query`                   |
-| Redux 风格      | `atomWithReducer`                                           |
-| 状态变化回调    | `atomWithCallback`                                          |
+| 需求                  | 推荐方案                                                    |
+| --------------------- | ----------------------------------------------------------- |
+| 基础状态              | `atom(initialValue)`                                        |
+| 主题/偏好持久化       | `atomWithToggleAndStorage(key, default)`                    |
+| 弹窗/临时开关         | `atomWithToggle(initial)`                                   |
+| 搜索防抖              | `atomWithDebounce(initial, delay)` (来自 @builden/bd-utils) |
+| 派生计算              | `atom((get) => ...)`                                        |
+| 异步加载              | `loadable(asyncAtom)`                                       |
+| 复杂嵌套更新          | `focusAtom` + `optic`                                       |
+| 撤销/重做             | `atomWithHistory`                                           |
+| API 缓存              | `atomWithCache` 或 `jotai-tanstack-query`                   |
+| Redux 风格            | `atomWithReducer`                                           |
+| 状态变化回调          | `atomWithCallback`                                          |
+| 复杂模块封装          | **Bunshi molecule**                                         |
+| 组件级 + 生命周期管理 | **Bunshi molecule**                                         |
 
 ## 调试技巧
 

@@ -547,6 +547,23 @@ function GoodExample() {
 }
 ```
 
+### Bunshi vs jotai-scope
+
+| 特性              | jotai-scope   | Bunshi  |
+| ----------------- | ------------- | ------- |
+| Provider 嵌套隔离 | ✅            | ❌      |
+| 组件级隔离        | ✅            | ✅      |
+| 依赖注入          | ❌            | ✅      |
+| 生命周期管理      | Provider 控制 | 自动 GC |
+| 跨框架复用        | ❌            | ✅      |
+
+**选择指南**：
+
+- 需要 Provider 嵌套隔离 → jotai-scope
+- 需要依赖注入 + 生命周期管理 → Bunshi
+- 复杂模块多 atom 封装 → Bunshi
+- 两者可组合使用
+
 ## jotai-utils（工具函数集合）
 
 ### useHydrateAtoms（SSR 水合）
