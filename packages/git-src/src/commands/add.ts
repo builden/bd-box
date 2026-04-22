@@ -2,54 +2,10 @@ import { execa } from 'execa';
 import ora from 'ora';
 import pc from 'picocolors';
 import { Config, Repo } from '../lib/config';
+import { parseRepoInput } from '../lib/utils';
 import { existsSync, mkdirSync } from 'fs';
 import { homedir } from 'os';
 import { linkRepo } from './link';
-
-export interface ParseResult {
-  owner: string;
-  name: string;
-  fullName: string;
-  url: string;
-}
-
-export function parseRepoInput(input: string): ParseResult {
-  // Handle git@ protocol: git@github.com:owner/repo.git
-  const gitMatch = input.match(/git@github\.com:([^/]+)\/([^/.]+)/);
-  if (gitMatch) {
-    return {
-      owner: gitMatch[1],
-      name: gitMatch[2].replace(/\.git$/, ''),
-      fullName: `${gitMatch[1]}/${gitMatch[2].replace(/\.git$/, '')}`,
-      url: `https://github.com/${gitMatch[1]}/${gitMatch[2].replace(/\.git$/, '')}`,
-    };
-  }
-
-  // Handle full URL: https://github.com/owner/repo
-  const urlMatch = input.match(/github\.com[/:]([^/]+)\/([^/.]+)/);
-  if (urlMatch) {
-    return {
-      owner: urlMatch[1],
-      name: urlMatch[2].replace(/\.git$/, ''),
-      fullName: `${urlMatch[1]}/${urlMatch[2].replace(/\.git$/, '')}`,
-      url: `https://github.com/${urlMatch[1]}/${urlMatch[2].replace(/\.git$/, '')}`,
-    };
-  }
-
-  // Handle owner/repo format
-  if (input.includes('/')) {
-    const [owner, name] = input.split('/');
-    return { owner, name, fullName: `${owner}/${name}`, url: `https://github.com/${owner}/${name}` };
-  }
-
-  // Simple repo name - assume facebook as default
-  return {
-    owner: 'facebook',
-    name: input,
-    fullName: `facebook/${input}`,
-    url: `https://github.com/facebook/${input}`,
-  };
-}
 
 export async function addRepo(input: string, options: { tag?: string; link?: boolean } = {}): Promise<void> {
   const parsed = parseRepoInput(input);

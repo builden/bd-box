@@ -3,13 +3,22 @@ import { execa } from 'execa';
 import { Config } from '../lib/config';
 import { existsSync, rmSync } from 'fs';
 import { dirname } from 'path';
+import { parseRepoInput } from '../lib/utils';
 
-export async function removeRepo(repoName: string): Promise<void> {
+export async function removeRepo(repoInput: string): Promise<void> {
   const config = new Config();
-  const repo = config.findRepo(repoName);
+
+  // 1. 先尝试直接查找
+  let repo = config.findRepo(repoInput);
+
+  // 2. 如果找不到，尝试解析 URL 后再查找
+  if (!repo) {
+    const parsed = parseRepoInput(repoInput);
+    repo = config.findRepo(parsed.fullName);
+  }
 
   if (!repo) {
-    console.error(pc.red(`Repository "${repoName}" not found`));
+    console.error(pc.red(`Repository "${repoInput}" not found`));
     process.exit(1);
   }
 
