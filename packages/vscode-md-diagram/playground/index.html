@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vscode-md-diagram playground</title>
+    <link rel="stylesheet" href="../dist/preview/index.css" />
+    <style>
+      :root {
+        color-scheme: light;
+        --page-bg: #ffffff;
+        --panel: #ffffff;
+        --panel-border: #d0d7de;
+        --text: #24292f;
+        --muted: #656d76;
+        --accent: #0969da;
+        --accent-strong: #0969da;
+        --canvas: #ffffff;
+        --canvas-border: #d0d7de;
+        --soft: #f6f8fa;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: var(--page-bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      }
+
+      body {
+        padding: 24px 20px 48px;
+      }
+
+      .shell {
+        display: grid;
+        gap: 18px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .hero {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .hero h1 {
+        margin: 0;
+        font-size: 30px;
+        line-height: 1.15;
+        letter-spacing: -0.03em;
+      }
+
+      .hero p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        max-width: 70ch;
+      }
+
+      .hint {
+        color: var(--muted);
+        font-size: 12px;
+        text-align: right;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .card {
+        border: 1px solid var(--panel-border);
+        background: var(--panel);
+        border-radius: 12px;
+        box-shadow: 0 1px 0 rgba(27, 31, 36, 0.04);
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 16px 0;
+      }
+
+      .card-header h2 {
+        margin: 0;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .section {
+        padding: 16px;
+      }
+
+      .stack {
+        display: grid;
+        gap: 12px;
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      textarea,
+      select,
+      button {
+        font: inherit;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 420px;
+        resize: vertical;
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+        padding: 14px;
+        background: #fff;
+        color: var(--text);
+        line-height: 1.5;
+        tab-size: 2;
+        box-shadow: inset 0 1px 2px rgba(27, 31, 36, 0.04);
+      }
+
+      textarea:focus,
+      select:focus,
+      button:focus {
+        outline: 2px solid rgba(56, 189, 248, 0.55);
+        outline-offset: 2px;
+      }
+
+      select {
+        width: 100%;
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--text);
+        padding: 10px 12px;
+        box-shadow: inset 0 1px 2px rgba(27, 31, 36, 0.04);
+      }
+
+      .button-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      button {
+        border: 1px solid rgba(27, 31, 36, 0.15);
+        background: linear-gradient(180deg, #ffffff, #f6f8fa);
+        color: var(--text);
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      button.secondary {
+        background: #fff;
+        color: var(--text);
+        border-color: var(--panel-border);
+      }
+
+      .controls-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .preview-panel {
+        min-height: calc(100vh - 160px);
+        overflow: hidden;
+      }
+
+      .preview-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 16px 0;
+      }
+
+      .preview-toolbar .title {
+        display: grid;
+        gap: 4px;
+      }
+
+      .preview-toolbar .title strong {
+        font-size: 13px;
+      }
+
+      .preview-toolbar .title span {
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .preview-stage {
+        padding: 16px;
+      }
+
+      .markdown-doc {
+        min-height: 640px;
+        border-radius: 12px;
+        border: 1px solid var(--canvas-border);
+        background: var(--canvas);
+        padding: clamp(20px, 3vw, 32px);
+        overflow: auto;
+        color: #24292f;
+        line-height: 1.7;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      }
+
+      .markdown-doc h2,
+      .markdown-doc h3 {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+      }
+
+      .markdown-doc h2 {
+        margin: 0 0 10px;
+        font-size: 28px;
+      }
+
+      .markdown-doc h3 {
+        margin: 28px 0 10px;
+        font-size: 16px;
+      }
+
+      .markdown-doc p {
+        margin: 0 0 14px;
+      }
+
+      .markdown-doc .callout {
+        margin: 16px 0 24px;
+        padding: 14px 16px;
+        border-left: 4px solid var(--accent-strong);
+        background: var(--soft);
+        border-radius: 0 8px 8px 0;
+        color: #57606a;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      }
+
+      .markdown-doc .diagram-shell {
+        margin: 22px 0 24px;
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid var(--panel-border);
+        background: #fff;
+        box-shadow: 0 1px 2px rgba(27, 31, 36, 0.04);
+      }
+
+      .markdown-doc .diagram-caption {
+        margin-top: 10px;
+        color: #57606a;
+        font-size: 13px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      }
+
+      .markdown-doc pre {
+        margin: 16px 0 0;
+        padding: 14px 16px;
+        overflow: auto;
+        border-radius: 8px;
+        background: #f6f8fa;
+        color: #24292f;
+        border: 1px solid var(--panel-border);
+        font-size: 13px;
+        line-height: 1.5;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+      }
+
+      .markdown-doc hr {
+        margin: 28px 0;
+        border: 0;
+        border-top: 1px solid rgba(148, 163, 184, 0.3);
+      }
+
+      .markdown-doc .filler {
+        display: grid;
+        gap: 12px;
+        margin-top: 24px;
+      }
+
+      .markdown-doc .filler p {
+        color: #57606a;
+      }
+
+      .preview-empty {
+        display: grid;
+        place-items: center;
+        min-height: 580px;
+        color: #57606a;
+        font-size: 14px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      }
+
+      .note {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .kbd {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 6px;
+        border: 1px solid var(--panel-border);
+        border-bottom-width: 2px;
+        border-radius: 6px;
+        font-size: 11px;
+        background: #fff;
+        color: var(--text);
+      }
+
+      @media (max-width: 1100px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .preview-panel {
+          min-height: auto;
+        }
+
+        .markdown-doc {
+          min-height: 560px;
+        }
+      }
+
+      @media (max-width: 720px) {
+        body {
+          padding: 12px;
+        }
+
+        .hero {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .hint {
+          text-align: left;
+        }
+
+        .controls-grid {
+          grid-template-columns: 1fr;
+        }
+
+        textarea {
+          min-height: 280px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <span
+      id="markdown-mermaid"
+      data-config='{"darkModeTheme":"dark","lightModeTheme":"default","maxTextSize":50000,"clickDrag":"alt","showControls":"onHoverOrFocus","resizable":true,"maxHeight":""}'
+    ></span>
+
+    <div class="shell">
+      <header class="hero">
+        <div>
+          <h1>Mermaid Playground</h1>
+          <p>
+            Edit Mermaid locally, render with the same preview bundle used by the extension, and tune controls without
+            reinstalling the VSIX.
+          </p>
+        </div>
+        <div class="hint">
+          Render: <span class="kbd">Cmd/Ctrl</span>+<span class="kbd">Enter</span>
+          <br />
+          Zoom: <span class="kbd">Alt</span>+wheel, drag to pan
+        </div>
+      </header>
+
+      <main class="grid">
+        <section class="card">
+          <div class="card-header">
+            <h2>Source</h2>
+          </div>
+          <div class="section stack">
+            <label>
+              Sample
+              <select id="sample-select">
+                <option value="flowchart">Flowchart</option>
+                <option value="sequence">Sequence</option>
+                <option value="state">State</option>
+                <option value="mindmap">Mindmap</option>
+              </select>
+            </label>
+
+            <label>
+              Mermaid source
+              <textarea id="diagram-source" spellcheck="false"></textarea>
+            </label>
+
+            <div class="button-row">
+              <button id="render-button" type="button">Render</button>
+              <button id="reset-button" class="secondary" type="button">Reset sample</button>
+            </div>
+
+            <div class="controls-grid">
+              <label>
+                Controls
+                <select id="controls-visibility">
+                  <option value="never">Never</option>
+                  <option value="onHoverOrFocus" selected>On hover or focus</option>
+                  <option value="always">Always</option>
+                </select>
+              </label>
+
+              <label>
+                Mouse navigation
+                <select id="mouse-navigation">
+                  <option value="always">Always</option>
+                  <option value="alt" selected>Alt key</option>
+                  <option value="never">Never</option>
+                </select>
+              </label>
+
+              <label>
+                Light theme
+                <select id="light-theme">
+                  <option value="default" selected>Default</option>
+                  <option value="base">Base</option>
+                  <option value="forest">Forest</option>
+                  <option value="dark">Dark</option>
+                  <option value="neutral">Neutral</option>
+                </select>
+              </label>
+
+              <label>
+                Dark theme
+                <select id="dark-theme">
+                  <option value="dark" selected>Dark</option>
+                  <option value="default">Default</option>
+                  <option value="base">Base</option>
+                  <option value="forest">Forest</option>
+                  <option value="neutral">Neutral</option>
+                </select>
+              </label>
+            </div>
+
+            <label>
+              Max height
+              <select id="max-height">
+                <option value="">Auto</option>
+                <option value="480px">480px</option>
+                <option value="640px" selected>640px</option>
+                <option value="80vh">80vh</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section class="card preview-panel">
+          <div class="preview-toolbar">
+            <div class="title">
+              <strong>Live preview</strong>
+              <span>Rendered by <code>dist/preview/index.bundle.js</code></span>
+            </div>
+          </div>
+          <div class="preview-stage">
+            <div id="preview-root" class="markdown-doc">
+              <h2>Previewing Mermaid inside Markdown</h2>
+              <p>
+                This page is intentionally structured like a normal document, not a separate viewer. The diagram is
+                embedded in flow, so fullscreen should cover the surrounding text instead of replacing the whole page
+                with a modal.
+              </p>
+              <div class="callout">
+                Use the diagram controls in the top-right corner of the chart. The full screen button should overlay the
+                current document viewport, just like in VS Code’s Markdown preview.
+              </div>
+
+              <h3>Inline diagram</h3>
+              <div class="diagram-shell">
+                <div id="diagram-slot">
+                  <pre class="mermaid">
+graph TD
+  A[Start] --> B{Decision}
+  B -->|Yes| C[Render]
+  B -->|No| D[Debug]
+  C --> E[Done]
+  D --> B
+                  </pre>
+                </div>
+                <div class="diagram-caption">
+                  Hover to reveal controls. Use <span class="kbd">Alt</span> + wheel to zoom, or drag to pan when mouse
+                  navigation is enabled.
+                </div>
+              </div>
+
+              <h3>More document content</h3>
+              <p>
+                The text below is here on purpose. When fullscreen is enabled, it should disappear behind the diagram
+                overlay, which is the behavior you were describing in the VS Code preview.
+              </p>
+              <pre>
+```mermaid
+sequenceDiagram
+  participant User
+  participant Preview
+  User->>Preview: Toggle fullscreen
+  Preview-->>User: Overlay document content
+```</pre
+              >
+
+              <div class="filler">
+                <p>
+                  This paragraph exists to make scrolling obvious and to mimic a real Markdown article. The chart should
+                  still behave as an inline block that can expand over the viewport.
+                </p>
+                <p>
+                  If fullscreen is working correctly, the overlay should cover this text rather than opening a separate
+                  viewer or leaving the article visible beside it.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="../dist/preview/index.bundle.js"></script>
+    <script>
+      (() => {
+        const samples = {
+          flowchart: `graph TD
+  A[Start] --> B{Decision}
+  B -->|Yes| C[Render]
+  B -->|No| D[Debug]
+  C --> E[Done]
+  D --> B`,
+          sequence: `sequenceDiagram
+  participant User
+  participant Preview
+  participant Mermaid
+  User->>Preview: Edit text
+  Preview->>Mermaid: Re-render
+  Mermaid-->>Preview: SVG output
+  Preview-->>User: Interactive diagram`,
+          state: `stateDiagram-v2
+  [*] --> Idle
+  Idle --> Rendering: render
+  Rendering --> Ready: success
+  Rendering --> Error: failure
+  Error --> Idle: reset`,
+          mindmap: `mindmap
+  root((Playground))
+    Source
+      textarea
+      samples
+    Preview
+      zoom
+      pan
+      fullscreen
+    Verify
+      browser
+      tests`,
+        };
+
+        const source = document.getElementById('diagram-source');
+        const sampleSelect = document.getElementById('sample-select');
+        const renderButton = document.getElementById('render-button');
+        const resetButton = document.getElementById('reset-button');
+        const diagramSlot = document.getElementById('diagram-slot');
+        const configSpan = document.getElementById('markdown-mermaid');
+        const controlsVisibility = document.getElementById('controls-visibility');
+        const mouseNavigation = document.getElementById('mouse-navigation');
+        const lightTheme = document.getElementById('light-theme');
+        const darkTheme = document.getElementById('dark-theme');
+        const maxHeight = document.getElementById('max-height');
+
+        const initialSample = samples.flowchart;
+
+        function escapeHtml(value) {
+          return value
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+        }
+
+        function syncConfig() {
+          configSpan.dataset.config = JSON.stringify({
+            darkModeTheme: darkTheme.value,
+            lightModeTheme: lightTheme.value,
+            maxTextSize: 50000,
+            clickDrag: mouseNavigation.value,
+            showControls: controlsVisibility.value,
+            resizable: true,
+            maxHeight: maxHeight.value,
+          });
+        }
+
+        function renderPreview() {
+          syncConfig();
+          const value = source.value.trim();
+          if (diagramSlot) {
+            diagramSlot.innerHTML = value
+              ? `<pre class="mermaid">${escapeHtml(value)}</pre>`
+              : '<div class="preview-empty">No Mermaid source provided.</div>';
+          }
+          window.dispatchEvent(new Event('vscode.markdown.updateContent'));
+        }
+
+        function setSample(name) {
+          const sample = samples[name] ?? samples.flowchart;
+          source.value = sample;
+          renderPreview();
+        }
+
+        let renderTimer = null;
+        function scheduleRender() {
+          clearTimeout(renderTimer);
+          renderTimer = setTimeout(renderPreview, 180);
+        }
+
+        sampleSelect.addEventListener('change', () => setSample(sampleSelect.value));
+        renderButton.addEventListener('click', renderPreview);
+        resetButton.addEventListener('click', () => {
+          sampleSelect.value = 'flowchart';
+          setSample('flowchart');
+        });
+
+        source.addEventListener('input', scheduleRender);
+        source.addEventListener('keydown', (event) => {
+          if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+            event.preventDefault();
+            renderPreview();
+          }
+        });
+
+        [controlsVisibility, mouseNavigation, lightTheme, darkTheme, maxHeight].forEach((element) => {
+          element.addEventListener('change', renderPreview);
+        });
+
+        source.value = initialSample;
+        renderPreview();
+      })();
+    </script>
+  </body>
+</html>

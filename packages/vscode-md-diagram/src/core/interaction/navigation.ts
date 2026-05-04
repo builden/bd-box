@@ -1,12 +1,12 @@
 /**
  * Diagram navigation: pan and zoom with mouse.
  */
-import type { ViewState } from "../types";
-import { WHEEL_ZOOM_IN, WHEEL_ZOOM_OUT } from "../constants";
-import { clampZoom } from "../utils";
+import type { ViewState } from '../types';
+import { WHEEL_ZOOM_IN, WHEEL_ZOOM_OUT } from '../constants';
+import { clampZoom, getTransformTarget } from '../utils';
 
 export interface DiagramNavigationOptions {
-  readonly clickDrag: "always" | "alt" | "never";
+  readonly clickDrag: 'always' | 'alt' | 'never';
   readonly viewMap: Map<string, { normal: ViewState; fullscreen: ViewState }>;
   readonly svgElementMap: Map<string, SVGSVGElement>;
   readonly getView: (id: string, svg: SVGSVGElement) => ViewState;
@@ -17,6 +17,7 @@ export interface DiagramNavigationOptions {
 export function setupNavigation(id: string, container: HTMLElement, options: DiagramNavigationOptions): void {
   const { clickDrag, svgElementMap, getView, setPosition, applyTransform } = options;
   const svg = svgElementMap.get(id)!;
+  const target = getTransformTarget(svg);
 
   let isDragging = false;
   let startX = 0;
@@ -24,8 +25,8 @@ export function setupNavigation(id: string, container: HTMLElement, options: Dia
   let startViewX = 0;
   let startViewY = 0;
 
-  const shouldUseAlt = clickDrag === "alt";
-  const isFullscreen = () => container.classList.contains("fullscreen");
+  const shouldUseAlt = clickDrag === 'alt';
+  const isFullscreen = () => container.classList.contains('fullscreen');
 
   const onMouseDown = (e: MouseEvent) => {
     if (shouldUseAlt && !e.altKey) return;
@@ -39,7 +40,7 @@ export function setupNavigation(id: string, container: HTMLElement, options: Dia
     startViewX = view.x;
     startViewY = view.y;
 
-    svg.style.cursor = "grabbing";
+    target.style.cursor = 'grabbing';
     e.preventDefault();
   };
 
@@ -54,13 +55,13 @@ export function setupNavigation(id: string, container: HTMLElement, options: Dia
   const onMouseUp = () => {
     if (isDragging) {
       isDragging = false;
-      svg.style.cursor = "";
+      target.style.cursor = '';
     }
   };
 
   // Wheel zoom - zoom centered on mouse position
   svg.addEventListener(
-    "wheel",
+    'wheel',
     (e) => {
       if (!e.altKey) {
         if (isFullscreen()) {
@@ -74,7 +75,7 @@ export function setupNavigation(id: string, container: HTMLElement, options: Dia
       const point = svg.createSVGPoint();
       point.x = e.clientX;
       point.y = e.clientY;
-      const svgPoint = point.matrixTransform(svg.getScreenCTM()!.inverse());
+      const svgPoint = point.matrixTransform(target.getScreenCTM()!.inverse());
 
       const view = getView(id, svg);
 
@@ -92,10 +93,10 @@ export function setupNavigation(id: string, container: HTMLElement, options: Dia
       view.y = newY;
       applyTransform(id, svg);
     },
-    { passive: false },
+    { passive: false }
   );
 
-  svg.addEventListener("mousedown", onMouseDown);
-  document.addEventListener("mousemove", onMouseMove);
-  document.addEventListener("mouseup", onMouseUp);
+  svg.addEventListener('mousedown', onMouseDown);
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', onMouseUp);
 }

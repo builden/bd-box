@@ -168,26 +168,41 @@ B --> C
 
 ::: dot
 digraph {
-    A -> B
+A -> B
 }
 :::
 ```
+
+## 本地 Playground
+
+如果你想调试 Mermaid 的缩放、拖拽、全屏和控件样式，不需要反复安装 VSIX。项目里提供了一个独立的本地 playground 页面：
+
+```bash
+# 首次构建 playground 需要的 bundle 和 CSS
+bun run playground
+
+# 开发时持续监听 webview bundle + 本地预览服务器
+bun run playground:dev
+```
+
+运行 `bun run playground:dev` 后，终端会直接打印 `file://.../playground/index.html`。页面会复用 `dist/preview/index.bundle.js` 和 `dist/preview/index.css`，所以你看到的交互和扩展里是一致的。
+如果不想自动打开浏览器，可以加环境变量 `PLAYGROUND_NO_OPEN=1`。
 
 ## 配置
 
 在 VS Code 设置中可以自定义以下选项：
 
-| 设置项                                   | 默认值           | 描述               |
-| ---------------------------------------- | ---------------- | ------------------ |
-| `markdown-mermaid.lightModeTheme`       | `default`        | 亮色模式主题       |
-| `markdown-mermaid.darkModeTheme`         | `dark`           | 暗色模式主题       |
-| `markdown-mermaid.languages`             | `["mermaid", "dot"]` | 支持的语言标识 |
-| `markdown-mermaid.dot.layoutEngine`      | `dot`            | DOT 布局引擎       |
-| `markdown-mermaid.maxTextSize`           | `50000`          | 最大文本大小       |
-| `markdown-mermaid.mouseNavigation.enabled` | `alt`          | 鼠标导航模式       |
-| `markdown-mermaid.controls.show`         | `onHoverOrFocus` | 控制按钮显示方式   |
-| `markdown-mermaid.resizable`             | `true`           | 是否允许调整大小   |
-| `markdown-mermaid.maxHeight`             | `""`             | 最大高度限制       |
+| 设置项                                     | 默认值               | 描述             |
+| ------------------------------------------ | -------------------- | ---------------- |
+| `markdown-mermaid.lightModeTheme`          | `default`            | 亮色模式主题     |
+| `markdown-mermaid.darkModeTheme`           | `dark`               | 暗色模式主题     |
+| `markdown-mermaid.languages`               | `["mermaid", "dot"]` | 支持的语言标识   |
+| `markdown-mermaid.dot.layoutEngine`        | `dot`                | DOT 布局引擎     |
+| `markdown-mermaid.maxTextSize`             | `50000`              | 最大文本大小     |
+| `markdown-mermaid.mouseNavigation.enabled` | `alt`                | 鼠标导航模式     |
+| `markdown-mermaid.controls.show`           | `onHoverOrFocus`     | 控制按钮显示方式 |
+| `markdown-mermaid.resizable`               | `true`               | 是否允许调整大小 |
+| `markdown-mermaid.maxHeight`               | `""`                 | 最大高度限制     |
 
 ### Mermaid 主题选项
 

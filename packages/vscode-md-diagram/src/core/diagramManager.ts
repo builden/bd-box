@@ -1,8 +1,15 @@
-import type { DiagramExtensionConfig, ViewState, ViewStates } from "./types";
-import type { IDisposable } from "./disposable";
-import { ClickDragMode, ControlsVisibilityMode } from "./types";
-import { clampZoom, getViewMode, parseTransform, formatTransform, createDefaultViewStates } from "./utils";
-import { setupControls, setupResize, setupNavigation } from "./interaction";
+import type { DiagramExtensionConfig, ViewState, ViewStates } from './types';
+import type { IDisposable } from './disposable';
+import { ClickDragMode, ControlsVisibilityMode } from './types';
+import {
+  clampZoom,
+  getViewMode,
+  parseTransform,
+  formatTransform,
+  createDefaultViewStates,
+  getTransformTarget,
+} from './utils';
+import { setupControls, setupResize, setupNavigation } from './interaction';
 
 // Re-export for testing
 export { clampZoom, getViewMode, parseTransform, formatTransform };
@@ -25,7 +32,7 @@ export class DiagramManager {
   }
 
   setup(id: string, container: HTMLElement): IDisposable {
-    const svg = container.querySelector("svg");
+    const svg = container.querySelector('svg');
     if (!svg) {
       return { dispose: () => {} };
     }
@@ -36,10 +43,11 @@ export class DiagramManager {
     if (this.config.showControls !== ControlsVisibilityMode.Never) {
       setupControls(id, container, {
         showControls: this.config.showControls,
-        viewMap: this.viewMap,
         svgElementMap: this.svgElementMap,
         getView: (id, svg) => this.getView(id, svg),
         setZoom: (id, svg, zoom) => this.setZoom(id, svg, zoom),
+        setPosition: (id, svg, x, y) => this.setPosition(id, svg, x, y),
+        resetView: (id, svg) => this.resetView(id, svg),
         applyTransform: (id, svg) => this.applyTransform(id, svg),
       });
     }
@@ -72,10 +80,12 @@ export class DiagramManager {
 
   private getView(id: string, svg: SVGSVGElement): ViewState {
     const mode = getViewMode(svg);
+    const target = getTransformTarget(svg);
+    const sourceTransform = target.style.transform || svg.style.transform;
 
     if (!this.viewMap.has(id)) {
-      // Try to read existing transform from SVG (for initial state)
-      const initialView = parseTransform(svg.style.transform);
+      // Try to read an existing transform, otherwise use the default origin state.
+      const initialView = sourceTransform ? parseTransform(sourceTransform) : { x: 0, y: 0, zoom: 1 };
       const viewStates = createDefaultViewStates();
       viewStates.normal = { ...initialView };
       viewStates.fullscreen = { ...initialView };
@@ -100,6 +110,7 @@ export class DiagramManager {
 
   private resetView(id: string, svg: SVGSVGElement) {
     const mode = getViewMode(svg);
+    const target = getTransformTarget(svg);
 
     // Reset only the current mode's state
     const viewStates = this.viewMap.get(id);
@@ -108,19 +119,20 @@ export class DiagramManager {
     }
 
     // Reset CSS transform on SVG element
-    svg.style.transform = "";
-    svg.style.transformOrigin = "";
+    target.style.transform = '';
+    target.style.transformOrigin = '';
+    svg.style.transform = '';
+    svg.style.transformOrigin = '';
+
+    this.applyTransform(id, svg);
   }
 
   private applyTransform(id: string, svg: SVGSVGElement) {
     const view = this.getView(id, svg);
-    svg.style.transform = formatTransform(view);
-
-    // Use SVG center as transform origin for zoom-in/zoom-out from center
-    const rect = svg.getBoundingClientRect();
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    svg.style.transformOrigin = `${centerX}px ${centerY}px`;
+    const target = getTransformTarget(svg);
+    svg.style.transform = '';
+    svg.style.transformOrigin = '';
+    target.style.transform = formatTransform(view);
   }
 
   retainStates(_activeIds: Set<string>) {

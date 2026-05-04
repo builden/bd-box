@@ -41,6 +41,15 @@ const cssTextPlugin: Plugin = {
   },
 };
 
+const copyCssPlugin: Plugin = {
+  name: 'copy-css',
+  setup(build) {
+    build.onEnd(() => {
+      copyCssFiles();
+    });
+  },
+};
+
 async function main() {
   const isWatch = process.argv.includes('--watch');
 
@@ -52,7 +61,7 @@ async function main() {
     target: ['es2022'],
     external: ['fs'],
     loader: { '.ttf': 'dataurl' },
-    plugins: [cssTextPlugin],
+    plugins: [cssTextPlugin, copyCssPlugin],
     entryPoints: { 'index.bundle': path.join(srcDir, 'preview', 'index.ts') },
     outdir: distPreviewDir,
     format: 'iife',
@@ -64,7 +73,6 @@ async function main() {
     console.log('Watching for changes...');
   } else {
     await esbuild.build(options);
-    copyCssFiles();
   }
 }
 
