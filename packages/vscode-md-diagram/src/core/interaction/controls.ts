@@ -76,14 +76,6 @@ export function setupControls(id: string, container: HTMLElement, options: Diagr
     `
   );
 
-  const copyIcon = icon(
-    '0 0 16 16',
-    `
-      <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" ${stroke} />
-      <rect x="2.5" y="2.5" width="8" height="8" rx="1.5" ${stroke} />
-    `
-  );
-
   const panUpIcon = icon('0 0 16 16', `<path ${stroke} d="M8 3v10" /><path ${stroke} d="M5.5 5.5L8 3l2.5 2.5" />`);
   const panLeftIcon = icon('0 0 16 16', `<path ${stroke} d="M3 8h10" /><path ${stroke} d="M5.5 5.5L3 8l2.5 2.5" />`);
   const panRightIcon = icon(
@@ -118,7 +110,6 @@ export function setupControls(id: string, container: HTMLElement, options: Diagr
   );
 
   const fullscreenBtn = createButton(`${id}-fullscreen`, 'Fullscreen', fullscreenIcon);
-  const copyBtn = createButton(`${id}-copy`, 'Copy diagram', copyIcon);
 
   const panUpBtn = createButton(`${id}-pan-up`, 'Pan up', panUpIcon);
   const zoomInBtn = createButton(`${id}-zoom-in`, 'Zoom in', zoomInIcon);
@@ -129,7 +120,6 @@ export function setupControls(id: string, container: HTMLElement, options: Diagr
   const zoomOutBtn = createButton(`${id}-zoom-out`, 'Zoom out', zoomOutIcon);
 
   headerControls.appendChild(fullscreenBtn);
-  headerControls.appendChild(copyBtn);
 
   navControls.appendChild(panUpBtn);
   navControls.appendChild(zoomInBtn);
@@ -147,25 +137,6 @@ export function setupControls(id: string, container: HTMLElement, options: Diagr
   container.appendChild(controls);
 
   const svg = svgElementMap.get(id)!;
-
-  const copyCurrentDiagram = async () => {
-    const source = svg.outerHTML;
-
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(source);
-      return;
-    }
-
-    const fallback = document.createElement('textarea');
-    fallback.value = source;
-    fallback.setAttribute('readonly', 'true');
-    fallback.style.position = 'absolute';
-    fallback.style.left = '-9999px';
-    document.body.appendChild(fallback);
-    fallback.select();
-    document.execCommand('copy');
-    fallback.remove();
-  };
 
   zoomInBtn.addEventListener('click', () => {
     const view = getView(id, svg);
@@ -199,10 +170,6 @@ export function setupControls(id: string, container: HTMLElement, options: Diagr
   panDownBtn.addEventListener('click', () => {
     const view = getView(id, svg);
     setPosition(id, svg, view.x, view.y - 80);
-  });
-
-  copyBtn.addEventListener('click', async () => {
-    await copyCurrentDiagram();
   });
 
   // Simulated fullscreen functionality - use CSS class

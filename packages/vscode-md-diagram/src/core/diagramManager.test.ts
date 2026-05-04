@@ -301,12 +301,11 @@ describe('DiagramManager', () => {
       expect(fullscreenBtn?.querySelector('svg')).not.toBeNull();
     });
 
-    it('should create copy and navigation controls', () => {
+    it('should create navigation controls', () => {
       const { container } = createContainer();
       container.classList.add('mermaid');
       manager.setup('test-id', container);
 
-      expect(container.querySelector('#test-id-copy')).not.toBeNull();
       expect(container.querySelector('#test-id-pan-up')).not.toBeNull();
       expect(container.querySelector('#test-id-pan-left')).not.toBeNull();
       expect(container.querySelector('#test-id-pan-right')).not.toBeNull();
