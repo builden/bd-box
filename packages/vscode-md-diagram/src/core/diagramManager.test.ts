@@ -329,6 +329,8 @@ describe('DiagramManager', () => {
       resetBtn.click();
 
       expect(target.style.transform).toBe('translate(0px, 0px) scale(1)');
+      expect(target.style.transformOrigin).toBe('0 0');
+      expect(target.style.transformBox).toBe('fill-box');
     });
 
     it('should move container to body when fullscreen is toggled', () => {

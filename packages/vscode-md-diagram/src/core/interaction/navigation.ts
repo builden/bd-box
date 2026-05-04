@@ -24,7 +24,8 @@ export function setupNavigation(id: string, container: HTMLElement, options: Dia
   let startY = 0;
   let startViewX = 0;
   let startViewY = 0;
-  let dragPointInverse: DOMMatrix | undefined;
+  let dragStartLocal: { x: number; y: number } | undefined;
+  let dragScreenInverse: DOMMatrix | undefined;
 
   const shouldUseAlt = clickDrag === 'alt';
   const isFullscreen = () => container.classList.contains('fullscreen');
@@ -40,6 +41,8 @@ export function setupNavigation(id: string, container: HTMLElement, options: Dia
     };
   };
 
+  const getSvgScreenInverse = () => svg.getScreenCTM()?.inverse();
+
   const onMouseDown = (e: MouseEvent) => {
     if (shouldUseAlt && !e.altKey) return;
     if (e.button !== 0) return;
@@ -51,7 +54,8 @@ export function setupNavigation(id: string, container: HTMLElement, options: Dia
     const view = getView(id, svg);
     startViewX = view.x;
     startViewY = view.y;
-    dragPointInverse = target.getScreenCTM()?.inverse();
+    dragScreenInverse = getSvgScreenInverse();
+    dragStartLocal = toLocalPoint(e.clientX, e.clientY, dragScreenInverse);
 
     target.style.cursor = 'grabbing';
     e.preventDefault();
@@ -60,24 +64,28 @@ export function setupNavigation(id: string, container: HTMLElement, options: Dia
   const onMouseMove = (e: MouseEvent) => {
     if (!isDragging) return;
 
-    if (!dragPointInverse) {
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-      setPosition(id, svg, startViewX + dx, startViewY + dy);
+    if (dragScreenInverse && dragStartLocal) {
+      const localCurrent = toLocalPoint(e.clientX, e.clientY, dragScreenInverse);
+      setPosition(
+        id,
+        svg,
+        startViewX + (localCurrent.x - dragStartLocal.x),
+        startViewY + (localCurrent.y - dragStartLocal.y)
+      );
       return;
     }
 
-    const localStart = toLocalPoint(startX, startY, dragPointInverse);
-    const localCurrent = toLocalPoint(e.clientX, e.clientY, dragPointInverse);
-
-    setPosition(id, svg, startViewX + (localCurrent.x - localStart.x), startViewY + (localCurrent.y - localStart.y));
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    setPosition(id, svg, startViewX + dx, startViewY + dy);
   };
 
   const onMouseUp = () => {
     if (isDragging) {
       isDragging = false;
       target.style.cursor = '';
-      dragPointInverse = undefined;
+      dragStartLocal = undefined;
+      dragScreenInverse = undefined;
     }
   };
 
@@ -94,7 +102,7 @@ export function setupNavigation(id: string, container: HTMLElement, options: Dia
 
       e.preventDefault();
 
-      const svgPoint = toLocalPoint(e.clientX, e.clientY, target.getScreenCTM()!.inverse());
+      const svgPoint = toLocalPoint(e.clientX, e.clientY, getSvgScreenInverse());
 
       const view = getView(id, svg);
 

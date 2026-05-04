@@ -132,6 +132,8 @@ export class DiagramManager {
     const target = getTransformTarget(svg);
     svg.style.transform = '';
     svg.style.transformOrigin = '';
+    target.style.transformOrigin = '0 0';
+    target.style.transformBox = 'fill-box';
     target.style.transform = formatTransform(view);
   }
 
