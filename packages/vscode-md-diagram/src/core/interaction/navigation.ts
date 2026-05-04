@@ -24,9 +24,21 @@ export function setupNavigation(id: string, container: HTMLElement, options: Dia
   let startY = 0;
   let startViewX = 0;
   let startViewY = 0;
+  let dragPointInverse: DOMMatrix | undefined;
 
   const shouldUseAlt = clickDrag === 'alt';
   const isFullscreen = () => container.classList.contains('fullscreen');
+
+  const toLocalPoint = (clientX: number, clientY: number, inverse?: DOMMatrix) => {
+    if (!inverse) {
+      return { x: clientX, y: clientY };
+    }
+
+    return {
+      x: clientX * inverse.a + clientY * inverse.c + inverse.e,
+      y: clientX * inverse.b + clientY * inverse.d + inverse.f,
+    };
+  };
 
   const onMouseDown = (e: MouseEvent) => {
     if (shouldUseAlt && !e.altKey) return;
@@ -39,6 +51,7 @@ export function setupNavigation(id: string, container: HTMLElement, options: Dia
     const view = getView(id, svg);
     startViewX = view.x;
     startViewY = view.y;
+    dragPointInverse = target.getScreenCTM()?.inverse();
 
     target.style.cursor = 'grabbing';
     e.preventDefault();
@@ -47,15 +60,24 @@ export function setupNavigation(id: string, container: HTMLElement, options: Dia
   const onMouseMove = (e: MouseEvent) => {
     if (!isDragging) return;
 
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
-    setPosition(id, svg, startViewX + dx, startViewY + dy);
+    if (!dragPointInverse) {
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      setPosition(id, svg, startViewX + dx, startViewY + dy);
+      return;
+    }
+
+    const localStart = toLocalPoint(startX, startY, dragPointInverse);
+    const localCurrent = toLocalPoint(e.clientX, e.clientY, dragPointInverse);
+
+    setPosition(id, svg, startViewX + (localCurrent.x - localStart.x), startViewY + (localCurrent.y - localStart.y));
   };
 
   const onMouseUp = () => {
     if (isDragging) {
       isDragging = false;
       target.style.cursor = '';
+      dragPointInverse = undefined;
     }
   };
 
@@ -72,10 +94,7 @@ export function setupNavigation(id: string, container: HTMLElement, options: Dia
 
       e.preventDefault();
 
-      const point = svg.createSVGPoint();
-      point.x = e.clientX;
-      point.y = e.clientY;
-      const svgPoint = point.matrixTransform(target.getScreenCTM()!.inverse());
+      const svgPoint = toLocalPoint(e.clientX, e.clientY, target.getScreenCTM()!.inverse());
 
       const view = getView(id, svg);
 

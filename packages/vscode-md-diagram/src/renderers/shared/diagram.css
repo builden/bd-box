@@ -39,7 +39,7 @@
   position: absolute;
   inset: 0;
   z-index: 10;
-  pointer-events: auto;
+  pointer-events: none;
 }
 
 .diagram-controls-group {
@@ -47,6 +47,7 @@
   display: flex;
   gap: 0.45rem;
   background: transparent;
+  pointer-events: auto;
 }
 
 .diagram-controls-group-header {
