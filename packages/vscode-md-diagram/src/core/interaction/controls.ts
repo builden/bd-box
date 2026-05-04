@@ -227,6 +227,7 @@ export function setupControls(id: string, container: HTMLElement, options: Diagr
   return {
     dispose: () => {
       exitFullscreen();
+      controls.remove();
     },
   };
 }

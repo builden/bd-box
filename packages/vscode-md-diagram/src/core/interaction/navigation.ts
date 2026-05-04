@@ -14,7 +14,11 @@ export interface DiagramNavigationOptions {
   readonly applyTransform: (id: string, svg: SVGSVGElement) => void;
 }
 
-export function setupNavigation(id: string, container: HTMLElement, options: DiagramNavigationOptions): void {
+export function setupNavigation(
+  id: string,
+  container: HTMLElement,
+  options: DiagramNavigationOptions
+): { dispose: () => void } {
   const { clickDrag, svgElementMap, getView, setPosition, applyTransform } = options;
   const svg = svgElementMap.get(id)!;
   const target = getTransformTarget(svg);
@@ -126,4 +130,16 @@ export function setupNavigation(id: string, container: HTMLElement, options: Dia
   svg.addEventListener('mousedown', onMouseDown);
   document.addEventListener('mousemove', onMouseMove);
   document.addEventListener('mouseup', onMouseUp);
+
+  return {
+    dispose: () => {
+      isDragging = false;
+      dragStartLocal = undefined;
+      dragScreenInverse = undefined;
+      target.style.cursor = '';
+      svg.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    },
+  };
 }

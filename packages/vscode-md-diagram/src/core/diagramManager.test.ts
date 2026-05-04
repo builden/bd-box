@@ -354,5 +354,47 @@ describe('DiagramManager', () => {
       expect(container.parentElement).toBe(wrapper);
       expect(document.body.classList.contains('diagram-fullscreen-active')).toBe(false);
     });
+
+    it('should dispose transient controls and document listeners', () => {
+      const { container } = createContainer();
+      container.classList.add('mermaid');
+      document.body.appendChild(container);
+
+      const removeCalls: string[] = [];
+      const originalAddEventListener = document.addEventListener.bind(document);
+      const originalRemoveEventListener = document.removeEventListener.bind(document);
+
+      document.addEventListener = ((
+        type: string,
+        listener: EventListenerOrEventListenerObject | null,
+        options?: AddEventListenerOptions | boolean
+      ) => {
+        return originalAddEventListener(type, listener, options);
+      }) as typeof document.addEventListener;
+      document.removeEventListener = ((
+        type: string,
+        listener: EventListenerOrEventListenerObject | null,
+        options?: EventListenerOptions | boolean
+      ) => {
+        removeCalls.push(type);
+        return originalRemoveEventListener(type, listener, options);
+      }) as typeof document.removeEventListener;
+
+      try {
+        const disposable = manager.setup('test-id', container);
+        const handle = container.querySelector('.diagram-resize-handle') as HTMLDivElement;
+
+        handle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientY: 10 }));
+        disposable.dispose();
+
+        expect(container.querySelector('.diagram-controls')).toBeNull();
+        expect(container.querySelector('.diagram-resize-handle')).toBeNull();
+        expect(removeCalls).toContain('mousemove');
+        expect(removeCalls).toContain('mouseup');
+      } finally {
+        document.addEventListener = originalAddEventListener;
+        document.removeEventListener = originalRemoveEventListener;
+      }
+    });
   });
 });

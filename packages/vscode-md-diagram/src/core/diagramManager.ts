@@ -21,7 +21,7 @@ export class DiagramManager {
   private config: DiagramExtensionConfig;
   private readonly svgElementMap = new Map<string, SVGSVGElement>();
   private readonly viewMap = new Map<string, ViewStates>();
-  private readonly resizeHandleMap = new Map<string, HTMLDivElement>();
+  private readonly disposablesMap = new Map<string, IDisposable[]>();
 
   constructor(config: DiagramExtensionConfig) {
     this.config = config;
@@ -37,43 +37,64 @@ export class DiagramManager {
       return { dispose: () => {} };
     }
 
+    const previousDisposables = this.disposablesMap.get(id);
+    if (previousDisposables) {
+      for (const disposable of previousDisposables) {
+        disposable.dispose();
+      }
+      this.disposablesMap.delete(id);
+    }
+
     this.svgElementMap.set(id, svg);
+    const disposables: IDisposable[] = [];
 
     // Setup controls
     if (this.config.showControls !== ControlsVisibilityMode.Never) {
-      setupControls(id, container, {
-        showControls: this.config.showControls,
-        svgElementMap: this.svgElementMap,
-        getView: (id, svg) => this.getView(id, svg),
-        setZoom: (id, svg, zoom) => this.setZoom(id, svg, zoom),
-        setPosition: (id, svg, x, y) => this.setPosition(id, svg, x, y),
-        resetView: (id, svg) => this.resetView(id, svg),
-        applyTransform: (id, svg) => this.applyTransform(id, svg),
-      });
+      disposables.push(
+        setupControls(id, container, {
+          showControls: this.config.showControls,
+          svgElementMap: this.svgElementMap,
+          getView: (id, svg) => this.getView(id, svg),
+          setZoom: (id, svg, zoom) => this.setZoom(id, svg, zoom),
+          setPosition: (id, svg, x, y) => this.setPosition(id, svg, x, y),
+          resetView: (id, svg) => this.resetView(id, svg),
+          applyTransform: (id, svg) => this.applyTransform(id, svg),
+        })
+      );
     }
 
     // Setup resize handle
     if (this.config.resizable) {
-      setupResize(id, container);
+      disposables.push(setupResize(id, container));
     }
 
     // Setup mouse navigation
     if (this.config.clickDrag !== ClickDragMode.Never) {
-      setupNavigation(id, container, {
-        clickDrag: this.config.clickDrag,
-        viewMap: this.viewMap,
-        svgElementMap: this.svgElementMap,
-        getView: (id, svg) => this.getView(id, svg),
-        setPosition: (id, svg, x, y) => this.setPosition(id, svg, x, y),
-        applyTransform: (id, svg) => this.applyTransform(id, svg),
-      });
+      disposables.push(
+        setupNavigation(id, container, {
+          clickDrag: this.config.clickDrag,
+          viewMap: this.viewMap,
+          svgElementMap: this.svgElementMap,
+          getView: (id, svg) => this.getView(id, svg),
+          setPosition: (id, svg, x, y) => this.setPosition(id, svg, x, y),
+          applyTransform: (id, svg) => this.applyTransform(id, svg),
+        })
+      );
     }
+
+    this.disposablesMap.set(id, disposables);
 
     return {
       dispose: () => {
+        const activeDisposables = this.disposablesMap.get(id);
+        if (activeDisposables) {
+          for (const disposable of activeDisposables) {
+            disposable.dispose();
+          }
+        }
         this.svgElementMap.delete(id);
         this.viewMap.delete(id);
-        this.resizeHandleMap.delete(id);
+        this.disposablesMap.delete(id);
       },
     };
   }
