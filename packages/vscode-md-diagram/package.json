@@ -1,6 +1,6 @@
 {
   "name": "vscode-md-diagram",
-  "version": "1.0.78",
+  "version": "1.0.81",
   "displayName": "Markdown Preview Diagram Support",
   "description": "Adds Mermaid and DOT diagram support to VS Code's builtin markdown preview",
   "keywords": [
@@ -179,6 +179,6 @@
     "prepublish": "bun run --sequential package-ext build-webview",
     "build": "bun run --sequential compile-ext build-webview",
     "watch": "bun run --parallel watch-ext watch-webview",
-    "release": "bun run version:patch && bun run build && mkdir -p dist/vsix && ./node_modules/.bin/vsce package --no-dependencies -o dist/vsix && code --install-extension dist/vsix/vscode-md-mermaid-*.vsix --force"
+    "release": "bun run version:patch && bun run build && mkdir -p dist/vsix && ./node_modules/.bin/vsce package --no-dependencies -o dist/vsix && code --install-extension dist/vsix/vscode-md-diagram-*.vsix --force"
   }
 }
