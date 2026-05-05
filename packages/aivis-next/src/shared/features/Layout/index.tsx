@@ -21,7 +21,14 @@ export function LayoutMode() {
   return <DesignOverlay />;
 }
 
-export { isLayoutModeAtom, isRearrangeModeAtom, designPlacementsAtom, activeDesignComponentAtom } from './store';
+export {
+  isLayoutModeAtom,
+  isRearrangeModeAtom,
+  isRulerModeAtom,
+  designPlacementsAtom,
+  activeDesignComponentAtom,
+} from './store';
 export { LayoutButton } from './LayoutButton';
 export { ComponentPanel } from './ui/ComponentPanel';
+export { RulerOverlay } from './ui/RulerOverlay';
 export type { DesignPlacement, ComponentType, DetectedSection, SectionRect, SpatialContext } from './types';

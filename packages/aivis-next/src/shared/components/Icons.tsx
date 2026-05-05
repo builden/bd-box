@@ -89,6 +89,19 @@ export function IconEdit({ size = 16 }: { size?: number }) {
   );
 }
 
+// Ruler icon for measurement mode
+export function IconRuler({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <rect x="4" y="7" width="16" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M7 7V13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M10 7V11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M13 7V13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M16 7V11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 // Chat bubble with ellipsis
 export function IconChatEllipsis({ size = 16 }: { size?: number }) {
   return (

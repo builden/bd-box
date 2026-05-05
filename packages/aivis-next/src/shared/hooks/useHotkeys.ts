@@ -5,7 +5,7 @@ import { showSettingsAtom, settingsAtom, OUTPUT_DETAIL_OPTIONS } from '@/shared/
 import { generateAnnotationOutput, copyToClipboard } from '@/shared/features/Annotation';
 import { isActiveAtom, copiedAtom, triggerCopyAtom } from '@/shared/features/ToggleButton/store';
 import { toastAtom } from '@/shared/components/store';
-import { isLayoutModeAtom, isRearrangeModeAtom } from '@/shared/features/Layout';
+import { isLayoutModeAtom, isRearrangeModeAtom, isRulerModeAtom } from '@/shared/features/Layout';
 import { isTypingKeyboardEvent } from '@/shared/utils/keyboard';
 import { requestDebuggerPauseFromBackground } from '@/extension/chrome-api';
 import {
@@ -29,6 +29,7 @@ export function useHotkeys() {
   const [, setToast] = useAtom(toastAtom);
   const [isLayoutMode, setIsLayoutMode] = useAtom(isLayoutModeAtom);
   const [, setIsRearrangeMode] = useAtom(isRearrangeModeAtom);
+  const [, setIsRulerMode] = useAtom(isRulerModeAtom);
   const debuggerSchedulerRef = useRef<ReturnType<typeof createDebuggerPauseScheduler> | null>(null);
 
   // 复制反馈
@@ -95,6 +96,7 @@ export function useHotkeys() {
             setIsLayoutMode(false);
             setIsRearrangeMode(false);
           }
+          setIsRulerMode(false);
           if (showSettings) {
             setShowSettings(false);
           }
@@ -127,6 +129,7 @@ export function useHotkeys() {
         case 'a':
           // 切换标注模式
           e.preventDefault();
+          setIsRulerMode(false);
           if (showSettings) setShowSettings(false);
           setIsAnnotationMode((prev) => !prev);
           break;
@@ -134,6 +137,7 @@ export function useHotkeys() {
         case 'l':
           // 切换布局模式
           e.preventDefault();
+          setIsRulerMode(false);
           if (showSettings) setShowSettings(false);
           if (isLayoutMode) {
             setIsLayoutMode(false);
@@ -183,5 +187,6 @@ export function useHotkeys() {
     settings.outputDetail,
     setIsLayoutMode,
     setIsRearrangeMode,
+    setIsRulerMode,
   ]);
 }

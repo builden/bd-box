@@ -51,3 +51,32 @@ test('toggle button switches state', async () => {
 
   expect(shadowRoot?.querySelector('button[title="展开"], button[title="关闭"]')?.getAttribute('title')).toBe('关闭');
 });
+
+test('ruler button opens the ruler overlay', async () => {
+  await act(async () => {
+    mountAivisNextExtension();
+  });
+
+  const container = document.getElementById(EXTENSION_ROOT_ID);
+  const shadowRoot = container?.shadowRoot;
+  const rulerButton = shadowRoot?.querySelector('button[title="标尺"]') as HTMLButtonElement | null;
+
+  expect(rulerButton).not.toBeNull();
+
+  await act(async () => {
+    rulerButton?.click();
+  });
+
+  expect(shadowRoot?.querySelector('[data-ruler-overlay]')).not.toBeNull();
+  expect(shadowRoot?.querySelector('[data-ruler-shell]')).not.toBeNull();
+  expect(shadowRoot?.querySelector('[data-ruler-handle="move"]')).not.toBeNull();
+  expect(shadowRoot?.querySelector('[data-ruler-range="selection"]')).not.toBeNull();
+  expect(shadowRoot?.querySelector('[data-ruler-range-handle="start"]')).not.toBeNull();
+  expect(shadowRoot?.querySelector('[data-ruler-range-handle="end"]')).not.toBeNull();
+  expect(shadowRoot?.querySelector('[data-ruler-tick="0"]')).not.toBeNull();
+  expect(shadowRoot?.querySelector('[data-ruler-tick="50"]')).not.toBeNull();
+  expect(shadowRoot?.querySelector('[data-ruler-side="top"]')).not.toBeNull();
+  expect(shadowRoot?.querySelector('[data-ruler-side="bottom"]')).not.toBeNull();
+  expect(shadowRoot?.querySelector('[data-ruler-label="outer-length"]')).not.toBeNull();
+  expect(shadowRoot?.querySelector('[data-ruler-label="range"]')).not.toBeNull();
+});

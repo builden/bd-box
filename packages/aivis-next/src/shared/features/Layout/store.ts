@@ -12,6 +12,9 @@ export const isLayoutModeAtom = atom(false);
 // Rearrange Mode 子开关（从属于 Layout Mode）
 export const isRearrangeModeAtom = atom(false);
 
+// Ruler Mode（用于测量 canvas / 页面元素尺寸）
+export const isRulerModeAtom = atom(false);
+
 // =============================================================================
 // Design Mode Atoms
 // =============================================================================
@@ -48,6 +51,20 @@ export const draggingFromPaletteAtom = atom<{
   startX: number;
   startY: number;
 } | null>(null);
+
+// 标尺状态
+export type RulerOrientation = 'horizontal' | 'vertical';
+
+export type RulerState = {
+  x: number;
+  y: number;
+  length: number;
+  orientation: RulerOrientation;
+  rangeStart: number;
+  rangeEnd: number;
+};
+
+export const rulerStateAtom = atom<RulerState | null>(null);
 
 // =============================================================================
 // Rearrange Mode Atoms

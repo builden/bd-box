@@ -2,7 +2,7 @@ import { useRef, useEffect } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
 import clsx from 'clsx';
 import {
-  IconEdit,
+  IconRuler,
   IconEyeAnimated,
   IconCopyAnimated,
   IconSendArrow,
@@ -16,7 +16,15 @@ import { ToggleButton } from '@/shared/features/ToggleButton';
 import { ToolbarButton } from '@/shared/components/ToolbarButton';
 import { Toast } from '@/shared/components/Toast';
 import { AnnotationButton, useAnnotations } from '@/shared/features/Annotation';
-import { LayoutMode, LayoutButton, isLayoutModeAtom, ComponentPanel } from '@/shared/features/Layout';
+import {
+  LayoutMode,
+  LayoutButton,
+  RulerOverlay,
+  isLayoutModeAtom,
+  isRearrangeModeAtom,
+  isRulerModeAtom,
+  ComponentPanel,
+} from '@/shared/features/Layout';
 import { TOOLBAR_WIDTH, DRAG_CONFIG } from '@/shared/hooks/types';
 import { SettingsPanel } from '@/shared/features/SettingsPanel';
 import { showSettingsAtom, isDarkModeAtom } from '@/shared/features/SettingsPanel/store';
@@ -33,6 +41,8 @@ export function Toolbar() {
   const [isDarkMode] = useAtom(isDarkModeAtom);
   const setIsAnnotationMode = useSetAtom(isAnnotationModeAtom);
   const [_isLayoutMode, setIsLayoutMode] = useAtom(isLayoutModeAtom);
+  const [isRulerMode, setIsRulerMode] = useAtom(isRulerModeAtom);
+  const [, setIsRearrangeMode] = useAtom(isRearrangeModeAtom);
   const { clearAllAnnotations, annotations, showMarkers, toggleShowMarkers } = useAnnotations();
   const [copied] = useAtom(copiedAtom);
   const [, setTriggerCopy] = useAtom(triggerCopyAtom);
@@ -43,8 +53,19 @@ export function Toolbar() {
       setShowSettings(false);
       setIsAnnotationMode(false);
       setIsLayoutMode(false);
+      setIsRulerMode(false);
+      setIsRearrangeMode(false);
     }
-  }, [isActive, setShowSettings, setIsAnnotationMode, setIsLayoutMode]);
+  }, [isActive, setShowSettings, setIsAnnotationMode, setIsLayoutMode, setIsRulerMode, setIsRearrangeMode]);
+
+  useEffect(() => {
+    if (isRulerMode) {
+      setShowSettings(false);
+      setIsAnnotationMode(false);
+      setIsLayoutMode(false);
+      setIsRearrangeMode(false);
+    }
+  }, [isRulerMode, setShowSettings, setIsAnnotationMode, setIsLayoutMode, setIsRearrangeMode]);
 
   // 复制反馈 - 触发事件让 useHotkeys 统一处理
   const handleCopyFeedback = () => {
@@ -69,6 +90,7 @@ export function Toolbar() {
     <>
       <Toast />
       <LayoutMode />
+      <RulerOverlay />
       <div
         ref={containerRef}
         data-feedback-toolbar
@@ -99,7 +121,13 @@ export function Toolbar() {
             <div className="flex items-center gap-1.5">
               <PauseButton />
               <LayoutButton />
-              <ToolbarButton icon={<IconEdit size={21} />} title="样式编辑 (S)" />
+              <ToolbarButton
+                icon={<IconRuler size={21} />}
+                title="标尺"
+                onClick={() => setIsRulerMode((prev) => !prev)}
+                isActive={isRulerMode}
+                activeColor="var(--toolbar-icon-active)"
+              />
               <AnnotationButton />
             </div>
 
