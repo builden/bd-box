@@ -7,6 +7,7 @@ import { isActiveAtom, copiedAtom, triggerCopyAtom } from '@/shared/features/Tog
 import { toastAtom } from '@/shared/components/store';
 import { isLayoutModeAtom, isRearrangeModeAtom } from '@/shared/features/Layout';
 import { isTypingKeyboardEvent } from '@/shared/utils/keyboard';
+import { createDebuggerPauseScheduler } from '@/shared/utils/debugger-hotkey';
 
 /**
  * useHotkeys - 全局快捷键和 Toolbar 按钮事件处理
@@ -23,7 +24,7 @@ export function useHotkeys() {
   const [, setToast] = useAtom(toastAtom);
   const [isLayoutMode, setIsLayoutMode] = useAtom(isLayoutModeAtom);
   const [, setIsRearrangeMode] = useAtom(isRearrangeModeAtom);
-  const debuggerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debuggerSchedulerRef = useRef<ReturnType<typeof createDebuggerPauseScheduler> | null>(null);
 
   // 复制反馈
   const performCopy = useCallback(async () => {
@@ -49,25 +50,25 @@ export function useHotkeys() {
   }, [setAnnotations]);
 
   useEffect(() => {
+    debuggerSchedulerRef.current = createDebuggerPauseScheduler({
+      setToast,
+      onPause: () => {
+        debugger;
+      },
+    });
+
     return () => {
-      if (debuggerTimerRef.current) {
-        clearTimeout(debuggerTimerRef.current);
-        debuggerTimerRef.current = null;
-      }
+      debuggerSchedulerRef.current?.cancel();
+      debuggerSchedulerRef.current = null;
     };
-  }, []);
+  }, [setToast]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd/Ctrl+Shift+J - 5 秒后暂停在 debugger
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'j') {
+      // Cmd+Option+Shift+K - 5 秒倒计时后暂停在 debugger
+      if (e.metaKey && e.altKey && e.shiftKey && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        if (debuggerTimerRef.current) {
-          clearTimeout(debuggerTimerRef.current);
-        }
-        debuggerTimerRef.current = setTimeout(() => {
-          debugger;
-        }, 5000);
+        debuggerSchedulerRef.current?.trigger();
         return;
       }
 
