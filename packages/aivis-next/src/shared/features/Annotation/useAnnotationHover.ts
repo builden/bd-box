@@ -1,7 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useAtom } from 'jotai';
 import { isAnnotationModeAtom, hoverAtom, pendingAnnotationAtom, editingAnnotationAtom } from './store';
 import { settingsAtom } from '@/shared/features/SettingsPanel/store';
+import { isExtensionUiElement } from '@/shared/utils/extension-ui';
+import { formatSourceLocation } from '@/shared/utils/source-location';
+import { requestReactProbe } from '@/shared/utils/react-probe';
 
 /**
  * useAnnotationHover - 处理标注模式下的鼠标悬浮
@@ -14,6 +17,7 @@ export function useAnnotationHover() {
   const [pendingAnnotation] = useAtom(pendingAnnotationAtom);
   const [editingAnnotation] = useAtom(editingAnnotationAtom);
   const [settings] = useAtom(settingsAtom);
+  const hoverRequestSeq = useRef(0);
 
   useEffect(() => {
     if (!isAnnotationMode) return;
@@ -25,11 +29,7 @@ export function useAnnotationHover() {
       const target = e.target as HTMLElement;
 
       // Don't show hover info if clicking on toolbar or annotation markers
-      if (
-        target.closest('[data-no-drag]') ||
-        target.closest('[data-no-hover]') ||
-        target.closest('[data-feedback-toolbar]')
-      ) {
+      if (target.closest('[data-no-drag]') || target.closest('[data-no-hover]') || isExtensionUiElement(target)) {
         setHover(null);
         return;
       }
@@ -39,9 +39,7 @@ export function useAnnotationHover() {
       const elementPath = element?.dataset.elementPath || getElementPath(target);
       const elementLabel = getElementLabel(target);
       const selectedText = window.getSelection()?.toString();
-      const reactComponents = settings.reactEnabled ? getReactComponentInfo(target) : undefined;
-
-      setHover({
+      const baseHover = {
         x: e.clientX,
         y: e.clientY,
         clientY: e.clientY,
@@ -49,8 +47,33 @@ export function useAnnotationHover() {
         elementPath,
         rect: target.getBoundingClientRect(),
         ...(selectedText ? { selectedText } : {}),
-        ...(reactComponents ? { reactComponents } : {}),
-      });
+      };
+
+      setHover(baseHover);
+
+      if (!settings.reactEnabled) return;
+
+      const currentRequest = ++hoverRequestSeq.current;
+      void (async () => {
+        const probe = await requestReactProbe(e.clientX, e.clientY);
+        if (currentRequest !== hoverRequestSeq.current) return;
+
+        const reactComponents = probe?.reactComponents || getReactComponentInfo(target);
+        const sourceFile = probe?.source ? formatSourceLocation(probe.source, 'path') : undefined;
+        const vscodeUrl = probe?.source ? formatSourceLocation(probe.source, 'vscode') : undefined;
+
+        if (!reactComponents && !sourceFile && !vscodeUrl) {
+          return;
+        }
+
+        setHover({
+          ...baseHover,
+          ...(reactComponents ? { reactComponents } : {}),
+          ...(sourceFile ? { sourceFile } : {}),
+          ...(vscodeUrl ? { vscodeUrl } : {}),
+          ...(probe?.propsChain ? { propsChain: probe.propsChain } : {}),
+        });
+      })();
     };
 
     const handleMouseLeave = () => {
@@ -149,10 +172,14 @@ function getReactComponentInfo(target: HTMLElement): string | undefined {
     }
   }
 
-  if (!fiberKey) return undefined;
+  if (!fiberKey) {
+    return undefined;
+  }
 
   const fiber = (target as unknown as Record<string, unknown>)[fiberKey];
-  if (!fiber) return undefined;
+  if (!fiber) {
+    return undefined;
+  }
 
   const componentNames: string[] = [];
   let current: unknown = fiber;

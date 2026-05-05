@@ -10,6 +10,8 @@ import {
 } from './store';
 import { settingsAtom } from '@/shared/features/SettingsPanel/store';
 import { formatSourceLocation, getSourceLocationAsync, getPropsPropagationPath } from '@/shared/utils/source-location';
+import { isExtensionUiElement } from '@/shared/utils/extension-ui';
+import { requestReactProbe } from '@/shared/utils/react-probe';
 
 /**
  * useAnnotationClickHandler - 处理标注模式下的页面点击
@@ -31,7 +33,8 @@ export function useAnnotationClickHandler() {
     const handleClick = async (e: MouseEvent) => {
       // Don't create annotation if clicking on toolbar or settings
       const target = e.target as HTMLElement;
-      if (target.closest('[data-no-drag]') || target.closest('[data-feedback-toolbar]')) {
+
+      if (target.closest('[data-no-drag]') || isExtensionUiElement(target)) {
         return;
       }
 
@@ -65,14 +68,19 @@ export function useAnnotationClickHandler() {
       const computedStyles = getKeyComputedStyles(target);
 
       // Get React component info if enabled
-      const reactComponents = settings.reactEnabled ? getReactComponentInfo(target) : undefined;
+      const reactProbe = settings.reactEnabled ? await requestReactProbe(e.clientX, e.clientY) : null;
+      const reactComponents =
+        reactProbe?.reactComponents || (settings.reactEnabled ? getReactComponentInfo(target) : undefined);
 
       // Get source location (file path and line number) if enabled - async to use source map
-      const sourceInfo = settings.reactEnabled ? await getSourceInfo(target) : {};
+      const sourceInfo = settings.reactEnabled && !reactProbe?.source ? await getSourceInfo(target) : {};
       const { sourceFile, vscodeUrl } = sourceInfo;
 
+      const probeSourceFile = reactProbe?.source ? formatSourceLocation(reactProbe.source, 'path') : undefined;
+      const probeVscodeUrl = reactProbe?.source ? formatSourceLocation(reactProbe.source, 'vscode') : undefined;
+
       // Get props propagation chain if React enabled
-      const propsChain = settings.reactEnabled ? getPropsChain(target) : undefined;
+      const propsChain = reactProbe?.propsChain || (settings.reactEnabled ? getPropsChain(target) : undefined);
 
       // Create pending annotation for popup
       const pending: PendingAnnotationData = {
@@ -101,8 +109,10 @@ export function useAnnotationClickHandler() {
         ...(nearbyText ? { nearbyText } : {}),
         ...(computedStyles ? { computedStyles } : {}),
         ...(reactComponents ? { reactComponents } : {}),
-        ...(sourceFile ? { sourceFile } : {}),
-        ...(vscodeUrl ? { vscodeUrl } : {}),
+        ...(probeSourceFile ? { sourceFile: probeSourceFile } : {}),
+        ...(probeVscodeUrl ? { vscodeUrl: probeVscodeUrl } : {}),
+        ...(!probeSourceFile && sourceFile ? { sourceFile } : {}),
+        ...(!probeVscodeUrl && vscodeUrl ? { vscodeUrl } : {}),
         ...(propsChain ? { propsChain } : {}),
       };
 
@@ -118,12 +128,15 @@ export function useAnnotationClickHandler() {
         rect: target.getBoundingClientRect(),
         ...(selectedText ? { selectedText } : {}),
         ...(reactComponents ? { reactComponents } : {}),
-        ...(sourceFile ? { sourceFile } : {}),
+        ...(probeSourceFile ? { sourceFile: probeSourceFile } : {}),
+        ...(!probeSourceFile && sourceFile ? { sourceFile } : {}),
       });
     };
 
     document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
+    return () => {
+      document.removeEventListener('click', handleClick);
+    };
   }, [
     isAnnotationMode,
     setPendingAnnotation,
@@ -293,10 +306,14 @@ function getReactComponentInfo(target: HTMLElement): string | undefined {
     }
   }
 
-  if (!fiberKey) return undefined;
+  if (!fiberKey) {
+    return undefined;
+  }
 
   const fiber = (target as unknown as Record<string, unknown>)[fiberKey];
-  if (!fiber) return undefined;
+  if (!fiber) {
+    return undefined;
+  }
 
   // 收集组件名称层级
   const componentNames: string[] = [];

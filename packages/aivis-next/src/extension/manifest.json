@@ -25,6 +25,12 @@
   },
   "permissions": ["storage", "tabs", "debugger"],
   "host_permissions": ["<all_urls>"],
+  "web_accessible_resources": [
+    {
+      "resources": ["react-probe-main-world.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "commands": {
     "start-debugger-countdown": {
       "suggested_key": {
