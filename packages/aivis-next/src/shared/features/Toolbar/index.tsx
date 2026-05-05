@@ -140,7 +140,7 @@ export function Toolbar() {
                 onClick={toggleShowMarkers}
                 disabled={annotations.length === 0}
                 title="显示/隐藏标记 (H)"
-                {...(!showMarkers && annotations.length > 0 && { badge: annotations.length })}
+                {...(annotations.length > 0 && { badge: annotations.length })}
               />
               <ToolbarButton
                 icon={<IconCopyAnimated size={24} copied={copied} />}
@@ -169,7 +169,10 @@ export function Toolbar() {
         )}
 
         {/* 右侧展开/关闭按钮 */}
-        <ToggleButton handleClick={handleClick} />
+        <ToggleButton
+          handleClick={handleClick}
+          {...(!isActive && annotations.length > 0 && { badge: annotations.length })}
+        />
       </div>
     </>
   );
