@@ -3,7 +3,7 @@ import { useAtom } from 'jotai';
 import { isAnnotationModeAtom, hoverAtom, pendingAnnotationAtom, editingAnnotationAtom } from './store';
 import { settingsAtom } from '@/shared/features/SettingsPanel/store';
 import { isExtensionUiElement } from '@/shared/utils/extension-ui';
-import { formatSourceLocation } from '@/shared/utils/source-location';
+import { formatSourceLocation, mapPositionWithSourceMap } from '@/shared/utils/source-location';
 import { formatReactComponentPath } from '@/shared/utils/react-component-path';
 import { requestReactProbe } from '@/shared/utils/react-probe';
 
@@ -60,8 +60,11 @@ export function useAnnotationHover() {
         if (currentRequest !== hoverRequestSeq.current) return;
 
         const reactComponents = probe?.reactComponents || getReactComponentInfo(target);
-        const sourceFile = probe?.source ? formatSourceLocation(probe.source, 'path') : undefined;
-        const vscodeUrl = probe?.source ? formatSourceLocation(probe.source, 'vscode') : undefined;
+        const probeSource = probe?.source
+          ? await mapPositionWithSourceMap(probe.source.fileName, probe.source.lineNumber, probe.source.columnNumber)
+          : undefined;
+        const sourceFile = probeSource ? formatSourceLocation(probeSource, 'path') : undefined;
+        const vscodeUrl = probeSource ? formatSourceLocation(probeSource, 'vscode') : undefined;
 
         if (!reactComponents && !sourceFile && !vscodeUrl) {
           return;
@@ -145,48 +148,41 @@ function getElementLabel(target: HTMLElement): string {
 function getReactComponentInfo(target: HTMLElement): string | undefined {
   let fiberKey: string | null = null;
 
-  for (const key in target) {
-    if (
-      key.startsWith('__reactFiber$') ||
-      key.startsWith('__reactInternalInstance$') ||
-      key.startsWith('__reactContainer$')
-    ) {
-      fiberKey = key;
-      break;
-    }
-  }
-
-  if (!fiberKey) {
-    let parent = target.parentElement;
-    while (parent && !fiberKey) {
-      for (const key in parent) {
-        if (
-          key.startsWith('__reactFiber$') ||
-          key.startsWith('__reactInternalInstance$') ||
-          key.startsWith('__reactContainer$')
-        ) {
-          fiberKey = key;
-          break;
-        }
+  let elementCursor: HTMLElement | null = target;
+  while (elementCursor && !fiberKey) {
+    for (const key in elementCursor) {
+      if (
+        key.startsWith('__reactFiber$') ||
+        key.startsWith('__reactInternalInstance$') ||
+        key.startsWith('__reactContainer$')
+      ) {
+        fiberKey = key;
+        break;
       }
-      parent = parent.parentElement;
     }
+    elementCursor = elementCursor.parentElement;
   }
 
   if (!fiberKey) {
     return undefined;
   }
 
-  const fiber = (target as unknown as Record<string, unknown>)[fiberKey];
+  let fiberTarget: HTMLElement | null = target;
+  let fiber: unknown = undefined;
+  while (fiberTarget && !fiber) {
+    fiber = (fiberTarget as unknown as Record<string, unknown>)[fiberKey];
+    fiberTarget = fiberTarget.parentElement;
+  }
+
   if (!fiber) {
     return undefined;
   }
 
   const componentNames: string[] = [];
-  let current: unknown = fiber;
+  let currentFiber: unknown = fiber;
 
-  for (let i = 0; i < 10 && current; i++) {
-    const f = current as { type?: unknown; return?: unknown; stateNode?: unknown };
+  for (let i = 0; i < 10 && currentFiber; i++) {
+    const f = currentFiber as { type?: unknown; return?: unknown; stateNode?: unknown };
 
     if (f.type) {
       if (typeof f.type === 'function') {
@@ -197,7 +193,7 @@ function getReactComponentInfo(target: HTMLElement): string | undefined {
       }
     }
 
-    current = f.return;
+    currentFiber = f.return;
   }
 
   if (componentNames.length === 0) return undefined;

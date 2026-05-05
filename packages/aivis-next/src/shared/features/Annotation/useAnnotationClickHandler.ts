@@ -9,7 +9,13 @@ import {
   type PendingAnnotationData,
 } from './store';
 import { settingsAtom } from '@/shared/features/SettingsPanel/store';
-import { formatSourceLocation, getSourceLocationAsync, getPropsPropagationPath } from '@/shared/utils/source-location';
+import {
+  getSourceLocationAsync,
+  mapPositionWithSourceMap,
+  formatSourceLocation,
+  getPropsPropagationPath,
+  withSourceMapDebugContext,
+} from '@/shared/utils/source-location';
 import { isExtensionUiElement } from '@/shared/utils/extension-ui';
 import { formatReactComponentPath } from '@/shared/utils/react-component-path';
 import { requestReactProbe } from '@/shared/utils/react-probe';
@@ -32,106 +38,130 @@ export function useAnnotationClickHandler() {
     if (!isAnnotationMode) return;
 
     const handleClick = async (e: MouseEvent) => {
-      // Don't create annotation if clicking on toolbar or settings
-      const target = e.target as HTMLElement;
+      try {
+        // Don't create annotation if clicking on toolbar or settings
+        const target = e.target as HTMLElement;
 
-      if (target.closest('[data-no-drag]') || isExtensionUiElement(target)) {
-        return;
-      }
+        if (target.closest('[data-no-drag]') || isExtensionUiElement(target)) {
+          return;
+        }
 
-      // If editing annotation exists, shake edit popup and return
-      if (editingAnnotation) {
-        setPopupShake((prev) => prev + 1);
-        return;
-      }
+        // If editing annotation exists, shake edit popup and return
+        if (editingAnnotation) {
+          setPopupShake((prev) => prev + 1);
+          return;
+        }
 
-      // If pending annotation exists, shake popup and return
-      if (pendingAnnotation) {
-        setPopupShake((prev) => prev + 1);
-        return;
-      }
+        // If pending annotation exists, shake popup and return
+        if (pendingAnnotation) {
+          setPopupShake((prev) => prev + 1);
+          return;
+        }
 
-      // Calculate position - use pixels for both x and y for consistency
-      const x = e.clientX; // pixels from left
-      const y = e.clientY; // pixels from top
+        // Calculate position - use pixels for both x and y for consistency
+        const x = e.clientX; // pixels from left
+        const y = e.clientY; // pixels from top
 
-      // Get element info
-      const elementLabel = getElementLabel(target);
-      const elementPath = getElementPath(target);
-      const fullPath = getFullPath(target);
-      const selectedText = window.getSelection()?.toString();
-      const rect = target.getBoundingClientRect();
+        // Get element info
+        const elementLabel = getElementLabel(target);
+        const elementPath = getElementPath(target);
+        const fullPath = getFullPath(target);
+        const selectedText = window.getSelection()?.toString();
+        const rect = target.getBoundingClientRect();
 
-      // Get nearby text (text content around the element)
-      const nearbyText = getNearbyText(target);
+        // Get nearby text (text content around the element)
+        const nearbyText = getNearbyText(target);
 
-      // Get key computed styles
-      const computedStyles = getKeyComputedStyles(target);
+        // Get key computed styles
+        const computedStyles = getKeyComputedStyles(target);
 
-      // Get React component info if enabled
-      const reactProbe = settings.reactEnabled ? await requestReactProbe(e.clientX, e.clientY) : null;
-      const reactComponents =
-        reactProbe?.reactComponents || (settings.reactEnabled ? getReactComponentInfo(target) : undefined);
+        // Get React component info if enabled
+        let reactProbe = null;
+        let reactComponents: string | undefined;
+        let sourceFile: string | undefined;
+        let vscodeUrl: string | undefined;
+        let propsChain: string | undefined;
 
-      // Get source location (file path and line number) if enabled - async to use source map
-      const sourceInfo = settings.reactEnabled && !reactProbe?.source ? await getSourceInfo(target) : {};
-      const { sourceFile, vscodeUrl } = sourceInfo;
+        if (settings.reactEnabled) {
+          try {
+            reactProbe = await requestReactProbe(e.clientX, e.clientY, 250, 'click');
+          } catch {
+            reactProbe = null;
+          }
 
-      const probeSourceFile = reactProbe?.source ? formatSourceLocation(reactProbe.source, 'path') : undefined;
-      const probeVscodeUrl = reactProbe?.source ? formatSourceLocation(reactProbe.source, 'vscode') : undefined;
+          reactComponents = reactProbe?.reactComponents || getReactComponentInfo(target);
 
-      // Get props propagation chain if React enabled
-      const propsChain = reactProbe?.propsChain || (settings.reactEnabled ? getPropsChain(target) : undefined);
-
-      // Create pending annotation for popup
-      const pending: PendingAnnotationData = {
-        x,
-        y,
-        clientY: e.clientY,
-        element: elementLabel,
-        elementPath,
-        fullPath,
-        rect,
-        popupX: e.clientX,
-        popupY: e.clientY,
-        colorId: settings.annotationColorId,
-        ...(selectedText ? { selectedText } : {}),
-        ...(target.className ? { cssClasses: target.className } : {}),
-        ...(rect
-          ? {
-              boundingBox: {
-                x: rect.left,
-                y: rect.top + window.scrollY, // 使用文档绝对位置
-                width: rect.width,
-                height: rect.height,
-              },
+          try {
+            if (reactProbe?.source) {
+              const mappedSource = await mapPositionWithSourceMap(
+                reactProbe.source.fileName,
+                reactProbe.source.lineNumber,
+                reactProbe.source.columnNumber
+              );
+              sourceFile = formatSourceLocation(mappedSource, 'path');
+              vscodeUrl = formatSourceLocation(mappedSource, 'vscode');
+            } else {
+              const sourceInfo = await getSourceInfo(target);
+              sourceFile = sourceInfo.sourceFile;
+              vscodeUrl = sourceInfo.vscodeUrl;
             }
-          : {}),
-        ...(nearbyText ? { nearbyText } : {}),
-        ...(computedStyles ? { computedStyles } : {}),
-        ...(reactComponents ? { reactComponents } : {}),
-        ...(probeSourceFile ? { sourceFile: probeSourceFile } : {}),
-        ...(probeVscodeUrl ? { vscodeUrl: probeVscodeUrl } : {}),
-        ...(!probeSourceFile && sourceFile ? { sourceFile } : {}),
-        ...(!probeVscodeUrl && vscodeUrl ? { vscodeUrl } : {}),
-        ...(propsChain ? { propsChain } : {}),
-      };
+          } catch {
+            sourceFile = undefined;
+            vscodeUrl = undefined;
+          }
 
-      setPendingAnnotation(pending);
+          propsChain = reactProbe?.propsChain || getPropsChain(target);
+        }
 
-      // Keep hover highlight at click position
-      setHover({
-        x: e.clientX,
-        y: e.clientY,
-        clientY: e.clientY,
-        element: elementLabel,
-        elementPath: getElementPath(target),
-        rect: target.getBoundingClientRect(),
-        ...(selectedText ? { selectedText } : {}),
-        ...(reactComponents ? { reactComponents } : {}),
-        ...(probeSourceFile ? { sourceFile: probeSourceFile } : {}),
-        ...(!probeSourceFile && sourceFile ? { sourceFile } : {}),
-      });
+        // Create pending annotation for popup
+        const pending: PendingAnnotationData = {
+          x,
+          y,
+          clientY: e.clientY,
+          element: elementLabel,
+          elementPath,
+          fullPath,
+          rect,
+          popupX: e.clientX,
+          popupY: e.clientY,
+          colorId: settings.annotationColorId,
+          ...(selectedText ? { selectedText } : {}),
+          ...(target.className ? { cssClasses: target.className } : {}),
+          ...(rect
+            ? {
+                boundingBox: {
+                  x: rect.left,
+                  y: rect.top + window.scrollY, // 使用文档绝对位置
+                  width: rect.width,
+                  height: rect.height,
+                },
+              }
+            : {}),
+          ...(nearbyText ? { nearbyText } : {}),
+          ...(computedStyles ? { computedStyles } : {}),
+          ...(reactComponents ? { reactComponents } : {}),
+          ...(sourceFile ? { sourceFile } : {}),
+          ...(vscodeUrl ? { vscodeUrl } : {}),
+          ...(propsChain ? { propsChain } : {}),
+        };
+
+        setPendingAnnotation(pending);
+
+        // Keep hover highlight at click position
+        setHover({
+          x: e.clientX,
+          y: e.clientY,
+          clientY: e.clientY,
+          element: elementLabel,
+          elementPath: getElementPath(target),
+          rect: target.getBoundingClientRect(),
+          ...(selectedText ? { selectedText } : {}),
+          ...(reactComponents ? { reactComponents } : {}),
+          ...(sourceFile ? { sourceFile } : {}),
+        });
+      } catch {
+        // Fallback: do not block annotation panel creation on probe/source failures.
+      }
     };
 
     document.addEventListener('click', handleClick);
@@ -311,7 +341,13 @@ function getReactComponentInfo(target: HTMLElement): string | undefined {
     return undefined;
   }
 
-  const fiber = (target as unknown as Record<string, unknown>)[fiberKey];
+  let fiberTarget: HTMLElement | null = target;
+  let fiber: unknown = undefined;
+  while (fiberTarget && !fiber) {
+    fiber = (fiberTarget as unknown as Record<string, unknown>)[fiberKey];
+    fiberTarget = fiberTarget.parentElement;
+  }
+
   if (!fiber) {
     return undefined;
   }
@@ -354,7 +390,7 @@ function getReactComponentInfo(target: HTMLElement): string | undefined {
  * - Vite 开发服务器返回编译后的位置，会通过 source map 映射回原始源文件
  */
 async function getSourceInfo(target: HTMLElement): Promise<{ sourceFile?: string; vscodeUrl?: string }> {
-  const result = await getSourceLocationAsync(target);
+  const result = await withSourceMapDebugContext('click', () => getSourceLocationAsync(target));
   if (result.found && result.source) {
     return {
       sourceFile: formatSourceLocation(result.source, 'path'),

@@ -1,6 +1,7 @@
 import React from 'react';
 import type { RawSourceMap, SourceMapConsumer } from 'source-map-js';
-import { shouldIncludeReactComponentName } from '@/shared/utils/react-component-path';
+export { getFiberFromElement } from '@/shared/utils/react-fiber';
+import { shouldIncludeReactComponentName, getFiberNameForChain } from '@/extension/react-fiber-path.js';
 
 // =============================================================================
 // Source Location Detection Utilities
@@ -198,33 +199,6 @@ export function detectReactApp(): {
 }
 
 /**
- * Gets the React fiber node associated with a DOM element
- *
- * @param element - DOM element to get fiber for
- * @returns React fiber node or null if not found
- */
-export function getFiberFromElement(element: HTMLElement): ReactFiber | null {
-  if (!element || typeof element !== 'object') {
-    return null;
-  }
-
-  const keys = Object.keys(element);
-
-  // React 18+ uses __reactFiber$ prefix
-  const fiberKey = keys.find(
-    (key) =>
-      key.startsWith('__reactFiber$') ||
-      key.startsWith('__reactInternalInstance$') ||
-      key.startsWith('__reactContainer$')
-  );
-  if (fiberKey) {
-    return (element as unknown as Record<string, ReactFiber>)[fiberKey] || null;
-  }
-
-  return null;
-}
-
-/**
  * Gets the display name of a React component from its fiber
  *
  * @param fiber - React fiber node
@@ -253,36 +227,6 @@ function getComponentName(fiber: ReactFiber): string | null {
     if (type.name) {
       return type.name;
     }
-  }
-
-  return null;
-}
-
-/**
- * Gets a display name for any fiber (including DOM elements)
- * Used for props chain where we want to show the full hierarchy
- */
-function getFiberNameForChain(fiber: ReactFiber): string | null {
-  if (!fiber.type) {
-    return null;
-  }
-
-  // DOM element - return tag name with brackets
-  if (typeof fiber.type === 'string') {
-    return `<${fiber.type}>`;
-  }
-
-  // Function/class component
-  if (typeof fiber.type === 'object' || typeof fiber.type === 'function') {
-    const type = fiber.type as { displayName?: string; name?: string };
-    if (type.displayName) {
-      return type.displayName;
-    }
-    if (type.name) {
-      return type.name;
-    }
-    // Anonymous function
-    return 'Anonymous';
   }
 
   return null;
@@ -868,11 +812,15 @@ function probeSourceWalk(fiber: ReactFiber, maxDepth = 15): SourceLocation | nul
  * ```
  */
 export function getSourceLocation(element: HTMLElement): SourceLocationResult {
+  logSourceMapDebug('getSourceLocation start', {
+    tag: element?.tagName?.toLowerCase?.(),
+  });
   // Try to get fiber directly from the element (same approach as getReactComponentName)
   // This avoids detectReactApp() whose production heuristic can give false positives
   const fiber = getFiberFromElement(element);
 
   if (!fiber) {
+    logSourceMapDebug('getSourceLocation no fiber');
     return {
       found: false,
       reason: 'no-fiber',
@@ -886,10 +834,17 @@ export function getSourceLocation(element: HTMLElement): SourceLocationResult {
 
   // If not found, try React 19 patterns
   if (!debugInfo) {
+    logSourceMapDebug('getSourceLocation no standard debug source, trying React 19 path');
     debugInfo = findDebugSourceReact19(fiber);
   }
 
   if (debugInfo?.source) {
+    logSourceMapDebug('getSourceLocation debug source found', {
+      fileName: debugInfo.source.fileName,
+      lineNumber: debugInfo.source.lineNumber,
+      columnNumber: debugInfo.source.columnNumber,
+      componentName: debugInfo.componentName,
+    });
     return {
       found: true,
       source: {
@@ -906,9 +861,16 @@ export function getSourceLocation(element: HTMLElement): SourceLocationResult {
   // Fallback: probe component via stack trace
   const probed = probeSourceWalk(fiber);
   if (probed) {
+    logSourceMapDebug('getSourceLocation stack probe found', {
+      fileName: probed.fileName,
+      lineNumber: probed.lineNumber,
+      columnNumber: probed.columnNumber,
+      componentName: probed.componentName,
+    });
     return { found: true, source: probed, isReactApp: true, isProduction: false };
   }
 
+  logSourceMapDebug('getSourceLocation no debug source');
   return {
     found: false,
     reason: 'no-debug-source',
@@ -927,6 +889,11 @@ export function getSourceLocation(element: HTMLElement): SourceLocationResult {
  */
 export async function getSourceLocationAsync(element: HTMLElement): Promise<SourceLocationResult> {
   const result = getSourceLocation(element);
+  logSourceMapDebug('getSourceLocationAsync initial result', {
+    found: result.found,
+    reason: result.reason,
+    hasSource: !!result.source,
+  });
 
   // If no source found, return as-is
   if (!result.found || !result.source) {
@@ -940,6 +907,12 @@ export async function getSourceLocationAsync(element: HTMLElement): Promise<Sour
     result.source.lineNumber,
     result.source.columnNumber
   );
+  logSourceMapDebug('getSourceLocationAsync mapped source', {
+    fileName: mappedSource.fileName,
+    lineNumber: mappedSource.lineNumber,
+    columnNumber: mappedSource.columnNumber,
+    sourcePath: mappedSource.sourcePath,
+  });
 
   return {
     ...result,
@@ -967,7 +940,12 @@ export function formatSourceLocation(source: SourceLocation, format: 'path' | 'v
   const { fileName, lineNumber, columnNumber, sourcePath } = source;
 
   // Build line:column suffix
-  let location = `${fileName}:${lineNumber}`;
+  let displayFileName = fileName;
+  if (format === 'path') {
+    displayFileName = stripUrlHost(fileName);
+  }
+
+  let location = `${displayFileName}:${lineNumber}`;
   if (columnNumber !== undefined) {
     location += `:${columnNumber}`;
   }
@@ -981,6 +959,21 @@ export function formatSourceLocation(source: SourceLocation, format: 'path' | 'v
   }
 
   return location;
+}
+
+function stripUrlHost(fileName: string): string {
+  if (!/^https?:\/\//.test(fileName)) {
+    return fileName;
+  }
+
+  try {
+    const url = new URL(fileName);
+    const pathname = url.pathname || '';
+    const stripped = `${pathname}${url.search || ''}${url.hash || ''}`;
+    return stripped.replace(/^\/+/, '');
+  } catch {
+    return fileName;
+  }
 }
 
 /**
@@ -1435,6 +1428,30 @@ const JSX_FILENAME_CACHE_MAX_SIZE = 50;
 
 /** Pre-initialized source-map module promise to avoid first-call initialization delay */
 let sourceMapModulePromise: Promise<typeof import('source-map-js')> | null = null;
+let sourceMapDebugContext: 'click' | null = null;
+
+export function withSourceMapDebugContext<T>(context: 'click' | null, fn: () => T): T {
+  const previous = sourceMapDebugContext;
+  sourceMapDebugContext = context;
+  try {
+    const result = fn();
+    if (result && typeof (result as Promise<unknown>).then === 'function') {
+      return (result as Promise<T>).finally(() => {
+        sourceMapDebugContext = previous;
+      }) as T;
+    }
+    sourceMapDebugContext = previous;
+    return result;
+  } catch (error) {
+    sourceMapDebugContext = previous;
+    throw error;
+  }
+}
+
+function logSourceMapDebug(message: string, details?: Record<string, unknown>): void {
+  void message;
+  void details;
+}
 
 /**
  * Pre-initialize the source-map module at module load time
@@ -1442,14 +1459,21 @@ let sourceMapModulePromise: Promise<typeof import('source-map-js')> | null = nul
  */
 export function preinitializeSourceMap(): Promise<void> {
   if (!sourceMapModulePromise) {
+    logSourceMapDebug('preinitialize start');
     sourceMapModulePromise = (async () => {
       const sourceMap = await import('source-map-js');
+      logSourceMapDebug('module imported', {
+        hasSourceMapConsumer: typeof sourceMap.SourceMapConsumer === 'function',
+        hasInitialize: typeof sourceMap.SourceMapConsumer === 'function' && 'initialize' in sourceMap.SourceMapConsumer,
+      });
       if (typeof sourceMap.SourceMapConsumer === 'function' && 'initialize' in sourceMap.SourceMapConsumer) {
+        logSourceMapDebug('initializing SourceMapConsumer wasm bridge');
         await (
           sourceMap.SourceMapConsumer as unknown as { initialize: (config: Record<string, string>) => Promise<void> }
         ).initialize({
           'lib/mappings.wasm': 'https://unpkg.com/source-map@0.7.3/lib/mappings.wasm',
         });
+        logSourceMapDebug('SourceMapConsumer initialized');
       }
       return sourceMap;
     })();
@@ -1462,16 +1486,24 @@ export function preinitializeSourceMap(): Promise<void> {
  */
 async function getSourceMapModule(): Promise<typeof import('source-map-js') | null> {
   if (sourceMapModulePromise) {
+    logSourceMapDebug('reusing preinitialized module promise');
     return sourceMapModulePromise;
   }
   // Fallback: initialize on demand
+  logSourceMapDebug('lazy import start');
   const sourceMap = await import('source-map-js');
+  logSourceMapDebug('lazy import complete', {
+    hasSourceMapConsumer: typeof sourceMap.SourceMapConsumer === 'function',
+    hasInitialize: typeof sourceMap.SourceMapConsumer === 'function' && 'initialize' in sourceMap.SourceMapConsumer,
+  });
   if (typeof sourceMap.SourceMapConsumer === 'function' && 'initialize' in sourceMap.SourceMapConsumer) {
+    logSourceMapDebug('lazy initializing SourceMapConsumer wasm bridge');
     await (
       sourceMap.SourceMapConsumer as unknown as { initialize: (config: Record<string, string>) => Promise<void> }
     ).initialize({
       'lib/mappings.wasm': 'https://unpkg.com/source-map@0.7.3/lib/mappings.wasm',
     });
+    logSourceMapDebug('lazy SourceMapConsumer initialized');
   }
   return sourceMap;
 }
@@ -1560,12 +1592,14 @@ function evictCacheIfNeeded(): void {
  * This fetches the compiled file, extracts the inline source map, and creates a consumer
  */
 async function getSourceMapConsumerForFile(compiledUrl: string): Promise<unknown | null> {
+  logSourceMapDebug('consumer lookup start', { compiledUrl });
   // Return cached promise if exists (only if it resolved, not rejected)
   const existing = sourceMapCache.get(compiledUrl);
   if (existing) {
     // Check if promise resolved or rejected - if rejected, don't reuse
     const cachedResult = await existing.catch(() => null);
     if (cachedResult !== null) {
+      logSourceMapDebug('consumer cache hit', { compiledUrl });
       return cachedResult;
     }
     // If it was null/rejected, remove from cache and retry
@@ -1578,15 +1612,20 @@ async function getSourceMapConsumerForFile(compiledUrl: string): Promise<unknown
     try {
       // Use pre-initialized module
       const sourceMapModule = await getSourceMapModule();
-      if (!sourceMapModule) return null;
+      if (!sourceMapModule) {
+        logSourceMapDebug('source map module unavailable', { compiledUrl });
+        return null;
+      }
 
       // Fetch the compiled JS file
       const response = await fetch(compiledUrl);
       if (!response.ok) {
+        logSourceMapDebug('compiled file fetch failed', { compiledUrl, status: response.status });
         return null;
       }
 
       const content = await response.text();
+      logSourceMapDebug('compiled file fetched', { compiledUrl, bytes: content.length });
 
       // Extract _jsxFileName (absolute path) from the compiled content
       const jsxFileName = extractJsxFileName(content);
@@ -1597,19 +1636,27 @@ async function getSourceMapConsumerForFile(compiledUrl: string): Promise<unknown
           if (firstKey) jsxFileNameCache.delete(firstKey);
         }
         jsxFileNameCache.set(compiledUrl, jsxFileName);
+        logSourceMapDebug('jsx file name captured', { compiledUrl, jsxFileName });
       }
 
       // Extract source map info from content
       const sourceMapInfo = extractSourceMapFromContent(content);
       if (!sourceMapInfo) {
+        logSourceMapDebug('no sourceMappingURL found', { compiledUrl });
         return null;
       }
+      logSourceMapDebug('source map info extracted', {
+        compiledUrl,
+        type: sourceMapInfo.type,
+        location: sourceMapInfo.type === 'url' ? sourceMapInfo.url : 'data-uri',
+      });
 
       let sourceMapJson: RawSourceMap | null = null;
 
       if (sourceMapInfo.type === 'data_uri') {
         const decoded = decodeDataUri(sourceMapInfo.data);
         if (!decoded) {
+          logSourceMapDebug('failed to decode inline source map', { compiledUrl });
           return null;
         }
         sourceMapJson = decoded as unknown as RawSourceMap;
@@ -1617,19 +1664,31 @@ async function getSourceMapConsumerForFile(compiledUrl: string): Promise<unknown
         // Fetch external .map file
         const mapResponse = await fetch(sourceMapInfo.url);
         if (!mapResponse.ok) {
+          logSourceMapDebug('source map fetch failed', {
+            compiledUrl,
+            mapUrl: sourceMapInfo.url,
+            status: mapResponse.status,
+          });
           return null;
         }
         sourceMapJson = await mapResponse.json();
+        logSourceMapDebug('external source map fetched', {
+          compiledUrl,
+          mapUrl: sourceMapInfo.url,
+        });
       }
 
       // Create SourceMapConsumer (module already initialized by getSourceMapModule)
       // The source map JSON from Vite matches RawSourceMap interface
       if (typeof sourceMapModule.SourceMapConsumer === 'function' && sourceMapJson) {
         const consumer = new sourceMapModule.SourceMapConsumer(sourceMapJson);
+        logSourceMapDebug('SourceMapConsumer created', { compiledUrl });
         return consumer;
       }
+      logSourceMapDebug('SourceMapConsumer creation skipped', { compiledUrl });
       return null;
     } catch {
+      logSourceMapDebug('consumer lookup failed with exception', { compiledUrl });
       return null;
     }
   })();
@@ -1696,6 +1755,11 @@ export async function mapCompiledPositionToOriginal(
 
   const consumer = await getSourceMapConsumerForFile(parsed.fileUrl);
   if (!consumer) {
+    logSourceMapDebug('no consumer available for compiled position', {
+      compiledUrl: parsed.fileUrl,
+      line,
+      column,
+    });
     return null;
   }
 
@@ -1710,6 +1774,11 @@ export async function mapCompiledPositionToOriginal(
     });
 
     if (!original || !original.source) {
+      logSourceMapDebug('originalPositionFor returned empty result', {
+        compiledUrl: parsed.fileUrl,
+        line: parsed.line,
+        column: parsed.column,
+      });
       return null;
     }
 
@@ -1726,6 +1795,14 @@ export async function mapCompiledPositionToOriginal(
     }
     // Clean the path - remove common prefixes like webpack://[project]/
     cleanSourcePath = cleanSourcePathForVsCode(cleanSourcePath);
+    logSourceMapDebug('position mapped', {
+      compiledUrl: parsed.fileUrl,
+      originalSource: rawSourcePath,
+      fileName: rawSourcePath.split('/').pop() || rawSourcePath,
+      lineNumber: original.line ?? parsed.line,
+      columnNumber: original.column,
+      sourcePath: cleanSourcePath,
+    });
 
     return {
       fileName: rawSourcePath.split('/').pop() || rawSourcePath,
@@ -1773,6 +1850,15 @@ export async function mapPositionWithSourceMap(
   if (isViteDevServerUrl(fileName)) {
     const original = await mapCompiledPositionToOriginal(fileName, lineNumber, columnNumber ?? 0);
     if (original) {
+      logSourceMapDebug('mapPositionWithSourceMap returning mapped original', {
+        fileName,
+        lineNumber,
+        columnNumber,
+        mappedFileName: original.fileName,
+        mappedLineNumber: original.lineNumber,
+        mappedColumnNumber: original.columnNumber,
+        sourcePath: original.sourcePath,
+      });
       const result: SourceLocation = {
         fileName: original.fileName,
         lineNumber: original.lineNumber,
@@ -1785,6 +1871,11 @@ export async function mapPositionWithSourceMap(
       }
       return result;
     }
+    logSourceMapDebug('mapPositionWithSourceMap fell back to compiled location', {
+      fileName,
+      lineNumber,
+      columnNumber,
+    });
   }
 
   // Return original position if no mapping needed or mapping failed

@@ -1,15 +1,13 @@
-type ReactProbeSource = {
-  fileName: string;
-  lineNumber: number;
-  columnNumber?: number;
-  componentName?: string;
-};
-
 type ReactProbeResult = {
   found: boolean;
   reactComponents?: string;
-  source?: ReactProbeSource;
   propsChain?: string;
+  source?: {
+    fileName: string;
+    lineNumber: number;
+    columnNumber?: number;
+    componentName?: string;
+  };
   fiberKey?: string;
   inspectedCount?: number;
   parentDepth?: number;
@@ -20,6 +18,7 @@ type ReactProbeRequest = {
   requestId: string;
   x: number;
   y: number;
+  debugContext?: 'click' | 'hover';
 };
 
 type ReactProbeResponse = {
@@ -77,7 +76,6 @@ export function installReactProbeBridge(): Promise<void> | null {
     const script = document.createElement('script');
     script.id = REACT_PROBE_SCRIPT_ID;
     script.src = scriptUrl;
-    script.async = false;
     script.dataset.aivisNextReactProbe = 'true';
     script.onload = () => {
       script.remove();
@@ -131,7 +129,12 @@ function installResponseListener(): void {
   responseListenerInstalled = true;
 }
 
-export async function requestReactProbe(x: number, y: number, timeoutMs = 250): Promise<ReactProbeResult | null> {
+export async function requestReactProbe(
+  x: number,
+  y: number,
+  timeoutMs = 250,
+  debugContext?: 'click' | 'hover'
+): Promise<ReactProbeResult | null> {
   if (typeof window === 'undefined') return null;
 
   installResponseListener();
@@ -160,6 +163,7 @@ export async function requestReactProbe(x: number, y: number, timeoutMs = 250): 
       requestId,
       x,
       y,
+      ...(debugContext ? { debugContext } : {}),
     };
 
     window.postMessage({ [REACT_PROBE_REQUEST_KEY]: true, ...payload }, '*');

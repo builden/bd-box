@@ -429,24 +429,6 @@ export function clearReactDetectionCache(): void {
   componentCacheAllRef.map = new WeakMap<HTMLElement, ReactComponentInfo>();
 }
 
-function getReactFiberKey(element: HTMLElement): string | null {
-  const keys = Object.keys(element);
-  return (
-    keys.find(
-      (key) =>
-        key.startsWith('__reactFiber$') ||
-        key.startsWith('__reactInternalInstance$') ||
-        key.startsWith('__reactContainer$')
-    ) || null
-  );
-}
-
-function getFiberFromElement(element: HTMLElement): ReactFiber | null {
-  const key = getReactFiberKey(element);
-  if (!key) return null;
-  return (element as unknown as Record<string, unknown>)[key] as ReactFiber | null;
-}
-
 function getComponentNameFromType(type: ComponentType | null): string | null {
   if (!type) return null;
   if (type.displayName) return type.displayName;
@@ -672,3 +654,4 @@ export function getReactComponentName(element: HTMLElement, config?: ReactDetect
   }
   return result;
 }
+import { getFiberFromElement } from '@/shared/utils/react-fiber';
