@@ -1,6 +1,9 @@
 import { EXTENSION_DEFAULT_ENABLED_KEY, EXTENSION_ENABLED_KEY, readExtensionEnabled } from './chrome-api';
 import { mountAivisNextExtension, unmountAivisNextExtension } from './mount';
+import { triggerDebuggerPauseScheduler } from '@/shared/utils/debugger-hotkey';
 import styles from '../styles.css?inline';
+
+const DEBUGGER_COUNTDOWN_MESSAGE = 'aivis-next/start-debugger-countdown';
 
 async function syncExtensionState() {
   const enabled = await readExtensionEnabled(true);
@@ -23,6 +26,16 @@ const chromeApi = (
           addListener: (listener: (changes: Record<string, { newValue?: unknown }>, areaName: string) => void) => void;
         };
       };
+      runtime?: {
+        onMessage?: {
+          addListener: (
+            listener: (message: unknown, sender: unknown, sendResponse: (response?: unknown) => void) => void
+          ) => void;
+          removeListener: (
+            listener: (message: unknown, sender: unknown, sendResponse: (response?: unknown) => void) => void
+          ) => void;
+        };
+      };
     };
   }
 ).chrome;
@@ -33,6 +46,13 @@ chromeApi?.storage?.onChanged?.addListener((changes, areaName) => {
   if (changes[EXTENSION_ENABLED_KEY] || changes[EXTENSION_DEFAULT_ENABLED_KEY]) {
     void syncExtensionState();
   }
+});
+
+chromeApi?.runtime?.onMessage?.addListener((message) => {
+  if (typeof message !== 'object' || message === null) return;
+  if (!('type' in message) || message.type !== DEBUGGER_COUNTDOWN_MESSAGE) return;
+
+  triggerDebuggerPauseScheduler();
 });
 
 if (document.readyState === 'loading') {

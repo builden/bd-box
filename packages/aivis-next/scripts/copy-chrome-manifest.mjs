@@ -12,7 +12,7 @@ await mkdir(targetDir, { recursive: true });
 
 const manifest = JSON.parse(await readFile(source, 'utf8'));
 const entries = await readdir(targetDir, { withFileTypes: true });
-const jsFile = entries.find((entry) => entry.isFile() && entry.name.endsWith('.js') && entry.name !== 'manifest.json');
+const jsFile = entries.find((entry) => entry.isFile() && entry.name.startsWith('content-script') && entry.name.endsWith('.js'));
 const cssFile = entries.find((entry) => entry.isFile() && entry.name.endsWith('.css'));
 
 if (!jsFile) {

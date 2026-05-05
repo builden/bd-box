@@ -19,6 +19,7 @@ type ChromeStorage = {
 type ChromeRuntime = {
   lastError?: Error | undefined;
   openOptionsPage?: () => Promise<void> | void;
+  sendMessage?: (message: unknown) => Promise<unknown>;
 };
 
 type ChromeApi = {
@@ -102,4 +103,11 @@ export async function openExtensionOptionsPage(): Promise<void> {
   if (!chromeApi?.runtime.openOptionsPage) return;
 
   await chromeApi.runtime.openOptionsPage();
+}
+
+export async function requestDebuggerPauseFromBackground(): Promise<void> {
+  const chromeApi = getChromeApi();
+  if (!chromeApi?.runtime.sendMessage) return;
+
+  await chromeApi.runtime.sendMessage({ type: 'aivis-next/pause-current-tab' });
 }

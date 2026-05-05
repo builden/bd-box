@@ -18,7 +18,9 @@ export interface DebuggerPauseScheduler {
 
 const DEFAULT_DURATION_MS = 5000;
 const DEFAULT_STEP_MS = 1000;
-const HOTKEY_LABEL = 'Cmd+Option+Shift+K';
+const HOTKEY_LABEL = 'Cmd+Shift+9';
+
+let activeScheduler: DebuggerPauseScheduler | null = null;
 
 export function createDebuggerPauseScheduler({
   setToast,
@@ -77,4 +79,17 @@ export function createDebuggerPauseScheduler({
     trigger,
     cancel: clearTimer,
   };
+}
+
+export function registerDebuggerPauseScheduler(scheduler: DebuggerPauseScheduler | null) {
+  activeScheduler = scheduler;
+}
+
+export function triggerDebuggerPauseScheduler() {
+  activeScheduler?.trigger();
+}
+
+export function cancelDebuggerPauseScheduler() {
+  activeScheduler?.cancel();
+  activeScheduler = null;
 }

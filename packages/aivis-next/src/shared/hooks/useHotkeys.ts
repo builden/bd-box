@@ -7,7 +7,12 @@ import { isActiveAtom, copiedAtom, triggerCopyAtom } from '@/shared/features/Tog
 import { toastAtom } from '@/shared/components/store';
 import { isLayoutModeAtom, isRearrangeModeAtom } from '@/shared/features/Layout';
 import { isTypingKeyboardEvent } from '@/shared/utils/keyboard';
-import { createDebuggerPauseScheduler } from '@/shared/utils/debugger-hotkey';
+import { requestDebuggerPauseFromBackground } from '@/extension/chrome-api';
+import {
+  createDebuggerPauseScheduler,
+  registerDebuggerPauseScheduler,
+  cancelDebuggerPauseScheduler,
+} from '@/shared/utils/debugger-hotkey';
 
 /**
  * useHotkeys - 全局快捷键和 Toolbar 按钮事件处理
@@ -53,25 +58,19 @@ export function useHotkeys() {
     debuggerSchedulerRef.current = createDebuggerPauseScheduler({
       setToast,
       onPause: () => {
-        debugger;
+        void requestDebuggerPauseFromBackground();
       },
     });
+    registerDebuggerPauseScheduler(debuggerSchedulerRef.current);
 
     return () => {
-      debuggerSchedulerRef.current?.cancel();
+      cancelDebuggerPauseScheduler();
       debuggerSchedulerRef.current = null;
     };
   }, [setToast]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd+Option+Shift+K - 5 秒倒计时后暂停在 debugger
-      if (e.metaKey && e.altKey && e.shiftKey && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        debuggerSchedulerRef.current?.trigger();
-        return;
-      }
-
       // 跳过输入中的按键，包含 shadow DOM 内部的 textarea/input
       if (isTypingKeyboardEvent(e)) return;
 
