@@ -177,7 +177,7 @@ export const AnnotationPopup = memo(function AnnotationPopup() {
             )}
             title="Open in VSCode"
           >
-            VSCode
+            Open
           </button>
         )}
       </div>
