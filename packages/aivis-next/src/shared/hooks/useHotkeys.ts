@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useAtom } from 'jotai';
 import { isAnnotationModeAtom, annotationsAtom, showMarkersAtom } from '@/shared/features/Annotation/store';
 import { showSettingsAtom, settingsAtom, OUTPUT_DETAIL_OPTIONS } from '@/shared/features/SettingsPanel/store';
@@ -23,6 +23,7 @@ export function useHotkeys() {
   const [, setToast] = useAtom(toastAtom);
   const [isLayoutMode, setIsLayoutMode] = useAtom(isLayoutModeAtom);
   const [, setIsRearrangeMode] = useAtom(isRearrangeModeAtom);
+  const debuggerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 复制反馈
   const performCopy = useCallback(async () => {
@@ -48,7 +49,28 @@ export function useHotkeys() {
   }, [setAnnotations]);
 
   useEffect(() => {
+    return () => {
+      if (debuggerTimerRef.current) {
+        clearTimeout(debuggerTimerRef.current);
+        debuggerTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd/Ctrl+Shift+J - 5 秒后暂停在 debugger
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'j') {
+        e.preventDefault();
+        if (debuggerTimerRef.current) {
+          clearTimeout(debuggerTimerRef.current);
+        }
+        debuggerTimerRef.current = setTimeout(() => {
+          debugger;
+        }, 5000);
+        return;
+      }
+
       // 跳过输入中的按键，包含 shadow DOM 内部的 textarea/input
       if (isTypingKeyboardEvent(e)) return;
 

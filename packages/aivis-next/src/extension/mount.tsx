@@ -27,7 +27,6 @@ function getOrCreateContainer() {
 
   const host = document.createElement('div');
   host.id = EXTENSION_ROOT_ID;
-  host.setAttribute('aria-hidden', 'true');
   host.setAttribute('data-feedback-toolbar', 'true');
   host.style.position = 'fixed';
   host.style.top = '0';
