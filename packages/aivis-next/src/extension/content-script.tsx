@@ -1,4 +1,4 @@
-import { EXTENSION_DEFAULT_ENABLED_KEY, EXTENSION_ENABLED_KEY, readExtensionEnabled } from './chrome-api';
+import { HOST_ENABLED_MAP_KEY, readHostEnabled } from './chrome-api';
 import { mountAivisNextExtension, unmountAivisNextExtension } from './mount';
 import { triggerDebuggerPauseScheduler } from '@/shared/utils/debugger-hotkey';
 import { installReactProbeBridge } from '@/shared/utils/react-probe';
@@ -7,8 +7,9 @@ import styles from '../styles.css?inline';
 const DEBUGGER_COUNTDOWN_MESSAGE = 'aivis-next/start-debugger-countdown';
 
 async function syncExtensionState() {
-  const enabled = await readExtensionEnabled(true);
+  const enabled = await readHostEnabled(location.host, false);
   if (enabled) {
+    void installReactProbeBridge();
     mountAivisNextExtension(styles);
   } else {
     unmountAivisNextExtension();
@@ -16,7 +17,6 @@ async function syncExtensionState() {
 }
 
 function start() {
-  void installReactProbeBridge();
   void syncExtensionState();
 }
 
@@ -45,7 +45,7 @@ const chromeApi = (
 chromeApi?.storage?.onChanged?.addListener((changes, areaName) => {
   if (areaName !== 'local') return;
 
-  if (changes[EXTENSION_ENABLED_KEY] || changes[EXTENSION_DEFAULT_ENABLED_KEY]) {
+  if (changes[HOST_ENABLED_MAP_KEY]) {
     void syncExtensionState();
   }
 });

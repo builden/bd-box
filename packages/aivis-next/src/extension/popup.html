@@ -143,17 +143,18 @@
         <p>控制网页注入的工具栏和标注层。</p>
 
         <div class="status" id="status">
-          <strong id="status-title">加载中</strong>
-          <p id="status-text">正在读取扩展状态。</p>
+          <strong id="host-title">当前站点</strong>
+          <p id="host-text">正在读取当前站点。</p>
+          <strong id="status-title" style="margin-top: 12px">加载中</strong>
+          <p id="status-text">正在读取当前站点状态。</p>
+          <p class="hint" id="status-hint">等待获取当前站点信息。</p>
         </div>
 
         <div class="actions">
           <button class="primary" id="toggle">切换状态</button>
-          <button class="secondary" id="options">设置</button>
-          <button class="secondary" id="reload">刷新页面</button>
         </div>
 
-        <div class="hint">快捷键: Cmd/Ctrl + Shift + F 展开或收起工具栏</div>
+        <div class="hint">默认不加载。点击主按钮后，会同时切换当前站点状态并刷新页面。</div>
 
         <div class="dev">
           <strong id="dev-title">开发更新</strong>
@@ -161,6 +162,6 @@
         </div>
       </div>
     </div>
-    <script type="module" src="./popup.ts"></script>
+    <script type="module" src="./popup.js"></script>
   </body>
 </html>

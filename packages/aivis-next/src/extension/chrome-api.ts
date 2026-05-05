@@ -30,6 +30,16 @@ type ChromeStorage = {
   };
 };
 
+type ChromeTab = {
+  id?: number;
+  url?: string;
+  title?: string;
+};
+
+type ChromeTabs = {
+  query: (queryInfo: { active?: boolean; currentWindow?: boolean }, callback: (tabs: ChromeTab[]) => void) => void;
+};
+
 type ChromeRuntime = {
   lastError?: Error | undefined;
   openOptionsPage?: () => Promise<void> | void;
@@ -41,10 +51,12 @@ type ChromeRuntime = {
 type ChromeApi = {
   storage: ChromeStorage;
   runtime: ChromeRuntime;
+  tabs?: ChromeTabs;
 };
 
 export const EXTENSION_ENABLED_KEY = 'aivis-next-enabled';
 export const EXTENSION_DEFAULT_ENABLED_KEY = 'aivis-next-default-enabled';
+export const HOST_ENABLED_MAP_KEY = 'aivis-next-host-enabled';
 export const DEV_RELOAD_BUILD_ID_KEY = 'aivis-next-dev-build-id';
 export const DEV_RELOAD_LAST_AT_KEY = 'aivis-next-dev-last-reload-at';
 let activeDevReloadPort: ChromePort | null = null;
@@ -114,6 +126,64 @@ export async function clearExtensionEnabledOverride(): Promise<void> {
 
   await new Promise<void>((resolve) => {
     chromeApi.storage.local.remove(EXTENSION_ENABLED_KEY, () => resolve());
+  });
+}
+
+export function extractHostFromUrl(url: string | undefined | null): string | null {
+  if (!url) return null;
+
+  try {
+    return new URL(url).host || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function getCurrentTabHost(): Promise<string | null> {
+  const chromeApi = getChromeApi();
+  if (!chromeApi?.tabs?.query) return null;
+
+  return new Promise<string | null>((resolve) => {
+    chromeApi.tabs?.query({ active: true, currentWindow: true }, (tabs) => {
+      resolve(extractHostFromUrl(tabs[0]?.url));
+    });
+  });
+}
+
+export async function readHostEnabled(host: string, defaultValue = false): Promise<boolean> {
+  const chromeApi = getChromeApi();
+  if (!chromeApi) return defaultValue;
+  if (!host) return defaultValue;
+
+  return new Promise<boolean>((resolve) => {
+    chromeApi.storage.local.get([HOST_ENABLED_MAP_KEY], (items) => {
+      const rawMap = items[HOST_ENABLED_MAP_KEY];
+      if (rawMap && typeof rawMap === 'object' && Object.prototype.hasOwnProperty.call(rawMap, host)) {
+        resolve(Boolean((rawMap as Record<string, unknown>)[host]));
+        return;
+      }
+
+      resolve(defaultValue);
+    });
+  });
+}
+
+export async function setHostEnabled(host: string, enabled: boolean): Promise<void> {
+  const chromeApi = getChromeApi();
+  if (!chromeApi || !host) return;
+
+  return new Promise<void>((resolve) => {
+    chromeApi.storage.local.get([HOST_ENABLED_MAP_KEY], (items) => {
+      const rawMap = items[HOST_ENABLED_MAP_KEY];
+      const hostMap =
+        rawMap && typeof rawMap === 'object' && !Array.isArray(rawMap)
+          ? { ...(rawMap as Record<string, unknown>) }
+          : {};
+
+      hostMap[host] = enabled;
+
+      chromeApi.storage.local.set({ [HOST_ENABLED_MAP_KEY]: hostMap }, () => resolve());
+    });
   });
 }
 

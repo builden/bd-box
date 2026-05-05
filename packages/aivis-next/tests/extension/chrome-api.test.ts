@@ -3,10 +3,14 @@ import {
   clearExtensionEnabledOverride,
   EXTENSION_DEFAULT_ENABLED_KEY,
   EXTENSION_ENABLED_KEY,
+  HOST_ENABLED_MAP_KEY,
+  getCurrentTabHost,
+  readHostEnabled,
   readExtensionDefaultEnabled,
   readExtensionEnabled,
   setExtensionDefaultEnabled,
   setExtensionEnabled,
+  setHostEnabled,
 } from '@/extension/chrome-api';
 
 type StorageRecord = Record<string, unknown>;
@@ -40,6 +44,14 @@ function createChromeMock(initial: StorageRecord = {}) {
       onChanged: {
         addListener() {},
         removeListener() {},
+      },
+    },
+    tabs: {
+      query(
+        _queryInfo: { active?: boolean; currentWindow?: boolean },
+        callback: (tabs: Array<{ url?: string }>) => void
+      ) {
+        callback([{ url: 'https://example.com/path' }]);
       },
     },
     runtime: {
@@ -106,4 +118,35 @@ test('setExtensionEnabled overrides the current state', async () => {
   await setExtensionEnabled(false);
   await expect(readExtensionEnabled(true)).resolves.toBe(false);
   expect(store[EXTENSION_ENABLED_KEY]).toBe(false);
+});
+
+test('readHostEnabled falls back to the provided default when host override is absent', async () => {
+  const { chromeMock } = createChromeMock();
+  (globalThis as typeof globalThis & { chrome?: typeof chromeMock }).chrome = chromeMock;
+
+  await expect(readHostEnabled('example.com', true)).resolves.toBe(true);
+  await expect(readHostEnabled('example.com', false)).resolves.toBe(false);
+});
+
+test('readHostEnabled ignores the global default setting', async () => {
+  const { chromeMock } = createChromeMock({ [EXTENSION_DEFAULT_ENABLED_KEY]: true });
+  (globalThis as typeof globalThis & { chrome?: typeof chromeMock }).chrome = chromeMock;
+
+  await expect(readHostEnabled('example.com', false)).resolves.toBe(false);
+});
+
+test('setHostEnabled stores the current host override', async () => {
+  const { chromeMock, store } = createChromeMock();
+  (globalThis as typeof globalThis & { chrome?: typeof chromeMock }).chrome = chromeMock;
+
+  await setHostEnabled('example.com', false);
+  await expect(readHostEnabled('example.com', true)).resolves.toBe(false);
+  expect(store[HOST_ENABLED_MAP_KEY]).toEqual({ 'example.com': false });
+});
+
+test('getCurrentTabHost returns the active tab host', async () => {
+  const { chromeMock } = createChromeMock();
+  (globalThis as typeof globalThis & { chrome?: typeof chromeMock }).chrome = chromeMock;
+
+  await expect(getCurrentTabHost()).resolves.toBe('example.com');
 });

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Aivis Next Settings</title>
+    <title>Aivis Next</title>
     <style>
       :root {
         color-scheme: dark;
@@ -67,23 +67,10 @@
         border-top: 1px solid rgba(255, 255, 255, 0.08);
       }
 
-      .row {
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
-        align-items: start;
-      }
-
       .title {
         font-size: 16px;
         font-weight: 600;
         margin-bottom: 6px;
-      }
-
-      .hint {
-        margin-top: 8px;
-        font-size: 13px;
-        color: var(--muted);
       }
 
       .status {
@@ -100,95 +87,32 @@
         font-size: 14px;
       }
 
-      .actions {
-        display: flex;
-        gap: 12px;
-        margin-top: 18px;
-        flex-wrap: wrap;
-      }
-
-      button {
-        appearance: none;
-        border: 0;
-        border-radius: 999px;
-        padding: 12px 16px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition:
-          transform 0.15s ease,
-          opacity 0.15s ease,
-          background-color 0.15s ease;
-      }
-
-      button:hover {
-        transform: translateY(-1px);
-      }
-
-      button:disabled {
-        opacity: 0.6;
-        cursor: wait;
-        transform: none;
-      }
-
-      .primary {
-        color: white;
-        background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-      }
-
-      .secondary {
-        color: var(--text);
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-      }
-
-      label {
-        display: inline-flex;
-        gap: 12px;
-        align-items: center;
-        font-size: 15px;
-      }
-
-      input[type='checkbox'] {
-        width: 18px;
-        height: 18px;
-        margin: 0;
-        accent-color: #8b5cf6;
+      .hint {
+        margin-top: 10px;
+        font-size: 13px;
+        color: var(--muted);
       }
     </style>
   </head>
   <body>
     <div class="wrap">
       <div class="card">
-        <h1>Aivis Next Settings</h1>
-        <p>配置扩展的默认注入行为，以及当前页面状态的回退策略。</p>
+        <h1>Aivis Next</h1>
+        <p>当前版本只保留站点级控制，默认不注入。</p>
 
         <div class="section">
-          <div class="row">
-            <div>
-              <div class="title">默认自动启用</div>
-              <p>当当前状态没有手动覆盖时，新的页面会按这个值决定是否注入工具栏。</p>
-            </div>
-            <label>
-              <input id="default-enabled" type="checkbox" />
-              启用
-            </label>
-          </div>
-
           <div class="status" id="status">
-            <strong id="status-title">加载中</strong>
-            <p id="status-text">正在读取默认设置。</p>
+            <strong id="status-title">当前站点控制</strong>
+            <p id="status-text">请在浏览器工具栏点击 Aivis Next 图标，在 popup 中启用当前站点。</p>
           </div>
 
-          <div class="actions">
-            <button class="primary" id="save">保存默认设置</button>
-            <button class="secondary" id="reset">清除当前覆盖</button>
+          <div class="hint">
+            <strong id="note-title">启动方式</strong>
+            <p id="note-text">打开普通网页后，通过 popup 开启或关闭当前 host 的 Aivis Next 注入。</p>
           </div>
-
-          <div class="hint">清除当前覆盖后，插件会回退到“默认自动启用”的设置。</div>
         </div>
       </div>
     </div>
-    <script type="module" src="./options.ts"></script>
+    <script type="module" src="./options.js"></script>
   </body>
 </html>

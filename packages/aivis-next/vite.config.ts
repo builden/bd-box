@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
+import { execFileSync } from 'node:child_process';
 import { copyFile, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,6 +14,10 @@ function chromeManifestPlugin() {
     buildStart() {
       this.addWatchFile(resolve(__dirname, 'src/extension/background.js'));
       this.addWatchFile(resolve(__dirname, 'src/extension/react-probe-main-world.js'));
+      this.addWatchFile(resolve(__dirname, 'src/extension/popup.html'));
+      this.addWatchFile(resolve(__dirname, 'src/extension/popup.ts'));
+      this.addWatchFile(resolve(__dirname, 'src/extension/options.html'));
+      this.addWatchFile(resolve(__dirname, 'src/extension/options.ts'));
       this.addWatchFile(resolve(__dirname, 'src/extension/manifest.json'));
     },
     async closeBundle() {
@@ -24,6 +29,12 @@ function chromeManifestPlugin() {
       const backgroundTarget = resolve(targetDir, 'background.js');
       const reactProbeSource = resolve(rootDir, 'src/extension/react-probe-main-world.js');
       const reactProbeTarget = resolve(targetDir, 'react-probe-main-world.js');
+      const popupHtmlSource = resolve(rootDir, 'src/extension/popup.html');
+      const popupHtmlTarget = resolve(targetDir, 'popup.html');
+      const optionsHtmlSource = resolve(rootDir, 'src/extension/options.html');
+      const optionsHtmlTarget = resolve(targetDir, 'options.html');
+      const popupScriptSource = resolve(rootDir, 'src/extension/popup.ts');
+      const optionsScriptSource = resolve(rootDir, 'src/extension/options.ts');
       const devReloadTarget = resolve(targetDir, 'dev-reload.json');
 
       await mkdir(targetDir, { recursive: true });
@@ -50,6 +61,23 @@ function chromeManifestPlugin() {
       await writeFile(target, `${JSON.stringify(manifest, null, 2)}\n`);
       await copyFile(backgroundSource, backgroundTarget);
       await copyFile(reactProbeSource, reactProbeTarget);
+      await copyFile(popupHtmlSource, popupHtmlTarget);
+      await copyFile(optionsHtmlSource, optionsHtmlTarget);
+
+      execFileSync(
+        'bun',
+        [
+          'build',
+          '--target=browser',
+          '--format=esm',
+          '--sourcemap=external',
+          '--outdir',
+          targetDir,
+          popupScriptSource,
+          optionsScriptSource,
+        ],
+        { stdio: 'inherit' }
+      );
 
       if (isChromeWatchBuild) {
         const devReloadConfig = {
