@@ -4,6 +4,7 @@ import { isAnnotationModeAtom, hoverAtom, pendingAnnotationAtom, editingAnnotati
 import { settingsAtom } from '@/shared/features/SettingsPanel/store';
 import { isExtensionUiElement } from '@/shared/utils/extension-ui';
 import { formatSourceLocation } from '@/shared/utils/source-location';
+import { formatReactComponentPath } from '@/shared/utils/react-component-path';
 import { requestReactProbe } from '@/shared/utils/react-probe';
 
 /**
@@ -201,5 +202,5 @@ function getReactComponentInfo(target: HTMLElement): string | undefined {
 
   if (componentNames.length === 0) return undefined;
 
-  return [...new Set(componentNames)].join(' > ');
+  return formatReactComponentPath(componentNames);
 }

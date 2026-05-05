@@ -11,6 +11,7 @@ import {
 import { settingsAtom } from '@/shared/features/SettingsPanel/store';
 import { formatSourceLocation, getSourceLocationAsync, getPropsPropagationPath } from '@/shared/utils/source-location';
 import { isExtensionUiElement } from '@/shared/utils/extension-ui';
+import { formatReactComponentPath } from '@/shared/utils/react-component-path';
 import { requestReactProbe } from '@/shared/utils/react-probe';
 
 /**
@@ -340,7 +341,7 @@ function getReactComponentInfo(target: HTMLElement): string | undefined {
   if (componentNames.length === 0) return undefined;
 
   // 去重并返回（不带括号）
-  return [...new Set(componentNames)].join(' > ');
+  return formatReactComponentPath(componentNames);
 }
 
 /**

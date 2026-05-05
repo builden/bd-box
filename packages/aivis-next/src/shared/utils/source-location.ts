@@ -1,5 +1,6 @@
 import React from 'react';
 import type { RawSourceMap, SourceMapConsumer } from 'source-map-js';
+import { shouldIncludeReactComponentName } from '@/shared/utils/react-component-path';
 
 // =============================================================================
 // Source Location Detection Utilities
@@ -1301,7 +1302,7 @@ export function getPropsPropagationPath(element: HTMLElement): PropsPropagationR
   while (current && depth < maxDepth) {
     // Use getFiberNameForChain to include DOM elements in the hierarchy
     const componentName = getFiberNameForChain(current);
-    if (componentName) {
+    if (componentName && shouldIncludeReactComponentName(componentName)) {
       const source = current._debugSource || getSourceFromFiber(current);
       // Try both memoizedProps and pendingProps - take whichever has more content
       const memoizedProps = extractRelevantProps(current.memoizedProps ?? null);

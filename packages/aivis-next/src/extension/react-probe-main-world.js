@@ -3,6 +3,26 @@
   const REQUEST_KEY = 'aivis-next/react-probe/request';
   const RESPONSE_KEY = 'aivis-next/react-probe/response';
   const READY_KEY = 'aivis-next/react-probe/ready';
+  const NOISE_EXACT = new Set([
+    'ScopeProvider',
+    'BunshiMoleculeScopeContext',
+    'Provider',
+    'Providers',
+    'Context',
+    'ContextProvider',
+    'Context.Consumer',
+    'Context.Provider',
+  ]);
+  const NOISE_PATTERNS = [
+    /Provider$/,
+    /Providers$/,
+    /Context$/,
+    /ContextProvider$/,
+    /ScopeProvider$/,
+    /Consumer$/,
+    /ForwardRef$/,
+    /Memo$/,
+  ];
 
   if (window[INSTALLED_KEY]) return;
   window[INSTALLED_KEY] = true;
@@ -36,6 +56,13 @@
     return null;
   }
 
+  function shouldIncludeReactComponentName(name) {
+    const trimmed = String(name || '').trim();
+    if (!trimmed) return false;
+    if (NOISE_EXACT.has(trimmed)) return false;
+    return !NOISE_PATTERNS.some((pattern) => pattern.test(trimmed));
+  }
+
   function getSourceFromFiber(fiber) {
     if (!fiber) return null;
 
@@ -67,12 +94,12 @@
 
     while (current && depth < 15) {
       const name = getFiberNameForChain(current);
-      if (name) names.unshift(name);
+      if (name && shouldIncludeReactComponentName(name)) names.unshift(name);
       current = current.return;
       depth += 1;
     }
 
-    return names.length > 0 ? names.join(' > ') : '';
+    return names.length > 0 ? [...new Set(names)].join(' > ') : '';
   }
 
   function buildPropsChain(fiber) {
@@ -82,7 +109,7 @@
 
     while (current && depth < 20) {
       const componentName = getFiberNameForChain(current);
-      if (componentName) {
+      if (componentName && shouldIncludeReactComponentName(componentName)) {
         const props = current.memoizedProps || current.pendingProps || {};
         const keys = Object.keys(props)
           .filter((key) => !key.startsWith('__') && key !== 'children')
@@ -100,6 +127,7 @@
     if (chain.length === 0) return '';
 
     return chain
+      .filter((item) => shouldIncludeReactComponentName(item.componentName))
       .map((item) => {
         if (!item.keys || item.keys.length === 0) return item.componentName;
         return `${item.componentName}(${item.keys.join(', ')})`;
