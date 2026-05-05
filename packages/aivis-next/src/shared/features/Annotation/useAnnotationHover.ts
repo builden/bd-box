@@ -6,6 +6,7 @@ import { isExtensionUiElement } from '@/shared/utils/extension-ui';
 import { formatSourceLocation, mapPositionWithSourceMap } from '@/shared/utils/source-location';
 import { formatReactComponentPath } from '@/shared/utils/react-component-path';
 import { requestReactProbe } from '@/shared/utils/react-probe';
+import { buildAnnotationTargetContext } from './annotation-target-context';
 
 /**
  * useAnnotationHover - 处理标注模式下的鼠标悬浮
@@ -35,19 +36,20 @@ export function useAnnotationHover() {
         return;
       }
 
-      // Get element info
-      const element = target.closest('[data-element-path]') as HTMLElement | null;
-      const elementPath = element?.dataset.elementPath || getElementPath(target);
-      const elementLabel = getElementLabel(target);
       const selectedText = window.getSelection()?.toString();
+      const targetContext = buildAnnotationTargetContext(target, selectedText || undefined, {
+        includeForensic: false,
+        labelVariant: 'hover',
+        preferAnnotatedElementPath: true,
+      });
       const baseHover = {
         x: e.clientX,
         y: e.clientY,
         clientY: e.clientY,
-        element: elementLabel,
-        elementPath,
-        rect: target.getBoundingClientRect(),
-        ...(selectedText ? { selectedText } : {}),
+        element: targetContext.element,
+        elementPath: targetContext.elementPath,
+        rect: targetContext.rect,
+        ...(targetContext.selectedText ? { selectedText: targetContext.selectedText } : {}),
       };
 
       setHover(baseHover);
@@ -91,54 +93,6 @@ export function useAnnotationHover() {
       document.removeEventListener('mouseleave', handleMouseLeave);
     };
   }, [isAnnotationMode, setHover, pendingAnnotation, editingAnnotation, settings.reactEnabled]);
-}
-
-/**
- * Get element path for debugging
- */
-function getElementPath(target: HTMLElement): string {
-  const path: string[] = [];
-  let current: Element | null = target;
-
-  while (current && current !== document.body && path.length < 5) {
-    const tag = current.tagName.toLowerCase();
-    const el = current as HTMLElement;
-    const id = el.id ? `#${el.id}` : '';
-    const className = typeof el.className === 'string' ? el.className : '';
-    const classes = className ? '.' + className.split(' ').filter(Boolean).slice(0, 2).join('.') : '';
-    if (id || classes) {
-      path.push(`${tag}${id}${classes}`);
-    }
-    current = current.parentElement;
-  }
-
-  return path.join(' > ') || target.tagName.toLowerCase();
-}
-
-/**
- * Get human-readable element label
- */
-function getElementLabel(target: HTMLElement): string {
-  // Try to get aria-label first
-  if (target.getAttribute('aria-label')) {
-    return target.getAttribute('aria-label')!;
-  }
-
-  // Try to get accessible name
-  const accessibleName = target.getAttribute('name') || target.getAttribute('alt') || target.getAttribute('title');
-  if (accessibleName) {
-    return accessibleName;
-  }
-
-  // Fall back to tag + text content preview
-  const text = target.textContent?.trim().slice(0, 50) || '';
-  const tag = target.tagName.toLowerCase();
-
-  if (text) {
-    return `<${tag}> "${text.slice(0, 30)}${text.length > 30 ? '...' : ''}"`;
-  }
-
-  return `<${tag}>`;
 }
 
 /**
