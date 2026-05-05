@@ -10,7 +10,7 @@ let shadowHost: HTMLDivElement | null = null;
 let shadowRoot: ShadowRoot | null = null;
 
 function getMountTarget() {
-  return document.body ?? document.documentElement;
+  return document.documentElement;
 }
 
 function getOrCreateContainer() {
@@ -28,6 +28,7 @@ function getOrCreateContainer() {
   const host = document.createElement('div');
   host.id = EXTENSION_ROOT_ID;
   host.setAttribute('data-feedback-toolbar', 'true');
+  host.setAttribute('data-aivis-next-ui', 'true');
   host.style.position = 'fixed';
   host.style.top = '0';
   host.style.left = '0';

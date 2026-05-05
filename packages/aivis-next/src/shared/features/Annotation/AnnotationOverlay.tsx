@@ -44,9 +44,6 @@ export function AnnotationOverlay() {
     }
   }, [isAnnotationMode, setHover, setPendingAnnotation, setEditingAnnotation]);
 
-  // Only render if markers should be shown
-  if (!showMarkers) return null;
-
   return (
     <>
       {/* Cursor style when in annotation mode */}
@@ -57,13 +54,15 @@ export function AnnotationOverlay() {
       )}
       <AnnotationHighlight />
       <PendingMarker />
-      <div className="fixed inset-0 pointer-events-none z-[99999]">
-        {annotations.map((annotation, index) => (
-          <div key={annotation.id} className="pointer-events-auto">
-            <AnnotationMarker annotation={annotation} index={index} colorId={settings.annotationColorId} />
-          </div>
-        ))}
-      </div>
+      {showMarkers && (
+        <div className="fixed inset-0 pointer-events-none z-[99999]">
+          {annotations.map((annotation, index) => (
+            <div key={annotation.id} className="pointer-events-auto">
+              <AnnotationMarker annotation={annotation} index={index} colorId={settings.annotationColorId} />
+            </div>
+          ))}
+        </div>
+      )}
       <AnnotationHoverLabel />
       <AnnotationPopup />
     </>

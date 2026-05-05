@@ -120,6 +120,20 @@
         font-size: 12px;
         color: var(--muted);
       }
+
+      .dev {
+        margin-top: 12px;
+        padding: 12px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .dev strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 13px;
+      }
     </style>
   </head>
   <body>
@@ -140,6 +154,11 @@
         </div>
 
         <div class="hint">快捷键: Cmd/Ctrl + Shift + F 展开或收起工具栏</div>
+
+        <div class="dev">
+          <strong id="dev-title">开发更新</strong>
+          <p id="dev-text">正在读取 watch 构建状态。</p>
+        </div>
       </div>
     </div>
     <script type="module" src="./popup.ts"></script>

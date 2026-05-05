@@ -9,6 +9,7 @@ import {
 } from '../store';
 import { DEFAULT_SIZES, type DesignPlacement, type SnapGuide } from '../types';
 import { isTypingKeyboardEvent } from '@/shared/utils/keyboard';
+import { isExtensionUiElement } from '@/shared/utils/extension-ui';
 
 const SNAP_THRESHOLD = 5;
 
@@ -141,7 +142,7 @@ export function useLayoutMode() {
       if (!activeComponent) return;
 
       const target = e.target as HTMLElement;
-      if (target.closest('[data-no-drag]') || target.closest('[data-feedback-toolbar]')) {
+      if (target.closest('[data-no-drag]') || isExtensionUiElement(target)) {
         return;
       }
 

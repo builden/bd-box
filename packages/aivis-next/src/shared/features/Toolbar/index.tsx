@@ -94,6 +94,7 @@ export function Toolbar() {
       <div
         ref={containerRef}
         data-feedback-toolbar
+        data-aivis-next-ui
         data-theme={isDarkMode ? 'dark' : 'light'}
         data-no-hover
         className={clsx(

@@ -3,6 +3,7 @@ import { useAtom } from 'jotai';
 import clsx from 'clsx';
 import { isDarkModeAtom } from '@/shared/features/SettingsPanel/store';
 import { isRulerModeAtom, rulerStateAtom, type RulerState } from '../store';
+import { isExtensionUiElement } from '@/shared/utils/extension-ui';
 
 const EDGE_PADDING = 0;
 const MIN_RULER_LENGTH = 400;
@@ -190,8 +191,8 @@ function collectPageSnapCandidates(): PageSnapCandidate[] {
   const roots = Array.from(document.body.children) as HTMLElement[];
 
   const pushCandidate = (el: HTMLElement) => {
-    if (el.hasAttribute('data-feedback-toolbar')) return;
-    if (el.closest('[data-feedback-toolbar]')) return;
+    if (el.hasAttribute('data-aivis-next-ui')) return;
+    if (isExtensionUiElement(el)) return;
 
     const style = window.getComputedStyle(el);
     if (style.display === 'none' || style.visibility === 'hidden') return;

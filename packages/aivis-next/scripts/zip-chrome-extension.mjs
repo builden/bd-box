@@ -16,7 +16,7 @@ if (existsSync(zipPath)) {
   await rm(zipPath);
 }
 
-execFileSync('zip', ['-r', zipPath, '.'], {
+execFileSync('zip', ['-r', zipPath, '.', '-x', 'dev-reload.json'], {
   cwd: distDir,
   stdio: 'inherit',
 });

@@ -53,7 +53,7 @@ function collectDOMCandidates(): Candidate[] {
   for (const el of roots) {
     if (!(el instanceof HTMLElement)) continue;
     if (SKIP_TAGS.has(el.tagName.toLowerCase())) continue;
-    if (el.hasAttribute('data-feedback-toolbar')) continue;
+    if (el.hasAttribute('data-aivis-next-ui')) continue;
 
     const style = window.getComputedStyle(el);
     if (style.display === 'none' || style.visibility === 'hidden') continue;
@@ -74,7 +74,7 @@ function collectDOMCandidates(): Candidate[] {
     for (const child of Array.from(el.children) as HTMLElement[]) {
       if (!(child instanceof HTMLElement)) continue;
       if (SKIP_TAGS.has(child.tagName.toLowerCase())) continue;
-      if (child.hasAttribute('data-feedback-toolbar')) continue;
+      if (child.hasAttribute('data-aivis-next-ui')) continue;
 
       const childStyle = window.getComputedStyle(child);
       if (childStyle.display === 'none' || childStyle.visibility === 'hidden') continue;
@@ -562,7 +562,7 @@ export function getPageLayout(viewport: { width: number; height: number }): Page
   const addCandidate = (el: HTMLElement) => {
     if (seen.has(el)) return;
     if (!(el instanceof HTMLElement)) return;
-    if (el.hasAttribute('data-feedback-toolbar')) return;
+    if (el.hasAttribute('data-aivis-next-ui')) return;
     if (SKIP_TAGS.has(el.tagName.toLowerCase())) return;
     seen.add(el);
     candidates.push(el);

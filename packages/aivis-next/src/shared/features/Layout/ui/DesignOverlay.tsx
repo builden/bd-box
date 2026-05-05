@@ -17,6 +17,7 @@ import { SnapGuides } from './SnapGuides';
 import { DEFAULT_SIZES } from '../types';
 import type { DesignPlacement, SnapGuide } from '../types';
 import { isTypingKeyboardEvent } from '@/shared/utils/keyboard';
+import { isExtensionUiElement } from '@/shared/utils/extension-ui';
 
 const SNAP_THRESHOLD = 5;
 const MIN_SIZE = 24;
@@ -166,7 +167,7 @@ export const DesignOverlay = memo(function DesignOverlay() {
 
       // Don't interact if clicking on toolbar or existing placement
       const target = e.target as HTMLElement;
-      if (target.closest('[data-no-drag]') || target.closest('[data-feedback-toolbar]')) {
+      if (target.closest('[data-no-drag]') || isExtensionUiElement(target)) {
         return;
       }
 
@@ -496,7 +497,7 @@ export const DesignOverlay = memo(function DesignOverlay() {
         const releaseY = e.clientY;
         // 检查是否释放在有效区域（不在toolbar或panel上）
         const target = document.elementFromPoint(releaseX, releaseY) as HTMLElement;
-        if (target && !target.closest('[data-no-drag]') && !target.closest('[data-feedback-toolbar]')) {
+        if (target && !target.closest('[data-no-drag]') && !isExtensionUiElement(target)) {
           // 创建placement
           const defaultSize = DEFAULT_SIZES[draggingFromPalette.type];
           const width = defaultSize?.width ?? 200;
@@ -581,6 +582,7 @@ export const DesignOverlay = memo(function DesignOverlay() {
       className="fixed inset-0 pointer-events-auto"
       style={{ zIndex: 99995, cursor: draggingFromPalette || activeComponent ? 'crosshair' : 'default' }}
       data-feedback-toolbar
+      data-aivis-next-ui
     >
       {/* Snap guides */}
       <SnapGuides guides={snapGuides} />
@@ -634,6 +636,7 @@ export const DesignOverlay = memo(function DesignOverlay() {
             height: drawBox.h,
           }}
           data-feedback-toolbar
+          data-aivis-next-ui
         />
       )}
 
@@ -648,6 +651,7 @@ export const DesignOverlay = memo(function DesignOverlay() {
             height: selectBox.h,
           }}
           data-feedback-toolbar
+          data-aivis-next-ui
         />
       )}
 
@@ -668,6 +672,7 @@ export const DesignOverlay = memo(function DesignOverlay() {
             boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
           }}
           data-feedback-toolbar
+          data-aivis-next-ui
         >
           {sizeIndicator.text}
         </div>

@@ -524,6 +524,7 @@ export const ComponentPanel = memo(function ComponentPanel({ toolbarRef }: Compo
       data-no-drag
       data-no-hover
       data-feedback-toolbar
+      data-aivis-next-ui
     >
       {/* Header */}
       <div className="px-4 pb-1">

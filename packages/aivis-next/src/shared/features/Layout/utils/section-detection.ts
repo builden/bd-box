@@ -166,8 +166,8 @@ export function detectPageSections(): DetectedSection[] {
 
     if (SKIP_TAGS.has(tag)) return;
 
-    if (el.hasAttribute('data-feedback-toolbar')) return;
-    if (el.closest('[data-feedback-toolbar]')) return;
+    if (el.hasAttribute('data-aivis-next-ui')) return;
+    if (el.closest('[data-aivis-next-ui]')) return;
 
     const style = window.getComputedStyle(el);
     if (style.display === 'none' || style.visibility === 'hidden') return;

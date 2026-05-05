@@ -2,6 +2,20 @@ type StorageGetResult = Record<string, unknown>;
 
 type StorageChangeListener = (changes: Record<string, { newValue?: unknown }>, areaName: string) => void;
 
+type ChromePort = {
+  name: string;
+  disconnect: () => void;
+  postMessage: (message: unknown) => void;
+  onDisconnect: {
+    addListener: (listener: () => void) => void;
+    removeListener: (listener: () => void) => void;
+  };
+  onMessage: {
+    addListener: (listener: (message: unknown) => void) => void;
+    removeListener: (listener: (message: unknown) => void) => void;
+  };
+};
+
 type ChromeStorageArea = {
   get: (keys: string | string[] | Record<string, unknown>, callback: (items: StorageGetResult) => void) => void;
   set: (items: Record<string, unknown>, callback?: () => void) => void;
@@ -19,7 +33,9 @@ type ChromeStorage = {
 type ChromeRuntime = {
   lastError?: Error | undefined;
   openOptionsPage?: () => Promise<void> | void;
+  connect?: (connectInfo: { name: string }) => ChromePort;
   sendMessage?: (message: unknown) => Promise<unknown>;
+  getURL?: (path: string) => string;
 };
 
 type ChromeApi = {
@@ -29,6 +45,9 @@ type ChromeApi = {
 
 export const EXTENSION_ENABLED_KEY = 'aivis-next-enabled';
 export const EXTENSION_DEFAULT_ENABLED_KEY = 'aivis-next-default-enabled';
+export const DEV_RELOAD_BUILD_ID_KEY = 'aivis-next-dev-build-id';
+export const DEV_RELOAD_LAST_AT_KEY = 'aivis-next-dev-last-reload-at';
+let activeDevReloadPort: ChromePort | null = null;
 
 export function getChromeApi(): ChromeApi | null {
   return (globalThis as typeof globalThis & { chrome?: ChromeApi }).chrome ?? null;
@@ -110,4 +129,72 @@ export async function requestDebuggerPauseFromBackground(): Promise<void> {
   if (!chromeApi?.runtime.sendMessage) return;
 
   await chromeApi.runtime.sendMessage({ type: 'aivis-next/pause-current-tab' });
+}
+
+type DevReloadConfig = {
+  enabled?: boolean;
+  buildId?: string;
+};
+
+type DevReloadState = {
+  buildId?: string;
+  lastReloadAt?: number;
+};
+
+async function readExtensionJson<T>(path: string): Promise<T | null> {
+  const chromeApi = getChromeApi();
+  if (!chromeApi?.runtime?.getURL) return null;
+
+  try {
+    const response = await fetch(chromeApi.runtime.getURL(path), { cache: 'no-store' });
+    if (!response.ok) return null;
+    return (await response.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
+export async function readDevReloadConfig(): Promise<DevReloadConfig | null> {
+  return readExtensionJson<DevReloadConfig>('dev-reload.json');
+}
+
+export async function readDevReloadState(): Promise<DevReloadState> {
+  const chromeApi = getChromeApi();
+  if (!chromeApi?.storage?.local) return {};
+
+  return new Promise<DevReloadState>((resolve) => {
+    chromeApi.storage.local.get([DEV_RELOAD_BUILD_ID_KEY, DEV_RELOAD_LAST_AT_KEY], (items) => {
+      resolve({
+        buildId: typeof items[DEV_RELOAD_BUILD_ID_KEY] === 'string' ? items[DEV_RELOAD_BUILD_ID_KEY] : undefined,
+        lastReloadAt: typeof items[DEV_RELOAD_LAST_AT_KEY] === 'number' ? items[DEV_RELOAD_LAST_AT_KEY] : undefined,
+      });
+    });
+  });
+}
+
+export async function setDevReloadState(state: DevReloadState): Promise<void> {
+  const chromeApi = getChromeApi();
+  if (!chromeApi?.storage?.local) return;
+
+  await new Promise<void>((resolve) => {
+    chromeApi.storage.local.set(state, () => resolve());
+  });
+}
+
+export async function connectDevReloadWatcher(): Promise<boolean> {
+  const chromeApi = getChromeApi();
+  if (!chromeApi?.runtime?.connect) return false;
+
+  const config = await readDevReloadConfig();
+  if (!config?.enabled || typeof config.buildId !== 'string' || !config.buildId) return false;
+
+  if (activeDevReloadPort) return true;
+
+  const port = chromeApi.runtime.connect({ name: 'aivis-next/dev-reload' });
+  activeDevReloadPort = port;
+  port.onDisconnect.addListener(() => {
+    activeDevReloadPort = null;
+  });
+  port.postMessage({ type: 'aivis-next/dev-reload/activate', buildId: config.buildId });
+  return true;
 }

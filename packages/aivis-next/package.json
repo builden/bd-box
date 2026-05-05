@@ -17,7 +17,11 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "build:chrome": "bun ./scripts/generate-extension-icons.mjs && vite build --mode chrome && bun ./scripts/copy-chrome-manifest.mjs",
+    "build:chrome": "bun ./scripts/generate-extension-icons.mjs && vite build --mode chrome",
+    "build:chrome:watch": "AIVIS_CHROME_WATCH=1 bun ./scripts/generate-extension-icons.mjs && AIVIS_CHROME_WATCH=1 vite build --mode chrome --watch",
+    "watch": "bun run build:chrome:watch",
+    "watch:chrome": "bun run build:chrome:watch",
+    "dev:chrome": "bun run build:chrome:watch",
     "package:chrome": "bun run build:chrome && bun ./scripts/zip-chrome-extension.mjs",
     "preview": "vite preview",
     "test": "bun test",
