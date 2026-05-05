@@ -58,6 +58,7 @@ export const AnnotationHoverLabel = memo(function AnnotationHoverLabel() {
         {hover.reactComponents || hover.element}
       </div>
       {hover.reactComponents && <div className="mt-0.5 text-[10px] opacity-50 truncate">{hover.element}</div>}
+      {hover.sourceFile && <div className="mt-0.5 text-[10px] opacity-60 font-mono truncate">{hover.sourceFile}</div>}
       {hover.selectedText && (
         <div className="mt-1 opacity-70 truncate">
           &quot;{hover.selectedText.slice(0, 50)}

@@ -181,6 +181,11 @@ export const AnnotationPopup = memo(function AnnotationPopup() {
           </button>
         )}
       </div>
+      {currentAnnotation.sourceFile && (
+        <div className={clsx('mb-2 text-[10px] font-mono truncate', isDarkMode ? 'text-white/35' : 'text-black/35')}>
+          {currentAnnotation.sourceFile}
+        </div>
+      )}
 
       {/* Selected text quote */}
       {currentAnnotation.selectedText && (
