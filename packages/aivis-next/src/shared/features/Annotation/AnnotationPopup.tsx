@@ -1,16 +1,10 @@
 import { memo, useState, useEffect, useRef } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
 import clsx from 'clsx';
-import {
-  pendingAnnotationAtom,
-  editingAnnotationAtom,
-  annotationsAtom,
-  popupShakeAtom,
-  hoverAtom,
-  type Annotation,
-} from './store';
+import { pendingAnnotationAtom, editingAnnotationAtom, annotationsAtom, popupShakeAtom, hoverAtom } from './store';
 import { isDarkModeAtom } from '@/shared/features/SettingsPanel/store';
 import { COLOR_OPTIONS } from '@/shared/features/SettingsPanel/store';
+import { buildAnnotationFromPending } from './annotation-assembly';
 
 /**
  * AnnotationPopup - 标注输入弹窗
@@ -65,37 +59,14 @@ export const AnnotationPopup = memo(function AnnotationPopup() {
 
     if (isEditing) {
       // 编辑模式：更新标注
-      setAnnotations((prev: Annotation[]) =>
+      setAnnotations((prev) =>
         prev.map((a) => (a.id === editingAnnotation.id ? { ...a, comment: comment.trim() } : a))
       );
       setEditingAnnotation(null);
     } else {
       // 新建模式：创建标注
-      const newAnnotation: Annotation = {
-        id: `annotation-${Date.now()}`,
-        x: pendingAnnotation!.x,
-        y: pendingAnnotation!.y,
-        element: pendingAnnotation!.element,
-        elementPath: pendingAnnotation!.elementPath,
-        comment: comment.trim(),
-        timestamp: Date.now(),
-        ...(pendingAnnotation!.colorId && { colorId: pendingAnnotation!.colorId }),
-        ...(pendingAnnotation!.popupX !== undefined && { popupX: pendingAnnotation!.popupX }),
-        ...(pendingAnnotation!.popupY !== undefined && { popupY: pendingAnnotation!.popupY }),
-        ...(pendingAnnotation!.selectedText ? { selectedText: pendingAnnotation!.selectedText } : {}),
-        ...(pendingAnnotation!.fullPath && { fullPath: pendingAnnotation!.fullPath }),
-        ...(pendingAnnotation!.cssClasses && { cssClasses: pendingAnnotation!.cssClasses }),
-        ...(pendingAnnotation!.boundingBox && { boundingBox: pendingAnnotation!.boundingBox }),
-        ...(pendingAnnotation!.nearbyText && { nearbyText: pendingAnnotation!.nearbyText }),
-        ...(pendingAnnotation!.computedStyles && { computedStyles: pendingAnnotation!.computedStyles }),
-        ...(pendingAnnotation!.accessibility && { accessibility: pendingAnnotation!.accessibility }),
-        ...(pendingAnnotation!.nearbyElements && { nearbyElements: pendingAnnotation!.nearbyElements }),
-        ...(pendingAnnotation!.sourceFile && { sourceFile: pendingAnnotation!.sourceFile }),
-        ...(pendingAnnotation!.reactComponents && { reactComponents: pendingAnnotation!.reactComponents }),
-        ...(pendingAnnotation!.propsChain && { propsChain: pendingAnnotation!.propsChain }),
-        ...(pendingAnnotation!.vscodeUrl && { vscodeUrl: pendingAnnotation!.vscodeUrl }),
-      };
-      setAnnotations((prev: Annotation[]) => [...prev, newAnnotation]);
+      const newAnnotation = buildAnnotationFromPending(pendingAnnotation!, comment.trim());
+      setAnnotations((prev) => [...prev, newAnnotation]);
       setPendingAnnotation(null);
       setHover(null); // 清除 hover 状态
     }
@@ -104,7 +75,7 @@ export const AnnotationPopup = memo(function AnnotationPopup() {
 
   const handleDelete = () => {
     if (!editingAnnotation) return;
-    setAnnotations((prev: Annotation[]) => prev.filter((a) => a.id !== editingAnnotation.id));
+    setAnnotations((prev) => prev.filter((a) => a.id !== editingAnnotation.id));
     setEditingAnnotation(null);
     setComment('');
   };
