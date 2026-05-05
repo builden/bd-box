@@ -1768,10 +1768,24 @@ export async function mapCompiledPositionToOriginal(
 
   try {
     const consumerTyped = consumer as SourceMapConsumer;
-    const original = consumerTyped.originalPositionFor({
-      line: parsed.line,
-      column: parsed.column,
-    });
+    let original: { source?: string | null; line?: number | null; column?: number | null } | null = null;
+    try {
+      original = consumerTyped.originalPositionFor({
+        line: parsed.line,
+        column: parsed.column,
+      });
+    } catch (error) {
+      // Source map evaluation can trip CSP-restricted browser environments.
+      // Mapping is best-effort, so return null and let the caller fall back.
+      logSourceMapDebug('originalPositionFor failed, falling back to compiled location', {
+        compiledUrl: parsed.fileUrl,
+        line: parsed.line,
+        column: parsed.column,
+        errorName: error instanceof Error ? error.name : undefined,
+        errorMessage: error instanceof Error ? error.message : undefined,
+      });
+      return null;
+    }
 
     if (!original || !original.source) {
       logSourceMapDebug('originalPositionFor returned empty result', {

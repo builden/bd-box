@@ -1,9 +1,4 @@
-import {
-  EXTENSION_DEFAULT_ENABLED_KEY,
-  EXTENSION_ENABLED_KEY,
-  connectDevReloadWatcher,
-  readExtensionEnabled,
-} from './chrome-api';
+import { EXTENSION_DEFAULT_ENABLED_KEY, EXTENSION_ENABLED_KEY, readExtensionEnabled } from './chrome-api';
 import { mountAivisNextExtension, unmountAivisNextExtension } from './mount';
 import { triggerDebuggerPauseScheduler } from '@/shared/utils/debugger-hotkey';
 import { installReactProbeBridge } from '@/shared/utils/react-probe';
@@ -22,7 +17,6 @@ async function syncExtensionState() {
 
 function start() {
   void installReactProbeBridge();
-  void connectDevReloadWatcher();
   void syncExtensionState();
 }
 
