@@ -3,6 +3,7 @@ import { useAtom } from 'jotai';
 import { isRearrangeModeAtom, rearrangeStateAtom, selectedSectionIdsAtom, sectionsDetectedAtom } from '../store';
 import { detectPageSections, captureElement } from '../utils/section-detection';
 import type { DetectedSection } from '../types';
+import { isTypingKeyboardEvent } from '@/shared/utils/keyboard';
 
 /**
  * useRearrangeMode - Rearrange 模式逻辑 hook
@@ -156,6 +157,7 @@ export function useRearrangeMode() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isRearrangeMode) return;
+      if (isTypingKeyboardEvent(e)) return;
 
       if (e.key === 'Escape') {
         setSelectedIds(new Set());
@@ -163,8 +165,6 @@ export function useRearrangeMode() {
       }
 
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedIds.size > 0) {
-        const target = e.target as HTMLElement;
-        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
         e.preventDefault();
         handleDeleteSelected();
         return;

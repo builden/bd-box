@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aivis Next Settings</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+        --bg: #0f1115;
+        --panel: #171a21;
+        --text: #f3f4f6;
+        --muted: #9ca3af;
+        --accent: #7c3aed;
+        --accent-strong: #6d28d9;
+        --border: rgba(255, 255, 255, 0.08);
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top right, rgba(124, 58, 237, 0.28), transparent 42%),
+          linear-gradient(180deg, #10131a 0%, #0b0d12 100%);
+      }
+
+      .wrap {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+
+      .card {
+        background: rgba(23, 26, 33, 0.92);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 28px;
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+      }
+
+      h1 {
+        font-size: 28px;
+        line-height: 1.1;
+        margin: 0 0 10px;
+        letter-spacing: -0.03em;
+      }
+
+      p {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.6;
+        color: var(--muted);
+      }
+
+      .section {
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: start;
+      }
+
+      .title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+
+      .hint {
+        margin-top: 8px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .status {
+        margin-top: 16px;
+        padding: 14px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .status strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 14px;
+      }
+
+      .actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 18px;
+        flex-wrap: wrap;
+      }
+
+      button {
+        appearance: none;
+        border: 0;
+        border-radius: 999px;
+        padding: 12px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+          transform 0.15s ease,
+          opacity 0.15s ease,
+          background-color 0.15s ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: wait;
+        transform: none;
+      }
+
+      .primary {
+        color: white;
+        background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      }
+
+      .secondary {
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      label {
+        display: inline-flex;
+        gap: 12px;
+        align-items: center;
+        font-size: 15px;
+      }
+
+      input[type='checkbox'] {
+        width: 18px;
+        height: 18px;
+        margin: 0;
+        accent-color: #8b5cf6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h1>Aivis Next Settings</h1>
+        <p>配置扩展的默认注入行为，以及当前页面状态的回退策略。</p>
+
+        <div class="section">
+          <div class="row">
+            <div>
+              <div class="title">默认自动启用</div>
+              <p>当当前状态没有手动覆盖时，新的页面会按这个值决定是否注入工具栏。</p>
+            </div>
+            <label>
+              <input id="default-enabled" type="checkbox" />
+              启用
+            </label>
+          </div>
+
+          <div class="status" id="status">
+            <strong id="status-title">加载中</strong>
+            <p id="status-text">正在读取默认设置。</p>
+          </div>
+
+          <div class="actions">
+            <button class="primary" id="save">保存默认设置</button>
+            <button class="secondary" id="reset">清除当前覆盖</button>
+          </div>
+
+          <div class="hint">清除当前覆盖后，插件会回退到“默认自动启用”的设置。</div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="./options.ts"></script>
+  </body>
+</html>

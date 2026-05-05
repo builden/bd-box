@@ -17,6 +17,8 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "build:chrome": "bun ./scripts/generate-extension-icons.mjs && vite build --mode chrome && bun ./scripts/copy-chrome-manifest.mjs",
+    "package:chrome": "bun run build:chrome && bun ./scripts/zip-chrome-extension.mjs",
     "preview": "vite preview",
     "test": "bun test",
     "test:coverage": "bun test --coverage",

@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { isRearrangeModeAtom, rearrangeStateAtom, selectedSectionIdsAtom, sectionsDetectedAtom } from '../store';
 import { detectPageSections, captureElement } from '../utils/section-detection';
 import type { DetectedSection } from '../types';
+import { isTypingKeyboardEvent } from '@/shared/utils/keyboard';
 
 // 退出动画的连接线
 interface ExitingConnector {
@@ -208,14 +209,13 @@ export const RearrangeOverlay = memo(function RearrangeOverlay() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isRearrangeMode) return;
+      if (isTypingKeyboardEvent(e)) return;
 
       if (e.key === 'Escape') {
         setSelectedIds(new Set());
       }
 
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedIds.size > 0) {
-        const target = e.target as HTMLElement;
-        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
         e.preventDefault();
 
         setRearrangeState((prev) => {

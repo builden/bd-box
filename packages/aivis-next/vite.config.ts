@@ -1,27 +1,56 @@
 import { defineConfig } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-export default defineConfig(({ command }) => {
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+export default defineConfig(({ command, mode }) => {
+  const sharedConfig = {
+    plugins: [tailwindcss()],
+    resolve: {
+      alias: {
+        '@': resolve(__dirname, './src'),
+      },
+    },
+  };
+
   // In dev mode (serve), use the example page
   if (command === 'serve') {
     return {
-      plugins: [tailwindcss()],
+      ...sharedConfig,
       root: './example',
       server: {
         port: 3002,
       },
-      resolve: {
-        tsconfigPaths: true,
+    };
+  }
+
+  if (mode === 'chrome') {
+    return {
+      ...sharedConfig,
+      build: {
+        outDir: 'dist/chrome-extension',
+        lib: {
+          entry: 'src/extension/content-script.tsx',
+          name: 'AivisNextContentScript',
+          formats: ['iife'],
+          fileName: 'content-script',
+        },
+        rollupOptions: {
+          output: {
+            banner: 'globalThis.process = globalThis.process || { env: {} };',
+          },
+        },
+        sourcemap: true,
+        emptyOutDir: true,
       },
     };
   }
 
   // In build mode, build the library
   return {
-    plugins: [tailwindcss()],
-    resolve: {
-      tsconfigPaths: true,
-    },
+    ...sharedConfig,
     build: {
       lib: {
         entry: 'src/index.ts',

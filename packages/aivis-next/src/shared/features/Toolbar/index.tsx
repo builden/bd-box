@@ -71,10 +71,12 @@ export function Toolbar() {
       <LayoutMode />
       <div
         ref={containerRef}
+        data-feedback-toolbar
         data-theme={isDarkMode ? 'dark' : 'light'}
         data-no-hover
         className={clsx(
           'flex items-center',
+          'pointer-events-auto',
           isActive ? 'justify-between px-2' : 'justify-center',
           'cursor-grab select-none',
           'focus:outline-none',
@@ -88,9 +90,9 @@ export function Toolbar() {
         onClick={(e) => e.stopPropagation()}
       >
         {/* SettingsPanel inside toolbar - uses absolute positioning */}
-        <SettingsPanel />
+        <SettingsPanel toolbarRef={containerRef} />
         {/* ComponentPanel for layout mode - uses absolute positioning above toolbar */}
-        <ComponentPanel />
+        <ComponentPanel toolbarRef={containerRef} />
         {/* 左侧工具栏按钮 - 仅 expanded */}
         {isActive && (
           <>

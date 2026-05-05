@@ -10,6 +10,10 @@ const PANEL_HEIGHT = 320;
 const EDGE_PADDING = 10;
 const SPACING = '0.5rem';
 
+interface ComponentPanelProps {
+  toolbarRef?: React.RefObject<HTMLDivElement | null>;
+}
+
 // =============================================================================
 // Rolling Count Animation (from aivis)
 // =============================================================================
@@ -371,7 +375,7 @@ function scrollFadeClass(el: HTMLDivElement | null) {
 // Main Component Panel
 // =============================================================================
 
-export const ComponentPanel = memo(function ComponentPanel() {
+export const ComponentPanel = memo(function ComponentPanel({ toolbarRef }: ComponentPanelProps) {
   const [activeComponent, setActiveComponent] = useAtom(activeDesignComponentAtom);
   const [isDarkMode] = useAtom(isDarkModeAtom);
   const [isActive] = useAtom(isActiveAtom);
@@ -412,8 +416,7 @@ export const ComponentPanel = memo(function ComponentPanel() {
     const startY = e.clientY;
 
     // Find toolbar bottom for distance-based scaling
-    const toolbar = (e.target as HTMLElement).closest('[data-feedback-toolbar]');
-    const toolbarTop = toolbar?.getBoundingClientRect().top ?? window.innerHeight;
+    const toolbarTop = toolbarRef?.current?.getBoundingClientRect().top ?? window.innerHeight;
 
     const onMove = (ev: MouseEvent) => {
       const dx = ev.clientX - startX;
@@ -497,7 +500,7 @@ export const ComponentPanel = memo(function ComponentPanel() {
   };
 
   // 智能位置
-  const toolbarRect = (document.querySelector('[data-no-drag]') as HTMLElement)?.parentElement?.getBoundingClientRect();
+  const toolbarRect = toolbarRef?.current?.getBoundingClientRect();
   const toolbarTop = toolbarRect?.top ?? window.innerHeight;
   const panelTopIfAbove = toolbarTop - PANEL_HEIGHT - 16;
   const showAbove = panelTopIfAbove >= EDGE_PADDING;

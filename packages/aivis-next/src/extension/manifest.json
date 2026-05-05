@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Aivis Next",
+  "version": "0.0.1",
+  "description": "Inject the Aivis Next toolbar into webpages.",
+  "action": {
+    "default_title": "Aivis Next",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "extension-icons/icon-16.png",
+      "32": "extension-icons/icon-32.png",
+      "48": "extension-icons/icon-48.png",
+      "128": "extension-icons/icon-128.png"
+    }
+  },
+  "options_page": "options.html",
+  "icons": {
+    "16": "extension-icons/icon-16.png",
+    "32": "extension-icons/icon-32.png",
+    "48": "extension-icons/icon-48.png",
+    "128": "extension-icons/icon-128.png"
+  },
+  "permissions": ["storage"],
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-script.iife.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

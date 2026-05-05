@@ -6,6 +6,7 @@ import { generateAnnotationOutput, copyToClipboard } from '@/shared/features/Ann
 import { isActiveAtom, copiedAtom, triggerCopyAtom } from '@/shared/features/ToggleButton/store';
 import { toastAtom } from '@/shared/components/store';
 import { isLayoutModeAtom, isRearrangeModeAtom } from '@/shared/features/Layout';
+import { isTypingKeyboardEvent } from '@/shared/utils/keyboard';
 
 /**
  * useHotkeys - 全局快捷键和 Toolbar 按钮事件处理
@@ -48,9 +49,8 @@ export function useHotkeys() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // 跳过在输入框中的按键
-      const target = e.target as HTMLElement;
-      const isTyping = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+      // 跳过输入中的按键，包含 shadow DOM 内部的 textarea/input
+      if (isTypingKeyboardEvent(e)) return;
 
       // Cmd/Ctrl+Shift+F - 切换工具栏展开/收起
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === 'f' || e.key === 'F')) {
@@ -59,8 +59,8 @@ export function useHotkeys() {
         return;
       }
 
-      // 跳过其他快捷键如果正在输入或有修饰键
-      if (isTyping || e.metaKey || e.ctrlKey) return;
+      // 跳过其他快捷键如果有修饰键
+      if (e.metaKey || e.ctrlKey) return;
 
       switch (e.key.toLowerCase()) {
         case 'escape':

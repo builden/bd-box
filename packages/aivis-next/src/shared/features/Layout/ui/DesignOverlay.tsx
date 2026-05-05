@@ -16,6 +16,7 @@ import { PlacementMarker } from './PlacementMarker';
 import { SnapGuides } from './SnapGuides';
 import { DEFAULT_SIZES } from '../types';
 import type { DesignPlacement, SnapGuide } from '../types';
+import { isTypingKeyboardEvent } from '@/shared/utils/keyboard';
 
 const SNAP_THRESHOLD = 5;
 const MIN_SIZE = 24;
@@ -533,14 +534,13 @@ export const DesignOverlay = memo(function DesignOverlay() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isLayoutMode) return;
+      if (isTypingKeyboardEvent(e)) return;
 
       if (e.key === 'Escape') {
         setSelectedIds(new Set());
       }
 
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedIds.size > 0) {
-        const target = e.target as HTMLElement;
-        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
         e.preventDefault();
         // 淡出动画删除所有选中的
         const idsToDelete = new Set(selectedIds);

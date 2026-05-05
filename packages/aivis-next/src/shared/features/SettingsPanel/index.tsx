@@ -15,7 +15,11 @@ const PANEL_WIDTH = 253;
 const EDGE_PADDING = 10;
 const SPACING = '0.5rem';
 
-export const SettingsPanel = memo(function SettingsPanel() {
+interface SettingsPanelProps {
+  toolbarRef?: React.RefObject<HTMLDivElement | null>;
+}
+
+export const SettingsPanel = memo(function SettingsPanel({ toolbarRef }: SettingsPanelProps) {
   const [settings, setSettings] = useAtom(settingsAtom);
   const [showSettings, setShowSettings] = useAtom(showSettingsAtom);
   const [settingsPage, setSettingsPage] = useAtom(settingsPageAtom);
@@ -71,10 +75,7 @@ export const SettingsPanel = memo(function SettingsPanel() {
     }
 
     // 检测工具栏位置，判断面板放在上方是否会超出屏幕
-    // SettingsPanel 的父容器就是工具栏
-    const toolbarRect = (
-      document.querySelector('[data-no-drag]') as HTMLElement
-    )?.parentElement?.getBoundingClientRect();
+    const toolbarRect = toolbarRef?.current?.getBoundingClientRect();
     const toolbarTop = toolbarRect?.top ?? window.innerHeight;
 
     // 面板放在上方时的顶部位置：工具栏顶部 - 面板高度 - 间距

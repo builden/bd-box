@@ -8,6 +8,7 @@ import {
   snapGuidesAtom,
 } from '../store';
 import { DEFAULT_SIZES, type DesignPlacement, type SnapGuide } from '../types';
+import { isTypingKeyboardEvent } from '@/shared/utils/keyboard';
 
 const SNAP_THRESHOLD = 5;
 
@@ -243,6 +244,7 @@ export function useLayoutMode() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isLayoutMode) return;
+      if (isTypingKeyboardEvent(e)) return;
 
       if (e.key === 'Escape') {
         setSelectedIds(new Set());
@@ -250,8 +252,6 @@ export function useLayoutMode() {
       }
 
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedIds.size > 0) {
-        const target = e.target as HTMLElement;
-        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
         e.preventDefault();
         handleDeleteSelected();
         return;
